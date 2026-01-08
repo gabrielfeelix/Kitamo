@@ -18,6 +18,22 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/analysis', function () {
+    return Inertia::render('Analysis');
+})->middleware(['auth', 'verified'])->name('analysis');
+
+Route::get('/accounts', function () {
+    return Inertia::render('Accounts/Index');
+})->middleware(['auth', 'verified'])->name('accounts.index');
+
+Route::get('/accounts/nubank', function () {
+    return Inertia::render('Accounts/Checking');
+})->middleware(['auth', 'verified'])->name('accounts.checking');
+
+Route::get('/accounts/nubank-card', function () {
+    return Inertia::render('Accounts/CreditCard');
+})->middleware(['auth', 'verified'])->name('accounts.card');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

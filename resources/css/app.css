@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --sors-primary: 52 152 219;
+        --sors-success: 39 174 96;
+        --sors-danger: 231 76 60;
+        --sors-neutral: 149 165 166;
+        --sors-ink: 17 24 39;
+        --sors-surface: 245 247 251;
+    }
+
+    body {
+        background-color: rgb(var(--sors-surface));
+        color: rgb(var(--sors-ink));
+    }
+}
