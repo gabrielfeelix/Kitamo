@@ -1,42 +1,68 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 
-type TransactionKind = 'expense' | 'income';
+type TransactionKind = 'expense' | 'income' | 'transfer';
+type DateKind = 'today' | 'other';
+
+export type TransactionModalPayload = {
+    id?: string;
+    kind: TransactionKind;
+    amount: number;
+    description: string;
+    category: string;
+    account: string;
+    dateKind: DateKind;
+    dateOther?: string;
+    isInstallment: boolean;
+    installmentCount: number;
+    isPaid: boolean;
+    transferFrom: string;
+    transferTo: string;
+    transferDescription: string;
+};
 
 const props = defineProps<{
     open: boolean;
     kind: TransactionKind;
+    initial?: TransactionModalPayload | null;
 }>();
 
 const emit = defineEmits<{
     (event: 'close'): void;
+    (event: 'save', payload: TransactionModalPayload): void;
 }>();
 
-const title = computed(() =>
-    props.kind === 'expense' ? 'NOVA DESPESA' : 'NOVA RECEITA',
-);
-const accentColor = computed(() =>
-    props.kind === 'expense' ? 'text-red-300' : 'text-emerald-300',
-);
-const primaryButtonClass = computed(() =>
-    props.kind === 'expense'
-        ? 'bg-red-500 hover:bg-red-600'
-        : 'bg-emerald-500 hover:bg-emerald-600',
-);
-const primaryButtonLabel = computed(() =>
-    props.kind === 'expense' ? 'Pagar Agora' : 'Receber Agora',
-);
+const close = () => emit('close');
 
-const status = ref<'primary' | 'pending'>('primary');
-const amount = ref('0,00');
-const description = ref('');
-const repeatMonthly = ref(false);
+const localKind = ref<TransactionKind>(props.kind);
+const initialId = ref<string | undefined>(undefined);
+const amount = ref('250,00');
+const description = ref('Supermercado');
+const category = ref('Alimentação');
+const account = ref('Carteira');
+const transferFrom = ref('Banco Inter');
+const transferTo = ref('Carteira');
+const transferDescription = ref('');
+const dateKind = ref<DateKind>('today');
+const dateOther = ref<string>('');
+const isInstallment = ref(true);
+const installmentCount = ref(3);
+const isPaid = ref(false);
 
-const statusLabels = computed(() =>
-    props.kind === 'expense'
-        ? { primary: 'Pago', pending: 'Pendente' }
-        : { primary: 'Recebido', pending: 'Pendente' },
-);
+const isExpense = computed(() => localKind.value === 'expense');
+const isTransfer = computed(() => localKind.value === 'transfer');
+const amountTextClass = computed(() => {
+    if (localKind.value === 'expense') return 'text-[#EF4444]';
+    if (localKind.value === 'transfer') return 'text-[#3B82F6]';
+    return 'text-[#14B8A6]';
+});
+
+const pillClass = (kind: TransactionKind) => {
+    if (localKind.value !== kind) return 'bg-transparent text-[#9CA3AF] border border-[#E5E7EB]';
+    if (kind === 'expense') return 'bg-[#FEE2E2] text-[#EF4444] border border-transparent';
+    if (kind === 'transfer') return 'bg-[#DBEAFE] text-[#2563EB] border border-transparent';
+    return 'bg-[#E6FFFB] text-[#14B8A6] border border-transparent';
+};
 
 const normalizeMoneyInput = (raw: string) => {
     const digits = raw.replace(/[^\d]/g, '');
@@ -46,169 +72,381 @@ const normalizeMoneyInput = (raw: string) => {
     return `${whole},${cents}`;
 };
 
+const toMoneyInput = (value: number) => {
+    const normalized = Number.isFinite(value) ? value : 0;
+    const fixed = normalized.toFixed(2).replace('.', ',');
+    const [whole, cents] = fixed.split(',');
+    const withThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${withThousands},${cents}`;
+};
+
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
     amount.value = normalizeMoneyInput(target.value);
+};
+
+const amountNumber = computed(() => {
+    const normalized = amount.value.replace(/\./g, '').replace(',', '.');
+    const value = Number(normalized);
+    return Number.isFinite(value) ? value : 0;
+});
+
+const formatBRL2 = (value: number) =>
+    new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value);
+
+const installmentEach = computed(() => {
+    const count = Math.max(1, Math.floor(installmentCount.value || 1));
+    return amountNumber.value / count;
+});
+
+const dateButtonClass = (value: DateKind) => (dateKind.value === value ? 'bg-[#14B8A6] text-white' : 'bg-[#F3F4F6] text-[#6B7280]');
+
+const reset = () => {
+    const draft = props.initial ?? null;
+
+    initialId.value = draft?.id;
+    localKind.value = draft?.kind ?? props.kind;
+    amount.value = draft ? toMoneyInput(draft.amount) : '250,00';
+    description.value = draft?.description ?? 'Supermercado';
+    category.value = draft?.category ?? 'Alimentação';
+    account.value = draft?.account ?? 'Carteira';
+    dateKind.value = draft?.dateKind ?? 'today';
+    dateOther.value = draft?.dateOther ?? '';
+    isInstallment.value = draft?.isInstallment ?? true;
+    installmentCount.value = draft?.installmentCount ?? 3;
+    isPaid.value = draft?.isPaid ?? false;
+
+    transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
+    transferTo.value = draft?.transferTo ?? 'Carteira';
+    transferDescription.value = draft?.transferDescription ?? '';
+};
+
+const save = () => {
+    emit('save', {
+        id: initialId.value,
+        kind: localKind.value,
+        amount: amountNumber.value,
+        description: description.value.trim(),
+        category: category.value,
+        account: account.value,
+        dateKind: dateKind.value,
+        dateOther: dateOther.value,
+        isInstallment: isInstallment.value,
+        installmentCount: installmentCount.value,
+        isPaid: isPaid.value,
+        transferFrom: transferFrom.value,
+        transferTo: transferTo.value,
+        transferDescription: transferDescription.value.trim(),
+    });
+    close();
 };
 
 watch(
     () => props.open,
     (isOpen) => {
         if (!isOpen) return;
-        status.value = 'primary';
-        amount.value = '0,00';
-        description.value = '';
-        repeatMonthly.value = false;
+        reset();
     },
 );
 </script>
 
 <template>
     <div v-if="open" class="fixed inset-0 z-[60]">
-        <button
-            class="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
-            type="button"
-            @click="emit('close')"
-            aria-label="Fechar"
-        ></button>
+        <button class="absolute inset-0 bg-black/50 backdrop-blur-sm" type="button" @click="close" aria-label="Fechar"></button>
 
-        <div class="relative flex min-h-full items-center justify-center p-4">
-            <div class="w-full max-w-[520px] overflow-hidden rounded-[32px] bg-white shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-                    <button
-                        class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100"
-                        type="button"
-                        @click="emit('close')"
-                        aria-label="Fechar"
-                    >
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div
+            class="absolute inset-x-0 bottom-0 h-[650px] max-h-[calc(100vh-150px)] w-full overflow-hidden rounded-t-[24px] bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.25)]"
+            role="dialog"
+            aria-modal="true"
+        >
+            <div class="flex h-full flex-col">
+                <header class="relative flex h-14 items-center px-4">
+                    <button class="h-6 w-6 text-[#6B7280]" type="button" @click="close" aria-label="Fechar">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 6L6 18" />
                             <path d="M6 6l12 12" />
                         </svg>
                     </button>
-                    <div class="text-sm font-semibold tracking-wide text-slate-500">
-                        {{ title }}
-                    </div>
-                    <div class="h-9 w-9"></div>
-                </div>
 
-                <div class="px-10 py-8">
-                    <div class="flex items-end justify-center gap-4">
-                        <div class="text-2xl font-semibold" :class="accentColor">R$</div>
-                        <input
-                            class="w-[240px] bg-transparent text-center text-6xl font-semibold tracking-tight text-slate-400 focus:outline-none"
-                            inputmode="numeric"
-                            autocomplete="off"
-                            spellcheck="false"
-                            :value="amount"
-                            @input="onAmountInput"
-                            aria-label="Valor"
-                        />
+                    <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div class="text-[18px] font-bold text-[#1F2937]">Nova movimentação</div>
                     </div>
+                </header>
 
-                    <div class="mt-6 flex justify-center">
-                        <div class="inline-flex rounded-full bg-slate-100 p-1">
-                            <button
-                                class="rounded-full px-6 py-2 text-sm font-semibold"
-                                type="button"
-                                :class="status === 'primary' ? (kind === 'expense' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white') : 'text-slate-500'"
-                                @click="status = 'primary'"
-                            >
-                                {{ statusLabels.primary }}
+                <div class="flex-1 overflow-y-auto">
+                    <div class="px-6 pt-4">
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('expense')" @click="localKind = 'expense'">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="text-[16px] leading-none">↓</span>
+                                    Gasto
+                                </span>
                             </button>
-                            <button
-                                class="rounded-full px-6 py-2 text-sm font-semibold"
-                                type="button"
-                                :class="status === 'pending' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500'"
-                                @click="status = 'pending'"
-                            >
-                                {{ statusLabels.pending }}
+                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('income')" @click="localKind = 'income'">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="text-[16px] leading-none">↑</span>
+                                    Receita
+                                </span>
+                            </button>
+                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('transfer')" @click="localKind = 'transfer'">
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="text-[16px] leading-none">⇄</span>
+                                    Transf.
+                                </span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="mt-8 space-y-4">
-                        <button
-                            class="flex w-full items-center justify-between rounded-2xl bg-slate-50 px-5 py-4 text-left"
-                            type="button"
-                        >
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7" />
-                                        <path d="M16 3h5v5" />
-                                        <path d="M21 3l-8 8" />
-                                    </svg>
-                                </span>
-                                <div class="text-sm font-semibold text-slate-700">Categoria</div>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm font-semibold text-slate-400">
-                                Selecione
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 18l6-6-6-6" />
-                                </svg>
-                            </div>
-                        </button>
+                    <div class="mt-6 px-6">
+                        <div class="flex h-[120px] items-center">
+                            <div class="w-10 text-base text-[#6B7280]">R$</div>
+                            <input
+                                class="amount-input h-[72px] w-full flex-1 bg-transparent text-center text-[56px] font-bold leading-none tracking-tight focus:outline-none focus:ring-0"
+                                :class="amountTextClass"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                spellcheck="false"
+                                :value="amount"
+                                @input="onAmountInput"
+                                aria-label="Valor"
+                            />
+                            <div class="w-10"></div>
+                        </div>
 
-                        <button
-                            class="flex w-full items-center justify-between rounded-2xl bg-slate-50 px-5 py-4 text-left"
-                            type="button"
-                        >
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="5" width="18" height="14" rx="3" />
-                                        <path d="M3 10h18" />
-                                    </svg>
-                                </span>
-                                <div class="text-sm font-semibold text-slate-700">Conta</div>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm font-semibold text-slate-400">
-                                Nubank C/C
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 18l6-6-6-6" />
-                                </svg>
-                            </div>
-                        </button>
-
-                        <div class="flex items-center gap-4 rounded-2xl bg-slate-50 px-5 py-4">
-                            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-300 shadow-sm">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M7 3h8l4 4v14H7z" />
-                                    <path d="M15 3v4h4" />
+                        <button v-if="isExpense" type="button" class="mx-auto mt-2 inline-flex items-center gap-2" @click="isPaid = !isPaid" aria-label="Marcar como pago">
+                            <span class="flex h-5 w-5 items-center justify-center rounded-full border" :class="isPaid ? 'border-transparent bg-[#14B8A6]' : 'border-[#E5E7EB] bg-white'">
+                                <svg v-if="isPaid" class="h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <path d="M20 6 9 17l-5-5" />
                                 </svg>
                             </span>
-                            <input
-                                v-model="description"
-                                type="text"
-                                class="w-full bg-transparent text-sm font-semibold text-slate-500 placeholder:text-slate-300 focus:outline-none"
-                                placeholder="Descrição (opcional)"
-                            />
+                            <span class="text-sm font-semibold text-[#6B7280]">Pago</span>
+                        </button>
+                    </div>
+
+                    <div class="px-6 pb-6 pt-6">
+                        <div v-if="isTransfer" class="space-y-4">
+                            <div class="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
+                                <div>
+                                    <div class="mb-2 text-sm font-bold text-[#374151]">De (Origem)</div>
+                                    <button type="button" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M3 10h18" />
+                                                    <path d="M5 10V8l7-5 7 5v2" />
+                                                    <path d="M6 10v9" />
+                                                    <path d="M18 10v9" />
+                                                </svg>
+                                            </span>
+                                            <div class="min-w-0">
+                                                <div class="truncate text-sm font-semibold text-slate-900">{{ transferFrom }}</div>
+                                                <div class="mt-1 text-xs font-semibold text-slate-400">Saldo: R$ 1.000</div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="pt-9 text-slate-300">
+                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="mb-2 text-sm font-bold text-[#374151]">Para (Destino)</div>
+                                    <button type="button" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M4 7h16v12H4z" />
+                                                    <path d="M4 7V5h12v2" />
+                                                    <path d="M16 12h4" />
+                                                </svg>
+                                            </span>
+                                            <div class="min-w-0">
+                                                <div class="truncate text-sm font-semibold text-slate-900">{{ transferTo }}</div>
+                                                <div class="mt-1 text-xs font-semibold text-slate-400">Saldo: R$ 450</div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-2 text-sm font-bold text-[#374151]">Descrição (opcional)</div>
+                                <input
+                                    v-model="transferDescription"
+                                    type="text"
+                                    placeholder="Ex: Saque..."
+                                    class="h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#3B82F6] focus:outline-none focus:ring-0"
+                                />
+                            </div>
+
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Após a transferência</div>
+                                <div class="mt-4 space-y-2 text-sm font-semibold text-slate-700">
+                                    <div class="flex items-center justify-between">
+                                        <div>{{ transferFrom }}</div>
+                                        <div>R$ 1.000 <span class="text-slate-400">→</span> <span class="text-red-500">R$ 500</span></div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div>{{ transferTo }}</div>
+                                        <div>R$ 450 <span class="text-slate-400">→</span> <span class="text-emerald-600">R$ 950</span></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <label class="flex items-center gap-3 px-1 pt-2 text-sm font-semibold text-slate-600">
-                            <input v-model="repeatMonthly" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                            Repetir todo mês
-                        </label>
+                        <div v-else class="space-y-4">
+                            <div>
+                                <div class="mb-2 text-sm font-bold text-[#374151]">Descrição</div>
+                                <input
+                                    v-model="description"
+                                    type="text"
+                                    class="h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                                />
+                            </div>
+
+                            <div>
+                                <div class="mb-2 text-sm font-bold text-[#374151]">Categoria</div>
+                                <div class="relative flex h-11 items-center gap-1 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3">
+                                    <span class="flex items-center justify-center text-[#6B7280]">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 6h15l-2 7H7L6 6Z" />
+                                            <path d="M6 6l-2-2H2" />
+                                            <circle cx="9" cy="18" r="1.5" />
+                                            <circle cx="17" cy="18" r="1.5" />
+                                        </svg>
+                                    </span>
+                                    <select v-model="category" class="select-clean h-full w-full flex-1 appearance-none bg-transparent pr-8 text-base text-[#374151] focus:outline-none">
+                                        <option>Alimentação</option>
+                                        <option>Moradia</option>
+                                        <option>Transporte</option>
+                                        <option>Lazer</option>
+                                        <option v-if="localKind === 'income'">Salário</option>
+                                        <option v-if="localKind === 'income'">Outros</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#9CA3AF]">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 9l6 6 6-6" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-2 text-sm font-bold text-[#374151]">Data</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button type="button" class="h-11 rounded-lg px-3 text-sm font-semibold" :class="dateButtonClass('today')" @click="dateKind = 'today'">
+                                        Hoje
+                                    </button>
+                                    <button type="button" class="h-11 rounded-lg px-3 text-sm font-semibold" :class="dateButtonClass('other')" @click="dateKind = 'other'">
+                                        Outro
+                                    </button>
+                                </div>
+                                <input
+                                    v-if="dateKind === 'other'"
+                                    v-model="dateOther"
+                                    type="date"
+                                    class="mt-3 h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-base text-[#374151] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                                    aria-label="Data"
+                                />
+                            </div>
+
+                            <div class="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-base text-[#374151]">Parcelado?</div>
+                                    <button
+                                        type="button"
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition"
+                                        :class="isInstallment ? 'bg-[#14B8A6]' : 'bg-[#E5E7EB]'"
+                                        @click="isInstallment = !isInstallment"
+                                        aria-label="Parcelado"
+                                    >
+                                        <span class="inline-block h-5 w-5 transform rounded-full bg-white transition" :class="isInstallment ? 'translate-x-5' : 'translate-x-0.5'"></span>
+                                    </button>
+                                </div>
+
+                                <div v-if="isInstallment" class="mt-4 flex items-center justify-between gap-3">
+                                    <div class="text-xs text-[#6B7280]">Quantas vezes?</div>
+                                    <div class="flex items-center gap-3">
+                                        <input
+                                            v-model.number="installmentCount"
+                                            type="number"
+                                            min="1"
+                                            class="h-10 w-20 rounded-lg border border-[#E5E7EB] bg-white px-3 text-center text-base text-[#374151] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                                            aria-label="Quantidade de parcelas"
+                                        />
+                                        <div class="text-sm text-[#6B7280]">x de {{ formatBRL2(installmentEach) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-2 text-sm font-bold text-[#374151]">Conta</div>
+                                <div class="relative flex h-11 items-center gap-1 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3">
+                                    <span class="flex items-center justify-center text-[#6B7280]">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 7h16v12H4z" />
+                                            <path d="M4 7V5h12v2" />
+                                            <path d="M16 12h4" />
+                                        </svg>
+                                    </span>
+                                    <select v-model="account" class="select-clean h-full w-full flex-1 appearance-none bg-transparent pr-8 text-base text-[#374151] focus:outline-none">
+                                        <option>Carteira</option>
+                                        <option>Nubank C/C</option>
+                                        <option>Nubank Cartão</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#9CA3AF]">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 9l6 6 6-6" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="border-t border-slate-100 p-6">
+                <footer class="px-6 pt-4 pb-[calc(24px+env(safe-area-inset-bottom))]">
                     <button
-                        class="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-semibold text-white shadow-sm transition"
-                        :class="primaryButtonClass"
+                        class="h-[52px] w-full rounded-xl text-base font-bold text-white"
+                        :class="localKind === 'transfer' ? 'bg-[#3B82F6] shadow-[0_2px_8px_rgba(59,130,246,0.25)]' : 'bg-[#14B8A6] shadow-[0_2px_8px_rgba(20,184,166,0.25)]'"
                         type="button"
+                        @click="save"
                     >
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12a9 9 0 1 1-9-9" />
-                            <path d="M16 3h5v5" />
-                            <path d="M21 3l-9 9" />
-                        </svg>
-                        {{ primaryButtonLabel }}
+                        {{ localKind === 'transfer' ? 'Transferir' : 'Salvar' }}
                     </button>
-                </div>
+                </footer>
             </div>
         </div>
     </div>
 </template>
 
+<style scoped>
+.amount-input {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none;
+    -webkit-text-stroke: 0 transparent;
+    text-shadow: none !important;
+}
+.amount-input:focus,
+.amount-input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+}
+
+.select-clean {
+    background-image: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+</style>

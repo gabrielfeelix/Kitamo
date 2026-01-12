@@ -41,7 +41,7 @@ Sistema de gestão financeira pessoal focado em **input manual confiável** e **
 ### Infraestrutura
 - **Container:** Laravel Sail (Docker)
 - **Serviços:** MySQL 8.4 (local), Redis Alpine
-- **Porta Laravel:** 8001
+- **Porta Laravel:** 8000
 - **Porta Vite:** 5174
 
 ---
@@ -135,8 +135,14 @@ sail logs multi-tenant.sistema --tail=50
 
 ### Acesso
 
-- **Laravel:** http://localhost:8001
+- **Laravel:** http://localhost:8000
 - **Vite HMR:** http://localhost:5174
+
+> Se você estiver no WSL e abrindo no Chrome do Windows, o servidor do Laravel precisa estar em `0.0.0.0`.
+> Use `composer dev` (já configurado) e acesse `http://localhost:8000`.
+
+> Se aparecer erro de banco (`could not find driver`), significa que você está sem Docker e sem extensões `pdo_mysql`/`pdo_sqlite`.
+> No ambiente `local`, o projeto entra em modo de UI-dev: injeta um usuário fake e redireciona `/login` para `/dashboard` para você conseguir trabalhar no frontend sem banco.
 
 ---
 

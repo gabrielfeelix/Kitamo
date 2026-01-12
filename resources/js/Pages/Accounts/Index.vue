@@ -1,14 +1,632 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import SorsLayout from '@/Layouts/SorsLayout.vue';
+import MobileShell from '@/Layouts/MobileShell.vue';
+import DesktopShell from '@/Layouts/DesktopShell.vue';
+import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
+import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
+import MobileToast from '@/Components/MobileToast.vue';
+import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
+import TransactionFilterModal, { type TransactionFilterState } from '@/Components/TransactionFilterModal.vue';
+import ImportInvoiceModal from '@/Components/ImportInvoiceModal.vue';
+import DesktopImportChooserModal from '@/Components/DesktopImportChooserModal.vue';
+import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
+import { useMediaQuery } from '@/composables/useMediaQuery';
+import { deleteEntry, getEntries, setEntries, upsertEntry, type Entry } from '@/stores/localStore';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const isMobile = useMediaQuery('(max-width: 767px)');
+
+type FilterKind = 'all' | 'paid' | 'to_pay';
+
+const monthLabel = ref('JANEIRO 2026');
+const filter = ref<FilterKind>('all');
+
+const entries = ref<Entry[]>(getEntries());
+const refreshEntries = () => {
+    entries.value = getEntries();
+};
+
+const toastOpen = ref(false);
+const toastMessage = ref('');
+const showToast = (message: string) => {
+    toastMessage.value = message;
+    toastOpen.value = true;
+};
+
+const toggleEntryPaid = (id: string) => {
+    const entry = entries.value.find((e) => e.id === id);
+    if (!entry) return;
+    if (entry.kind !== 'expense') return;
+    entry.status = entry.status === 'paid' ? 'pending' : 'paid';
+    setEntries(entries.value);
+    if (entry.status === 'paid') showToast('Conta marcada como paga');
+};
+
+const filteredEntries = computed(() => {
+    let raw = entries.value;
+    if (filter.value === 'paid') raw = raw.filter((e) => e.status === 'paid' || e.status === 'received');
+    if (filter.value === 'to_pay') raw = raw.filter((e) => e.status === 'pending');
+    const selectedCategories = filterState.value.categories;
+    if (selectedCategories.length > 0) {
+        raw = raw.filter((e) => selectedCategories.includes(e.categoryKey));
+    }
+    const selectedTags = filterState.value.tags;
+    if (selectedTags.length > 0) {
+        raw = raw.filter((e) => e.tags.some((t) => selectedTags.includes(t)));
+    }
+    return raw;
+});
+
+const grouped = computed(() => {
+    const groups = new Map<string, Entry[]>();
+    for (const entry of filteredEntries.value) {
+        const groupKey = `${entry.dateLabel}|${entry.dayLabel}`;
+        const list = groups.get(groupKey) ?? [];
+        list.push(entry);
+        groups.set(groupKey, list);
+    }
+    return Array.from(groups.entries()).map(([key, list]) => {
+        const [dateLabel, dayLabel] = key.split('|');
+        const total = list.reduce((acc, entry) => acc + (entry.kind === 'income' ? entry.amount : -entry.amount), 0);
+        return { dateLabel, dayLabel, total, list };
+    });
+});
+
+const formatMoney = (value: number) =>
+    new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value);
+
+const transactionOpen = ref(false);
+const transactionKind = ref<'expense' | 'income'>('expense');
+const transactionInitial = ref<TransactionModalPayload | null>(null);
+
+const detailOpen = ref(false);
+const detailTransaction = ref<TransactionDetail | null>(null);
+
+const formatDateLabels = (date: Date) => {
+    const dayLabel = String(date.getDate()).padStart(2, '0');
+    const month = date
+        .toLocaleString('pt-BR', { month: 'short' })
+        .replace('.', '')
+        .toUpperCase()
+        .slice(0, 3);
+    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
+};
+
+const parseInstallmentCount = (installment?: string) => {
+    if (!installment) return 3;
+    const match = installment.match(/\/\s*(\d+)/);
+    if (!match) return 3;
+    const count = Number(match[1]);
+    return Number.isFinite(count) && count > 0 ? count : 3;
+};
+
+const openDetail = (entry: Entry) => {
+    detailTransaction.value = {
+        id: entry.id,
+        title: entry.title,
+        amount: entry.amount,
+        kind: entry.kind,
+        status: entry.status,
+        categoryLabel: entry.categoryLabel,
+        categoryIcon:
+            entry.categoryKey === 'food'
+                ? 'cart'
+                : entry.categoryKey === 'home'
+                  ? 'home'
+                  : entry.categoryKey === 'car'
+                    ? 'car'
+                    : entry.kind === 'income'
+                      ? 'briefcase'
+                      : 'heart',
+        accountLabel: entry.accountLabel,
+        accountIcon: 'wallet',
+        dateLabel: `20 de janeiro de 2026`,
+        installmentLabel: entry.installment ? entry.installment.replace('Parcela ', '') : undefined,
+    };
+    detailOpen.value = true;
+};
+
+const openCreate = () => {
+    transactionKind.value = 'expense';
+    transactionInitial.value = null;
+    transactionOpen.value = true;
+};
+
+const openEdit = (id: string, options?: { mode?: 'edit' | 'duplicate' }) => {
+    const entry = entries.value.find((e) => e.id === id);
+    if (!entry) return;
+
+    transactionKind.value = entry.kind;
+    transactionInitial.value = {
+        id: options?.mode === 'duplicate' ? undefined : entry.id,
+        kind: entry.kind,
+        amount: entry.amount,
+        description: entry.title,
+        category: entry.categoryLabel,
+        account: entry.accountLabel,
+        dateKind: 'today',
+        isInstallment: Boolean(entry.installment),
+        installmentCount: parseInstallmentCount(entry.installment),
+        isPaid: entry.status === 'paid',
+        transferFrom: 'Banco Inter',
+        transferTo: 'Carteira',
+        transferDescription: '',
+    };
+    transactionOpen.value = true;
+};
+
+const toEntryModel = (payload: TransactionModalPayload): Entry | null => {
+    if (payload.kind === 'transfer') return null;
+    const id = payload.id ?? `ent-${Date.now()}`;
+    const existing = entries.value.find((e) => e.id === id) ?? null;
+    const now = new Date();
+    const { dateLabel, dayLabel } = formatDateLabels(now);
+
+    const categoryKey =
+        payload.category === 'Alimentação'
+            ? 'food'
+            : payload.category === 'Moradia'
+              ? 'home'
+              : payload.category === 'Transporte'
+                ? 'car'
+                : 'other';
+    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
+
+    const isExpense = payload.kind === 'expense';
+    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
+
+    return {
+        id,
+        dateLabel: existing?.dateLabel ?? dateLabel,
+        dayLabel: existing?.dayLabel ?? dayLabel,
+        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
+        subtitle: installment ?? existing?.subtitle ?? '',
+        amount: payload.amount,
+        kind: payload.kind,
+        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
+        priority: existing?.priority ?? false,
+        installment,
+        icon: existing?.icon ?? icon,
+        categoryLabel: payload.category,
+        categoryKey,
+        accountLabel: payload.account,
+        tags: existing?.tags ?? [],
+    };
+};
+
+const onTransactionSave = (payload: TransactionModalPayload) => {
+    if (payload.kind === 'transfer') {
+        showToast('Transferência realizada');
+        return;
+    }
+    const model = toEntryModel(payload);
+    if (!model) return;
+    const isEdit = Boolean(payload.id);
+    upsertEntry(model);
+    refreshEntries();
+    showToast(isEdit ? 'Lançamento atualizado' : 'Lançamento criado');
+};
+
+const onDetailDelete = () => {
+    const id = detailTransaction.value?.id;
+    if (!id) return;
+    deleteEntry(id);
+    refreshEntries();
+    detailOpen.value = false;
+    showToast('Lançamento excluído');
+};
+
+const onDetailEdit = () => {
+    const id = detailTransaction.value?.id;
+    if (!id) return;
+    detailOpen.value = false;
+    openEdit(id, { mode: 'edit' });
+};
+
+const onDetailDuplicate = () => {
+    const id = detailTransaction.value?.id;
+    if (!id) return;
+    detailOpen.value = false;
+    openEdit(id, { mode: 'duplicate' });
+};
+
+const filterOpen = ref(false);
+const filterState = ref<TransactionFilterState>({
+    categories: ['food', 'home', 'car'],
+    tags: [],
+    period: 'month',
+    min: '0,00',
+    max: '1000,00',
+});
+
+const filterCategories = [
+    { key: 'food', label: 'Alimentação', icon: 'food' as const },
+    { key: 'home', label: 'Moradia', icon: 'home' as const },
+    { key: 'car', label: 'Transporte', icon: 'car' as const },
+];
+
+const clearFilters = () => {
+    filterState.value = { categories: [], tags: [], period: 'month', min: '0,00', max: '1000,00' };
+    filterOpen.value = false;
+};
+
+const applyFilters = (payload: TransactionFilterState) => {
+    filterState.value = payload;
+    filterOpen.value = false;
+};
+
+const importOpen = ref(false);
+const onInvoiceImported = (payload: { importedCount: number; items: Array<{ title: string; amount: number }> }) => {
+    const now = new Date();
+    const { dateLabel, dayLabel } = formatDateLabels(now);
+    for (const item of payload.items) {
+        const entry: Entry = {
+            id: `imp-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            dateLabel,
+            dayLabel,
+            title: item.title,
+            subtitle: '',
+            amount: item.amount,
+            kind: 'expense',
+            status: 'pending',
+            icon: item.title.toLowerCase().includes('uber') ? 'car' : 'cart',
+            categoryLabel: item.title.toLowerCase().includes('uber') ? 'Transporte' : 'Outros',
+            categoryKey: item.title.toLowerCase().includes('uber') ? 'car' : 'other',
+            accountLabel: 'Carteira',
+            tags: [],
+        };
+        upsertEntry(entry);
+    }
+    refreshEntries();
+    showToast('Fatura importada com sucesso!');
+};
+
+const desktopImportChooserOpen = ref(false);
+const desktopDrawerOpen = ref(false);
+const desktopSelectedEntry = ref<Entry | null>(null);
+
+const desktopTransactionOpen = ref(false);
+const desktopTransactionKind = ref<'expense' | 'income' | 'transfer'>('expense');
+const desktopTransactionInitial = ref<TransactionModalPayload | null>(null);
+
+const openDesktopCreate = () => {
+    desktopTransactionKind.value = 'expense';
+    desktopTransactionInitial.value = null;
+    desktopTransactionOpen.value = true;
+};
+
+const openDesktopDetail = (entry: Entry) => {
+    desktopSelectedEntry.value = entry;
+    desktopDrawerOpen.value = true;
+};
+
+const openDesktopEdit = (entry: Entry) => {
+    desktopTransactionKind.value = entry.kind;
+    desktopTransactionInitial.value = {
+        id: entry.id,
+        kind: entry.kind,
+        amount: entry.amount,
+        description: entry.title,
+        category: entry.categoryLabel,
+        account: entry.accountLabel,
+        dateKind: 'today',
+        isInstallment: Boolean(entry.installment),
+        installmentCount: parseInstallmentCount(entry.installment),
+        isPaid: entry.status === 'paid',
+        transferFrom: 'Banco Inter',
+        transferTo: 'Carteira',
+        transferDescription: '',
+    };
+    desktopTransactionOpen.value = true;
+};
+
+const deleteDesktopSelected = () => {
+    if (!desktopSelectedEntry.value) return;
+    deleteEntry(desktopSelectedEntry.value.id);
+    refreshEntries();
+    desktopDrawerOpen.value = false;
+    showToast('Lançamento excluído');
+};
+
+const handleDesktopEdit = () => {
+    if (!desktopSelectedEntry.value) return;
+    desktopDrawerOpen.value = false;
+    openDesktopEdit(desktopSelectedEntry.value);
+};
+
+const handleDesktopSave = (payload: TransactionModalPayload) => {
+    onTransactionSave(payload);
+    desktopTransactionOpen.value = false;
+    refreshEntries();
+};
+
+const onDesktopImportChoose = (mode: 'csv' | 'invoice' | 'open_finance') => {
+    desktopImportChooserOpen.value = false;
+    if (mode === 'invoice') {
+        importOpen.value = true;
+        return;
+    }
+    showToast('Em breve');
+};
+
+onMounted(() => {
+    const url = new URL(window.location.href);
+    const open = url.searchParams.get('open');
+    const edit = url.searchParams.get('edit');
+
+    if (open) {
+        const found = entries.value.find((e) => e.id === open);
+        if (found) openDesktopDetail(found);
+        url.searchParams.delete('open');
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    if (edit) {
+        const found = entries.value.find((e) => e.id === edit);
+        if (found) openDesktopEdit(found);
+        url.searchParams.delete('edit');
+        window.history.replaceState({}, '', url.toString());
+    }
+});
 </script>
 
 <template>
-    <SorsLayout title="Contas" :subtitle="`Bem-vindo de volta, ${userName}.`">
+    <MobileShell v-if="isMobile">
+        <header class="flex items-center justify-between pt-2">
+            <div>
+                <div class="text-2xl font-semibold tracking-tight text-slate-900">Lançamentos</div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
+                    aria-label="Filtrar"
+                    @click="filterOpen = true"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" />
+                    </svg>
+                </button>
+
+                <button
+                    type="button"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
+                    aria-label="Importar fatura"
+                    @click="importOpen = true"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3v12" />
+                        <path d="M8 11l4 4 4-4" />
+                        <path d="M4 21h16" />
+                    </svg>
+                </button>
+
+                <Link
+                    :href="route('accounts.search')"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
+                    aria-label="Buscar"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="M20 20l-3.5-3.5" />
+                    </svg>
+                </Link>
+            </div>
+        </header>
+
+        <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
+            <div class="flex items-center justify-between">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Mês anterior">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo mês">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-4 flex items-center gap-2">
+            <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold transition"
+                :class="filter === 'all' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
+                @click="filter = 'all'"
+            >
+                Todas
+            </button>
+            <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold transition"
+                :class="filter === 'paid' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
+                @click="filter = 'paid'"
+            >
+                Pagas
+            </button>
+            <button
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold transition"
+                :class="filter === 'to_pay' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
+                @click="filter = 'to_pay'"
+            >
+                A pagar
+            </button>
+        </div>
+
+        <div class="mt-4 space-y-4">
+            <div v-for="group in grouped" :key="group.dateLabel + group.dayLabel">
+                <div class="flex items-center justify-between px-1 py-2">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ group.dateLabel }}</div>
+                    <div class="text-xs font-semibold" :class="group.total >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                        {{ group.total >= 0 ? '+' : '-' }} {{ formatMoney(Math.abs(group.total)).replace('R$', 'R$') }}
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div
+                        v-for="entry in group.list"
+                        :key="entry.id"
+                        class="relative overflow-hidden rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
+                        role="button"
+                        tabindex="0"
+                        @click="openDetail(entry)"
+                    >
+                        <div
+                            class="absolute left-0 top-0 h-full w-1.5"
+                            :class="entry.kind === 'income' ? 'bg-emerald-500' : entry.priority ? 'bg-red-500' : 'bg-transparent'"
+                        ></div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 ring-1 ring-slate-200/60">
+                                <svg v-if="entry.icon === 'gym'" class="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 8v8" />
+                                    <path d="M18 8v8" />
+                                    <path d="M8 10h8" />
+                                    <path d="M8 14h8" />
+                                    <path d="M4 10v4" />
+                                    <path d="M20 10v4" />
+                                </svg>
+                                <svg v-else-if="entry.icon === 'home'" class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 10.5L12 3l9 7.5" />
+                                    <path d="M5 10v10h14V10" />
+                                </svg>
+                                <svg v-else-if="entry.icon === 'car'" class="h-6 w-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 16l1-5 1-3h10l1 3 1 5" />
+                                    <path d="M7 16h10" />
+                                    <circle cx="8" cy="17" r="1.5" />
+                                    <circle cx="16" cy="17" r="1.5" />
+                                </svg>
+                                <svg v-else-if="entry.icon === 'cart'" class="h-6 w-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 6h15l-2 7H7L6 6Z" />
+                                    <path d="M6 6l-2-2H2" />
+                                    <circle cx="9" cy="18" r="1.5" />
+                                    <circle cx="17" cy="18" r="1.5" />
+                                </svg>
+                                <svg v-else class="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3v18" />
+                                    <path d="M7 7h5a3 3 0 1 1 0 6H7" />
+                                </svg>
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <div class="truncate text-sm font-semibold text-slate-900">{{ entry.title }}</div>
+                                    <span
+                                        v-if="entry.priority"
+                                        class="rounded-md bg-red-500 px-2 py-1 text-[10px] font-semibold text-white"
+                                    >
+                                        Prioridade
+                                    </span>
+                                </div>
+                                <div class="truncate text-xs text-slate-400">{{ entry.installment ?? entry.subtitle }}</div>
+                                <div v-if="entry.tags.length" class="mt-2 flex flex-wrap gap-2">
+                                    <span
+                                        v-for="tag in entry.tags"
+                                        :key="tag"
+                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                        :class="
+                                            tag === 'Essencial'
+                                                ? 'bg-emerald-50 text-emerald-600'
+                                                : tag === 'Urgente'
+                                                  ? 'bg-red-50 text-red-500'
+                                                  : 'bg-slate-100 text-slate-600'
+                                        "
+                                    >
+                                        {{ tag }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <div
+                                    class="text-sm font-semibold"
+                                    :class="
+                                        entry.kind === 'income'
+                                            ? 'text-emerald-600'
+                                            : entry.status === 'paid'
+                                              ? 'text-emerald-600 line-through'
+                                              : 'text-red-500'
+                                    "
+                                >
+                                    {{ entry.kind === 'income' ? '+' : '-' }} {{ formatMoney(entry.amount).replace('R$', 'R$') }}
+                                </div>
+
+                                <div class="mt-2 flex items-center justify-end gap-2">
+                                    <button
+                                        v-if="entry.kind === 'expense'"
+                                        type="button"
+                                        class="flex h-6 w-6 items-center justify-center rounded-full border-2"
+                                        :class="entry.status === 'paid' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 bg-white'"
+                                        :aria-label="entry.status === 'paid' ? 'Marcar como não paga' : 'Marcar como paga'"
+                                        @click.stop="toggleEntryPaid(entry.id)"
+                                    >
+                                        <svg v-if="entry.status === 'paid'" class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <path d="M20 6 9 17l-5-5" />
+                                        </svg>
+                                    </button>
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-600"
+                                    >
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6 9 17l-5-5" />
+                                        </svg>
+                                        Recebido
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template #fab>
+            <button
+                type="button"
+                class="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom)+1rem)] right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500 text-white shadow-xl shadow-teal-500/30"
+                aria-label="Adicionar"
+                @click="openCreate"
+            >
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                </svg>
+            </button>
+        </template>
+
+        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
+        <TransactionDetailModal
+            :open="detailOpen"
+            :transaction="detailTransaction"
+            @close="detailOpen = false"
+            @edit="onDetailEdit"
+            @duplicate="onDetailDuplicate"
+            @delete="onDetailDelete"
+        />
+        <TransactionFilterModal
+            :open="filterOpen"
+            :categories="filterCategories"
+            :initial="filterState"
+            :results-count="filteredEntries.length"
+            @close="filterOpen = false"
+            @clear="clearFilters"
+            @apply="applyFilters"
+        />
+        <ImportInvoiceModal :open="importOpen" @close="importOpen = false" @imported="onInvoiceImported" />
+        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+    </MobileShell>
+
+    <div v-else-if="false">
         <div class="grid gap-6 xl:grid-cols-2">
             <Link
                 :href="route('accounts.checking')"
@@ -51,6 +669,142 @@ const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
                 </div>
             </Link>
         </div>
-    </SorsLayout>
-</template>
+    </div>
 
+    <DesktopShell v-else title="Lançamentos" subtitle="Domingo, 11 Jan 2026" search-placeholder="Buscar (ex: Supermercado)..." @new-transaction="openDesktopCreate">
+        <div class="space-y-8">
+            <div class="rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
+                <div class="flex items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
+                            Janeiro 2026
+                        </button>
+                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
+                            Todos Tipos
+                        </button>
+                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
+                            Categorias
+                        </button>
+                    </div>
+
+                    <button type="button" class="inline-flex h-11 items-center rounded-xl bg-[#14B8A6] px-5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
+
+            <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
+                <div class="flex items-center justify-between px-8 py-6">
+                    <div class="text-lg font-semibold text-slate-900">Histórico</div>
+                    <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            class="inline-flex h-11 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-[#14B8A6]"
+                            @click="desktopImportChooserOpen = true"
+                        >
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 7h6l2 2h8v10H4V7Z" />
+                                <path d="M12 12v6" />
+                                <path d="M9 15l3 3 3-3" />
+                            </svg>
+                            Importar Dados
+                        </button>
+
+                        <button type="button" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v12" />
+                                <path d="M8 11l4 4 4-4" />
+                                <path d="M4 21h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-8 pb-8">
+                    <table class="w-full">
+                        <thead class="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-400">
+                            <tr class="text-left">
+                                <th class="py-4">Descrição</th>
+                                <th class="py-4">Categoria</th>
+                                <th class="py-4">Conta</th>
+                                <th class="py-4">Data</th>
+                                <th class="py-4">Status</th>
+                                <th class="py-4 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="row in entries.slice(0, 6)"
+                                :key="row.id"
+                                class="cursor-pointer border-b border-slate-100 text-sm font-semibold text-slate-700 last:border-b-0 hover:bg-slate-50"
+                                @click="openDesktopDetail(row)"
+                            >
+                                <td class="py-5">
+                                    <div class="flex items-center gap-4">
+                                        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 text-slate-500 ring-1 ring-slate-100">
+                                            <svg v-if="row.title.toLowerCase().includes('netflix')" class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M9 7v10l9-5-9-5Z" />
+                                            </svg>
+                                            <svg v-else-if="row.categoryKey === 'home'" class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M3 10.5L12 3l9 7.5" />
+                                                <path d="M5 10v10h14V10" />
+                                            </svg>
+                                            <svg v-else class="h-6 w-6 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 6h15l-2 7H7L6 6Z" />
+                                                <path d="M6 6l-2-2H2" />
+                                                <circle cx="9" cy="18" r="1.5" />
+                                                <circle cx="17" cy="18" r="1.5" />
+                                            </svg>
+                                        </span>
+                                        <div>{{ row.title }}</div>
+                                    </div>
+                                </td>
+                                <td class="py-5">
+                                    <span class="inline-flex rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">{{ row.categoryLabel }}</span>
+                                </td>
+                                <td class="py-5 text-slate-500">{{ row.accountLabel }}</td>
+                                <td class="py-5 text-slate-500">{{ row.kind === 'income' ? 'Hoje, 10:00' : '10 Jan 2026' }}</td>
+                                <td class="py-5">
+                                    <span
+                                        class="inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide"
+                                        :class="row.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'"
+                                    >
+                                        {{ row.status === 'pending' ? 'Pendente' : 'Pago' }}
+                                    </span>
+                                </td>
+                                <td class="py-5 text-right">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <div class="font-bold" :class="row.kind === 'income' ? 'text-emerald-600' : 'text-slate-700'">
+                                            {{ row.kind === 'income' ? '+' : '-' }} {{ formatMoney(row.amount).replace('R$', 'R$') }}
+                                        </div>
+                                        <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 18l6-6-6-6" />
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <DesktopImportChooserModal :open="desktopImportChooserOpen" @close="desktopImportChooserOpen = false" @choose="onDesktopImportChoose" />
+        <DesktopTransactionDrawer
+            :open="desktopDrawerOpen"
+            :entry="desktopSelectedEntry"
+            @close="desktopDrawerOpen = false"
+            @edit="handleDesktopEdit"
+            @delete="deleteDesktopSelected"
+        />
+        <DesktopTransactionModal
+            :open="desktopTransactionOpen"
+            :kind="desktopTransactionKind"
+            :initial="desktopTransactionInitial"
+            @close="desktopTransactionOpen = false"
+            @save="handleDesktopSave"
+        />
+        <ImportInvoiceModal :open="importOpen" @close="importOpen = false" @imported="onInvoiceImported" />
+        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+    </DesktopShell>
+</template>

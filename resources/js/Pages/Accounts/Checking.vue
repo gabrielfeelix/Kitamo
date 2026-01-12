@@ -1,14 +1,52 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import MobileShell from '@/Layouts/MobileShell.vue';
 import SorsLayout from '@/Layouts/SorsLayout.vue';
+import { useMediaQuery } from '@/composables/useMediaQuery';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const isMobile = useMediaQuery('(max-width: 767px)');
 </script>
 
 <template>
-    <SorsLayout title="Visão Geral" :subtitle="`Bem-vindo de volta, ${userName}.`">
+    <MobileShell v-if="isMobile">
+        <header class="flex items-center gap-3 pt-2">
+            <Link
+                :href="route('accounts.index')"
+                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
+                aria-label="Voltar"
+            >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </Link>
+            <div class="text-xl font-semibold tracking-tight text-slate-900">Nubank C/C</div>
+        </header>
+
+        <div class="mt-6 space-y-3">
+            <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saldo atual</div>
+                <div class="mt-3 text-3xl font-semibold text-slate-900">R$ 2345.67</div>
+            </div>
+
+            <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Extrato</div>
+                <div class="mt-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">Starbucks</div>
+                            <div class="text-xs text-slate-400">Alimentação • Hoje</div>
+                        </div>
+                        <div class="text-sm font-semibold text-slate-900">-25.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </MobileShell>
+
+    <SorsLayout v-else title="Visão Geral" :subtitle="`Bem-vindo de volta, ${userName}.`">
         <div class="space-y-6">
             <div class="flex items-center gap-4">
                 <Link
@@ -53,4 +91,3 @@ const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
         </div>
     </SorsLayout>
 </template>
-

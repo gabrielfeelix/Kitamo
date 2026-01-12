@@ -13,6 +13,11 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    private function isLocalWithoutDatabaseDriver(): bool
+    {
+        return app()->environment('local') && ! extension_loaded('pdo_mysql') && ! extension_loaded('pdo_sqlite');
+    }
+
     /**
      * Display the user's profile form.
      */
@@ -29,6 +34,10 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        if ($this->isLocalWithoutDatabaseDriver()) {
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        }
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -37,7 +46,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**

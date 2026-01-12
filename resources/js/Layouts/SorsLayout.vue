@@ -49,15 +49,15 @@ const navItems = computed(() => [
         icon: 'chart' as const,
     },
     {
-        label: 'Contas',
+        label: 'Lançamentos',
         href: route('accounts.index'),
         active: route().current('accounts.*'),
         icon: 'card' as const,
     },
     {
         label: 'Metas',
-        href: '#',
-        active: false,
+        href: route('goals.index'),
+        active: route().current('goals.*'),
         icon: 'target' as const,
     },
 ]);

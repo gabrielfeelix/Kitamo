@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    private function isLocalWithoutDatabaseDriver(): bool
+    {
+        return app()->environment('local') && ! extension_loaded('pdo_mysql') && ! extension_loaded('pdo_sqlite');
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -23,7 +28,7 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                ...($this->isLocalWithoutDatabaseDriver() ? [] : [Rule::unique(User::class)->ignore($this->user()->id)]),
             ],
         ];
     }
