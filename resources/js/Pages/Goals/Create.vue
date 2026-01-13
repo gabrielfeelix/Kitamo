@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
-import SorsLayout from '@/Layouts/SorsLayout.vue';
+import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 import { createGoal, type GoalIcon, type GoalStatus } from '@/stores/localStore';
 
@@ -179,10 +179,10 @@ const submit = () => {
         </div>
     </MobileShell>
 
-    <SorsLayout v-else title="Nova meta" subtitle="Mobile-first por enquanto.">
+    <KitamoLayout v-else title="Nova meta" subtitle="Mobile-first por enquanto.">
         <div class="rounded-[28px] border border-white/70 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">
             <div class="text-sm font-semibold text-slate-900">Nova meta (desktop/tablet)</div>
             <div class="mt-2 text-sm text-slate-500">Vamos adaptar essa tela depois da versão mobile.</div>
         </div>
-    </SorsLayout>
+    </KitamoLayout>
 </template>

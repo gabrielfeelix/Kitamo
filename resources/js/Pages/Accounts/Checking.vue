@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
-import SorsLayout from '@/Layouts/SorsLayout.vue';
+import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
 const page = usePage();
@@ -46,7 +46,7 @@ const isMobile = useMediaQuery('(max-width: 767px)');
         </div>
     </MobileShell>
 
-    <SorsLayout v-else title="Visão Geral" :subtitle="`Bem-vindo de volta, ${userName}.`">
+    <KitamoLayout v-else title="Visão Geral" :subtitle="`Bem-vindo de volta, ${userName}.`">
         <div class="space-y-6">
             <div class="flex items-center gap-4">
                 <Link
@@ -89,5 +89,5 @@ const isMobile = useMediaQuery('(max-width: 767px)');
                 </div>
             </div>
         </div>
-    </SorsLayout>
+    </KitamoLayout>
 </template>

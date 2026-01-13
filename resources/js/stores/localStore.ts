@@ -43,7 +43,7 @@ export type Entry = {
     tags: EntryTag[];
 };
 
-const storageKey = (name: string) => `sors:${name}`;
+const storageKey = (name: string) => `kitamo:${name}`;
 
 const readJson = <T>(name: string, fallback: T): T => {
     try {

@@ -16,7 +16,7 @@ fi
 
 timestamp="$(date +%Y%m%d-%H%M%S)"
 staging_dir="${ROOT_DIR}/.hostinger_staging"
-zip_name="sors-hostinger-backup-${timestamp}.zip"
+zip_name="kitamo-hostinger-backup-${timestamp}.zip"
 zip_path="${ROOT_DIR}/${zip_name}"
 
 cleanup() {

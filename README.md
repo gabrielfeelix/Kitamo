@@ -1,4 +1,4 @@
-# SORS - Sistema de Organização e Registro de Saldo
+# KITAMO - Sistema de Organização e Registro de Saldo
 
 **Versão:** 1.0.0 (MVP)  
 **Status:** Em desenvolvimento  
@@ -48,13 +48,13 @@ Sistema de gestão financeira pessoal focado em **input manual confiável** e **
 
 ## 📁 ESTRUTURA DO PROJETO
 ```
-sors/
+kitamo/
 ├── app/
 │   ├── Http/Controllers/      # Controllers (Auth já configurado)
 │   ├── Models/                 # User.php (outros a criar)
 │   └── Policies/               # Policies de autorização (a criar)
 ├── database/
-│   ├── migrations/             # Migrations do SORS (a criar)
+│   ├── migrations/             # Migrations do KITAMO (a criar)
 │   └── seeders/                # CategorySeeder (a criar)
 ├── resources/
 │   ├── js/
@@ -146,7 +146,7 @@ sail logs multi-tenant.sistema --tail=50
 
 ---
 
-## 🏗️ ARQUITETURA DO SORS
+## 🏗️ ARQUITETURA DO KITAMO
 
 ### 4 Tabs Principais
 
@@ -342,7 +342,7 @@ sail artisan config:show database
 docker ps -a
 
 # Vê logs
-docker logs sors-multi-tenant.sistema-1
+docker logs kitamo-multi-tenant.sistema-1
 
 # Rebuild
 sail build --no-cache

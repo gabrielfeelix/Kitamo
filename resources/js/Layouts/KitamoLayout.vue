@@ -90,7 +90,7 @@ const navItems = computed(() => [
                                     <rect x="3" y="14" width="7" height="7" rx="2" />
                                 </svg>
                             </div>
-                            <div class="text-xl font-semibold tracking-tight text-slate-900">SORS.</div>
+                            <div class="text-xl font-semibold tracking-tight text-slate-900">KITAMO.</div>
                         </div>
 
                         <nav class="space-y-2 text-sm">

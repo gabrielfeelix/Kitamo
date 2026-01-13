@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
-import SorsLayout from '@/Layouts/SorsLayout.vue';
+import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
@@ -59,10 +59,10 @@ const recent = ref(['Supermercado', 'Internet', 'Aluguel']);
         </div>
     </MobileShell>
 
-    <SorsLayout v-else title="Buscar" subtitle="Mobile-only por enquanto.">
+    <KitamoLayout v-else title="Buscar" subtitle="Mobile-only por enquanto.">
         <div class="rounded-[28px] border border-white/70 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">
             <div class="text-sm font-semibold text-slate-900">Busca</div>
             <div class="mt-2 text-sm text-slate-500">Vamos adaptar essa tela depois da versão mobile.</div>
         </div>
-    </SorsLayout>
+    </KitamoLayout>
 </template>
