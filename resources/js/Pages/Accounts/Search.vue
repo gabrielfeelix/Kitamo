@@ -1,14 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import type { BootstrapData } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 const query = ref('');
-const recent = ref(['Supermercado', 'Internet', 'Aluguel']);
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
+const entries = computed(() => bootstrap.value.entries ?? []);
+
+const recent = computed(() => {
+    const seen = new Set();
+    const result = [];
+    for (const entry of entries.value) {
+        const term = String(entry.title ?? '').trim();
+        if (!term || seen.has(term)) continue;
+        seen.add(term);
+        result.push(term);
+        if (result.length >= 3) break;
+    }
+    return result;
+});
 </script>
+
 
 <template>
     <Head title="Buscar" />
@@ -45,7 +64,7 @@ const recent = ref(['Supermercado', 'Internet', 'Aluguel']);
         <div class="mt-8">
             <div class="text-sm font-bold text-slate-900">Buscas recentes</div>
 
-            <div class="mt-4 space-y-4">
+            <div v-if="recent.length" class="mt-4 space-y-4">
                 <button v-for="term in recent" :key="term" type="button" class="flex items-center gap-3 text-left" @click="query = term">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,6 +74,10 @@ const recent = ref(['Supermercado', 'Internet', 'Aluguel']);
                     </span>
                     <div class="text-sm font-semibold text-slate-500">{{ term }}</div>
                 </button>
+            </div>
+            <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="text-sm font-semibold text-slate-900">Sem buscas recentes</div>
+                <div class="mt-1 text-xs text-slate-500">Suas buscas vão aparecer aqui.</div>
             </div>
         </div>
     </MobileShell>
