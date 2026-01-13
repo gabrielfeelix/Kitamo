@@ -89,8 +89,8 @@ const submit = () => {
                 </div>
 
                 <form class="mt-8 space-y-5" @submit.prevent="submit">
-                    <button
-                        type="button"
+                    <Link
+                        :href="route('auth.google')"
                         class="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm"
                     >
                         <span class="flex items-center gap-3">
@@ -104,11 +104,7 @@ const submit = () => {
                             </span>
                             <span>Entrar com Google <span class="text-slate-400">(mais rapido)</span></span>
                         </span>
-                        <svg class="h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M16 11V7a4 4 0 0 0-8 0v4" />
-                            <rect x="5" y="11" width="14" height="9" rx="2" />
-                        </svg>
-                    </button>
+                    </Link>
 
                     <div class="flex items-center gap-3">
                         <span class="h-px flex-1 bg-slate-200"></span>

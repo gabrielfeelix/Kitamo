@@ -1,7 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\GoalController;
+use App\Http\Controllers\GoalDepositController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -108,6 +113,20 @@ Route::get('/accounts/nubank', function () {
 Route::get('/accounts/nubank-card', function () {
     return Inertia::render('Accounts/CreditCard');
 })->middleware(['auth', 'verified'])->name('accounts.card');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+
+    Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
+    Route::patch('/goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
+    Route::delete('/goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
+    Route::post('/goals/{goal}/deposits', [GoalDepositController::class, 'store'])->name('goals.deposits.store');
+});
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/admin', [UserController::class, 'index'])->name('admin.users.index');

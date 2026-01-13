@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import { buildTransactionRequest } from '@/lib/transactions';
+import type { BootstrapData, Entry, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
@@ -8,10 +11,12 @@ import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { deleteEntry, getEntries, getGoals, upsertEntry, type Entry } from '@/stores/localStore';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -36,19 +41,72 @@ const formatBRL = (value: number) =>
         currency: 'BRL',
     }).format(value);
 
-const saldoAtual = ref(1450);
-const receitas = ref(2500);
-const despesas = ref(1350);
+const desktopEntries = ref<Entry[]>(bootstrap.value.entries ?? []);
+const desktopGoals = ref<Goal[]>(bootstrap.value.goals ?? []);
 
+const computeTotals = (items: Entry[]) => {
+    let income = 0;
+    let expense = 0;
+    for (const entry of items) {
+        if (entry.kind === 'income') income += entry.amount;
+        else expense += entry.amount;
+    }
+    return { income, expense, balance: income - expense };
+};
 
-const cashflowSeries = [
-    { label: 'Ago', height: 70, amount: 1200, tone: 'bg-[#A7F3D0]', highlight: false },
-    { label: 'Set', height: 110, amount: 1850, tone: 'bg-[#A7F3D0]', highlight: false },
-    { label: 'Out', height: 90, amount: 1500, tone: 'bg-[#A7F3D0]', highlight: false },
-    { label: 'Nov', height: 140, amount: 2300, tone: 'bg-[#34D399]', highlight: false },
-    { label: 'Dez', height: 160, amount: 2600, tone: 'bg-[#14B8A6]', highlight: false },
-    { label: 'Jan', height: 120, amount: 2100, tone: 'bg-[#10B981]', highlight: true },
-];
+const saldoAtual = ref(0);
+const receitas = ref(0);
+const despesas = ref(0);
+
+const syncTotals = () => {
+    const totals = computeTotals(desktopEntries.value);
+    saldoAtual.value = totals.balance;
+    receitas.value = totals.income;
+    despesas.value = totals.expense;
+};
+
+syncTotals();
+
+const cashflowSeries = computed(() => {
+    const entries = desktopEntries.value;
+    if (!entries.length) return [];
+
+    const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, idx) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (5 - idx), 1);
+        return {
+            key: `${date.getFullYear()}-${date.getMonth() + 1}`,
+            label: monthLabels[date.getMonth()],
+            total: 0,
+            highlight: idx === 5,
+        };
+    });
+
+    for (const entry of entries) {
+        if (!entry.transactionDate) continue;
+        const date = new Date(entry.transactionDate);
+        const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        const target = months.find((m) => m.key === key);
+        if (!target) continue;
+        target.total += entry.kind === 'income' ? entry.amount : -entry.amount;
+    }
+
+    const maxValue = Math.max(...months.map((m) => Math.abs(m.total)), 1);
+
+    return months.map((month) => {
+        const ratio = Math.abs(month.total) / maxValue;
+        const height = Math.round(70 + ratio * 90);
+        const tone = ratio > 0.66 ? 'bg-[#14B8A6]' : ratio > 0.33 ? 'bg-[#34D399]' : 'bg-[#A7F3D0]';
+        return {
+            label: month.label,
+            height,
+            amount: Math.abs(month.total),
+            tone,
+            highlight: month.highlight,
+        };
+    });
+});
 
 type UpcomingBill = {
     id: string;
@@ -60,10 +118,47 @@ type UpcomingBill = {
     paid: boolean;
 };
 
-const upcomingBills = ref<UpcomingBill[]>([
-    { id: '1', month: 'jan', day: '15', title: 'Conta de luz', subtitle: 'Copel', amountLabel: 'R$ 180', paid: false },
-    { id: '2', month: 'jan', day: '18', title: 'Internet', subtitle: 'Vivo Fibra', amountLabel: 'R$ 120', paid: false },
-]);
+const buildUpcomingBills = (entries: Entry[]): UpcomingBill[] => {
+    const formatter = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
+
+    return entries
+        .filter((entry) => entry.kind === 'expense')
+        .filter((entry) => Boolean(entry.transactionDate))
+        .map((entry) => {
+            const date = entry.transactionDate ? new Date(entry.transactionDate) : new Date();
+            const month = formatter.format(date).replace('.', '').toLowerCase();
+            const day = String(date.getDate()).padStart(2, '0');
+            return {
+                id: entry.id,
+                month,
+                day,
+                title: entry.title,
+                subtitle: entry.categoryLabel,
+                amountLabel: formatBRL(entry.amount),
+                paid: entry.status === 'paid',
+            };
+        })
+        .sort((a, b) => (a.day > b.day ? 1 : -1))
+        .slice(0, 3);
+};
+
+const upcomingBills = computed(() => buildUpcomingBills(desktopEntries.value));
+
+const creditCards = computed(() =>
+    (bootstrap.value.accounts ?? [])
+        .filter((account) => account.type === 'credit_card')
+        .map((account) => ({
+            id: account.id,
+            label: account.name,
+            subtitle: 'Fatura aberta',
+            amount: account.current_balance,
+        })),
+);
+
+const hasEntries = computed(() => desktopEntries.value.length > 0);
+const hasGoals = computed(() => desktopGoals.value.length > 0);
+const hasCashflow = computed(() => cashflowSeries.value.length > 0);
+const hasUpcomingBills = computed(() => upcomingBills.value.length > 0);
 
 const toastOpen = ref(false);
 const toastMessage = ref('');
@@ -72,11 +167,30 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const desktopEntries = ref<Entry[]>(getEntries());
-const refreshDesktopEntries = () => {
-    desktopEntries.value = getEntries();
+const replaceEntry = (entry: Entry) => {
+    const idx = desktopEntries.value.findIndex((item) => item.id === entry.id);
+    if (idx >= 0) desktopEntries.value[idx] = entry;
+    else desktopEntries.value.unshift(entry);
+    syncTotals();
 };
-const desktopGoals = ref(getGoals());
+
+const removeEntry = (id: string) => {
+    desktopEntries.value = desktopEntries.value.filter((entry) => entry.id !== id);
+    syncTotals();
+};
+
+const entryToRequest = (entry: Entry) => ({
+    kind: entry.kind,
+    amount: entry.amount,
+    description: entry.title,
+    category: entry.categoryLabel,
+    account: entry.accountLabel,
+    dateKind: entry.transactionDate ? 'other' : 'today',
+    dateOther: entry.transactionDate ?? '',
+    isPaid: entry.status === 'paid' || entry.status === 'received',
+    isInstallment: Boolean(entry.installment),
+    installmentCount: entry.installment ? parseInstallmentCount(entry.installment) : undefined,
+});
 
 const desktopDrawerOpen = ref(false);
 const desktopSelectedEntry = ref<Entry | null>(null);
@@ -146,91 +260,62 @@ const handleDetailEdit = () => {
     openEntryEdit(desktopSelectedEntry.value);
 };
 
-const handleDetailDelete = () => {
+const handleDetailDelete = async () => {
     if (!desktopSelectedEntry.value) return;
-    deleteEntry(desktopSelectedEntry.value.id);
-    refreshDesktopEntries();
+    const target = desktopSelectedEntry.value;
+    await requestJson(route('transactions.destroy', target.id), { method: 'DELETE' });
+    removeEntry(target.id);
     desktopDrawerOpen.value = false;
     showToast('Lançamento excluído');
 };
 
-const handleDetailMarkPaid = () => {
+const handleDetailMarkPaid = async () => {
     if (!desktopSelectedEntry.value) return;
     if (desktopSelectedEntry.value.kind !== 'expense') return;
     const nextStatus: Entry['status'] = desktopSelectedEntry.value.status === 'paid' ? 'pending' : 'paid';
-    const updated = { ...desktopSelectedEntry.value, status: nextStatus };
-    upsertEntry(updated);
-    refreshDesktopEntries();
-    desktopSelectedEntry.value = updated;
+    const payload = { ...entryToRequest({ ...desktopSelectedEntry.value, status: nextStatus }), isPaid: nextStatus === 'paid' };
+    const response = await requestJson<{ entry: Entry }>(route('transactions.update', desktopSelectedEntry.value.id), {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    replaceEntry(response.entry);
+    desktopSelectedEntry.value = response.entry;
     showToast(nextStatus === 'paid' ? 'Conta marcada como paga' : 'Conta marcada como pendente');
 };
 
-const formatDateLabels = (date: Date) => {
-    const dayLabel = String(date.getDate()).padStart(2, '0');
-    const month = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .toUpperCase()
-        .slice(0, 3);
-    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
 };
 
-const onTransactionSave = (payload: TransactionModalPayload) => {
+const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
         return;
     }
 
-    const now = new Date();
-    const { dateLabel, dayLabel } = formatDateLabels(now);
+    const url = payload.id ? route('transactions.update', payload.id) : route('transactions.store');
+    const method = payload.id ? 'PATCH' : 'POST';
 
-    const categoryKey =
-        payload.category === 'Alimentação'
-            ? 'food'
-            : payload.category === 'Moradia'
-              ? 'home'
-              : payload.category === 'Transporte'
-                ? 'car'
-                : 'other';
-    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
+    const response = await requestJson<{ entry: Entry }>(url, {
+        method,
+        body: JSON.stringify(buildTransactionRequest(payload)),
+    });
 
-    const isExpense = payload.kind === 'expense';
-    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
-
-    const entry: Entry = {
-        id: `ent-${Date.now()}`,
-        dateLabel,
-        dayLabel,
-        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
-        subtitle: installment ?? '',
-        amount: payload.amount,
-        kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
-        installment,
-        icon,
-        categoryLabel: payload.category,
-        categoryKey,
-        accountLabel: payload.account,
-        tags: [],
-    };
-    upsertEntry(entry);
-    refreshDesktopEntries();
-
-    if (payload.kind === 'income') {
-        receitas.value += payload.amount;
-        saldoAtual.value += payload.amount;
-    } else {
-        despesas.value += payload.amount;
-        saldoAtual.value -= payload.amount;
-    }
-    showToast('Movimentação salva');
+    replaceEntry(response.entry);
+    showToast(payload.id ? 'Lançamento atualizado' : 'Lançamento criado');
 };
 
-const toggleBillPaid = (id: string) => {
-    const bill = upcomingBills.value.find((b) => b.id === id);
-    if (!bill) return;
-    bill.paid = !bill.paid;
-    if (bill.paid) showToast('Conta marcada como paga');
+const toggleBillPaid = async (id: string) => {
+    const entry = desktopEntries.value.find((item) => item.id === id);
+    if (!entry || entry.kind !== 'expense') return;
+    const nextStatus: Entry['status'] = entry.status === 'paid' ? 'pending' : 'paid';
+    const payload = { ...entryToRequest({ ...entry, status: nextStatus }), isPaid: nextStatus === 'paid' };
+
+    const response = await requestJson<{ entry: Entry }>(route('transactions.update', entry.id), {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+
+    replaceEntry(response.entry);
+    if (nextStatus === 'paid') showToast('Conta marcada como paga');
 };
 </script>
 
@@ -258,14 +343,29 @@ const toggleBillPaid = (id: string) => {
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                 Atualizado agora
             </div>
+            <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="5" width="16" height="16" rx="3" />
+                        <path d="M8 3v4" />
+                        <path d="M16 3v4" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Sem contas programadas</div>
+                <div class="mt-1 text-xs text-slate-500">Cadastre seus compromissos e acompanhe aqui.</div>
+            </div>
         </section>
 
         <section class="mt-6 grid grid-cols-3 gap-3">
-            <button
-                type="button"
-                class="rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60"
-                @click="openTransaction('income')"
+            <Link
+                :href="route('accounts.index', { kind: 'income' })"
+                class="relative rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
             >
+                <span class="absolute right-3 top-3 text-emerald-500">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </span>
                 <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 21V7" />
@@ -276,13 +376,17 @@ const toggleBillPaid = (id: string) => {
                 <div class="mt-1 text-sm font-semibold text-slate-700">
                     {{ formatBRL(receitas).replace('R$', '').trim() }}
                 </div>
-            </button>
+            </Link>
 
-            <button
-                type="button"
-                class="rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60"
-                @click="openTransaction('expense')"
+            <Link
+                :href="route('accounts.index', { kind: 'expense' })"
+                class="relative rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
             >
+                <span class="absolute right-3 top-3 text-red-500">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </span>
                 <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-red-50 text-red-500">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 3v14" />
@@ -293,7 +397,7 @@ const toggleBillPaid = (id: string) => {
                 <div class="mt-1 text-sm font-semibold text-slate-700">
                     {{ formatBRL(despesas).replace('R$', '').trim() }}
                 </div>
-            </button>
+            </Link>
 
             <button
                 type="button"
@@ -310,7 +414,7 @@ const toggleBillPaid = (id: string) => {
             </button>
         </section>
 
-        <section class="mt-5 rounded-3xl bg-amber-50 px-4 py-4 shadow-sm ring-1 ring-amber-200/60">
+        <section v-if="hasEntries" class="mt-5 rounded-3xl bg-amber-50 px-4 py-4 shadow-sm ring-1 ring-amber-200/60">
             <div class="flex gap-4">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -349,7 +453,7 @@ const toggleBillPaid = (id: string) => {
                 <div class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">31/jan: -R$ 250</div>
             </div>
 
-            <div class="mt-4 overflow-hidden rounded-2xl bg-white">
+            <div v-if="hasCashflow" class="mt-4 overflow-hidden rounded-2xl bg-white">
                 <svg class="h-40 w-full" viewBox="0 0 320 160" fill="none">
                     <path d="M20 96C64 92 100 84 132 72C164 60 188 56 212 72C236 88 264 108 300 96" stroke="#14B8A6" stroke-width="4" stroke-linecap="round" />
                     <path d="M16 100H304" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 6" />
@@ -363,6 +467,65 @@ const toggleBillPaid = (id: string) => {
                 </svg>
                 <div class="px-1 pb-1 text-center text-xs font-semibold text-slate-400">O saldo cruza o zero (negativo) no dia 23.</div>
             </div>
+            <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19V5" />
+                        <path d="M10 19V9" />
+                        <path d="M16 19v-4" />
+                        <path d="M22 19V7" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Sem projeções ainda</div>
+                <div class="mt-1 text-xs text-slate-500">Adicione seus primeiros lançamentos para ver o fluxo.</div>
+            </div>
+        </section>
+
+        <section class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+            <div class="flex items-center justify-between">
+                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
+                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar cartão">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                    </svg>
+                </button>
+            </div>
+
+            <div v-if="creditCards.length === 0" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                        <path d="M3 10h18" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui cartões cadastrados.</div>
+                <div class="mt-1 text-xs text-slate-500">Melhore seu controle financeiro agora!</div>
+                <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white">Adicionar cartões</button>
+            </div>
+
+            <div v-else class="mt-4 space-y-3">
+                <Link
+                    v-for="card in creditCards"
+                    :key="card.id"
+                    :href="route('accounts.index', { account: card.label })"
+                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
+                >
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="5" width="18" height="14" rx="3" />
+                                <path d="M3 10h18" />
+                            </svg>
+                        </span>
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ card.label }}</div>
+                            <div class="text-xs text-slate-500">{{ card.subtitle }}</div>
+                        </div>
+                    </div>
+                    <div class="text-sm font-semibold text-slate-900">R$ {{ card.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+                </Link>
+            </div>
         </section>
 
         <section class="mt-6">
@@ -371,7 +534,7 @@ const toggleBillPaid = (id: string) => {
                 <Link :href="route('accounts.index')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
             </div>
 
-            <div class="mt-4 space-y-3">
+            <div v-if="hasUpcomingBills" class="mt-4 space-y-3">
                 <div
                     v-for="bill in upcomingBills"
                     :key="bill.id"
@@ -580,6 +743,17 @@ const toggleBillPaid = (id: string) => {
                             <div class="text-sm font-semibold text-slate-900">-150.00</div>
                         </div>
                     </div>
+                    <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="16" rx="3" />
+                                <path d="M7 8h10" />
+                                <path d="M7 12h7" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-semibold text-slate-900">Sem transações recentes</div>
+                        <div class="mt-1 text-xs text-slate-500">Crie seu primeiro lançamento para aparecer aqui.</div>
+                    </div>
                 </div>
             </div>
 
@@ -677,7 +851,15 @@ const toggleBillPaid = (id: string) => {
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
+                    <Link
+                        :href="route('accounts.index', { kind: 'income' })"
+                        class="group relative rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
+                    >
+                        <span class="absolute right-5 top-5 text-emerald-500 opacity-70 transition group-hover:opacity-100">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </span>
                         <div class="flex items-start justify-between">
                             <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -691,9 +873,17 @@ const toggleBillPaid = (id: string) => {
                         <div class="mt-1 text-2xl font-bold text-slate-900">
                             R$ {{ receitas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                         </div>
-                    </div>
+                    </Link>
 
-                    <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
+                    <Link
+                        :href="route('accounts.index', { kind: 'expense' })"
+                        class="group relative rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
+                    >
+                        <span class="absolute right-5 top-5 text-red-500 opacity-70 transition group-hover:opacity-100">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </span>
                         <div class="flex items-start justify-between">
                             <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-50 text-red-500">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -707,7 +897,7 @@ const toggleBillPaid = (id: string) => {
                         <div class="mt-1 text-2xl font-bold text-slate-900">
                             R$ {{ despesas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
@@ -721,7 +911,7 @@ const toggleBillPaid = (id: string) => {
                         </Link>
                     </div>
 
-                    <div class="mt-8 flex items-end justify-between gap-4">
+                    <div v-if="hasCashflow" class="mt-8 flex items-end justify-between gap-4">
                         <div v-for="item in cashflowSeries" :key="item.label" class="group flex-1">
                             <div class="relative mx-auto w-full">
                                 <div class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
@@ -732,6 +922,18 @@ const toggleBillPaid = (id: string) => {
                             <div class="mt-3 text-center text-xs font-semibold" :class="item.highlight ? 'text-[#14B8A6]' : 'text-slate-400'">{{ item.label }}</div>
                         </div>
                     </div>
+                    <div v-else class="mt-8 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19V5" />
+                                <path d="M10 19V9" />
+                                <path d="M16 19v-4" />
+                                <path d="M22 19V7" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-semibold text-slate-900">Sem fluxo registrado</div>
+                        <div class="mt-1 text-xs text-slate-500">Adicione lançamentos para preencher o gráfico.</div>
+                    </div>
                 </div>
 
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
@@ -740,7 +942,7 @@ const toggleBillPaid = (id: string) => {
                         <Link :href="route('accounts.index')" class="text-sm font-semibold text-[#14B8A6]">Ver todas</Link>
                     </div>
 
-                    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-100">
+                    <div v-if="hasEntries" class="mt-6 overflow-hidden rounded-2xl border border-slate-100">
                         <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 bg-slate-50 px-6 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">
                             <div>Transação</div>
                             <div>Categoria</div>
@@ -788,7 +990,7 @@ const toggleBillPaid = (id: string) => {
             </div>
 
             <div class="space-y-8">
-                <div class="rounded-2xl border border-amber-100 bg-amber-50 px-7 py-6">
+                <div v-if="hasEntries" class="rounded-2xl border border-amber-100 bg-amber-50 px-7 py-6">
                     <div class="flex items-start gap-3">
                         <span class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -834,6 +1036,63 @@ const toggleBillPaid = (id: string) => {
 
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
                     <div class="flex items-center justify-between">
+                        <div class="text-sm font-semibold text-slate-900">Cartões de crédito</div>
+                        <button type="button" class="text-slate-300 hover:text-slate-400" aria-label="Adicionar cartão">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div v-if="creditCards.length === 0" class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-6 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="5" width="18" height="14" rx="3" />
+                                <path d="M3 10h18" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui cartões cadastrados.</div>
+                        <div class="mt-1 text-xs text-slate-500">Melhore seu controle financeiro agora!</div>
+                        <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white">Adicionar cartões</button>
+                    </div>
+
+                    <div v-else class="mt-5 space-y-3">
+                        <Link
+                            v-for="card in creditCards"
+                            :key="card.id"
+                            :href="route('accounts.index', { account: card.label })"
+                            class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4"
+                        >
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                                        <path d="M3 10h18" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ card.label }}</div>
+                                    <div class="text-xs text-slate-500">{{ card.subtitle }}</div>
+                                </div>
+                            </div>
+                            <div class="text-sm font-semibold text-slate-900">R$ {{ card.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+                        </Link>
+                    </div>
+                    <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-semibold text-slate-900">Crie sua primeira meta</div>
+                        <div class="mt-1 text-xs text-slate-500">Comece definindo um objetivo financeiro.</div>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
+                    <div class="flex items-center justify-between">
                         <div class="text-sm font-semibold text-slate-900">Metas Principais</div>
                         <Link :href="route('goals.index')" class="text-slate-300 hover:text-slate-400" aria-label="Ver metas">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -842,7 +1101,7 @@ const toggleBillPaid = (id: string) => {
                         </Link>
                     </div>
 
-                    <div class="mt-6 space-y-5">
+                    <div v-if="hasGoals" class="mt-6 space-y-5">
                         <Link v-for="g in desktopGoals.slice(0, 2)" :key="g.id" :href="route('goals.show', { goalId: g.id })" class="block">
                             <div class="flex items-center justify-between text-sm font-semibold text-slate-700 hover:text-slate-900">
                                 <div>{{ g.title }}</div>

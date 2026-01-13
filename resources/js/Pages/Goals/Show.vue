@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import AddMoneyModal from '@/Components/AddMoneyModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { addDepositToGoal, getGoal, type Goal } from '@/stores/localStore';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
+
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
 
 const props = defineProps<{
     goalId: string;
@@ -17,7 +23,7 @@ const props = defineProps<{
 type GoalColor = 'teal' | 'blue' | 'orange';
 type GoalIcon = 'home' | 'plane' | 'car';
 
-const goalData = ref<Goal | null>(getGoal(props.goalId));
+const goalData = ref<Goal | null>(bootstrap.value.goals.find((g) => g.id === props.goalId) ?? null);
 
 const goal = computed(() => {
     const g = goalData.value;
@@ -49,10 +55,13 @@ const showToast = (message: string) => {
 
 const deposits = computed(() => goalData.value?.deposits ?? []);
 
-const onDepositConfirm = (payload: { amount: string }) => {
+const onDepositConfirm = async (payload: { amount: string }) => {
     const value = Number(payload.amount.replace(/\./g, '').replace(',', '.')) || 0;
-    addDepositToGoal(goal.value.id, { title: 'Depósito manual', subtitle: 'Hoje', amount: value });
-    goalData.value = getGoal(goal.value.id);
+    const response = await requestJson<{ goal: Goal }>(route('goals.deposits.store', goal.value.id), {
+        method: 'POST',
+        body: JSON.stringify({ amount: value, title: 'Depósito manual' }),
+    });
+    goalData.value = response.goal;
     showToast('Valor adicionado');
 };
 </script>

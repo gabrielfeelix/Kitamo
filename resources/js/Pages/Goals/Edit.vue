@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { getGoal, upsertGoal } from '@/stores/localStore';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
+
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
 
 const props = defineProps<{
     goalId: string;
 }>();
 
 const initial = computed(() => {
-    const g = getGoal(props.goalId);
+    const g = bootstrap.value.goals.find((goal) => goal.id === props.goalId) as Goal | undefined;
     if (!g) return { name: 'Meta', icon: 'home' as const, target: '0,00', due: 'Dezembro 2026' };
     const icon: IconKey = g.icon === 'plane' ? 'plane' : g.icon === 'car' ? 'car' : 'home';
     const target = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(g.target);
@@ -35,16 +41,41 @@ const normalizeMoneyInput = (raw: string) => {
     return `${whole},${cents}`;
 };
 
-const submit = () => {
-    const g = getGoal(props.goalId);
-    if (!g) return router.visit(route('goals.index'));
+const parseDueDate = (label: string) => {
+    const value = label.trim().toLowerCase();
+    if (!value) return null;
+    const monthMap: Record<string, number> = {
+        jan: 1, janeiro: 1,
+        fev: 2, fevereiro: 2,
+        mar: 3, março: 3, marco: 3,
+        abr: 4, abril: 4,
+        mai: 5, maio: 5,
+        jun: 6, junho: 6,
+        jul: 7, julho: 7,
+        ago: 8, agosto: 8,
+        set: 9, setembro: 9,
+        out: 10, outubro: 10,
+        nov: 11, novembro: 11,
+        dez: 12, dezembro: 12,
+    };
+    const parts = value.split(/\s+/);
+    const year = parts.find((part) => part.match(/^\d{4}$/));
+    const monthKey = parts.find((part) => monthMap[part]);
+    if (!year || !monthKey) return null;
+    const month = monthMap[monthKey];
+    return `${year}-${String(month).padStart(2, '0')}-01`;
+};
+
+const submit = async () => {
     const newTarget = Number(normalizeMoneyInput(target.value).replace(/\./g, '').replace(',', '.')) || 0;
-    upsertGoal({
-        ...g,
-        title: name.value.trim() || g.title,
-        due: due.value,
-        target: newTarget,
-        icon: icon.value === 'plane' ? 'plane' : icon.value === 'car' ? 'car' : 'home',
+    await requestJson(route('goals.update', props.goalId), {
+        method: 'PATCH',
+        body: JSON.stringify({
+            title: name.value.trim() || 'Meta',
+            target_amount: newTarget,
+            due_date: parseDueDate(due.value),
+            icon: icon.value === 'plane' ? 'plane' : icon.value === 'car' ? 'car' : 'home',
+        }),
     });
     router.visit(route('goals.show', { goalId: props.goalId }));
 };

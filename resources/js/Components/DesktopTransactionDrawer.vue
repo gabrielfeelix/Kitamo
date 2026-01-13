@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { Entry } from '@/stores/localStore';
+import type { Entry } from '@/types/kitamo';
 
 const props = defineProps<{
     open: boolean;
@@ -61,7 +61,7 @@ const onReceiptChange = (event: Event) => {
     <div v-if="open" class="fixed inset-0 z-[95]">
         <button class="absolute inset-0 bg-black/35 backdrop-blur-sm" type="button" @click="emit('close')" aria-label="Fechar"></button>
 
-        <aside class="absolute right-0 top-0 h-full w-[440px] bg-white shadow-[-18px_0_60px_-40px_rgba(15,23,42,0.6)]">
+        <aside class="absolute right-0 top-0 flex h-screen w-[440px] flex-col bg-white shadow-[-18px_0_60px_-40px_rgba(15,23,42,0.6)]">
             <header class="flex items-center justify-between border-b border-slate-100 px-8 py-6">
                 <div class="text-base font-semibold text-slate-900">Detalhes da Transação</div>
                 <button
@@ -77,7 +77,7 @@ const onReceiptChange = (event: Event) => {
                 </button>
             </header>
 
-            <div class="h-[calc(100vh-160px)] overflow-y-auto px-8 py-8">
+            <div class="min-h-0 flex-1 overflow-y-auto px-8 py-8">
                 <div class="flex flex-col items-center">
                     <div
                         class="flex h-20 w-20 items-center justify-center rounded-full ring-1"

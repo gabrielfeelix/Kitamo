@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { createGoal, type GoalIcon, type GoalStatus } from '@/stores/localStore';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -34,30 +35,49 @@ const monthly = computed(() => {
     return 500;
 });
 
-const mapIcon = (key: IconKey): GoalIcon => {
+const mapIcon = (key: IconKey) => {
     if (key === 'plane') return 'plane';
     if (key === 'car') return 'car';
     return 'home';
 };
 
-const computeStatus = (value: number): GoalStatus => {
-    if (value < 5000) return 'late';
-    if (value < 10000) return 'on_track';
-    return 'ahead';
+const parseDueDate = (label: string) => {
+    const value = label.trim().toLowerCase();
+    if (!value) return null;
+    const monthMap: Record<string, number> = {
+        jan: 1, janeiro: 1,
+        fev: 2, fevereiro: 2,
+        mar: 3, março: 3, marco: 3,
+        abr: 4, abril: 4,
+        mai: 5, maio: 5,
+        jun: 6, junho: 6,
+        jul: 7, julho: 7,
+        ago: 8, agosto: 8,
+        set: 9, setembro: 9,
+        out: 10, outubro: 10,
+        nov: 11, novembro: 11,
+        dez: 12, dezembro: 12,
+    };
+    const parts = value.split(/\s+/);
+    const year = parts.find((part) => part.match(/^\d{4}$/));
+    const monthKey = parts.find((part) => monthMap[part]);
+    if (!year || !monthKey) return null;
+    const month = monthMap[monthKey];
+    return `${year}-${String(month).padStart(2, '0')}-01`;
 };
 
-const submit = () => {
-    const id = `goal-${Date.now()}`;
-    const goal = createGoal({
-        id,
-        title: name.value.trim() || 'Nova meta',
-        due: due.value,
-        current: 0,
-        target: targetNumber.value,
-        status: computeStatus(targetNumber.value),
-        icon: mapIcon(icon.value),
+const submit = async () => {
+    const dueDate = parseDueDate(due.value);
+    const response = await requestJson<{ goal: Goal }>(route('goals.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            title: name.value.trim() || 'Nova meta',
+            target_amount: targetNumber.value,
+            due_date: dueDate,
+            icon: mapIcon(icon.value),
+        }),
     });
-    router.visit(route('goals.show', { goalId: goal.id }));
+    router.visit(route('goals.show', { goalId: response.goal.id }));
 };
 </script>
 

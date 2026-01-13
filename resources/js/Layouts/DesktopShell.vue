@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { getEntries, setEntries } from '@/stores/localStore';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData, Entry } from '@/types/kitamo';
 import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
 
 const props = withDefaults(
@@ -27,6 +28,10 @@ const emit = defineEmits<{
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Design');
 const isAdmin = computed(() => Boolean(page.props.auth?.user?.is_admin));
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
+const entries = computed<Entry[]>(() => bootstrap.value.entries ?? []);
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);
     const first = parts[0]?.[0] ?? 'G';
@@ -63,11 +68,9 @@ const closePopovers = () => {
 
 const drawerOpen = ref(false);
 const drawerEntryId = ref<string | null>(null);
-const entriesVersion = ref(0);
 const drawerEntry = computed(() => {
-    entriesVersion.value;
     if (!drawerEntryId.value) return null;
-    return getEntries().find((e) => e.id === drawerEntryId.value) ?? null;
+    return entries.value.find((e) => e.id === drawerEntryId.value) ?? null;
 });
 
 const openDrawerForEntry = (id: string) => {
@@ -83,24 +86,44 @@ const editDrawerEntry = () => {
     router.get(route('accounts.index'), { edit: entry.id }, { preserveScroll: true });
 };
 
-const markDrawerAsPaid = () => {
-    const entry = drawerEntry.value;
-    if (!entry) return;
-    const all = getEntries();
-    const idx = all.findIndex((e) => e.id === entry.id);
-    if (idx < 0) return;
-    if (all[idx].kind !== 'expense') return;
-    all[idx] = { ...all[idx], status: all[idx].status === 'paid' ? 'pending' : 'paid' };
-    setEntries(all);
-    entriesVersion.value += 1;
+const parseInstallmentCount = (installment?: string | null) => {
+    if (!installment) return undefined;
+    const match = installment.match(/\/(\d+)/);
+    if (!match) return undefined;
+    const value = Number.parseInt(match[1], 10);
+    return Number.isFinite(value) ? value : undefined;
 };
 
-const deleteDrawerEntry = () => {
+const entryToPayload = (entry: Entry, isPaid: boolean) => ({
+    kind: entry.kind,
+    amount: entry.amount,
+    description: entry.title,
+    category: entry.categoryLabel,
+    account: entry.accountLabel,
+    dateKind: entry.transactionDate ? 'other' : 'today',
+    dateOther: entry.transactionDate ?? '',
+    isPaid,
+    isInstallment: Boolean(entry.installment),
+    installmentCount: parseInstallmentCount(entry.installment),
+});
+
+const markDrawerAsPaid = async () => {
     const entry = drawerEntry.value;
     if (!entry) return;
-    const all = getEntries().filter((e) => e.id !== entry.id);
-    setEntries(all);
-    entriesVersion.value += 1;
+    if (entry.kind !== 'expense') return;
+    const nextPaid = entry.status !== 'paid';
+    await requestJson(route('transactions.update', entry.id), {
+        method: 'PATCH',
+        body: JSON.stringify(entryToPayload(entry, nextPaid)),
+    });
+    router.reload({ only: ['bootstrap'] });
+};
+
+const deleteDrawerEntry = async () => {
+    const entry = drawerEntry.value;
+    if (!entry) return;
+    await requestJson(route('transactions.destroy', entry.id), { method: 'DELETE' });
+    router.reload({ only: ['bootstrap'] });
     drawerOpen.value = false;
     drawerEntryId.value = null;
 };
@@ -108,9 +131,6 @@ const deleteDrawerEntry = () => {
 const suggestionsOpen = ref(false);
 type Suggestion = { id: string; title: string; dateLabel: string; amount: number; kind: 'expense' | 'income' };
 const suggestions = ref<Suggestion[]>([]);
-
-const formatMoney = (value: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
 const formatSuggestionAmount = (value: number) => {
     const isInteger = Number.isInteger(value);
@@ -129,10 +149,10 @@ watch(
             suggestionsOpen.value = false;
             return;
         }
-        const hits = getEntries()
+        const hits = entries.value
             .filter((e) => e.title.toLowerCase().includes(q))
             .slice(0, 5)
-            .map((e) => ({ id: e.id, title: e.title, dateLabel: '11 Jan 2026', amount: e.amount, kind: e.kind }));
+            .map((e) => ({ id: e.id, title: e.title, dateLabel: e.dateLabel, amount: e.amount, kind: e.kind }));
         suggestions.value = hits;
         suggestionsOpen.value = hits.length > 0;
     },
@@ -171,7 +191,7 @@ const showNewAction = computed(() => props.showNewAction ?? true);
                         K
                     </div>
                     <div class="text-lg font-semibold tracking-tight text-slate-900">
-                        KITAMO
+                        Kitamo
                     </div>
                 </Link>
 

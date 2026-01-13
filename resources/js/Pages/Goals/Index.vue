@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import { buildTransactionRequest } from '@/lib/transactions';
+import type { BootstrapData, Goal, Entry } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { addDepositToGoal, getGoal, getGoals, upsertEntry, type Entry, type Goal as StoredGoal } from '@/stores/localStore';
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
 import DesktopGoalDrawer from '@/Components/DesktopGoalDrawer.vue';
 import DesktopGoalAddMoneyModal from '@/Components/DesktopGoalAddMoneyModal.vue';
@@ -14,7 +16,12 @@ import DesktopGoalCreateModal from '@/Components/DesktopGoalCreateModal.vue';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
-const goals = ref<StoredGoal[]>(getGoals());
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
+
+const goals = ref<Goal[]>(bootstrap.value.goals ?? []);
 
 const formatMoney = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -23,7 +30,7 @@ const formatMoney = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
-const pct = (goal: StoredGoal) => {
+const pct = (goal: Goal) => {
     if (!goal.target) return 0;
     return Math.min(100, Math.round((goal.current / goal.target) * 100));
 };
@@ -43,37 +50,50 @@ const filteredGoals = computed(() => {
 
 const goalDrawerOpen = ref(false);
 const selectedGoalId = ref<string | null>(null);
-const selectedGoal = computed(() => (selectedGoalId.value ? getGoal(selectedGoalId.value) : null));
+const selectedGoal = computed(() => (selectedGoalId.value ? goals.value.find((g) => g.id === selectedGoalId.value) ?? null : null));
 
 const createGoalOpen = ref(false);
 const openCreateGoal = () => {
     createGoalOpen.value = true;
 };
-const onGoalCreated = (payload: { goalId: string }) => {
-    goals.value = getGoals();
-    const created = getGoal(payload.goalId);
-    if (created) openGoalDrawer(created);
-    else showToast('Meta criada');
+const onGoalCreated = (payload: { goal: Goal }) => {
+    const idx = goals.value.findIndex((g) => g.id === payload.goal.id);
+    if (idx >= 0) goals.value[idx] = payload.goal;
+    else goals.value.unshift(payload.goal);
+    openGoalDrawer(payload.goal);
 };
 
-const openGoalDrawer = (goal: StoredGoal) => {
+const openGoalDrawer = (goal: Goal) => {
     selectedGoalId.value = goal.id;
     goalDrawerOpen.value = true;
 };
 
 const addMoneyOpen = ref(false);
-const openAddMoney = (goal: StoredGoal) => {
+const openAddMoney = (goal: Goal) => {
     selectedGoalId.value = goal.id;
     goalDrawerOpen.value = true;
     addMoneyOpen.value = true;
 };
 
-const onAddMoneyConfirm = (payload: { amount: string }) => {
+const onAddMoneyConfirm = async (payload: { amount: string }) => {
     if (!selectedGoalId.value) return;
     const value = Number(payload.amount.replace(/\./g, '').replace(',', '.')) || 0;
-    addDepositToGoal(selectedGoalId.value, { title: 'Depósito mensal', subtitle: '10 Jan 2026', amount: value });
-    goals.value = getGoals();
+    const response = await requestJson<{ goal: Goal }>(route('goals.deposits.store', selectedGoalId.value), {
+        method: 'POST',
+        body: JSON.stringify({ amount: value, title: 'Depósito mensal' }),
+    });
+    const idx = goals.value.findIndex((g) => g.id === response.goal.id);
+    if (idx >= 0) goals.value[idx] = response.goal;
     showToast('Valor adicionado');
+};
+
+const deleteSelectedGoal = async () => {
+    if (!selectedGoalId.value) return;
+    const id = selectedGoalId.value;
+    await requestJson(route('goals.destroy', id), { method: 'DELETE' });
+    goals.value = goals.value.filter((goal) => goal.id !== id);
+    goalDrawerOpen.value = false;
+    showToast('Meta excluída');
 };
 
 const editSelectedGoal = () => {
@@ -91,53 +111,18 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const formatDateLabels = (date: Date) => {
-    const dayLabel = String(date.getDate()).padStart(2, '0');
-    const month = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .toUpperCase()
-        .slice(0, 3);
-    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
 };
 
-const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
+const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
         return;
     }
 
-    const now = new Date();
-    const { dateLabel, dayLabel } = formatDateLabels(now);
-    const categoryKey =
-        payload.category === 'Alimentação'
-            ? 'food'
-            : payload.category === 'Moradia'
-              ? 'home'
-              : payload.category === 'Transporte'
-                ? 'car'
-                : 'other';
-    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
-    const isExpense = payload.kind === 'expense';
-    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
-
-    const entry: Entry = {
-        id: `ent-${Date.now()}`,
-        dateLabel,
-        dayLabel,
-        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
-        subtitle: installment ?? '',
-        amount: payload.amount,
-        kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
-        installment,
-        icon,
-        categoryLabel: payload.category,
-        categoryKey,
-        accountLabel: payload.account,
-        tags: [],
-    };
-    upsertEntry(entry);
+    await requestJson(route('transactions.store'), {
+        method: 'POST',
+        body: JSON.stringify(buildTransactionRequest(payload)),
+    });
     showToast('Movimentação salva');
 };
 </script>
@@ -160,7 +145,22 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
             </Link>
         </header>
 
-        <div class="mt-6 space-y-4 pb-4">
+        <div v-if="goals.length === 0" class="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center shadow-sm">
+            <Link
+                :href="route('goals.create')"
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-400"
+                aria-label="Nova meta"
+            >
+                <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                </svg>
+            </Link>
+            <div class="mt-4 text-base font-semibold text-slate-900">Nova meta</div>
+            <div class="mt-2 text-sm text-slate-500">Crie um objetivo financeiro e acompanhe o progresso.</div>
+        </div>
+
+        <div v-else class="mt-6 space-y-4 pb-4">
             <Link
                 v-for="goal in goals"
                 :key="goal.id"
@@ -365,7 +365,7 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
             @close="goalDrawerOpen = false"
             @add-money="addMoneyOpen = true"
             @edit="editSelectedGoal"
-            @delete="showToast('Em breve')"
+            @delete="deleteSelectedGoal"
         />
         <DesktopGoalAddMoneyModal :open="addMoneyOpen" @close="addMoneyOpen = false" @confirm="onAddMoneyConfirm" />
         <DesktopGoalCreateModal :open="createGoalOpen" @close="createGoalOpen = false" @created="onGoalCreated" />

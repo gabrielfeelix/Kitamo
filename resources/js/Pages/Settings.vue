@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { Account, BootstrapData, Category } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopSettingsShell from '@/Layouts/DesktopSettingsShell.vue';
 import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
@@ -8,15 +10,15 @@ import NewAccountModal from '@/Components/NewAccountModal.vue';
 import NewCategoryModal from '@/Components/NewCategoryModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { upsertEntry, type Entry } from '@/stores/localStore';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
-
-const isSeedUser = computed(() => String(userEmail.value ?? '').toLowerCase().startsWith('gab.feelix'));
 
 const form = useForm({
     name: userName.value,
@@ -59,23 +61,76 @@ type AccountItem = { key: string; label: string; amount: number; icon: AccountIc
 type CategoryIcon = 'food' | 'home' | 'car' | 'game' | 'briefcase' | 'heart' | 'shirt' | 'bolt' | 'pill';
 type CategoryItem = { key: string; label: string; icon: CategoryIcon; bg: string; fg: string };
 
-const defaultAccounts: AccountItem[] = [
-    { key: 'wallet', label: 'Carteira', amount: 450, icon: 'wallet' as const },
-    { key: 'inter', label: 'Banco Inter', amount: 1000, icon: 'bank' as const },
-];
+const accountIcons = new Set<AccountIcon>(['wallet', 'bank', 'card', 'phone']);
+const resolveAccountIcon = (account: Account): AccountIcon => {
+    const icon = (account.icon ?? '').toString() as AccountIcon;
+    if (accountIcons.has(icon)) return icon;
+    if (account.type === 'credit_card') return 'card';
+    if (account.type === 'bank') return 'bank';
+    return 'wallet';
+};
 
-const defaultCategories: CategoryItem[] = [
-    { key: 'food', label: 'Alimentação', icon: 'food' as const, bg: 'bg-amber-50', fg: 'text-amber-600' },
-    { key: 'home', label: 'Moradia', icon: 'home' as const, bg: 'bg-blue-50', fg: 'text-blue-600' },
-    { key: 'car', label: 'Transporte', icon: 'car' as const, bg: 'bg-slate-100', fg: 'text-slate-700' },
-    { key: 'fun', label: 'Lazer', icon: 'game' as const, bg: 'bg-emerald-50', fg: 'text-emerald-600' },
-    { key: 'work', label: 'Trabalho', icon: 'briefcase' as const, bg: 'bg-slate-100', fg: 'text-slate-700' },
-    { key: 'health', label: 'Saúde', icon: 'heart' as const, bg: 'bg-red-50', fg: 'text-red-500' },
-    { key: 'clothes', label: 'Roupas', icon: 'shirt' as const, bg: 'bg-pink-50', fg: 'text-pink-500' },
-];
+const mapAccount = (account: Account): AccountItem => ({
+    key: account.id,
+    label: account.name,
+    amount: account.current_balance ?? 0,
+    icon: resolveAccountIcon(account),
+});
 
-const accounts = ref<AccountItem[]>(isSeedUser.value ? [...defaultAccounts] : []);
-const categories = ref<CategoryItem[]>(isSeedUser.value ? [...defaultCategories] : []);
+const categoryIcons = new Set<CategoryIcon>(['food', 'home', 'car', 'game', 'briefcase', 'heart', 'shirt', 'bolt', 'pill']);
+const categoryStyles: Record<CategoryIcon, { bg: string; fg: string }> = {
+    food: { bg: 'bg-amber-50', fg: 'text-amber-600' },
+    home: { bg: 'bg-blue-50', fg: 'text-blue-600' },
+    car: { bg: 'bg-slate-100', fg: 'text-slate-700' },
+    game: { bg: 'bg-emerald-50', fg: 'text-emerald-600' },
+    briefcase: { bg: 'bg-slate-100', fg: 'text-slate-700' },
+    heart: { bg: 'bg-red-50', fg: 'text-red-500' },
+    shirt: { bg: 'bg-pink-50', fg: 'text-pink-500' },
+    bolt: { bg: 'bg-yellow-50', fg: 'text-yellow-600' },
+    pill: { bg: 'bg-purple-50', fg: 'text-purple-600' },
+};
+
+const resolveCategoryIcon = (category: Category): CategoryIcon => {
+    const icon = (category.icon ?? '').toString() as CategoryIcon;
+    if (categoryIcons.has(icon)) return icon;
+    if (category.name.toLowerCase().includes('mora')) return 'home';
+    if (category.name.toLowerCase().includes('trans')) return 'car';
+    if (category.name.toLowerCase().includes('saú') || category.name.toLowerCase().includes('saude')) return 'heart';
+    if (category.name.toLowerCase().includes('lazer')) return 'game';
+    if (category.name.toLowerCase().includes('roup')) return 'shirt';
+    return 'food';
+};
+
+const mapCategory = (category: Category): CategoryItem => {
+    const icon = resolveCategoryIcon(category);
+    const styles = categoryStyles[icon] ?? categoryStyles.food;
+    return {
+        key: category.id,
+        label: category.name,
+        icon,
+        bg: styles.bg,
+        fg: styles.fg,
+    };
+};
+
+const accounts = ref<AccountItem[]>([]);
+const categories = ref<CategoryItem[]>([]);
+
+watch(
+    () => bootstrap.value.accounts,
+    (value) => {
+        accounts.value = (value ?? []).map(mapAccount);
+    },
+    { immediate: true },
+);
+
+watch(
+    () => bootstrap.value.categories,
+    (value) => {
+        categories.value = (value ?? []).map(mapCategory);
+    },
+    { immediate: true },
+);
 
 const formatMoney = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -96,83 +151,71 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const formatDateLabels = (date: Date) => {
-    const dayLabel = String(date.getDate()).padStart(2, '0');
-    const month = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .toUpperCase()
-        .slice(0, 3);
-    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
-};
-
-const onTransactionSave = (payload: TransactionModalPayload) => {
+const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
         return;
     }
 
-    const now = new Date();
-    const { dateLabel, dayLabel } = formatDateLabels(now);
+    await requestJson(route('transactions.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            kind: payload.kind,
+            amount: payload.amount,
+            description: payload.description,
+            category: payload.category,
+            account: payload.account,
+            dateKind: payload.dateKind,
+            dateOther: payload.dateOther,
+            isPaid: payload.isPaid,
+            isInstallment: payload.isInstallment,
+            installmentCount: payload.installmentCount,
+        }),
+    });
 
-    const categoryKey =
-        payload.category === 'Alimentação'
-            ? 'food'
-            : payload.category === 'Moradia'
-              ? 'home'
-              : payload.category === 'Transporte'
-                ? 'car'
-                : 'other';
-    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
-
-    const isExpense = payload.kind === 'expense';
-    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
-
-    const entry: Entry = {
-        id: `ent-${Date.now()}`,
-        dateLabel,
-        dayLabel,
-        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
-        subtitle: installment ?? '',
-        amount: payload.amount,
-        kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
-        installment,
-        icon,
-        categoryLabel: payload.category,
-        categoryKey,
-        accountLabel: payload.account,
-        tags: [],
-    };
-    upsertEntry(entry);
     showToast('Movimentação salva');
 };
 
-const onSaveAccount = (payload: { name: string; type: 'wallet' | 'bank' | 'card'; initialBalance: string; icon: string }) => {
-    const key = `${payload.type}-${Date.now()}`;
-    accounts.value.push({
-        key,
-        label: payload.name || 'Nova conta',
-        amount: Number(payload.initialBalance.replace(/\./g, '').replace(',', '.')) || 0,
-        icon: (payload.icon as AccountIcon) || 'wallet',
+const parseBalance = (value: string) => Number(value.replace(/\./g, '').replace(',', '.')) || 0;
+
+const onSaveAccount = async (payload: { name: string; type: 'wallet' | 'bank' | 'card'; initialBalance: string; icon: string }) => {
+    const response = await requestJson<{ account: Account }>(route('accounts.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            name: payload.name || 'Nova conta',
+            type: payload.type,
+            initial_balance: parseBalance(payload.initialBalance),
+            icon: payload.icon || null,
+        }),
     });
+
+    if (response?.account) {
+        accounts.value = [...accounts.value, mapAccount(response.account)];
+    }
+
     newAccountOpen.value = false;
     showToast('Conta criada');
 };
 
-const onSaveCategory = (payload: { name: string; type: 'expense' | 'income'; icon: CategoryIcon }) => {
-    const key = `${payload.type}-${Date.now()}`;
-    categories.value.push({
-        key,
-        label: payload.name || 'Nova categoria',
-        icon: payload.icon,
-        bg: payload.type === 'income' ? 'bg-emerald-50' : 'bg-slate-100',
-        fg: payload.type === 'income' ? 'text-emerald-600' : 'text-slate-700',
+const onSaveCategory = async (payload: { name: string; type: 'expense' | 'income'; icon: CategoryIcon }) => {
+    const response = await requestJson<{ category: Category }>(route('categories.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            name: payload.name || 'Nova categoria',
+            type: payload.type,
+            icon: payload.icon,
+        }),
     });
+
+    if (response?.category) {
+        categories.value = [...categories.value, mapCategory(response.category)];
+    }
+
     newCategoryOpen.value = false;
     showToast('Categoria criada');
 };
 </script>
+
 
 <template>
     <MobileShell v-if="isMobile">
@@ -203,7 +246,7 @@ const onSaveCategory = (payload: { name: string; type: 'expense' | 'income'; ico
                     :key="acc.key"
                     :href="route('accounts.show', { accountKey: acc.key })"
                     class="flex items-center justify-between gap-4 px-5 py-4"
-                    :class="acc.key !== accounts[0].key ? 'border-t border-slate-100' : ''"
+                    :class="acc.key !== accounts[0]?.key ? 'border-t border-slate-100' : ''"
                 >
                     <div class="flex items-center gap-4">
                         <span
@@ -452,7 +495,7 @@ const onSaveCategory = (payload: { name: string; type: 'expense' | 'income'; ico
                         </div>
                     </div>
                     <div class="min-w-0">
-                        <div class="truncate text-2xl font-semibold tracking-tight text-slate-900">Gabriel Design</div>
+                        <div class="truncate text-2xl font-semibold tracking-tight text-slate-900">{{ userName }}</div>
                         <div class="mt-1 text-sm font-semibold text-slate-400">Informações básicas de acesso à conta.</div>
                     </div>
                 </div>

@@ -1,20 +1,56 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData, Entry } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { upsertEntry, type Entry } from '@/stores/localStore';
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
+const entries = computed<Entry[]>(() => bootstrap.value.entries ?? []);
 
-const label = ref('Jan 2026 vs Dez 2025');
+const anchorMonth = ref(new Date());
+const shiftMonth = (delta: number) => {
+    const next = new Date(anchorMonth.value);
+    next.setMonth(next.getMonth() + delta);
+    anchorMonth.value = next;
+};
 
-const left = ref({ month: 'JAN 2026', rec: 2500, desp: 1350, total: 1150 });
-const right = ref({ month: 'DEZ 2025', rec: 2500, desp: 1280, total: 1220 });
+const monthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
+const formatMonthLabel = (date: Date) =>
+    new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' })
+        .format(date)
+        .replace('.', '')
+        .toUpperCase();
+
+const leftMonth = computed(() => new Date(anchorMonth.value.getFullYear(), anchorMonth.value.getMonth(), 1));
+const rightMonth = computed(() => new Date(anchorMonth.value.getFullYear(), anchorMonth.value.getMonth() - 1, 1));
+const label = computed(() => `${formatMonthLabel(leftMonth.value)} vs ${formatMonthLabel(rightMonth.value)}`);
+
+const summarizeMonth = (date: Date) => {
+    const key = monthKey(date);
+    let rec = 0;
+    let desp = 0;
+    for (const entry of entries.value) {
+        if (!entry.transactionDate) continue;
+        const entryDate = new Date(entry.transactionDate);
+        if (monthKey(entryDate) != key) continue;
+        if (entry.kind === 'income') rec += entry.amount;
+        if (entry.kind === 'expense') desp += entry.amount;
+    }
+    return { month: formatMonthLabel(date), rec, desp, total: rec - desp };
+};
+
+const left = computed(() => summarizeMonth(leftMonth.value));
+const right = computed(() => summarizeMonth(rightMonth.value));
 
 const diffPct = computed(() => {
     if (!right.value.desp) return 0;
@@ -22,11 +58,35 @@ const diffPct = computed(() => {
 });
 const diffAbs = computed(() => left.value.desp - right.value.desp);
 
-const categories = ref([
-    { key: 'food', label: 'Alimentação', a: 500, b: 450 },
-    { key: 'home', label: 'Moradia', a: 600, b: 600 },
-    { key: 'transport', label: 'Transporte', a: 150, b: 130 },
-]);
+const categories = computed(() => {
+    const leftMap = new Map();
+    const rightMap = new Map();
+    const leftKey = monthKey(leftMonth.value);
+    const rightKey = monthKey(rightMonth.value);
+
+    for (const entry of entries.value) {
+        if (entry.kind !== 'expense' || !entry.transactionDate) continue;
+        const entryDate = new Date(entry.transactionDate);
+        const key = monthKey(entryDate);
+        const label = entry.categoryLabel || 'Outros';
+        if (key == leftKey) leftMap.set(label, (leftMap.get(label) ?? 0) + entry.amount);
+        if (key == rightKey) rightMap.set(label, (rightMap.get(label) ?? 0) + entry.amount);
+    }
+
+    const keys = new Set(leftMap.keys());
+    for (const key of rightMap.keys()) {
+        keys.add(key);
+    }
+
+    return Array.from(keys)
+        .map((key) => ({
+            key: key.toLowerCase().replace(/\s+/g, '-'),
+            label: key,
+            a: leftMap.get(key) ?? 0,
+            b: rightMap.get(key) ?? 0,
+        }))
+        .sort((a, b) => (b.a + b.b) - (a.a + a.b));
+});
 
 const maxCategory = computed(() => Math.max(...categories.value.flatMap((c) => [c.a, c.b]), 1));
 
@@ -46,54 +106,32 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const formatDateLabels = (date: Date) => {
-    const dayLabel = String(date.getDate()).padStart(2, '0');
-    const month = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .toUpperCase()
-        .slice(0, 3);
-    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
-};
-
-const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
+const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
         return;
     }
-    const now = new Date();
-    const { dateLabel, dayLabel } = formatDateLabels(now);
-    const categoryKey =
-        payload.category === 'Alimentação'
-            ? 'food'
-            : payload.category === 'Moradia'
-              ? 'home'
-              : payload.category === 'Transporte'
-                ? 'car'
-                : 'other';
-    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
-    const isExpense = payload.kind === 'expense';
-    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
-    const entry: Entry = {
-        id: `ent-${Date.now()}`,
-        dateLabel,
-        dayLabel,
-        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
-        subtitle: installment ?? '',
-        amount: payload.amount,
-        kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
-        installment,
-        icon,
-        categoryLabel: payload.category,
-        categoryKey,
-        accountLabel: payload.account,
-        tags: [],
-    };
-    upsertEntry(entry);
+
+    await requestJson(route('transactions.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            kind: payload.kind,
+            amount: payload.amount,
+            description: payload.description,
+            category: payload.category,
+            account: payload.account,
+            dateKind: payload.dateKind,
+            dateOther: payload.dateOther,
+            isPaid: payload.isPaid,
+            isInstallment: payload.isInstallment,
+            installmentCount: payload.installmentCount,
+        }),
+    });
+
     showToast('Movimentação salva');
 };
 </script>
+
 
 <template>
     <Head title="Comparativo" />
@@ -114,13 +152,13 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
 
         <div class="mt-6 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
             <div class="flex items-center justify-between">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Anterior">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Anterior" @click="shiftMonth(-1)">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </button>
                 <div class="text-sm font-semibold text-slate-900">{{ label }}</div>
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo" @click="shiftMonth(1)">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 18l6-6-6-6" />
                     </svg>
@@ -253,13 +291,13 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
         <div class="mx-auto max-w-[980px] space-y-6">
             <div class="rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
                 <div class="flex items-center justify-between">
-                    <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Anterior">
+                    <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Anterior" @click="shiftMonth(-1)">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M15 18l-6-6 6-6" />
                         </svg>
                     </button>
                     <div class="text-sm font-semibold text-slate-900">{{ label }}</div>
-                    <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo">
+                    <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo" @click="shiftMonth(1)">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 18l6-6-6-6" />
                         </svg>

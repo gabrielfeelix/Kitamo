@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
@@ -9,10 +11,12 @@ import ExportReportModal from '@/Components/ExportReportModal.vue';
 import DesktopExportReportModal from '@/Components/DesktopExportReportModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { upsertEntry, type Entry } from '@/stores/localStore';
 
 const page = usePage();
-const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
+const entries = computed(() => bootstrap.value.entries ?? []);
 const isMobile = useMediaQuery('(max-width: 767px)');
 
 const activeMonth = ref(new Date(2026, 0, 1));
@@ -35,8 +39,8 @@ const formatBRL = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
-const receitas = ref(2500);
-const despesas = ref(1350);
+const receitas = computed(() => entries.value.filter((e) => e.kind === 'income').reduce((acc, e) => acc + e.amount, 0));
+const despesas = computed(() => entries.value.filter((e) => e.kind === 'expense').reduce((acc, e) => acc + e.amount, 0));
 const balanco = computed(() => receitas.value - despesas.value);
 
 type Category = {
@@ -46,12 +50,21 @@ type Category = {
     color: string;
 };
 
-const categories = computed<Category[]>(() => [
-    { key: 'moradia', label: 'Moradia', value: 600, color: '#3B82F6' },
-    { key: 'alimentacao', label: 'Alimentação', value: 500, color: '#F59E0B' },
-    { key: 'transporte', label: 'Transporte', value: 150, color: '#8B5CF6' },
-    { key: 'lazer', label: 'Lazer', value: 100, color: '#10B981' },
-]);
+const categories = computed<Category[]>(() => {
+    const palette = ['#14B8A6', '#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+    const totals = new Map<string, number>();
+    for (const entry of entries.value) {
+        if (entry.kind !== 'expense') continue;
+        const key = entry.categoryLabel || 'Outros';
+        totals.set(key, (totals.get(key) ?? 0) + entry.amount);
+    }
+    return Array.from(totals.entries()).map(([label, value], idx) => ({
+        key: label.toLowerCase().replace(/\s+/g, '-'),
+        label,
+        value,
+        color: palette[idx % palette.length],
+    }));
+});
 
 const totalExpenses = computed(() => categories.value.reduce((acc, item) => acc + item.value, 0));
 const categoriesWithPct = computed(() =>
@@ -81,11 +94,26 @@ const donutSegments = computed(() => {
     });
 });
 
-const lastMonths = ref([
-    { key: 'nov', label: 'Nov', value: 1100 },
-    { key: 'dez', label: 'Dez', value: 1280 },
-    { key: 'jan', label: 'Jan', value: 1350, highlight: true },
-]);
+const lastMonths = computed(() => {
+    const now = new Date();
+    const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const months = Array.from({ length: 3 }, (_, idx) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (2 - idx), 1);
+        const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        return { key, label: labels[date.getMonth()], value: 0, highlight: idx === 2 };
+    });
+
+    for (const entry of entries.value) {
+        if (!entry.transactionDate) continue;
+        const date = new Date(entry.transactionDate);
+        const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        const target = months.find((m) => m.key === key);
+        if (!target) continue;
+        target.value += entry.kind === 'expense' ? entry.amount : 0;
+    }
+
+    return months;
+});
 
 const maxMonthValue = computed(() => Math.max(...lastMonths.value.map((m) => m.value), 1));
 const increasePct = computed(() => {
@@ -95,15 +123,24 @@ const increasePct = computed(() => {
     return Math.round(((jan - dez) / dez) * 1000) / 10;
 });
 
-const topExpenses = ref([
-    { key: 'aluguel', label: 'Aluguel', value: 1200, color: '#3B82F6' },
-    { key: 'supermercado', label: 'Supermercado', value: 250, color: '#F59E0B' },
-    { key: 'luz', label: 'Conta de luz', value: 180, color: '#F59E0B' },
-    { key: 'internet', label: 'Internet', value: 120, color: '#8B5CF6' },
-    { key: 'academia', label: 'Academia', value: 89, color: '#10B981' },
-]);
+const topExpenses = computed(() => {
+    const palette = ['#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#10B981'];
+    return entries.value
+        .filter((entry) => entry.kind === 'expense')
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5)
+        .map((entry, idx) => ({
+            key: entry.id,
+            label: entry.title,
+            value: entry.amount,
+            color: palette[idx % palette.length],
+        }));
+});
 
 const maxTopExpense = computed(() => Math.max(...topExpenses.value.map((e) => e.value), 1));
+const hasCategoryData = computed(() => categories.value.length > 0 && totalExpenses.value > 0);
+const hasTrendData = computed(() => lastMonths.value.length > 0);
+const hasTopExpenses = computed(() => topExpenses.value.length > 0);
 
 const transactionOpen = ref(false);
 const transactionKind = ref<'expense' | 'income'>('expense');
@@ -118,58 +155,27 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const formatDateLabels = (date: Date) => {
-    const dayLabel = String(date.getDate()).padStart(2, '0');
-    const month = date
-        .toLocaleString('pt-BR', { month: 'short' })
-        .replace('.', '')
-        .toUpperCase()
-        .slice(0, 3);
-    return { dayLabel, dateLabel: `DIA ${dayLabel} ${month}` };
-};
-
-const onTransactionSave = (payload: TransactionModalPayload) => {
+const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
         return;
     }
 
-    const now = new Date();
-    const { dateLabel, dayLabel } = formatDateLabels(now);
-
-    const categoryKey =
-        payload.category === 'Alimentação'
-            ? 'food'
-            : payload.category === 'Moradia'
-              ? 'home'
-              : payload.category === 'Transporte'
-                ? 'car'
-                : 'other';
-    const icon = categoryKey === 'food' ? 'cart' : categoryKey === 'home' ? 'home' : categoryKey === 'car' ? 'car' : payload.kind === 'income' ? 'money' : 'cart';
-
-    const isExpense = payload.kind === 'expense';
-    const installment = isExpense && payload.isInstallment && payload.installmentCount > 1 ? `Parcela 1/${payload.installmentCount}` : undefined;
-
-    const entry: Entry = {
-        id: `ent-${Date.now()}`,
-        dateLabel,
-        dayLabel,
-        title: payload.description || (payload.kind === 'income' ? 'Receita' : 'Despesa'),
-        subtitle: installment ?? '',
-        amount: payload.amount,
-        kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
-        installment,
-        icon,
-        categoryLabel: payload.category,
-        categoryKey,
-        accountLabel: payload.account,
-        tags: [],
-    };
-    upsertEntry(entry);
-
-    if (payload.kind === 'income') receitas.value += payload.amount;
-    else despesas.value += payload.amount;
+    await requestJson(route('transactions.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            kind: payload.kind,
+            amount: payload.amount,
+            description: payload.description,
+            category: payload.category,
+            account: payload.account,
+            dateKind: payload.dateKind,
+            dateOther: payload.dateOther,
+            isPaid: payload.isPaid,
+            isInstallment: payload.isInstallment,
+            installmentCount: payload.installmentCount,
+        }),
+    });
 
     showToast('Movimentação salva');
 };
@@ -264,65 +270,92 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
         <div class="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
             <div class="text-base font-semibold text-slate-900">Despesas por categoria</div>
 
-            <div class="mt-6 flex items-center justify-center">
-                <div class="relative h-52 w-52">
-                    <svg class="h-full w-full -rotate-90" viewBox="0 0 160 160">
-                        <circle cx="80" cy="80" r="64" stroke="#E2E8F0" stroke-width="18" fill="none" />
-                        <circle
-                            v-for="segment in donutSegments"
-                            :key="segment.key"
-                            cx="80"
-                            cy="80"
-                            :r="segment.radius"
-                            :stroke="segment.color"
-                            stroke-width="18"
-                            fill="none"
-                            stroke-linecap="butt"
-                            :stroke-dasharray="segment.dasharray"
-                            :stroke-dashoffset="segment.dashoffset"
-                        />
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <div class="text-3xl font-semibold text-slate-900">{{ despesas }}</div>
-                        <div class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Total de despesas</div>
+            <div v-if="hasCategoryData">
+                <div class="mt-6 flex items-center justify-center">
+                    <div class="relative h-52 w-52">
+                        <svg class="h-full w-full -rotate-90" viewBox="0 0 160 160">
+                            <circle cx="80" cy="80" r="64" stroke="#E2E8F0" stroke-width="18" fill="none" />
+                            <circle
+                                v-for="segment in donutSegments"
+                                :key="segment.key"
+                                cx="80"
+                                cy="80"
+                                :r="segment.radius"
+                                :stroke="segment.color"
+                                stroke-width="18"
+                                fill="none"
+                                stroke-linecap="butt"
+                                :stroke-dasharray="segment.dasharray"
+                                :stroke-dashoffset="segment.dashoffset"
+                            />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                            <div class="text-3xl font-semibold text-slate-900">{{ despesas }}</div>
+                            <div class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Total de despesas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 space-y-3">
+                    <div v-for="item in categoriesWithPct" :key="item.key" class="flex items-center gap-3">
+                        <span class="h-3 w-3 rounded-full" :style="{ backgroundColor: item.color }"></span>
+                        <div class="flex-1 text-sm font-semibold text-slate-600">{{ item.label }}</div>
+                        <div class="text-sm font-semibold text-slate-900">{{ formatBRL(item.value) }}</div>
+                        <div class="w-12 text-right text-xs font-semibold text-slate-400">({{ item.pct }}%)</div>
                     </div>
                 </div>
             </div>
-
-            <div class="mt-5 space-y-3">
-                <div v-for="item in categoriesWithPct" :key="item.key" class="flex items-center gap-3">
-                    <span class="h-3 w-3 rounded-full" :style="{ backgroundColor: item.color }"></span>
-                    <div class="flex-1 text-sm font-semibold text-slate-600">{{ item.label }}</div>
-                    <div class="text-sm font-semibold text-slate-900">{{ formatBRL(item.value) }}</div>
-                    <div class="w-12 text-right text-xs font-semibold text-slate-400">({{ item.pct }}%)</div>
+            <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8v8" />
+                        <path d="M8 12h8" />
+                        <circle cx="12" cy="12" r="9" />
+                    </svg>
                 </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui despesas este mês.</div>
+                <div class="mt-1 text-xs text-slate-500">Adicione seus gastos para ver o gráfico.</div>
             </div>
         </div>
 
         <div class="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
             <div class="text-base font-semibold text-slate-900">Últimos 3 meses</div>
 
-            <div class="mt-5 grid grid-cols-3 items-end gap-4">
-                <div v-for="m in lastMonths" :key="m.key" class="text-center">
-                    <div class="text-xs font-semibold text-slate-400">{{ formatBRL(m.value) }}</div>
-                    <div
-                        class="mx-auto mt-3 w-20 rounded-2xl"
-                        :class="m.highlight ? 'bg-teal-500' : 'bg-slate-200'"
-                        :style="{ height: `${Math.max(28, Math.round((m.value / maxMonthValue) * 96))}px` }"
-                    ></div>
-                    <div class="mt-2 text-xs font-semibold" :class="m.highlight ? 'text-teal-600' : 'text-slate-400'">{{ m.label }}</div>
+            <div v-if="hasTrendData">
+                <div class="mt-5 grid grid-cols-3 items-end gap-4">
+                    <div v-for="m in lastMonths" :key="m.key" class="text-center">
+                        <div class="text-xs font-semibold text-slate-400">{{ formatBRL(m.value) }}</div>
+                        <div
+                            class="mx-auto mt-3 w-20 rounded-2xl"
+                            :class="m.highlight ? 'bg-teal-500' : 'bg-slate-200'"
+                            :style="{ height: `${Math.max(28, Math.round((m.value / maxMonthValue) * 96))}px` }"
+                        ></div>
+                        <div class="mt-2 text-xs font-semibold" :class="m.highlight ? 'text-teal-600' : 'text-slate-400'">{{ m.label }}</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-sm font-semibold text-slate-400">
+                    Aumento de <span class="text-red-500">{{ increasePct }}%</span> em relação ao mês anterior
                 </div>
             </div>
-
-            <div class="mt-4 text-sm font-semibold text-slate-400">
-                Aumento de <span class="text-red-500">{{ increasePct }}%</span> em relação ao mês anterior
+            <div v-else class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19V5" />
+                        <path d="M10 19V9" />
+                        <path d="M16 19v-4" />
+                        <path d="M22 19V7" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Sem histórico ainda</div>
+                <div class="mt-1 text-xs text-slate-500">Seu gráfico aparece quando houver lançamentos.</div>
             </div>
         </div>
 
         <div class="mt-5 pb-4">
             <div class="text-lg font-semibold text-slate-900">Top 5 gastos</div>
 
-            <div class="mt-4 space-y-4">
+            <div v-if="hasTopExpenses" class="mt-4 space-y-4">
                 <div v-for="item in topExpenses" :key="item.key">
                     <div class="flex items-center justify-between text-sm font-semibold">
                         <div class="text-slate-900">{{ item.label }}</div>
@@ -335,6 +368,16 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
                         ></div>
                     </div>
                 </div>
+            </div>
+            <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                        <path d="M3 10h18" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-sm font-semibold text-slate-900">Sem gastos registrados</div>
+                <div class="mt-1 text-xs text-slate-500">Adicione lançamentos para preencher este ranking.</div>
             </div>
         </div>
 
@@ -696,171 +739,93 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-12 gap-6">
-                <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Receitas</div>
-                    <div class="mt-2 text-2xl font-bold tracking-tight text-emerald-600">R$ 4.500,00</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-400">Previsão: <span class="text-slate-600">R$ 5.200</span></div>
-                </div>
-                <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Despesas</div>
-                    <div class="mt-2 text-2xl font-bold tracking-tight text-red-500">R$ 2.340,00</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-400">Economia: <span class="text-emerald-600">R$ 450</span></div>
-                </div>
-                <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Transferências</div>
-                    <div class="mt-2 text-2xl font-bold tracking-tight text-blue-600">R$ 1.200,00</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-400">Investido: <span class="text-blue-600">R$ 800</span></div>
-                </div>
-                <div class="col-span-3 rounded-2xl bg-[#14B8A6] px-6 py-5 text-white shadow-sm">
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-white/80">Disponível</div>
-                    <div class="mt-2 text-2xl font-bold tracking-tight">R$ 2.160,00</div>
-                    <div class="mt-2 text-xs font-semibold text-white/80">Meta do mês: <span class="text-white">75%</span></div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-12 gap-6">
-                <div class="col-span-8 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
-                    <div class="flex items-start justify-between px-7 py-6">
-                        <div>
-                            <div class="text-lg font-semibold text-slate-900">Fluxo de Caixa Mensal</div>
-                            <div class="mt-1 text-xs font-semibold text-slate-400">Dados consolidados de Junho 2026</div>
-                        </div>
-                        <div class="flex items-center gap-5 text-xs font-semibold text-slate-400">
-                            <div class="flex items-center gap-2">
-                                <span class="h-2.5 w-2.5 rounded-full bg-[#14B8A6]"></span>
-                                ENTRADAS
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="h-2.5 w-2.5 rounded-full bg-red-400"></span>
-                                SAÍDAS
-                            </div>
-                        </div>
+            
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Receitas</div>
+                        <div class="mt-2 text-2xl font-bold tracking-tight text-emerald-600">{{ formatBRL(receitas) }}</div>
+                        <div class="mt-2 text-xs font-semibold text-slate-400">Previsão: <span class="text-slate-600">{{ formatBRL(0) }}</span></div>
                     </div>
-                    <div class="h-[320px] bg-white">
-                        <div class="h-full w-full">
-                            <div class="h-full w-full border-t border-slate-50"></div>
-                        </div>
-                        <div class="flex h-full items-end justify-between px-8 pb-8 text-[11px] font-bold uppercase tracking-wide text-slate-300">
-                            <div>SEM1</div>
-                            <div>SEM2</div>
-                            <div>SEM3</div>
-                            <div class="text-[#14B8A6]">SEM4</div>
-                        </div>
+                    <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Despesas</div>
+                        <div class="mt-2 text-2xl font-bold tracking-tight text-red-500">{{ formatBRL(despesas) }}</div>
+                        <div class="mt-2 text-xs font-semibold text-slate-400">Economia: <span class="text-slate-600">{{ formatBRL(0) }}</span></div>
+                    </div>
+                    <div class="col-span-3 rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Transferências</div>
+                        <div class="mt-2 text-2xl font-bold tracking-tight text-blue-600">{{ formatBRL(0) }}</div>
+                        <div class="mt-2 text-xs font-semibold text-slate-400">Investido: <span class="text-slate-600">{{ formatBRL(0) }}</span></div>
+                    </div>
+                    <div class="col-span-3 rounded-2xl bg-[#14B8A6] px-6 py-5 text-white shadow-sm">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-white/80">Disponível</div>
+                        <div class="mt-2 text-2xl font-bold tracking-tight">{{ formatBRL(balanco) }}</div>
+                        <div class="mt-2 text-xs font-semibold text-white/80">Meta do mês: <span class="text-white">0%</span></div>
                     </div>
                 </div>
 
-                <div class="col-span-4 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
-                    <div class="px-7 py-6">
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-8 rounded-2xl bg-white px-7 py-8 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-lg font-semibold text-slate-900">Fluxo de Caixa Mensal</div>
+                        <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19V5" />
+                                    <path d="M10 19V9" />
+                                    <path d="M16 19v-4" />
+                                    <path d="M22 19V7" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-sm font-semibold text-slate-900">Sem dados ainda</div>
+                            <div class="mt-1 text-xs text-slate-500">Os gráficos aparecem quando houver lançamentos.</div>
+                        </div>
+                    </div>
+                    <div class="col-span-4 rounded-2xl bg-white px-7 py-8 shadow-sm ring-1 ring-slate-200/60">
                         <div class="text-lg font-semibold text-slate-900">Onde você gastou</div>
-                    </div>
-                    <div class="px-7 pb-7">
-                        <div class="flex items-center justify-center">
-                            <div class="relative h-44 w-44">
-                                <svg class="h-full w-full -rotate-90" viewBox="0 0 160 160">
-                                    <circle cx="80" cy="80" r="58" stroke="#E2E8F0" stroke-width="18" fill="none" />
-                                    <circle cx="80" cy="80" r="58" stroke="#14B8A6" stroke-width="18" fill="none" stroke-dasharray="182 999" />
-                                    <circle cx="80" cy="80" r="58" stroke="#3B82F6" stroke-width="18" fill="none" stroke-dasharray="140 999" stroke-dashoffset="-182" />
-                                    <circle cx="80" cy="80" r="58" stroke="#F59E0B" stroke-width="18" fill="none" stroke-dasharray="86 999" stroke-dashoffset="-322" />
-                                    <circle cx="80" cy="80" r="58" stroke="#EF4444" stroke-width="18" fill="none" stroke-dasharray="65 999" stroke-dashoffset="-408" />
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                    <div class="text-[10px] font-bold uppercase tracking-wide text-slate-300">Total mês</div>
-                                    <div class="mt-2 text-xl font-bold text-slate-900">R$ 2.340</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 space-y-4 text-sm font-semibold">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#14B8A6]"></span>Alimentação</div>
-                                <div class="text-slate-900">R$ 936</div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#3B82F6]"></span>Assinaturas</div>
-                                <div class="text-slate-900">R$ 585</div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#F59E0B]"></span>Transporte</div>
-                                <div class="text-slate-900">R$ 468</div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#EF4444]"></span>Outros</div>
-                                <div class="text-slate-900">R$ 351</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-12 gap-6">
-                <div class="col-span-7 rounded-2xl bg-white px-7 py-6 shadow-sm ring-1 ring-slate-200/60">
-                    <div class="text-lg font-semibold text-slate-900">Maiores Lançamentos</div>
-                    <div class="mt-6 space-y-6">
-                        <div class="flex items-center gap-4">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                        <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
                                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 10.5L12 3l9 7.5" />
-                                    <path d="M5 10v10h14V10" />
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M12 8v8" />
+                                    <path d="M8 12h8" />
                                 </svg>
-                            </span>
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between text-sm font-semibold text-slate-900">
-                                    <span>Aluguel Apto</span>
-                                    <span>R$ 1.200</span>
-                                </div>
-                                <div class="mt-3 h-2 w-full rounded-full bg-slate-100">
-                                    <div class="h-2 w-[55%] rounded-full bg-blue-500"></div>
-                                </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 6h15l-2 7H7L6 6Z" />
-                                    <path d="M6 6l-2-2H2" />
-                                    <circle cx="9" cy="18" r="1.5" />
-                                    <circle cx="17" cy="18" r="1.5" />
-                                </svg>
-                            </span>
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between text-sm font-semibold text-slate-900">
-                                    <span>Supermercado Mês</span>
-                                    <span>R$ 850</span>
-                                </div>
-                                <div class="mt-3 h-2 w-full rounded-full bg-slate-100">
-                                    <div class="h-2 w-[42%] rounded-full bg-orange-500"></div>
-                                </div>
-                            </div>
+                            <div class="mt-3 text-sm font-semibold text-slate-900">Sem categorias</div>
+                            <div class="mt-1 text-xs text-slate-500">Adicione despesas para ver a divisão.</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-span-5 overflow-hidden rounded-2xl bg-slate-900 px-7 py-6 text-white shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#14B8A6] text-white">
-                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 20h9" />
-                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" />
-                            </svg>
-                        </span>
-                        <div class="flex-1">
-                            <div class="text-lg font-semibold">Análise do Assistente</div>
-                            <div class="mt-4 text-sm font-semibold leading-relaxed text-white/80">
-                                "Gabriel, notei que o seu gasto com <span class="text-white">Alimentação</span> está 12% acima da média dos últimos 3 meses. No entanto, o seu saldo disponível é
-                                saudável para o dia 11. Se mantiver as despesas fixas sob controle, você poderá investir <span class="text-white">R$ 500</span> extras este mês."
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-7 rounded-2xl bg-white px-7 py-8 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-lg font-semibold text-slate-900">Resumo do período</div>
+                        <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="16" rx="3" />
+                                    <path d="M7 8h10" />
+                                    <path d="M7 12h7" />
+                                </svg>
                             </div>
-                            <div class="mt-6 flex items-center gap-3">
-                                <button type="button" class="h-10 rounded-xl bg-[#14B8A6] px-5 text-sm font-semibold text-white">Ver Plano de Ação</button>
-                                <button type="button" class="h-10 rounded-xl bg-white/10 px-5 text-sm font-semibold text-white/80 hover:bg-white/15">Descartar</button>
-                            </div>
+                            <div class="mt-3 text-sm font-semibold text-slate-900">Sem histórico</div>
+                            <div class="mt-1 text-xs text-slate-500">Os detalhes aparecem após os primeiros lançamentos.</div>
                         </div>
-                        <div class="ml-auto flex h-16 w-16 items-end justify-end">
-                            <div class="h-14 w-14 rounded-[20px] bg-white/10"></div>
+                    </div>
+                    <div class="col-span-5 rounded-2xl bg-white px-7 py-8 shadow-sm ring-1 ring-slate-200/60">
+                        <div class="text-lg font-semibold text-slate-900">Top gastos</div>
+                        <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19V5" />
+                                    <path d="M10 19V9" />
+                                    <path d="M16 19v-4" />
+                                    <path d="M22 19V7" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-sm font-semibold text-slate-900">Sem ranking</div>
+                            <div class="mt-1 text-xs text-slate-500">Registre despesas para ver os maiores gastos.</div>
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
 
         <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" @close="desktopTransactionOpen = false" @save="onTransactionSave" />

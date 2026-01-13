@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import type { BootstrapData, Entry } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import MobileToast from '@/Components/MobileToast.vue';
@@ -11,14 +12,15 @@ const props = defineProps<{
 }>();
 
 const isMobile = useMediaQuery('(max-width: 767px)');
+const page = usePage();
+const bootstrap = computed(
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+);
 
-const accountName = computed(() => {
-    if (props.accountKey === 'inter') return 'Banco Inter';
-    if (props.accountKey === 'wallet') return 'Carteira';
-    return 'Conta';
-});
-
-const balance = computed(() => (props.accountKey === 'inter' ? 1000 : 450));
+const account = computed(() => bootstrap.value.accounts.find((item) => item.id === props.accountKey));
+const accountName = computed(() => account.value?.name ?? 'Conta');
+const balance = computed(() => account.value?.current_balance ?? 0);
+const entries = computed(() => bootstrap.value.entries ?? []);
 
 const formatMoney = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -26,10 +28,27 @@ const formatMoney = (value: number) =>
         currency: 'BRL',
     }).format(value);
 
-const transactions = computed(() => [
-    { id: 't1', day: '25 JAN', title: 'Aluguel', amount: 1200, kind: 'expense' as const },
-    { id: 't2', day: '10 JAN', title: 'Salário', amount: 2500, kind: 'income' as const },
-]);
+const formatDayLabel = (entry: Entry) => {
+    const date = entry.transactionDate ? new Date(entry.transactionDate) : new Date();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date
+        .toLocaleString('pt-BR', { month: 'short' })
+        .replace('.', '')
+        .toUpperCase();
+    return `${day} ${month}`;
+};
+
+const transactions = computed(() =>
+    entries.value
+        .filter((entry) => entry.accountLabel === accountName.value)
+        .map((entry) => ({
+            id: entry.id,
+            day: formatDayLabel(entry),
+            title: entry.title,
+            amount: entry.amount,
+            kind: entry.kind,
+        })),
+);
 
 const toastOpen = ref(false);
 const toastMessage = ref('');
@@ -38,6 +57,7 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 </script>
+
 
 <template>
     <Head :title="accountName" />

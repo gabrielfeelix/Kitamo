@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { createGoal, type GoalIcon, type GoalStatus } from '@/stores/localStore';
+import { requestJson } from '@/lib/kitamoApi';
+import type { Goal } from '@/types/kitamo';
 
 const props = defineProps<{
     open: boolean;
@@ -8,7 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (event: 'close'): void;
-    (event: 'created', payload: { goalId: string }): void;
+    (event: 'created', payload: { goal: Goal }): void;
 }>();
 
 type IconKey = 'home' | 'plane' | 'car';
@@ -35,30 +36,55 @@ const onTargetInput = (event: Event) => {
 
 const targetNumber = computed(() => Number(target.value.replace(/\./g, '').replace(',', '.')) || 0);
 
-const mapIcon = (key: IconKey): GoalIcon => {
+const mapIcon = (key: IconKey) => {
     if (key === 'plane') return 'plane';
     if (key === 'car') return 'car';
     return 'home';
 };
 
-const computeStatus = (value: number): GoalStatus => {
-    if (value < 5000) return 'late';
-    if (value < 10000) return 'on_track';
-    return 'ahead';
+const parseDueDate = (label: string) => {
+    const value = label.trim().toLowerCase();
+    if (!value) return null;
+    const monthMap: Record<string, number> = {
+        jan: 1, janeiro: 1,
+        fev: 2, fevereiro: 2,
+        mar: 3, março: 3, marco: 3,
+        abr: 4, abril: 4,
+        mai: 5, maio: 5,
+        jun: 6, junho: 6,
+        jul: 7, julho: 7,
+        ago: 8, agosto: 8,
+        set: 9, setembro: 9,
+        out: 10, outubro: 10,
+        nov: 11, novembro: 11,
+        dez: 12, dezembro: 12,
+    };
+    const parts = value.split(/\s+/);
+    const year = parts.find((part) => part.match(/^\d{4}$/));
+    const monthKey = parts.find((part) => monthMap[part]);
+    if (!year || !monthKey) return null;
+    const month = monthMap[monthKey];
+    return `${year}-${String(month).padStart(2, '0')}-01`;
 };
 
-const submit = () => {
-    const goal = createGoal({
-        id: `goal-${Date.now()}`,
-        title: name.value.trim() || 'Nova meta',
-        due: due.value.trim() || 'Dez 2026',
-        current: 0,
-        target: targetNumber.value,
-        status: computeStatus(targetNumber.value),
-        icon: mapIcon(icon.value),
-        term: due.value.toLowerCase().includes('2026') ? 'short' : 'long',
+const submit = async () => {
+    const dueDate = parseDueDate(due.value);
+    const nowYear = new Date().getFullYear();
+    const targetYear = dueDate ? Number(dueDate.slice(0, 4)) : nowYear;
+    const term = targetYear - nowYear <= 1 ? 'short' : 'long';
+
+    const response = await requestJson<{ goal: Goal }>(route('goals.store'), {
+        method: 'POST',
+        body: JSON.stringify({
+            title: name.value.trim() || 'Nova meta',
+            target_amount: targetNumber.value,
+            due_date: dueDate,
+            icon: mapIcon(icon.value),
+            term,
+        }),
     });
-    emit('created', { goalId: goal.id });
+
+    emit('created', { goal: response.goal });
     close();
 };
 

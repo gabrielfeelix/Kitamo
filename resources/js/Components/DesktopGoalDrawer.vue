@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Goal } from '@/stores/localStore';
+import type { Goal } from '@/types/kitamo';
 
 const props = defineProps<{
     open: boolean;
@@ -28,7 +28,7 @@ const formatMoney0 = (value: number) =>
     <div v-if="open" class="fixed inset-0 z-[95]">
         <button class="absolute inset-0 bg-black/35 backdrop-blur-sm" type="button" @click="emit('close')" aria-label="Fechar"></button>
 
-        <aside class="absolute right-0 top-0 h-full w-[440px] bg-white shadow-[-18px_0_60px_-40px_rgba(15,23,42,0.6)]">
+        <aside class="absolute right-0 top-0 flex h-screen w-[440px] flex-col bg-white shadow-[-18px_0_60px_-40px_rgba(15,23,42,0.6)]">
             <header class="flex items-center justify-between border-b border-slate-100 px-8 py-6">
                 <div class="text-base font-semibold text-slate-900">Detalhes da Meta</div>
                 <button
@@ -44,7 +44,7 @@ const formatMoney0 = (value: number) =>
                 </button>
             </header>
 
-            <div class="h-[calc(100vh-200px)] overflow-y-auto px-8 py-8">
+            <div class="min-h-0 flex-1 overflow-y-auto px-8 py-8">
                 <div class="flex flex-col items-center">
                     <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-50 text-[#14B8A6] ring-1 ring-emerald-100">
                         <svg v-if="goal?.icon === 'home'" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
