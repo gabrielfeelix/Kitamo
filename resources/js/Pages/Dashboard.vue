@@ -157,7 +157,7 @@ const handleDetailDelete = () => {
 const handleDetailMarkPaid = () => {
     if (!desktopSelectedEntry.value) return;
     if (desktopSelectedEntry.value.kind !== 'expense') return;
-    const nextStatus = desktopSelectedEntry.value.status === 'paid' ? 'pending' : 'paid';
+    const nextStatus: Entry['status'] = desktopSelectedEntry.value.status === 'paid' ? 'pending' : 'paid';
     const updated = { ...desktopSelectedEntry.value, status: nextStatus };
     upsertEntry(updated);
     refreshDesktopEntries();
