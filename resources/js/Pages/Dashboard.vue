@@ -155,6 +155,18 @@ const creditCards = computed(() =>
         })),
 );
 
+const mobileAccounts = computed(() =>
+    (bootstrap.value.accounts ?? []).slice(0, 3).map((account) => ({
+        id: account.id,
+        name: account.name,
+        subtitle: account.type === 'credit_card' ? 'Fatura aberta' : 'Saldo atual',
+        amount: account.current_balance ?? 0,
+        type: account.type,
+    })),
+);
+
+const needsAttention = computed(() => saldoAtual.value < 0);
+
 const hasEntries = computed(() => desktopEntries.value.length > 0);
 const hasGoals = computed(() => desktopGoals.value.length > 0);
 const hasCashflow = computed(() => cashflowSeries.value.length > 0);
@@ -414,7 +426,7 @@ const toggleBillPaid = async (id: string) => {
             </button>
         </section>
 
-        <section v-if="hasEntries" class="mt-5 rounded-3xl bg-amber-50 px-4 py-4 shadow-sm ring-1 ring-amber-200/60">
+        <section v-if="needsAttention" class="mt-5 rounded-3xl bg-amber-50 px-4 py-4 shadow-sm ring-1 ring-amber-200/60">
             <div class="flex gap-4">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -425,10 +437,10 @@ const toggleBillPaid = async (id: string) => {
                 </div>
                 <div class="flex-1">
                     <div class="text-sm font-semibold text-slate-900">
-                        Atenção: <span class="font-semibold text-red-500">Faltam R$ 200</span> para cobrir 4 contas até dia 25.
+                        Atenção: <span class="font-semibold text-red-500">Saldo negativo de {{ formatBRL(Math.abs(saldoAtual)) }}</span> no momento.
                     </div>
                     <Link :href="route('accounts.index')" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-amber-700">
-                        Ver contas pendentes
+Ver lançamentos
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 18l6-6-6-6" />
                         </svg>
@@ -453,19 +465,14 @@ const toggleBillPaid = async (id: string) => {
                 <div class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">31/jan: -R$ 250</div>
             </div>
 
-            <div v-if="hasCashflow" class="mt-4 overflow-hidden rounded-2xl bg-white">
-                <svg class="h-40 w-full" viewBox="0 0 320 160" fill="none">
-                    <path d="M20 96C64 92 100 84 132 72C164 60 188 56 212 72C236 88 264 108 300 96" stroke="#14B8A6" stroke-width="4" stroke-linecap="round" />
-                    <path d="M16 100H304" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 6" />
-                    <circle cx="192" cy="70" r="5" fill="#EF4444" />
-                    <text x="176" y="88" font-size="10" fill="#EF4444" font-weight="600">dia 23</text>
-                    <text x="18" y="146" font-size="10" fill="#94A3B8">15</text>
-                    <text x="86" y="146" font-size="10" fill="#94A3B8">20</text>
-                    <text x="154" y="146" font-size="10" fill="#EF4444" font-weight="700">23</text>
-                    <text x="222" y="146" font-size="10" fill="#94A3B8">28</text>
-                    <text x="288" y="146" font-size="10" fill="#94A3B8">31</text>
-                </svg>
-                <div class="px-1 pb-1 text-center text-xs font-semibold text-slate-400">O saldo cruza o zero (negativo) no dia 23.</div>
+            <div v-if="hasCashflow" class="mt-4">
+                <div class="grid grid-cols-6 items-end gap-3">
+                    <div v-for="bar in cashflowSeries" :key="bar.label" class="text-center">
+                        <div class="text-[10px] font-semibold text-slate-400">{{ formatBRL(bar.amount).replace('R$', '').trim() }}</div>
+                        <div class="mx-auto mt-2 w-8 rounded-2xl" :class="bar.tone" :style="{ height: `${bar.height}px` }"></div>
+                        <div class="mt-2 text-[10px] font-semibold" :class="bar.highlight ? 'text-emerald-600' : 'text-slate-400'">{{ bar.label }}</div>
+                    </div>
+                </div>
             </div>
             <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
@@ -768,63 +775,50 @@ const toggleBillPaid = async (id: string) => {
                             </svg>
                         </button>
                     </div>
-                    <div class="mt-5 space-y-4">
-                        <div class="flex items-center justify-between rounded-2xl border border-slate-100 px-4 py-3">
+                    <div v-if="mobileAccounts.length" class="mt-5 space-y-4">
+                        <div v-for="account in mobileAccounts" :key="account.id" class="flex items-center justify-between rounded-2xl border border-slate-100 px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <span
+                                    class="flex h-11 w-11 items-center justify-center rounded-2xl"
+                                    :class="account.type === 'credit_card'
+                                        ? 'bg-slate-900 text-white'
+                                        : account.type === 'bank'
+                                          ? 'bg-slate-100 text-slate-600'
+                                          : 'bg-emerald-50 text-emerald-500'"
+                                >
+                                    <svg v-if="account.type === 'credit_card'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                                        <path d="M3 10h18" />
+                                    </svg>
+                                    <svg v-else-if="account.type === 'bank'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M12 2l7 7-7 7-7-7 7-7Z" />
                                     </svg>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Nubank C/C</div>
-                                    <div class="text-xs text-slate-500">Saldo atual</div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-900">R$ 2345.67</div>
-                        </div>
-                        <div class="flex items-center justify-between rounded-2xl border border-slate-100 px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M12 3v18" />
                                         <path d="M8 7h8a3 3 0 1 1 0 6H8" />
                                     </svg>
                                 </span>
                                 <div>
-                                    <div class="text-sm font-semibold text-slate-900">Dinheiro</div>
-                                    <div class="text-xs text-slate-500">Saldo atual</div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ account.name }}</div>
+                                    <div class="text-xs text-slate-500">{{ account.subtitle }}</div>
                                 </div>
                             </div>
-                            <div class="text-sm font-semibold text-slate-900">R$ 500.00</div>
-                        </div>
-                        <div class="flex items-center justify-between rounded-2xl border border-slate-100 px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="5" width="18" height="14" rx="3" />
-                                        <path d="M3 10h18" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Nubank Cartão</div>
-                                    <div class="text-xs text-slate-500">Fatura aberta</div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-900">R$ 1450.00</div>
+                            <div class="text-sm font-semibold text-slate-900">{{ formatBRL(account.amount) }}</div>
                         </div>
                     </div>
-                    <button class="mt-4 w-full rounded-2xl border border-dashed border-slate-200 py-3 text-sm font-semibold text-slate-500" type="button">
+                    <div v-else class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                        <div class="text-sm font-semibold text-slate-900">Nenhuma conta ainda</div>
+                        <div class="mt-1 text-xs text-slate-500">Crie sua primeira conta para acompanhar o saldo.</div>
+                    </div>
+                    <Link :href="route('accounts.index')" class="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 py-3 text-sm font-semibold text-slate-500">
                         Ver todas as contas
-                    </button>
+                    </Link>
                 </div>
 
                 <div class="rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">
                     <div class="text-sm font-semibold text-slate-400">Balanço</div>
-                    <div class="mt-4 h-2 w-full rounded-full bg-slate-100">
-                        <div class="h-2 w-3/4 rounded-full bg-slate-400"></div>
-                    </div>
-                    <p class="mt-3 text-xs text-slate-400">Você economizou 15% mais que no mês passado.</p>
+                    <div class="mt-3 text-2xl font-semibold text-slate-900">{{ formatBRL(receitas - despesas) }}</div>
+                    <p class="mt-2 text-xs text-slate-400">Resumo do mês atual.</p>
                 </div>
             </div>
         </div>
