@@ -282,7 +282,32 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-6">
+            <div v-if="goals.length === 0" class="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-16">
+                <div class="text-center">
+                    <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-white text-slate-300">
+                        <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12h4l3-9 4 18 3-9h4" />
+                        </svg>
+                    </div>
+                    <div class="mt-6 text-lg font-semibold text-slate-900">Ainda não há metas</div>
+                    <div class="mt-2 max-w-md text-sm text-slate-500">
+                        Comece criando sua primeira meta financeira para acompanhar seus objetivos e progresso.
+                    </div>
+                    <button
+                        type="button"
+                        class="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-[#14B8A6] px-6 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
+                        @click="openCreateGoal"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Criar primeira meta
+                    </button>
+                </div>
+            </div>
+
+            <div v-else class="grid grid-cols-3 gap-6">
                 <button
                     v-for="goal in filteredGoals.slice(0, 2)"
                     :key="goal.id"

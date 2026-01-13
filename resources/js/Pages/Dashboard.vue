@@ -144,6 +144,30 @@ const buildUpcomingBills = (entries: Entry[]): UpcomingBill[] => {
 
 const upcomingBills = computed(() => buildUpcomingBills(desktopEntries.value));
 
+const recentEntries = computed(() => {
+    return desktopEntries.value
+        .filter((entry) => Boolean(entry.transactionDate))
+        .sort((a, b) => {
+            const dateA = new Date(a.transactionDate!);
+            const dateB = new Date(b.transactionDate!);
+            return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 5);
+});
+
+const formatEntryDate = (date?: string) => {
+    if (!date) return '';
+    const entryDate = new Date(date);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (entryDate.toDateString() === today.toDateString()) return 'Hoje';
+    if (entryDate.toDateString() === yesterday.toDateString()) return 'Ontem';
+
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(entryDate);
+};
+
 const creditCards = computed(() =>
     (bootstrap.value.accounts ?? [])
         .filter((account) => account.type === 'credit_card')
@@ -326,6 +350,13 @@ const toggleBillPaid = async (id: string) => {
 
     replaceEntry(response.entry);
     if (nextStatus === 'paid') showToast('Conta marcada como paga');
+};
+
+const openBillDetails = (id: string) => {
+    const entry = desktopEntries.value.find((item) => item.id === id);
+    if (!entry) return;
+
+    openEntryEdit(entry);
 };
 </script>
 
@@ -532,7 +563,8 @@ Ver lançamentos
                 <div
                     v-for="bill in upcomingBills"
                     :key="bill.id"
-                    class="flex items-center gap-4 rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
+                    class="flex items-center gap-4 rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+                    @click="openBillDetails(bill.id)"
                 >
                     <div class="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-slate-50 text-slate-600 ring-1 ring-slate-200/70">
                         <div class="text-[10px] font-semibold uppercase text-slate-400">{{ bill.month }}</div>
@@ -554,7 +586,7 @@ Ver lançamentos
                             class="flex h-6 w-6 items-center justify-center rounded-full border-2"
                             :class="bill.paid ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 bg-white'"
                             :aria-label="bill.paid ? 'Marcar como não paga' : 'Marcar como paga'"
-                            @click="toggleBillPaid(bill.id)"
+                            @click.stop="toggleBillPaid(bill.id)"
                         >
                             <svg v-if="bill.paid" class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                 <path d="M20 6 9 17l-5-5" />
@@ -655,87 +687,47 @@ Ver lançamentos
                 <div class="rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-slate-900">Últimas atividades</h2>
-                        <button class="text-sm font-semibold text-blue-600" type="button">Ver histórico completo</button>
+                        <Link :href="route('transactions.index')" class="text-sm font-semibold text-blue-600">Ver histórico completo</Link>
                     </div>
-                    <div class="mt-6 space-y-5">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div v-if="recentEntries.length > 0" class="mt-6 space-y-5">
+                        <div
+                            v-for="entry in recentEntries"
+                            :key="entry.id"
+                            class="flex items-center justify-between border-b border-slate-100 pb-4 last:border-0"
+                        >
                             <div class="flex items-center gap-4">
-                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                                <span
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl"
+                                    :class="entry.kind === 'income' ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'"
+                                >
                                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="5" y="4" width="14" height="16" rx="4" />
                                         <path d="M8 8h8" />
                                     </svg>
                                 </span>
                                 <div>
-                                    <div class="text-sm font-semibold text-slate-900">Starbucks</div>
-                                    <div class="text-xs text-slate-500">Alimentação • Hoje</div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ entry.title }}</div>
+                                    <div class="text-xs text-slate-500">{{ entry.categoryLabel }} • {{ formatEntryDate(entry.transactionDate) }}</div>
                                 </div>
                             </div>
-                            <div class="text-sm font-semibold text-slate-900">-25.00</div>
-                        </div>
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 3v18" />
-                                        <path d="M7 7h5a3 3 0 1 1 0 6H7" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Salário</div>
-                                    <div class="text-xs text-slate-500">Receita • Ontem</div>
-                                </div>
+                            <div
+                                class="text-sm font-semibold"
+                                :class="entry.kind === 'income' ? 'text-emerald-600' : 'text-slate-900'"
+                            >
+                                {{ entry.kind === 'income' ? '+' : '-' }}{{ formatBRL(entry.amount).replace('R$', '').trim() }}
                             </div>
-                            <div class="text-sm font-semibold text-emerald-600">+5000.00</div>
                         </div>
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="5" y="4" width="14" height="16" rx="4" />
-                                        <path d="M8 8h8" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Uber</div>
-                                    <div class="text-xs text-slate-500">Transporte • Ontem</div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-900">-23.00</div>
+                    </div>
+                    <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="16" rx="3" />
+                                <path d="M7 8h10" />
+                                <path d="M7 12h7" />
+                            </svg>
                         </div>
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="5" y="4" width="14" height="16" rx="4" />
-                                        <path d="M8 8h8" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="flex items-center gap-2 text-sm font-semibold text-slate-400">
-                                        Spotify
-                                        <span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-400">PENDENTE</span>
-                                    </div>
-                                    <div class="text-xs text-slate-400">Assinatura • 04/01</div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-400">-21.90</div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4">
-                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="5" y="4" width="14" height="16" rx="4" />
-                                        <path d="M8 8h8" />
-                                    </svg>
-                                </span>
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Amazon AWS</div>
-                                    <div class="text-xs text-slate-500">Serviços • 03/01</div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-900">-150.00</div>
-                        </div>
+                        <div class="mt-3 text-sm font-semibold text-slate-900">Sem transações recentes</div>
+                        <div class="mt-1 text-xs text-slate-500">Crie seu primeiro lançamento para aparecer aqui.</div>
                     </div>
                 </div>
             </div>
