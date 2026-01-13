@@ -43,14 +43,22 @@ const onSearchInput = (event: Event) => {
 };
 
 const notificationsOpen = ref(false);
+const profileOpen = ref(false);
 const toggleNotifications = () => {
     notificationsOpen.value = !notificationsOpen.value;
+    suggestionsOpen.value = false;
+};
+
+const toggleProfile = () => {
+    profileOpen.value = !profileOpen.value;
+    notificationsOpen.value = false;
     suggestionsOpen.value = false;
 };
 
 const closePopovers = () => {
     notificationsOpen.value = false;
     suggestionsOpen.value = false;
+    profileOpen.value = false;
 };
 
 const drawerOpen = ref(false);
@@ -150,7 +158,7 @@ const showNewAction = computed(() => props.showNewAction ?? true);
 <template>
     <div class="min-h-screen bg-[#F6F8FB]">
         <button
-            v-if="notificationsOpen || suggestionsOpen"
+            v-if="notificationsOpen || suggestionsOpen || profileOpen"
             type="button"
             class="fixed inset-0 z-[80] cursor-default bg-transparent"
             @click="closePopovers"
@@ -160,10 +168,10 @@ const showNewAction = computed(() => props.showNewAction ?? true);
             <aside class="flex w-[260px] flex-col border-r border-slate-100 bg-white">
                 <Link :href="route('dashboard')" class="flex items-center gap-3 px-6 py-6" aria-label="Ir para início">
                     <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#14B8A6] text-lg font-bold text-white">
-                        F
+                        K
                     </div>
                     <div class="text-lg font-semibold tracking-tight text-slate-900">
-                        Finance<span class="text-[#14B8A6]">Pro</span>
+                        KITAMO
                     </div>
                 </Link>
 
@@ -214,26 +222,60 @@ const showNewAction = computed(() => props.showNewAction ?? true);
                 </nav>
 
                 <div class="mt-auto border-t border-slate-100 px-6 py-5">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-bold text-slate-700">
-                            {{ initials }}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="truncate text-sm font-semibold text-slate-900">{{ userName }}</div>
-                            <div class="text-xs text-slate-400">Pleno UI/UX</div>
-                        </div>
-                        <Link
-                            :href="route('settings')"
-                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-400 hover:bg-slate-200"
-                            aria-label="Configurações"
+                    <div class="relative">
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-3 text-left"
+                            @click="toggleProfile"
+                            aria-label="Abrir menu do perfil"
                         >
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path
-                                    d="M19.4 15a1 1 0 0 1 .2 1.1l-1 1.8a1 1 0 0 1-1 .5l-1.7-.2a6 6 0 0 1-2 1.2l-.5 1.6a1 1 0 0 1-1 .7h-2a1 1 0 0 1-1-.7l-.5-1.6a6 6 0 0 1-2-1.2l-1.7.2a1 1 0 0 1-1-.5l-1-1.8a1 1 0 0 1 .2-1.1l1.3-1.2a6 6 0 0 1 0-2.4L3.3 10a1 1 0 0 1-.2-1.1l1-1.8a1 1 0 0 1 1-.5l1.7.2a6 6 0 0 1 2-1.2l.5-1.6a1 1 0 0 1 1-.7h2a1 1 0 0 1 1 .7l.5 1.6a6 6 0 0 1 2 1.2l1.7-.2a1 1 0 0 1 1 .5l1 1.8a1 1 0 0 1-.2 1.1l-1.3 1.2a6 6 0 0 1 0 2.4Z"
-                                />
-                                <path d="M12 15.5a3.5 3.5 0 1 0-3.5-3.5" />
-                            </svg>
-                        </Link>
+                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-bold text-slate-700">
+                                {{ initials }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="truncate text-sm font-semibold text-slate-900">{{ userName }}</div>
+                                <div class="text-xs text-slate-400">Pleno UI/UX</div>
+                            </div>
+                            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M19.4 15a1 1 0 0 1 .2 1.1l-1 1.8a1 1 0 0 1-1 .5l-1.7-.2a6 6 0 0 1-2 1.2l-.5 1.6a1 1 0 0 1-1 .7h-2a1 1 0 0 1-1-.7l-.5-1.6a6 6 0 0 1-2-1.2l-1.7.2a1 1 0 0 1-1-.5l-1-1.8a1 1 0 0 1 .2-1.1l1.3-1.2a6 6 0 0 1 0-2.4L3.3 10a1 1 0 0 1-.2-1.1l1-1.8a1 1 0 0 1 1-.5l1.7.2a6 6 0 0 1 2-1.2l.5-1.6a1 1 0 0 1 1-.7h2a1 1 0 0 1 1 .7l.5 1.6a6 6 0 0 1 2 1.2l1.7-.2a1 1 0 0 1 1 .5l1 1.8a1 1 0 0 1-.2 1.1l-1.3 1.2a6 6 0 0 1 0 2.4Z"
+                                    />
+                                    <path d="M12 15.5a3.5 3.5 0 1 0-3.5-3.5" />
+                                </svg>
+                            </div>
+                        </button>
+
+                        <div
+                            v-if="profileOpen"
+                            class="absolute bottom-14 left-0 z-40 w-full overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_20px_40px_-30px_rgba(15,23,42,0.5)]"
+                        >
+                            <Link
+                                :href="route('settings')"
+                                class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            >
+                                <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M19.4 15a1 1 0 0 1 .2 1.1l-1 1.8a1 1 0 0 1-1 .5l-1.7-.2a6 6 0 0 1-2 1.2l-.5 1.6a1 1 0 0 1-1 .7h-2a1 1 0 0 1-1-.7l-.5-1.6a6 6 0 0 1-2-1.2l-1.7.2a1 1 0 0 1-1-.5l-1-1.8a1 1 0 0 1 .2-1.1l1.3-1.2a6 6 0 0 1 0-2.4L3.3 10a1 1 0 0 1-.2-1.1l1-1.8a1 1 0 0 1 1-.5l1.7.2a6 6 0 0 1 2-1.2l.5-1.6a1 1 0 0 1 1-.7h2a1 1 0 0 1 1 .7l.5 1.6a6 6 0 0 1 2 1.2l1.7-.2a1 1 0 0 1 1 .5l1 1.8a1 1 0 0 1-.2 1.1l-1.3 1.2a6 6 0 0 1 0 2.4Z"
+                                    />
+                                    <path d="M12 15.5a3.5 3.5 0 1 0-3.5-3.5" />
+                                </svg>
+                                Configuracoes
+                            </Link>
+                            <Link
+                                :href="route('logout')"
+                                method="post"
+                                as="button"
+                                class="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+                            >
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 6h-4v12h4" />
+                                    <path d="M16 6l4 6-4 6" />
+                                    <path d="M20 12H9" />
+                                </svg>
+                                Sair
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </aside>
