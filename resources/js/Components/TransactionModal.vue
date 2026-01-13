@@ -36,8 +36,8 @@ const close = () => emit('close');
 
 const localKind = ref<TransactionKind>(props.kind);
 const initialId = ref<string | undefined>(undefined);
-const amount = ref('250,00');
-const description = ref('Supermercado');
+const amount = ref('0,00');
+const description = ref('');
 const category = ref('Alimentação');
 const account = ref('Carteira');
 const transferFrom = ref('Banco Inter');
@@ -45,8 +45,8 @@ const transferTo = ref('Carteira');
 const transferDescription = ref('');
 const dateKind = ref<DateKind>('today');
 const dateOther = ref<string>('');
-const isInstallment = ref(true);
-const installmentCount = ref(3);
+const isInstallment = ref(false);
+const installmentCount = ref(1);
 const isPaid = ref(false);
 
 const isExpense = computed(() => localKind.value === 'expense');
@@ -111,14 +111,14 @@ const reset = () => {
 
     initialId.value = draft?.id;
     localKind.value = draft?.kind ?? props.kind;
-    amount.value = draft ? toMoneyInput(draft.amount) : '250,00';
-    description.value = draft?.description ?? 'Supermercado';
+    amount.value = draft ? toMoneyInput(draft.amount) : '0,00';
+    description.value = draft?.description ?? '';
     category.value = draft?.category ?? 'Alimentação';
     account.value = draft?.account ?? 'Carteira';
     dateKind.value = draft?.dateKind ?? 'today';
     dateOther.value = draft?.dateOther ?? '';
-    isInstallment.value = draft?.isInstallment ?? true;
-    installmentCount.value = draft?.installmentCount ?? 3;
+    isInstallment.value = draft?.isInstallment ?? false;
+    installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
 
     transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
@@ -306,6 +306,7 @@ watch(
                                 <input
                                     v-model="description"
                                     type="text"
+                                    placeholder="Ex: Supermercado, Padaria..."
                                     class="h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
                                 />
                             </div>
