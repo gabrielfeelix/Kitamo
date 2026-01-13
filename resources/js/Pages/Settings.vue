@@ -14,25 +14,29 @@ const isMobile = useMediaQuery('(max-width: 767px)');
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
+const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
+
+const isSeedUser = computed(() => String(userEmail.value ?? '').toLowerCase().startsWith('gab.feelix'));
 
 const form = useForm({
     name: userName.value,
     email: userEmail.value,
-    phone: '+55 (41) 99999-9999',
+    phone: userPhone.value,
 });
 
 watch(
-    () => [userName.value, userEmail.value],
+    () => [userName.value, userEmail.value, userPhone.value],
     () => {
         form.name = userName.value;
         form.email = userEmail.value;
+        form.phone = userPhone.value;
     },
 );
 
 const resetForm = () => {
     form.name = userName.value;
     form.email = userEmail.value;
-    form.phone = '+55 (41) 99999-9999';
+    form.phone = userPhone.value;
     form.clearErrors();
 };
 
@@ -55,12 +59,12 @@ type AccountItem = { key: string; label: string; amount: number; icon: AccountIc
 type CategoryIcon = 'food' | 'home' | 'car' | 'game' | 'briefcase' | 'heart' | 'shirt' | 'bolt' | 'pill';
 type CategoryItem = { key: string; label: string; icon: CategoryIcon; bg: string; fg: string };
 
-const accounts = ref<AccountItem[]>([
+const defaultAccounts: AccountItem[] = [
     { key: 'wallet', label: 'Carteira', amount: 450, icon: 'wallet' as const },
     { key: 'inter', label: 'Banco Inter', amount: 1000, icon: 'bank' as const },
-]);
+];
 
-const categories = ref<CategoryItem[]>([
+const defaultCategories: CategoryItem[] = [
     { key: 'food', label: 'Alimentação', icon: 'food' as const, bg: 'bg-amber-50', fg: 'text-amber-600' },
     { key: 'home', label: 'Moradia', icon: 'home' as const, bg: 'bg-blue-50', fg: 'text-blue-600' },
     { key: 'car', label: 'Transporte', icon: 'car' as const, bg: 'bg-slate-100', fg: 'text-slate-700' },
@@ -68,7 +72,10 @@ const categories = ref<CategoryItem[]>([
     { key: 'work', label: 'Trabalho', icon: 'briefcase' as const, bg: 'bg-slate-100', fg: 'text-slate-700' },
     { key: 'health', label: 'Saúde', icon: 'heart' as const, bg: 'bg-red-50', fg: 'text-red-500' },
     { key: 'clothes', label: 'Roupas', icon: 'shirt' as const, bg: 'bg-pink-50', fg: 'text-pink-500' },
-]);
+];
+
+const accounts = ref<AccountItem[]>(isSeedUser.value ? [...defaultAccounts] : []);
+const categories = ref<CategoryItem[]>(isSeedUser.value ? [...defaultCategories] : []);
 
 const formatMoney = (value: number) =>
     new Intl.NumberFormat('pt-BR', {

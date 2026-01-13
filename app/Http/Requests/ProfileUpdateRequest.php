@@ -30,6 +30,7 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 ...($this->isLocalWithoutDatabaseDriver() ? [] : [Rule::unique(User::class)->ignore($this->user()->id)]),
             ],
+            'phone' => ['nullable', 'string', 'max:30'],
         ];
     }
 }

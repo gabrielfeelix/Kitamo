@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE `users`
-  ADD COLUMN `is_admin` tinyint(1) NOT NULL DEFAULT '0' AFTER `password`;
+  ADD COLUMN `is_admin` tinyint(1) NOT NULL DEFAULT '0' AFTER `password`,
+  ADD COLUMN `phone` varchar(30) DEFAULT NULL AFTER `email`;
 
 CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
   `email` varchar(255) NOT NULL,
@@ -99,6 +100,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `user_id` bigint unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
+  `icon` varchar(32) NOT NULL DEFAULT 'wallet',
   `initial_balance` decimal(12,2) NOT NULL DEFAULT '0.00',
   `current_balance` decimal(12,2) NOT NULL DEFAULT '0.00',
   `credit_limit` decimal(12,2) DEFAULT NULL,
@@ -136,6 +138,7 @@ CREATE TABLE IF NOT EXISTS `transactions` (
   `status` varchar(255) NOT NULL,
   `amount` decimal(12,2) NOT NULL,
   `description` varchar(255) NOT NULL,
+  `notes` text DEFAULT NULL,
   `transaction_date` date NOT NULL,
   `priority` tinyint(1) NOT NULL DEFAULT '0',
   `installment_label` varchar(255) DEFAULT NULL,

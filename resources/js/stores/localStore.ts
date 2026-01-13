@@ -43,12 +43,38 @@ export type Entry = {
     tags: EntryTag[];
 };
 
-const storageKey = (name: string) => `kitamo:${name}`;
+type KitamoUser = { id?: number | string; email?: string } | null;
+
+const getUserContext = (): KitamoUser => {
+    if (typeof window === 'undefined') return null;
+    return (window as any).__kitamoUser ?? null;
+};
+
+const getUserKey = (): string => {
+    const user = getUserContext();
+    if (user?.email) return String(user.email).toLowerCase();
+    if (user?.id) return `id:${user.id}`;
+    return 'anon';
+};
+
+const shouldSeedDemo = (): boolean => {
+    const email = getUserContext()?.email?.toLowerCase() ?? '';
+    return email.startsWith('gab.feelix');
+};
+
+const storageKey = (name: string) => `kitamo:${getUserKey()}:${name}`;
 
 const readJson = <T>(name: string, fallback: T): T => {
     try {
         const raw = window.localStorage.getItem(storageKey(name));
-        if (!raw) return fallback;
+        if (!raw) {
+            const legacyKey = `kitamo:${name}`;
+            const legacyRaw = window.localStorage.getItem(legacyKey);
+            if (!legacyRaw) return fallback;
+            window.localStorage.setItem(storageKey(name), legacyRaw);
+            window.localStorage.removeItem(legacyKey);
+            return JSON.parse(legacyRaw) as T;
+        }
         return JSON.parse(raw) as T;
     } catch {
         return fallback;
@@ -110,6 +136,7 @@ const seedGoals = (): Goal[] => [
 export const getGoals = (): Goal[] => {
     const existing = readJson<Goal[]>('goals', []);
     if (existing.length) return existing;
+    if (!shouldSeedDemo()) return [];
     const seeded = seedGoals();
     writeJson('goals', seeded);
     return seeded;
@@ -229,6 +256,7 @@ export const getEntries = (): Entry[] => {
         if (changed) writeJson('entries', migrated);
         return migrated;
     }
+    if (!shouldSeedDemo()) return [];
     const seeded = seedEntries();
     writeJson('entries', seeded);
     return seeded;

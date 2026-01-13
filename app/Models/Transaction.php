@@ -18,6 +18,7 @@ class Transaction extends Model
         'status',
         'amount',
         'description',
+        'notes',
         'transaction_date',
         'priority',
         'installment_label',

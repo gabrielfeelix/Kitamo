@@ -19,6 +19,7 @@ const isMobile = useMediaQuery('(max-width: 767px)');
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
+const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
 
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);
@@ -30,14 +31,15 @@ const initials = computed(() => {
 const form = useForm({
     name: userName.value,
     email: userEmail.value,
-    phone: '',
+    phone: userPhone.value,
 });
 
 watch(
-    () => [userName.value, userEmail.value],
+    () => [userName.value, userEmail.value, userPhone.value],
     () => {
         form.name = userName.value;
         form.email = userEmail.value;
+        form.phone = userPhone.value;
     },
 );
 
