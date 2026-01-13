@@ -17,21 +17,49 @@ const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
 );
 const entries = computed(() => bootstrap.value.entries ?? []);
-const isMobile = useMediaQuery('(max-width: 767px)');
 
-const activeMonth = ref(new Date(2026, 0, 1));
+const monthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
+const yearKey = (date: Date) => `${date.getFullYear()}`;
+
+const activeMonth = ref(new Date());
+const analysisPeriod = ref<'month' | '3_months' | 'year'>('month');
 const monthLabel = computed(() => {
     const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
     return `${month} ${activeMonth.value.getFullYear()}`;
 });
+const isMobile = useMediaQuery('(max-width: 767px)');
 const shiftMonth = (delta: number) => {
     const d = new Date(activeMonth.value);
     d.setMonth(d.getMonth() + delta);
     activeMonth.value = d;
 };
 
-const analysisPeriod = ref<'month' | '3_months' | 'year'>('month');
-
+const scopedEntries = computed(() => {
+    if (!entries.value.length) return [];
+    if (analysisPeriod.value === 'month') {
+        const key = monthKey(activeMonth.value);
+        return entries.value.filter((entry) => {
+            if (!entry.transactionDate) return false;
+            const date = new Date(entry.transactionDate);
+            return monthKey(date) === key;
+        });
+    }
+    if (analysisPeriod.value === 'year') {
+        const key = yearKey(activeMonth.value);
+        return entries.value.filter((entry) => {
+            if (!entry.transactionDate) return false;
+            const date = new Date(entry.transactionDate);
+            return yearKey(date) === key;
+        });
+    }
+    // 3 months
+    return entries.value.filter((entry) => {
+        if (!entry.transactionDate) return false;
+        const date = new Date(entry.transactionDate);
+        const diff = (activeMonth.value.getFullYear() - date.getFullYear()) * 12 + (activeMonth.value.getMonth() - date.getMonth());
+        return diff >= 0 && diff < 3;
+    });
+});
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -39,8 +67,8 @@ const formatBRL = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
-const receitas = computed(() => entries.value.filter((e) => e.kind === 'income').reduce((acc, e) => acc + e.amount, 0));
-const despesas = computed(() => entries.value.filter((e) => e.kind === 'expense').reduce((acc, e) => acc + e.amount, 0));
+const receitas = computed(() => scopedEntries.value.filter((e) => e.kind === 'income').reduce((acc, e) => acc + e.amount, 0));
+const despesas = computed(() => scopedEntries.value.filter((e) => e.kind === 'expense').reduce((acc, e) => acc + e.amount, 0));
 const balanco = computed(() => receitas.value - despesas.value);
 
 type Category = {
@@ -53,7 +81,7 @@ type Category = {
 const categories = computed<Category[]>(() => {
     const palette = ['#14B8A6', '#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
     const totals = new Map<string, number>();
-    for (const entry of entries.value) {
+    for (const entry of scopedEntries.value) {
         if (entry.kind !== 'expense') continue;
         const key = entry.categoryLabel || 'Outros';
         totals.set(key, (totals.get(key) ?? 0) + entry.amount);
@@ -95,7 +123,7 @@ const donutSegments = computed(() => {
 });
 
 const lastMonths = computed(() => {
-    const now = new Date();
+    const now = new Date(activeMonth.value);
     const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const months = Array.from({ length: 3 }, (_, idx) => {
         const date = new Date(now.getFullYear(), now.getMonth() - (2 - idx), 1);
@@ -103,7 +131,7 @@ const lastMonths = computed(() => {
         return { key, label: labels[date.getMonth()], value: 0, highlight: idx === 2 };
     });
 
-    for (const entry of entries.value) {
+    for (const entry of scopedEntries.value) {
         if (!entry.transactionDate) continue;
         const date = new Date(entry.transactionDate);
         const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
@@ -125,7 +153,7 @@ const increasePct = computed(() => {
 
 const topExpenses = computed(() => {
     const palette = ['#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#10B981'];
-    return entries.value
+    return scopedEntries.value
         .filter((entry) => entry.kind === 'expense')
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 5)
