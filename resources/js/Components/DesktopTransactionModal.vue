@@ -21,14 +21,14 @@ const close = () => emit('close');
 const localKind = ref<TransactionKind>(props.kind);
 const initialId = ref<string | undefined>(undefined);
 
-const amount = ref('250,00');
-const description = ref('Supermercado');
+const amount = ref('0,00');
+const description = ref('');
 const category = ref('Alimentação');
 const account = ref('Carteira');
 const dateKind = ref<DateKind>('today');
 const dateOther = ref('');
-const isInstallment = ref(true);
-const installmentCount = ref(3);
+const isInstallment = ref(false);
+const installmentCount = ref(1);
 const isPaid = ref(false);
 
 const transferFrom = ref('Banco Inter');
@@ -97,14 +97,14 @@ const reset = () => {
     const draft = props.initial ?? null;
     initialId.value = draft?.id;
     localKind.value = draft?.kind ?? props.kind;
-    amount.value = draft ? toMoneyInput(draft.amount) : '250,00';
-    description.value = draft?.description ?? 'Supermercado';
+    amount.value = draft ? toMoneyInput(draft.amount) : '0,00';
+    description.value = draft?.description ?? '';
     category.value = draft?.category ?? 'Alimentação';
     account.value = draft?.account ?? 'Carteira';
     dateKind.value = draft?.dateKind ?? 'today';
     dateOther.value = draft?.dateOther ?? '';
-    isInstallment.value = draft?.isInstallment ?? true;
-    installmentCount.value = draft?.installmentCount ?? 3;
+    isInstallment.value = draft?.isInstallment ?? false;
+    installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
     transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
     transferTo.value = draft?.transferTo ?? 'Carteira';
@@ -219,7 +219,11 @@ const save = () => {
                 <div v-else class="mt-8 space-y-4">
                     <div>
                         <div class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Descrição</div>
-                        <input v-model="description" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
+                        <input
+                            v-model="description"
+                            placeholder="Ex: Supermercado, Padaria..."
+                            class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                        />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
