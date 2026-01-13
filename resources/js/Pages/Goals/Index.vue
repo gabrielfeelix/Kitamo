@@ -10,6 +10,7 @@ import { addDepositToGoal, getGoal, getGoals, upsertEntry, type Entry, type Goal
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
 import DesktopGoalDrawer from '@/Components/DesktopGoalDrawer.vue';
 import DesktopGoalAddMoneyModal from '@/Components/DesktopGoalAddMoneyModal.vue';
+import DesktopGoalCreateModal from '@/Components/DesktopGoalCreateModal.vue';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -43,6 +44,17 @@ const filteredGoals = computed(() => {
 const goalDrawerOpen = ref(false);
 const selectedGoalId = ref<string | null>(null);
 const selectedGoal = computed(() => (selectedGoalId.value ? getGoal(selectedGoalId.value) : null));
+
+const createGoalOpen = ref(false);
+const openCreateGoal = () => {
+    createGoalOpen.value = true;
+};
+const onGoalCreated = (payload: { goalId: string }) => {
+    goals.value = getGoals();
+    const created = getGoal(payload.goalId);
+    if (created) openGoalDrawer(created);
+    else showToast('Meta criada');
+};
 
 const openGoalDrawer = (goal: StoredGoal) => {
     selectedGoalId.value = goal.id;
@@ -257,16 +269,17 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
                         Longo Prazo
                     </button>
                 </div>
-                <Link
-                    :href="route('goals.create')"
+                <button
+                    type="button"
                     class="inline-flex h-11 items-center gap-2 rounded-xl bg-[#14B8A6] px-5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
+                    @click="openCreateGoal"
                 >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 5v14" />
                         <path d="M5 12h14" />
                     </svg>
                     Nova Meta Financeira
-                </Link>
+                </button>
             </div>
 
             <div class="grid grid-cols-3 gap-6">
@@ -329,9 +342,10 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
                     </button>
                 </button>
 
-                <Link
-                    :href="route('goals.create')"
+                <button
+                    type="button"
                     class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-slate-400 hover:bg-slate-50"
+                    @click="openCreateGoal"
                 >
                     <div class="flex h-20 w-20 items-center justify-center rounded-full bg-slate-50">
                         <svg class="h-10 w-10 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -341,7 +355,7 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
                     </div>
                     <div class="mt-6 text-base font-semibold text-slate-600">Nova Meta</div>
                     <div class="mt-2 text-sm font-semibold text-slate-400">Crie um objetivo financeiro e acompanhe o progresso.</div>
-                </Link>
+                </button>
             </div>
         </div>
 
@@ -354,6 +368,7 @@ const onDesktopTransactionSave = (payload: TransactionModalPayload) => {
             @delete="showToast('Em breve')"
         />
         <DesktopGoalAddMoneyModal :open="addMoneyOpen" @close="addMoneyOpen = false" @confirm="onAddMoneyConfirm" />
+        <DesktopGoalCreateModal :open="createGoalOpen" @close="createGoalOpen = false" @created="onGoalCreated" />
         <DesktopTransactionModal :open="desktopTransactionOpen" :kind="desktopTransactionKind" @close="desktopTransactionOpen = false" @save="onDesktopTransactionSave" />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </DesktopShell>

@@ -15,7 +15,18 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const isMobile = useMediaQuery('(max-width: 767px)');
 
-const monthLabel = ref('JANEIRO 2026');
+const activeMonth = ref(new Date(2026, 0, 1));
+const monthLabel = computed(() => {
+    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
+    return `${month} ${activeMonth.value.getFullYear()}`;
+});
+const shiftMonth = (delta: number) => {
+    const d = new Date(activeMonth.value);
+    d.setMonth(d.getMonth() + delta);
+    activeMonth.value = d;
+};
+
+const analysisPeriod = ref<'month' | '3_months' | 'year'>('month');
 
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -207,20 +218,30 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
             </svg>
         </Link>
 
-        <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
-            <div class="flex items-center justify-between">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Mês anterior">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
-                <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo mês">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18l6-6-6-6" />
-                    </svg>
-                </button>
-            </div>
+    <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
+        <div class="flex items-center justify-between">
+            <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
+                aria-label="Mês anterior"
+                @click="shiftMonth(-1)"
+            >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
+            <button
+                type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
+                aria-label="Próximo mês"
+                @click="shiftMonth(1)"
+            >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6" />
+                </svg>
+            </button>
+        </div>
         </div>
 
         <div class="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60">
@@ -588,13 +609,23 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
                 <div class="flex items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200/60">
-                            <button type="button" class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-white" aria-label="Mês anterior">
+                            <button
+                                type="button"
+                                class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-white"
+                                aria-label="Mês anterior"
+                                @click="shiftMonth(-1)"
+                            >
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M15 18l-6-6 6-6" />
                                 </svg>
                             </button>
-                            <div class="min-w-[130px] text-center text-sm font-semibold text-slate-900">JANEIRO 2026</div>
-                            <button type="button" class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-white" aria-label="Próximo mês">
+                            <div class="min-w-[170px] text-center text-sm font-semibold text-slate-900">{{ monthLabel }}</div>
+                            <button
+                                type="button"
+                                class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-white"
+                                aria-label="Próximo mês"
+                                @click="shiftMonth(1)"
+                            >
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M9 18l6-6-6-6" />
                                 </svg>
@@ -604,9 +635,30 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
                         <div class="h-10 w-px bg-slate-100"></div>
 
                         <div class="flex items-center gap-2 rounded-2xl bg-slate-50 p-1 ring-1 ring-slate-200/60">
-                            <button type="button" class="h-9 rounded-xl px-4 text-sm font-semibold bg-[#14B8A6] text-white">Mês</button>
-                            <button type="button" class="h-9 rounded-xl px-4 text-sm font-semibold text-slate-500 hover:bg-white">3 Meses</button>
-                            <button type="button" class="h-9 rounded-xl px-4 text-sm font-semibold text-slate-500 hover:bg-white">Ano</button>
+                            <button
+                                type="button"
+                                class="h-9 rounded-xl px-4 text-sm font-semibold"
+                                :class="analysisPeriod === 'month' ? 'bg-[#14B8A6] text-white' : 'text-slate-500 hover:bg-white'"
+                                @click="analysisPeriod = 'month'"
+                            >
+                                Mês
+                            </button>
+                            <button
+                                type="button"
+                                class="h-9 rounded-xl px-4 text-sm font-semibold"
+                                :class="analysisPeriod === '3_months' ? 'bg-[#14B8A6] text-white' : 'text-slate-500 hover:bg-white'"
+                                @click="analysisPeriod = '3_months'"
+                            >
+                                3 Meses
+                            </button>
+                            <button
+                                type="button"
+                                class="h-9 rounded-xl px-4 text-sm font-semibold"
+                                :class="analysisPeriod === 'year' ? 'bg-[#14B8A6] text-white' : 'text-slate-500 hover:bg-white'"
+                                @click="analysisPeriod = 'year'"
+                            >
+                                Ano
+                            </button>
                         </div>
                     </div>
 
@@ -627,6 +679,7 @@ const onTransactionSave = (payload: TransactionModalPayload) => {
                             type="button"
                             class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
                             aria-label="Ajustes"
+                            @click="showToast('Em breve')"
                         >
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 3v2" />

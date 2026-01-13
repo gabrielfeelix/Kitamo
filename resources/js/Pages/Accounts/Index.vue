@@ -20,8 +20,19 @@ const isMobile = useMediaQuery('(max-width: 767px)');
 
 type FilterKind = 'all' | 'paid' | 'to_pay';
 
-const monthLabel = ref('JANEIRO 2026');
+const activeMonth = ref(new Date(2026, 0, 1));
+const monthLabel = computed(() => {
+    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
+    return `${month} ${activeMonth.value.getFullYear()}`;
+});
+const shiftMonth = (delta: number) => {
+    const d = new Date(activeMonth.value);
+    d.setMonth(d.getMonth() + delta);
+    activeMonth.value = d;
+};
+
 const filter = ref<FilterKind>('all');
+const entryKindFilter = ref<'all' | 'income' | 'expense'>('all');
 
 const entries = ref<Entry[]>(getEntries());
 const refreshEntries = () => {
@@ -48,6 +59,36 @@ const filteredEntries = computed(() => {
     let raw = entries.value;
     if (filter.value === 'paid') raw = raw.filter((e) => e.status === 'paid' || e.status === 'received');
     if (filter.value === 'to_pay') raw = raw.filter((e) => e.status === 'pending');
+    if (entryKindFilter.value !== 'all') raw = raw.filter((e) => e.kind === entryKindFilter.value);
+
+    const monthAbbrToIndex: Record<string, number> = {
+        JAN: 0,
+        FEV: 1,
+        MAR: 2,
+        ABR: 3,
+        MAI: 4,
+        JUN: 5,
+        JUL: 6,
+        AGO: 7,
+        SET: 8,
+        OUT: 9,
+        NOV: 10,
+        DEZ: 11,
+    };
+    const parseMonthIndex = (label: string) => {
+        const last = label.trim().split(/\s+/).at(-1)?.toUpperCase() ?? '';
+        const idx = monthAbbrToIndex[last];
+        return Number.isFinite(idx) ? idx : null;
+    };
+    if (filterState.value.period === 'month') {
+        const selectedMonthIdx = activeMonth.value.getMonth();
+        raw = raw.filter((e) => {
+            const entryMonthIdx = parseMonthIndex(e.dateLabel);
+            if (entryMonthIdx === null) return true;
+            return entryMonthIdx === selectedMonthIdx;
+        });
+    }
+
     const selectedCategories = filterState.value.categories;
     if (selectedCategories.length > 0) {
         raw = raw.filter((e) => selectedCategories.includes(e.categoryKey));
@@ -250,6 +291,39 @@ const filterCategories = [
     { key: 'car', label: 'Transporte', icon: 'car' as const },
 ];
 
+const desktopTypeOpen = ref(false);
+const desktopCategoryOpen = ref(false);
+const closeDesktopMenus = () => {
+    desktopTypeOpen.value = false;
+    desktopCategoryOpen.value = false;
+};
+const toggleDesktopTypeMenu = () => {
+    desktopTypeOpen.value = !desktopTypeOpen.value;
+    desktopCategoryOpen.value = false;
+};
+const toggleDesktopCategoryMenu = () => {
+    desktopCategoryOpen.value = !desktopCategoryOpen.value;
+    desktopTypeOpen.value = false;
+};
+
+const desktopTypeLabel = computed(() => {
+    if (entryKindFilter.value === 'income') return 'Receitas';
+    if (entryKindFilter.value === 'expense') return 'Despesas';
+    return 'Todos Tipos';
+});
+const desktopCategoryLabel = computed(() => (filterState.value.categories.length ? `Categorias (${filterState.value.categories.length})` : 'Categorias'));
+
+const setEntryKindFilter = (value: 'all' | 'income' | 'expense') => {
+    entryKindFilter.value = value;
+    closeDesktopMenus();
+};
+const toggleCategory = (key: TransactionFilterState['categories'][number]) => {
+    const next = new Set(filterState.value.categories);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    filterState.value = { ...filterState.value, categories: Array.from(next) };
+};
+
 const clearFilters = () => {
     filterState.value = { categories: [], tags: [], period: 'month', min: '0,00', max: '1000,00' };
     filterOpen.value = false;
@@ -421,13 +495,23 @@ onMounted(() => {
 
         <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
             <div class="flex items-center justify-between">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Mês anterior">
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
+                    aria-label="Mês anterior"
+                    @click="shiftMonth(-1)"
+                >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </button>
                 <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo mês">
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
+                    aria-label="Próximo mês"
+                    @click="shiftMonth(1)"
+                >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 18l6-6-6-6" />
                     </svg>
@@ -672,22 +756,101 @@ onMounted(() => {
     </div>
 
     <DesktopShell v-else title="Lançamentos" subtitle="Domingo, 11 Jan 2026" search-placeholder="Buscar (ex: Supermercado)..." @new-transaction="openDesktopCreate">
+        <button v-if="desktopTypeOpen || desktopCategoryOpen" type="button" class="fixed inset-0 z-[70]" aria-label="Fechar filtros" @click="closeDesktopMenus"></button>
+
         <div class="space-y-8">
             <div class="rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200/60">
                 <div class="flex items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
-                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
-                            Janeiro 2026
-                        </button>
-                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
-                            Todos Tipos
-                        </button>
-                        <button type="button" class="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600">
-                            Categorias
-                        </button>
+                        <div class="flex items-center rounded-2xl border border-slate-200 bg-white px-2 py-1">
+                            <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Mês anterior" @click="shiftMonth(-1)">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 18l-6-6 6-6" />
+                                </svg>
+                            </button>
+                            <div class="px-4 text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
+                            <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo mês" @click="shiftMonth(1)">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600"
+                                @click="toggleDesktopTypeMenu"
+                            >
+                                {{ desktopTypeLabel }}
+                                <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </button>
+                            <div v-if="desktopTypeOpen" class="absolute left-0 top-full z-[71] mt-2 w-56 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-slate-200/60">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold"
+                                    :class="entryKindFilter === 'all' ? 'bg-slate-50 text-slate-900' : 'text-slate-600 hover:bg-slate-50'"
+                                    @click="setEntryKindFilter('all')"
+                                >
+                                    Todos
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold"
+                                    :class="entryKindFilter === 'income' ? 'bg-slate-50 text-slate-900' : 'text-slate-600 hover:bg-slate-50'"
+                                    @click="setEntryKindFilter('income')"
+                                >
+                                    Receitas
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold"
+                                    :class="entryKindFilter === 'expense' ? 'bg-slate-50 text-slate-900' : 'text-slate-600 hover:bg-slate-50'"
+                                    @click="setEntryKindFilter('expense')"
+                                >
+                                    Despesas
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600"
+                                @click="toggleDesktopCategoryMenu"
+                            >
+                                {{ desktopCategoryLabel }}
+                                <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </button>
+                            <div v-if="desktopCategoryOpen" class="absolute left-0 top-full z-[71] mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-slate-200/60">
+                                <div class="px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-400">Categorias</div>
+                                <button
+                                    v-for="c in filterCategories"
+                                    :key="c.key"
+                                    type="button"
+                                    class="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                                    @click="toggleCategory(c.key)"
+                                >
+                                    <span>{{ c.label }}</span>
+                                    <span v-if="filterState.categories.includes(c.key)" class="text-[#14B8A6]">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6 9 17l-5-5" />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <button type="button" class="inline-flex h-11 items-center rounded-xl bg-[#14B8A6] px-5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20">
+                    <button
+                        type="button"
+                        class="inline-flex h-11 items-center rounded-xl bg-[#14B8A6] px-5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
+                        @click="filterOpen = true"
+                    >
                         Filtrar
                     </button>
                 </div>
@@ -710,7 +873,12 @@ onMounted(() => {
                             Importar Dados
                         </button>
 
-                        <button type="button" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500">
+                        <button
+                            type="button"
+                            class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500"
+                            @click="desktopImportChooserOpen = true"
+                            aria-label="Importar"
+                        >
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 3v12" />
                                 <path d="M8 11l4 4 4-4" />
@@ -803,6 +971,15 @@ onMounted(() => {
             :initial="desktopTransactionInitial"
             @close="desktopTransactionOpen = false"
             @save="handleDesktopSave"
+        />
+        <TransactionFilterModal
+            :open="filterOpen"
+            :categories="filterCategories"
+            :initial="filterState"
+            :results-count="filteredEntries.length"
+            @close="filterOpen = false"
+            @clear="clearFilters"
+            @apply="applyFilters"
         />
         <ImportInvoiceModal :open="importOpen" @close="importOpen = false" @imported="onInvoiceImported" />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />

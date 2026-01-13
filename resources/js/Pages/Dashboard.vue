@@ -68,15 +68,56 @@ const refreshDesktopEntries = () => {
 const desktopGoals = ref(getGoals());
 
 const transactionOpen = ref(false);
-const transactionKind = ref<'expense' | 'income'>('expense');
-const openTransaction = (kind: 'expense' | 'income') => {
+const transactionKind = ref<'expense' | 'income' | 'transfer'>('expense');
+const transactionInitial = ref<TransactionModalPayload | null>(null);
+const openTransaction = (kind: 'expense' | 'income' | 'transfer') => {
     transactionKind.value = kind;
-    transactionOpen.value = true;
+    transactionInitial.value = null;
+    desktopTransactionInitial.value = null;
+    if (isMobile.value) transactionOpen.value = true;
+    else desktopTransactionOpen.value = true;
 };
 
 const desktopTransactionOpen = ref(false);
+const desktopTransactionInitial = ref<TransactionModalPayload | null>(null);
 const openDesktopTransaction = () => {
-    transactionKind.value = 'expense';
+    openTransaction('expense');
+};
+
+const parseInstallmentCount = (installment?: string) => {
+    if (!installment) return 3;
+    const match = installment.match(/\/\s*(\d+)/);
+    if (!match) return 3;
+    const count = Number(match[1]);
+    return Number.isFinite(count) && count > 0 ? count : 3;
+};
+
+const openEntryEdit = (entry: Entry) => {
+    transactionKind.value = entry.kind;
+    const initial: TransactionModalPayload = {
+        id: entry.id,
+        kind: entry.kind,
+        amount: entry.amount,
+        description: entry.title,
+        category: entry.categoryLabel,
+        account: entry.accountLabel,
+        dateKind: 'today',
+        dateOther: '',
+        isInstallment: Boolean(entry.installment),
+        installmentCount: parseInstallmentCount(entry.installment),
+        isPaid: entry.status === 'paid',
+        transferFrom: 'Banco Inter',
+        transferTo: 'Carteira',
+        transferDescription: '',
+    };
+
+    if (isMobile.value) {
+        transactionInitial.value = initial;
+        transactionOpen.value = true;
+        return;
+    }
+
+    desktopTransactionInitial.value = initial;
     desktopTransactionOpen.value = true;
 };
 
@@ -337,7 +378,7 @@ const toggleBillPaid = (id: string) => {
             </button>
         </template>
 
-        <TransactionModal :open="transactionOpen" :kind="transactionKind" @close="transactionOpen = false" @save="onTransactionSave" />
+        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </MobileShell>
 
@@ -628,12 +669,12 @@ const toggleBillPaid = (id: string) => {
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
                     <div class="flex items-center justify-between">
                         <div class="text-base font-semibold text-slate-900">Fluxo de Caixa</div>
-                        <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-500">
+                        <Link :href="route('analysis')" class="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-500">
                             Últimos 6 meses
                             <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M6 9l6 6 6-6" />
                             </svg>
-                        </button>
+                        </Link>
                     </div>
 
                     <div class="mt-8 flex items-end justify-between gap-4">
@@ -665,7 +706,11 @@ const toggleBillPaid = (id: string) => {
                         <div
                             v-for="row in desktopEntries.slice(0, 2)"
                             :key="row.id"
-                            class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-t border-slate-100 px-6 py-5 text-sm font-semibold text-slate-700"
+                            class="grid cursor-pointer grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-t border-slate-100 px-6 py-5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            role="button"
+                            tabindex="0"
+                            @click="openEntryEdit(row)"
+                            @keydown.enter="openEntryEdit(row)"
                         >
                             <div class="flex items-center gap-4">
                                 <span
@@ -712,9 +757,9 @@ const toggleBillPaid = (id: string) => {
                             <div class="mt-2 text-sm font-semibold text-amber-700/80">
                                 Faltam <span class="text-red-500">R$ 200</span> para cobrir as contas previstas para os próximos 5 dias.
                             </div>
-                            <button type="button" class="mt-4 inline-flex h-9 items-center rounded-lg border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700">
+                            <Link :href="route('accounts.index')" class="mt-4 inline-flex h-9 items-center rounded-lg border border-amber-200 bg-white px-4 text-sm font-semibold text-amber-700">
                                 Resolver
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -722,7 +767,7 @@ const toggleBillPaid = (id: string) => {
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
                     <div class="text-sm font-semibold text-slate-900">Transferência Rápida</div>
                     <div class="mt-5 flex items-center gap-4">
-                        <button type="button" class="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-slate-200 text-slate-400">
+                        <button type="button" class="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-slate-200 text-slate-400" @click="openTransaction('transfer')">
                             <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14" />
                                 <path d="M5 12h14" />
@@ -736,7 +781,7 @@ const toggleBillPaid = (id: string) => {
 
                     <div class="mt-6 flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200/60">
                         <div class="text-sm font-semibold text-slate-400">R$ 0,00</div>
-                        <button type="button" class="ml-auto inline-flex h-9 items-center justify-center rounded-lg bg-[#14B8A6] px-4 text-sm font-semibold text-white">
+                        <button type="button" class="ml-auto inline-flex h-9 items-center justify-center rounded-lg bg-[#14B8A6] px-4 text-sm font-semibold text-white" @click="openTransaction('transfer')">
                             Enviar
                         </button>
                     </div>
@@ -753,8 +798,8 @@ const toggleBillPaid = (id: string) => {
                     </div>
 
                     <div class="mt-6 space-y-5">
-                        <div v-for="g in desktopGoals.slice(0, 2)" :key="g.id">
-                            <div class="flex items-center justify-between text-sm font-semibold text-slate-700">
+                        <Link v-for="g in desktopGoals.slice(0, 2)" :key="g.id" :href="route('goals.show', { goalId: g.id })" class="block">
+                            <div class="flex items-center justify-between text-sm font-semibold text-slate-700 hover:text-slate-900">
                                 <div>{{ g.title }}</div>
                                 <div class="text-slate-400">{{ Math.min(100, Math.round((g.current / g.target) * 100)) }}%</div>
                             </div>
@@ -765,13 +810,13 @@ const toggleBillPaid = (id: string) => {
                                     :style="{ width: `${Math.min(100, Math.round((g.current / g.target) * 100))}%` }"
                                 ></div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </div>
         </div>
 
-        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
+        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </DesktopShell>
 </template>

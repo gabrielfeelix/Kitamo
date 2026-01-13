@@ -16,9 +16,12 @@
 /public/build
 /public/hot
 /public/storage
+/public/mockups
 /storage/*.key
 /storage/pail
 /vendor
+/.hostinger_staging
+sors-hostinger-backup-*.zip
 Homestead.json
 Homestead.yaml
 Thumbs.db
