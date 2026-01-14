@@ -426,8 +426,25 @@ const openBillDetails = (id: string) => {
                 </div>
             </div>
 
-            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
-                {{ initials }}
+            <div class="flex items-center gap-2">
+                <Link
+                    :href="route('settings.notifications')"
+                    class="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50"
+                    aria-label="Notificações"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
+                        <path d="M10 21a2 2 0 0 0 4 0" />
+                    </svg>
+                </Link>
+
+                <Link
+                    :href="route('settings')"
+                    class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700"
+                    aria-label="Abrir configurações"
+                >
+                    {{ initials }}
+                </Link>
             </div>
         </header>
 
