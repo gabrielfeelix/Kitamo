@@ -92,9 +92,9 @@ function formatBRL(value: number) {
                             >
                             <Link
                                 v-if="canRegister"
-                                href="/register"
-                                class="btn-primary"
-                                >Criar conta grátis</Link
+                                href="/login"
+                                class="btn-primary px-5 py-2.5 text-sm"
+                                >Entrar</Link
                             >
                         </div>
                     </div>
@@ -106,7 +106,7 @@ function formatBRL(value: number) {
             <section class="mx-auto max-w-7xl px-6 py-20 md:py-28">
                 <div class="grid items-center gap-14 lg:grid-cols-2">
                     <div
-                        class="rounded-[32px] border border-white/70 bg-gradient-to-br from-teal-100 via-white to-blue-100 p-8 shadow-sm sm:p-10 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+                        class="rounded-[32px] border border-white/70 bg-gradient-to-br from-teal-100 via-teal-50 to-sky-100 px-7 py-10 shadow-sm sm:p-10 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
                     >
                         <div
                             class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 shadow-sm"
@@ -118,7 +118,7 @@ function formatBRL(value: number) {
                         </div>
 
                         <h1
-                            class="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
+                            class="mt-7 text-[44px] font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
                         >
                             O fim do mês não<br />
                             precisa ser um<br />
@@ -126,7 +126,7 @@ function formatBRL(value: number) {
                         </h1>
 
                         <p
-                            class="mt-6 max-w-xl text-base font-medium leading-relaxed text-slate-600"
+                            class="mt-6 max-w-xl text-[15px] font-medium leading-relaxed text-slate-600"
                         >
                             Chega de suar frio no dia 20. O Kitamo organiza tua
                             grana, te avisa antes do boleto vencer e ainda te
@@ -136,7 +136,7 @@ function formatBRL(value: number) {
                         <div class="mt-10 flex flex-col gap-4 sm:flex-row">
                             <Link
                                 href="/register"
-                                class="btn-primary w-full justify-center sm:w-auto"
+                                class="btn-primary w-full justify-center py-4 sm:w-auto"
                             >
                                 <span
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15"
@@ -159,7 +159,7 @@ function formatBRL(value: number) {
                             </Link>
                             <a
                                 href="#vantagens"
-                                class="btn-outline w-full justify-center sm:w-auto"
+                                class="btn-outline w-full justify-center py-4 sm:w-auto"
                             >
                                 <span
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100"
@@ -183,7 +183,7 @@ function formatBRL(value: number) {
                         </div>
 
                         <div
-                            class="mt-6 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"
+                            class="mt-8 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-400/80"
                         >
                             <svg
                                 width="14"
