@@ -112,7 +112,7 @@ function formatBRL(value: number) {
             <section class="mx-auto max-w-7xl px-6 py-20 md:py-28">
                 <div class="grid items-center gap-14 lg:grid-cols-2">
                     <div
-                        class="rounded-[32px] border border-white/70 bg-gradient-to-br from-teal-100 via-teal-50 to-sky-100 px-7 py-10 shadow-sm sm:p-10 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+                        class="rounded-[32px] border border-white/70 bg-gradient-to-br from-teal-100 via-teal-50 to-sky-100 px-7 py-10 shadow-sm sm:p-10 lg:px-12 lg:py-14"
                     >
                         <div
                             class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 shadow-sm"
