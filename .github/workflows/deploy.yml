@@ -36,3 +36,9 @@ jobs:
           ssh $SSH_OPTS \
             u626119115@147.79.84.203 \
             'cd ~/domains/kitamo.com.br/public_html && mkdir -p build && rsync -a --delete public/build/ build/'
+      - name: Run migrations + cache (Hostinger)
+        run: |
+          SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
+          ssh $SSH_OPTS \
+            u626119115@147.79.84.203 \
+            'cd ~/domains/kitamo.com.br/public_html && php artisan migrate --force && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache'
