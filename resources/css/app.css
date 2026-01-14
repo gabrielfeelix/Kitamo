@@ -4,6 +4,23 @@
 
 @layer base {
     :root {
+        --bg-page: #F8FAFC;
+        --bg-section: #F1F5F9;
+        --bg-card: #FFFFFF;
+        --bg-input: #FFFFFF;
+
+        --text-primary: #0F172A;
+        --text-secondary: #334155;
+        --text-tertiary: #64748B;
+        --text-disabled: #94A3B8;
+
+        --border: #E2E8F0;
+
+        --primary-500: #14B8A6;
+        --success-500: #10B981;
+        --danger-500: #EF4444;
+        --warning-500: #F59E0B;
+
         --kitamo-brand: 20 184 166; /* #14B8A6 */
         --kitamo-brand-dark: 15 118 110; /* #0F766E */
         --kitamo-brand-light: 153 246 228; /* #99F6E4 */
@@ -18,9 +35,23 @@
         --kitamo-bg: 248 250 252; /* #F8FAFC */
     }
 
+    [data-theme='dark'] {
+        --bg-page: #0F172A;
+        --bg-section: #1E293B;
+        --bg-card: #334155;
+        --bg-input: #475569;
+
+        --text-primary: #F8FAFC;
+        --text-secondary: #CBD5E1;
+        --text-tertiary: #94A3B8;
+        --text-disabled: #64748B;
+
+        --border: #475569;
+    }
+
     body {
-        background-color: rgb(var(--kitamo-bg));
-        color: rgb(var(--kitamo-ink));
+        background-color: var(--bg-page);
+        color: var(--text-primary);
     }
 
     html {
@@ -30,7 +61,9 @@
 
 @layer components {
     .glass-nav {
-        @apply bg-white/90 backdrop-blur border-b border-black/5;
+        background-color: color-mix(in srgb, var(--bg-card), transparent 10%);
+        border-bottom: 1px solid color-mix(in srgb, var(--border), transparent 40%);
+        backdrop-filter: blur(10px);
     }
 
     .btn-primary {
@@ -42,7 +75,9 @@
     }
 
     .card-kitamo {
-        @apply rounded-[32px] border border-slate-100 bg-white shadow-sm transition;
+        @apply rounded-[32px] shadow-sm transition;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
     }
 
     .card-kitamo-hover {

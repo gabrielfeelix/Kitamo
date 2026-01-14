@@ -13,6 +13,8 @@ use App\Http\Controllers\TransferenciaController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TransactionTagsController;
 use App\Http\Controllers\TransactionsApiController;
+use App\Http\Controllers\UserApiController;
+use App\Http\Controllers\BackupController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -138,6 +140,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/transactions', [TransactionsApiController::class, 'index'])->name('api.transactions.index');
     Route::post('/api/tags', [TagController::class, 'store'])->name('api.tags.store');
     Route::post('/api/transactions/{transaction}/tags', [TransactionTagsController::class, 'sync'])->name('api.transactions.tags.sync');
+    Route::get('/api/user/profile', [UserApiController::class, 'profile'])->name('api.user.profile');
+    Route::patch('/api/user/theme', [UserApiController::class, 'updateTheme'])->name('api.user.theme');
+    Route::post('/api/backup/create', [BackupController::class, 'create'])->name('api.backup.create');
+    Route::get('/api/backup/download/{filename}', [BackupController::class, 'download'])->name('api.backup.download');
+    Route::get('/api/backup/list', [BackupController::class, 'list'])->name('api.backup.list');
+    Route::post('/api/backup/restore', [BackupController::class, 'restore'])->name('api.backup.restore');
+    Route::get('/api/backup/status', [BackupController::class, 'status'])->name('api.backup.status');
 
     Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
     Route::patch('/goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
