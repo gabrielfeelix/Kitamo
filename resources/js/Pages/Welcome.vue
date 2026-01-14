@@ -105,7 +105,9 @@ function formatBRL(value: number) {
         <main>
             <section class="mx-auto max-w-7xl px-6 py-20 md:py-28">
                 <div class="grid items-center gap-14 lg:grid-cols-2">
-                    <div>
+                    <div
+                        class="rounded-[32px] border border-white/70 bg-gradient-to-br from-teal-100 via-white to-blue-100 p-8 shadow-sm sm:p-10 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+                    >
                         <div
                             class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 shadow-sm"
                         >
@@ -131,8 +133,11 @@ function formatBRL(value: number) {
                             mostra se vai sobrar pro churrasco.
                         </p>
 
-                        <div class="mt-10 flex flex-wrap gap-4">
-                            <Link href="/register" class="btn-primary">
+                        <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+                            <Link
+                                href="/register"
+                                class="btn-primary w-full justify-center sm:w-auto"
+                            >
                                 <span
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15"
                                 >
@@ -152,7 +157,10 @@ function formatBRL(value: number) {
                                 </span>
                                 Cadastrar com Google
                             </Link>
-                            <a href="#vantagens" class="btn-outline">
+                            <a
+                                href="#vantagens"
+                                class="btn-outline w-full justify-center sm:w-auto"
+                            >
                                 <span
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100"
                                 >
