@@ -9,6 +9,7 @@ import DesktopShell from '@/Layouts/DesktopShell.vue';
 import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
 import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
+import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
@@ -231,6 +232,52 @@ const entryToRequest = (entry: Entry) => ({
 const desktopDrawerOpen = ref(false);
 const desktopSelectedEntry = ref<Entry | null>(null);
 
+const mobileDetailOpen = ref(false);
+const mobileSelectedEntry = ref<Entry | null>(null);
+
+const formatDetailDate = (date?: string) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(date));
+};
+
+const toAccountIcon = (label: string): TransactionDetail['accountIcon'] => {
+    const normalized = label.toLowerCase();
+    if (normalized.includes('carteira') || normalized.includes('wallet')) return 'wallet';
+    if (normalized.includes('card') || normalized.includes('crédito') || normalized.includes('credito')) return 'card';
+    return 'bank';
+};
+
+const toCategoryIcon = (entry: Entry): TransactionDetail['categoryIcon'] => {
+    const key = (entry.categoryKey ?? '').toLowerCase();
+    if (key === 'food') return 'food';
+    if (key === 'home') return 'home';
+    if (key === 'car') return 'car';
+
+    const icon = (entry.icon ?? '').toLowerCase();
+    if (icon.includes('home')) return 'home';
+    if (icon.includes('car')) return 'car';
+    if (icon.includes('cart')) return 'cart';
+    return 'bolt';
+};
+
+const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
+    const entry = mobileSelectedEntry.value;
+    if (!entry) return null;
+    return {
+        id: entry.id,
+        title: entry.title,
+        amount: entry.amount,
+        kind: entry.kind,
+        status: entry.status,
+        categoryLabel: entry.categoryLabel,
+        categoryIcon: toCategoryIcon(entry),
+        accountLabel: entry.accountLabel,
+        accountIcon: toAccountIcon(entry.accountLabel),
+        dateLabel: formatDetailDate(entry.transactionDate) || entry.dateLabel,
+        installmentLabel: entry.installment ?? undefined,
+    };
+});
+
 const transactionOpen = ref(false);
 const transactionKind = ref<'expense' | 'income' | 'transfer'>('expense');
 const transactionInitial = ref<TransactionModalPayload | null>(null);
@@ -286,22 +333,31 @@ const openEntryEdit = (entry: Entry) => {
 };
 
 const openEntryDetail = (entry: Entry) => {
+    if (isMobile.value) {
+        mobileSelectedEntry.value = entry;
+        mobileDetailOpen.value = true;
+        return;
+    }
+
     desktopSelectedEntry.value = entry;
     desktopDrawerOpen.value = true;
 };
 
 const handleDetailEdit = () => {
-    if (!desktopSelectedEntry.value) return;
+    const entry = isMobile.value ? mobileSelectedEntry.value : desktopSelectedEntry.value;
+    if (!entry) return;
     desktopDrawerOpen.value = false;
-    openEntryEdit(desktopSelectedEntry.value);
+    mobileDetailOpen.value = false;
+    openEntryEdit(entry);
 };
 
 const handleDetailDelete = async () => {
-    if (!desktopSelectedEntry.value) return;
-    const target = desktopSelectedEntry.value;
+    const target = isMobile.value ? mobileSelectedEntry.value : desktopSelectedEntry.value;
+    if (!target) return;
     await requestJson(route('transactions.destroy', target.id), { method: 'DELETE' });
     removeEntry(target.id);
     desktopDrawerOpen.value = false;
+    mobileDetailOpen.value = false;
     showToast('Lançamento excluído');
 };
 
@@ -356,7 +412,7 @@ const openBillDetails = (id: string) => {
     const entry = desktopEntries.value.find((item) => item.id === id);
     if (!entry) return;
 
-    openEntryEdit(entry);
+    openEntryDetail(entry);
 };
 </script>
 
@@ -612,6 +668,14 @@ Ver lançamentos
         </template>
 
         <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
+        <TransactionDetailModal
+            :open="mobileDetailOpen"
+            :transaction="mobileTransactionDetail"
+            @close="mobileDetailOpen = false"
+            @edit="handleDetailEdit"
+            @delete="handleDetailDelete"
+            @duplicate="handleDetailEdit"
+        />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </MobileShell>
 
