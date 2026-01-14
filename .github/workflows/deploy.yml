@@ -24,4 +24,4 @@ jobs:
           chmod 600 ~/.ssh/key
           rsync -avz -e "ssh -i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no" \
             --exclude='.git' --exclude='node_modules' \
-            ./ u626119115@147.79.84.20
+            ./ u626119115@147.79.84.203:~/domains/kitamo.com.br/public_html
