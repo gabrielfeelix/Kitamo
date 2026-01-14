@@ -93,6 +93,20 @@ const installmentEach = computed(() => {
 
 const dateButtonClass = (value: DateKind) => (dateKind.value === value ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-500');
 
+const toISODate = (brDate: string) => {
+    const match = brDate.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return '';
+    const [, dd, mm, yyyy] = match;
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const toBRDate = (isoDate: string) => {
+    const match = isoDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return isoDate;
+    const [, yyyy, mm, dd] = match;
+    return `${dd}/${mm}/${yyyy}`;
+};
+
 const reset = () => {
     const draft = props.initial ?? null;
     initialId.value = draft?.id;
@@ -102,7 +116,7 @@ const reset = () => {
     category.value = draft?.category ?? 'Alimentação';
     account.value = draft?.account ?? 'Carteira';
     dateKind.value = draft?.dateKind ?? 'today';
-    dateOther.value = draft?.dateOther ?? '';
+    dateOther.value = draft?.dateOther ? toBRDate(draft.dateOther) : '';
     isInstallment.value = draft?.isInstallment ?? false;
     installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
@@ -120,6 +134,7 @@ watch(
 );
 
 const save = () => {
+    const dateOtherISO = dateKind.value === 'other' ? toISODate(dateOther.value) : '';
     emit('save', {
         id: initialId.value,
         kind: localKind.value,
@@ -128,7 +143,7 @@ const save = () => {
         category: category.value,
         account: account.value,
         dateKind: dateKind.value,
-        dateOther: dateOther.value,
+        dateOther: dateOtherISO,
         isInstallment: isInstallment.value,
         installmentCount: installmentCount.value,
         isPaid: isPaid.value,
@@ -256,7 +271,9 @@ const save = () => {
                         <input
                             v-if="dateKind === 'other'"
                             v-model="dateOther"
-                            type="date"
+                            inputmode="numeric"
+                            type="text"
+                            placeholder="dd/mm/aaaa"
                             class="mt-3 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                         />
                     </div>
@@ -311,4 +328,3 @@ const save = () => {
     text-shadow: none !important;
 }
 </style>
-

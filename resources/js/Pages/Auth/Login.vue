@@ -43,9 +43,9 @@ const submit = () => {
                     </div>
 
                     <div class="space-y-5">
-                        <h2 class="text-4xl font-semibold leading-tight">Vai dar ate o fim do mes?</h2>
+                        <h2 class="text-4xl font-semibold leading-tight">Vai sobrar ou vai faltar?</h2>
                         <p class="max-w-sm text-sm text-white/80">
-                            A gente te mostra. Sem misterio, sem susto no saldo. E so lancar seus gastos e ver se o dinheiro aguenta ate o proximo salario.
+                            A gente te mostra. Sem mistério, sem susto no saldo. É só lançar seus gastos e ver se o dinheiro aguenta até o próximo salário.
                         </p>
                     </div>
                 </div>

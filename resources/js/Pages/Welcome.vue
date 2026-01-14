@@ -181,7 +181,7 @@ function formatBRL(value: number) {
                         </div>
 
                         <h1
-                            class="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl"
+                            class="mt-6 text-[40px] font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl sm:leading-[1.05] lg:text-6xl"
                         >
                             O fim do mês não<br />
                             precisa ser um<br />

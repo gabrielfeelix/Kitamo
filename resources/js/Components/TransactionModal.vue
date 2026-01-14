@@ -106,6 +106,20 @@ const installmentEach = computed(() => {
 
 const dateButtonClass = (value: DateKind) => (dateKind.value === value ? 'bg-[#14B8A6] text-white' : 'bg-[#F3F4F6] text-[#6B7280]');
 
+const toISODate = (brDate: string) => {
+    const match = brDate.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return '';
+    const [, dd, mm, yyyy] = match;
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const toBRDate = (isoDate: string) => {
+    const match = isoDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return isoDate;
+    const [, yyyy, mm, dd] = match;
+    return `${dd}/${mm}/${yyyy}`;
+};
+
 const reset = () => {
     const draft = props.initial ?? null;
 
@@ -116,7 +130,7 @@ const reset = () => {
     category.value = draft?.category ?? 'Alimentação';
     account.value = draft?.account ?? 'Carteira';
     dateKind.value = draft?.dateKind ?? 'today';
-    dateOther.value = draft?.dateOther ?? '';
+    dateOther.value = draft?.dateOther ? toBRDate(draft.dateOther) : '';
     isInstallment.value = draft?.isInstallment ?? false;
     installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
@@ -127,6 +141,7 @@ const reset = () => {
 };
 
 const save = () => {
+    const dateOtherISO = dateKind.value === 'other' ? toISODate(dateOther.value) : '';
     emit('save', {
         id: initialId.value,
         kind: localKind.value,
@@ -135,7 +150,7 @@ const save = () => {
         category: category.value,
         account: account.value,
         dateKind: dateKind.value,
-        dateOther: dateOther.value,
+        dateOther: dateOtherISO,
         isInstallment: isInstallment.value,
         installmentCount: installmentCount.value,
         isPaid: isPaid.value,
@@ -351,7 +366,9 @@ watch(
                                 <input
                                     v-if="dateKind === 'other'"
                                     v-model="dateOther"
-                                    type="date"
+                                    inputmode="numeric"
+                                    type="text"
+                                    placeholder="dd/mm/aaaa"
                                     class="mt-3 h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-base text-[#374151] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
                                     aria-label="Data"
                                 />
