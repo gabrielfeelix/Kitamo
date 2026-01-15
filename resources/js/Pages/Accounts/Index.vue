@@ -57,6 +57,8 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
+const isRecurringEntry = (entry: Entry) => Boolean(entry.tags?.includes('Recorrente')) && !Boolean(entry.installment);
+
 const replaceEntry = (entry: Entry) => {
     const idx = entries.value.findIndex((item) => item.id === entry.id);
     if (idx >= 0) entries.value[idx] = entry;
@@ -702,9 +704,22 @@ onMounted(() => {
                                     </span>
                                 </div>
                                 <div class="truncate text-xs text-slate-400">{{ entry.installment ?? entry.subtitle }}</div>
-                                <div v-if="entry.tags.length" class="mt-2 flex flex-wrap gap-2">
+                                <div v-if="entry.tags.length || isRecurringEntry(entry)" class="mt-2 flex flex-wrap gap-2">
+                                    <span v-if="isRecurringEntry(entry)" class="group relative inline-flex items-center">
+                                        <span class="inline-flex items-center gap-1 rounded bg-[#DBEAFE] px-2 py-0.5 text-[12px] font-semibold text-[#3B82F6]">
+                                            🔁 Recorrente
+                                        </span>
+                                        <span
+                                            class="absolute bottom-full left-0 mb-2 hidden w-64 rounded-lg bg-slate-800 px-3 py-2 text-xs font-medium text-white shadow-lg group-hover:block"
+                                        >
+                                            Despesa recorrente - repete todo mês
+                                            <span
+                                                class="absolute top-full left-4 h-0 w-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"
+                                            ></span>
+                                        </span>
+                                    </span>
                                     <span
-                                        v-for="tag in entry.tags"
+                                        v-for="tag in entry.tags.filter((t) => t !== 'Recorrente')"
                                         :key="tag"
                                         class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
                                         :class="
