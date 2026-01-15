@@ -784,12 +784,12 @@ Ver lançamentos
 	            </div>
 
             <div v-else class="mt-4 space-y-3">
-                <Link
-                    v-for="card in creditCards"
-                    :key="card.id"
-                    :href="route('accounts.index', { account: card.label })"
-                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
-                >
+	                <Link
+	                    v-for="card in creditCards"
+	                    :key="card.id"
+	                    :href="route('accounts.card')"
+	                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
+	                >
                     <div class="flex items-center gap-3">
                         <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1121,12 +1121,12 @@ Ver lançamentos
                     </div>
 
                     <div v-else class="mt-5 space-y-3">
-                        <Link
-                            v-for="card in creditCards"
-                            :key="card.id"
-                            :href="route('accounts.index', { account: card.label })"
-                            class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4"
-                        >
+	                        <Link
+	                            v-for="card in creditCards"
+	                            :key="card.id"
+	                            :href="route('accounts.card')"
+	                            class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4"
+	                        >
                             <div class="flex items-center gap-3">
                                 <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
                                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
