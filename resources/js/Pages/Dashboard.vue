@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestJson } from '@/lib/kitamoApi';
 import { buildTransactionRequest } from '@/lib/transactions';
 import type { BootstrapData, Entry, Goal } from '@/types/kitamo';
@@ -11,6 +11,7 @@ import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
 import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
+import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
 type ProjecaoResponse = {
@@ -291,6 +292,21 @@ const toastMessage = ref('');
 const showToast = (message: string) => {
     toastMessage.value = message;
     toastOpen.value = true;
+};
+
+const creditCardModalOpen = ref(false);
+const saveCreditCard = async (payload: CreditCardModalPayload) => {
+    try {
+        await requestJson('/api/cartoes', {
+            method: 'POST',
+            body: JSON.stringify({ ...payload, icone: 'credit-card' }),
+        });
+        showToast('Cartão adicionado com sucesso!');
+        creditCardModalOpen.value = false;
+        router.reload();
+    } catch {
+        showToast('Não foi possível adicionar o cartão');
+    }
 };
 
 const isRecurringEntry = (entry: Entry) => Boolean(entry.tags?.includes('Recorrente')) && !Boolean(entry.installment);
@@ -745,13 +761,13 @@ Ver lançamentos
         <section class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
             <div class="flex items-center justify-between">
                 <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
-                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar cartão">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                    </svg>
-                </button>
-            </div>
+	                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar cartão" @click="creditCardModalOpen = true">
+	                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                        <path d="M12 5v14" />
+	                        <path d="M5 12h14" />
+	                    </svg>
+	                </button>
+	            </div>
 
             <div v-if="creditCards.length === 0" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
@@ -762,8 +778,10 @@ Ver lançamentos
                 </div>
                 <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui cartões cadastrados.</div>
                 <div class="mt-1 text-xs text-slate-500">Melhore seu controle financeiro agora!</div>
-                <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white">Adicionar cartões</button>
-            </div>
+	                <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white" @click="creditCardModalOpen = true">
+	                    Adicionar cartões
+	                </button>
+	            </div>
 
             <div v-else class="mt-4 space-y-3">
                 <Link
@@ -833,7 +851,7 @@ Ver lançamentos
             </div>
         </section>
 
-        <template #fab>
+	        <template #fab>
             <button
                 type="button"
                 class="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom)+1rem)] right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-teal-500 text-white shadow-xl shadow-teal-500/30"
@@ -847,11 +865,12 @@ Ver lançamentos
             </button>
         </template>
 
-        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
-        <TransactionDetailModal
-            :open="mobileDetailOpen"
-            :transaction="mobileTransactionDetail"
-            @close="mobileDetailOpen = false"
+	        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
+	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
+	        <TransactionDetailModal
+	            :open="mobileDetailOpen"
+	            :transaction="mobileTransactionDetail"
+	            @close="mobileDetailOpen = false"
             @edit="handleDetailEdit"
             @delete="handleDetailDelete"
             @duplicate="handleDetailEdit"
@@ -859,7 +878,7 @@ Ver lançamentos
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </MobileShell>
 
-    <DesktopShell v-else title="Visão Geral" subtitle="Domingo, 11 Jan 2026" @new-transaction="openDesktopTransaction">
+	    <DesktopShell v-else title="Visão Geral" subtitle="Domingo, 11 Jan 2026" @new-transaction="openDesktopTransaction">
         <div class="grid grid-cols-[1fr_360px] gap-8">
             <div class="space-y-8">
                 <div class="grid grid-cols-3 gap-6">
@@ -1079,7 +1098,7 @@ Ver lançamentos
                 <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
                     <div class="flex items-center justify-between">
                         <div class="text-sm font-semibold text-slate-900">Cartões de crédito</div>
-                        <button type="button" class="text-slate-300 hover:text-slate-400" aria-label="Adicionar cartão">
+                        <button type="button" class="text-slate-300 hover:text-slate-400" aria-label="Adicionar cartão" @click="creditCardModalOpen = true">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 5v14" />
                                 <path d="M5 12h14" />
@@ -1096,7 +1115,9 @@ Ver lançamentos
                         </div>
                         <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui cartões cadastrados.</div>
                         <div class="mt-1 text-xs text-slate-500">Melhore seu controle financeiro agora!</div>
-                        <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white">Adicionar cartões</button>
+                        <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white" @click="creditCardModalOpen = true">
+                            Adicionar cartões
+                        </button>
                     </div>
 
                     <div v-else class="mt-5 space-y-3">
@@ -1152,11 +1173,12 @@ Ver lançamentos
             </div>
         </div>
 
-        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
+	        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
+	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
 
-        <DesktopTransactionDrawer
-            :open="desktopDrawerOpen"
-            :entry="desktopSelectedEntry"
+	        <DesktopTransactionDrawer
+	            :open="desktopDrawerOpen"
+	            :entry="desktopSelectedEntry"
             @close="desktopDrawerOpen = false"
             @edit="handleDetailEdit"
             @delete="handleDetailDelete"
