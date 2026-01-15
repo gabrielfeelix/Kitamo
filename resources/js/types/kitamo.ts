@@ -51,6 +51,27 @@ export type Account = {
     due_day?: number | null;
 };
 
+export type CreditCard = {
+    id: string;
+    nome: string;
+    bandeira: 'visa' | 'mastercard' | 'elo' | 'amex';
+    limite: number;
+    limite_usado: number;
+    dia_fechamento: number;
+    dia_vencimento: number;
+    cor: string;
+    created_at?: string;
+    updated_at?: string;
+};
+
+export type CreditCardStatement = {
+    id: string;
+    total: number;
+    data_fechamento: string;
+    data_vencimento: string;
+    transacoes: Entry[];
+};
+
 export type Category = {
     id: string;
     name: string;
