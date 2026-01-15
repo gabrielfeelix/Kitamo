@@ -134,6 +134,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
 
+    Route::post('/api/contas', [AccountController::class, 'store'])->name('api.contas.store');
+    Route::patch('/api/contas/{account}', [AccountController::class, 'update'])->name('api.contas.update');
+    Route::delete('/api/contas/{account}', [AccountController::class, 'destroy'])->name('api.contas.destroy');
+
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

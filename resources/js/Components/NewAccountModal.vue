@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+	import { computed, ref, watch } from 'vue';
 
-type AccountType = 'wallet' | 'bank' | 'card';
+	type AccountType = 'wallet' | 'bank' | 'card';
 
-const props = defineProps<{
-    open: boolean;
-}>();
+	const props = defineProps<{
+	    open: boolean;
+	    initial?: { id: string; name: string; type: AccountType; icon: string } | null;
+	}>();
 
-const emit = defineEmits<{
-    (event: 'close'): void;
-    (event: 'save', payload: { name: string; type: AccountType; initialBalance: string; icon: string }): void;
-}>();
+	const emit = defineEmits<{
+	    (event: 'close'): void;
+	    (event: 'save', payload: { id?: string; name: string; type: AccountType; initialBalance: string; icon: string }): void;
+	}>();
 
 const name = ref('');
 const type = ref<AccountType>('wallet');
 const initialBalance = ref('0,00');
-const icon = ref<'wallet' | 'bank' | 'card' | 'phone'>('wallet');
+	const icon = ref<'wallet' | 'bank' | 'card' | 'phone'>('wallet');
+
+	const isEdit = computed(() => Boolean(props.initial?.id));
 
 const normalizeMoneyInput = (raw: string) => {
     const digits = raw.replace(/[^\d]/g, '');
@@ -44,18 +47,19 @@ const headerIcon = computed(() => {
 });
 
 const close = () => emit('close');
-const save = () => emit('save', { name: name.value, type: type.value, initialBalance: initialBalance.value, icon: icon.value });
+	const save = () =>
+	    emit('save', { id: props.initial?.id, name: name.value, type: type.value, initialBalance: initialBalance.value, icon: icon.value });
 
-watch(
-    () => props.open,
-    (isOpen) => {
-        if (!isOpen) return;
-        name.value = '';
-        type.value = 'wallet';
-        initialBalance.value = '0,00';
-        icon.value = 'wallet';
-    },
-);
+	watch(
+	    () => props.open,
+	    (isOpen) => {
+	        if (!isOpen) return;
+	        name.value = props.initial?.name ?? '';
+	        type.value = props.initial?.type ?? 'wallet';
+	        initialBalance.value = '0,00';
+	        icon.value = (props.initial?.icon as any) ?? 'wallet';
+	    },
+	);
 </script>
 
 <template>
@@ -71,8 +75,8 @@ watch(
                     <path d="M15 18l-6-6 6-6" />
                 </svg>
             </button>
-            <div class="text-xl font-semibold tracking-tight text-slate-900">Nova conta</div>
-        </header>
+	            <div class="text-xl font-semibold tracking-tight text-slate-900">{{ isEdit ? 'Editar conta' : 'Nova conta' }}</div>
+	        </header>
 
         <main class="mx-auto w-full max-w-md px-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
             <div class="flex justify-center pt-2">
@@ -140,17 +144,17 @@ watch(
                     </div>
                 </div>
 
-                <div>
-                    <div class="mb-2 text-sm font-semibold text-slate-700">Saldo inicial</div>
-                    <input
-                        :value="initialBalance"
-                        @input="onInitialBalanceInput"
-                        inputmode="numeric"
-                        type="text"
-                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 focus:border-teal-400 focus:outline-none"
-                        aria-label="Saldo inicial"
-                    />
-                </div>
+	                <div v-if="!isEdit">
+	                    <div class="mb-2 text-sm font-semibold text-slate-700">Saldo inicial</div>
+	                    <input
+	                        :value="initialBalance"
+	                        @input="onInitialBalanceInput"
+	                        inputmode="numeric"
+	                        type="text"
+	                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 focus:border-teal-400 focus:outline-none"
+	                        aria-label="Saldo inicial"
+	                    />
+	                </div>
 
                 <div>
                     <div class="mb-2 text-sm font-semibold text-slate-700">Ícone</div>
@@ -224,4 +228,3 @@ watch(
         </footer>
     </div>
 </template>
-

@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import type { BootstrapData, Entry } from '@/types/kitamo';
-import MobileShell from '@/Layouts/MobileShell.vue';
-import KitamoLayout from '@/Layouts/KitamoLayout.vue';
+	import { computed, ref } from 'vue';
+	import { Head, Link, router, usePage } from '@inertiajs/vue3';
+	import type { BootstrapData, Entry } from '@/types/kitamo';
+	import MobileShell from '@/Layouts/MobileShell.vue';
+	import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import MobileToast from '@/Components/MobileToast.vue';
+import ConfirmationModal from '@/Components/ConfirmationModal.vue';
+import NewAccountModal from '@/Components/NewAccountModal.vue';
+import { requestJson } from '@/lib/kitamoApi';
 import { useMediaQuery } from '@/composables/useMediaQuery';
+
+type AccountType = 'wallet' | 'bank' | 'card';
 
 const props = defineProps<{
     accountKey: string;
@@ -51,18 +56,68 @@ const transactions = computed(() =>
 );
 
 const toastOpen = ref(false);
-const toastMessage = ref('');
-const showToast = (message: string) => {
-    toastMessage.value = message;
-    toastOpen.value = true;
-};
+	const toastMessage = ref('');
+	const showToast = (message: string) => {
+	    toastMessage.value = message;
+	    toastOpen.value = true;
+	};
+
+	const actionsOpen = ref(false);
+	const editOpen = ref(false);
+	const deleteOpen = ref(false);
+
+	const editInitial = computed(() => {
+	    if (!account.value) return null;
+	    const mappedType: AccountType = account.value.type === 'bank' ? 'bank' : account.value.type === 'wallet' ? 'wallet' : 'card';
+	    return {
+	        id: String(account.value.id),
+	        name: account.value.name,
+	        type: mappedType,
+	        icon: account.value.icon ?? 'wallet',
+	    };
+	});
+
+	const deleteMessage = computed(() => `Tem certeza que deseja excluir a conta "${accountName.value}"?`);
+	const deleteWarningText = 'Isso irá excluir também todas as transações vinculadas a esta conta. Esta ação não pode ser desfeita.';
+
+	const saveAccountEdit = async (payload: { id?: string; name: string; type: 'wallet' | 'bank' | 'card'; initialBalance: string; icon: string }) => {
+	    if (!payload.id) return;
+	    try {
+	        await requestJson(`/api/contas/${payload.id}`, {
+	            method: 'PATCH',
+	            body: JSON.stringify({
+	                name: payload.name,
+	                type: payload.type,
+	                icon: payload.icon,
+	            }),
+	        });
+	        showToast('Conta atualizada');
+	        editOpen.value = false;
+	        router.reload();
+	    } catch {
+	        showToast('Não foi possível atualizar a conta');
+	    }
+	};
+
+	const confirmDelete = async () => {
+	    if (!account.value) return;
+	    try {
+	        await requestJson(`/api/contas/${account.value.id}`, { method: 'DELETE' });
+	        showToast('Conta excluída');
+	        router.visit(route('accounts.index'));
+	    } catch {
+	        showToast('Não foi possível excluir a conta');
+	    } finally {
+	        deleteOpen.value = false;
+	    }
+	};
 </script>
 
 
 <template>
     <Head :title="accountName" />
 
-    <MobileShell v-if="isMobile" :show-nav="false">
+	    <MobileShell v-if="isMobile" :show-nav="false">
         <div class="-mx-5 -mt-2 overflow-hidden rounded-b-[36px] bg-[#14B8A6] px-5 pb-10 pt-[calc(1rem+env(safe-area-inset-top))] text-white">
             <div class="flex items-center justify-between">
                 <Link
@@ -77,14 +132,24 @@ const showToast = (message: string) => {
 
                 <div class="text-base font-semibold">{{ accountName }}</div>
 
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20" aria-label="Menu">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5h.01" />
-                        <path d="M12 12h.01" />
-                        <path d="M12 19h.01" />
-                    </svg>
-                </button>
-            </div>
+	                <div class="relative">
+	                    <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20" aria-label="Menu" @click="actionsOpen = !actionsOpen">
+	                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                        <path d="M12 5h.01" />
+	                        <path d="M12 12h.01" />
+	                        <path d="M12 19h.01" />
+	                    </svg>
+	                    </button>
+	                    <div v-if="actionsOpen" class="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl bg-white text-slate-700 shadow-lg ring-1 ring-black/5">
+	                        <button type="button" class="w-full px-4 py-3 text-left text-sm font-semibold hover:bg-slate-50" @click="editOpen = true; actionsOpen = false">
+	                            Editar conta
+	                        </button>
+	                        <button type="button" class="w-full px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50" @click="deleteOpen = true; actionsOpen = false">
+	                            Excluir conta
+	                        </button>
+	                    </div>
+	                </div>
+	            </div>
 
             <div class="mt-7 flex flex-col items-center">
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#14B8A6] shadow-lg shadow-black/10">
@@ -126,27 +191,30 @@ const showToast = (message: string) => {
 
         <div class="pb-[calc(5rem+env(safe-area-inset-bottom))]"></div>
 
-        <div class="fixed inset-x-0 bottom-0 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_-32px_rgba(15,23,42,0.45)]">
-            <div class="mx-auto flex w-full max-w-md gap-3">
-                <button
-                    type="button"
-                    class="h-12 flex-1 rounded-xl border border-[#14B8A6] bg-white text-sm font-semibold text-[#14B8A6]"
-                    @click="showToast('Editar conta (em breve)')"
-                >
-                    Editar conta
-                </button>
-                <button
-                    type="button"
-                    class="h-12 flex-1 rounded-xl border border-red-200 bg-white text-sm font-semibold text-red-500"
-                    @click="showToast('Excluir conta (em breve)')"
-                >
-                    Excluir conta
-                </button>
-            </div>
-        </div>
+	        <div class="fixed inset-x-0 bottom-0 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_-32px_rgba(15,23,42,0.45)]">
+	            <div class="mx-auto flex w-full max-w-md gap-3">
+	                <button type="button" class="h-12 flex-1 rounded-xl border border-[#14B8A6] bg-white text-sm font-semibold text-[#14B8A6]" @click="editOpen = true">
+	                    Editar conta
+	                </button>
+	                <button type="button" class="h-12 flex-1 rounded-xl border border-red-200 bg-white text-sm font-semibold text-red-500" @click="deleteOpen = true">
+	                    Excluir conta
+	                </button>
+	            </div>
+	        </div>
 
-        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
-    </MobileShell>
+	        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+	        <NewAccountModal :open="editOpen" :initial="editInitial" @close="editOpen = false" @save="saveAccountEdit" />
+	        <ConfirmationModal
+	            :open="deleteOpen"
+	            title="Excluir conta?"
+	            :message="deleteMessage"
+	            :warningText="deleteWarningText"
+	            danger
+	            confirmLabel="Excluir"
+	            @close="deleteOpen = false"
+	            @confirm="confirmDelete"
+	        />
+	    </MobileShell>
 
     <KitamoLayout v-else :title="accountName" subtitle="Mobile-first por enquanto.">
         <div class="rounded-[28px] border border-white/70 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">

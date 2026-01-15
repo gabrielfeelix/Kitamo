@@ -42,4 +42,45 @@ class AccountController extends Controller
             'account' => app(KitamoBootstrap::class)->account($account),
         ]);
     }
+
+    public function update(Request $request, Account $account): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless((int) $account->user_id === (int) $user->id, 404);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:wallet,bank,card,credit_card'],
+            'icon' => ['nullable', 'string', 'max:64'],
+            'credit_limit' => ['nullable', 'numeric', 'min:0'],
+            'closing_day' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'due_day' => ['nullable', 'integer', 'min:1', 'max:31'],
+        ]);
+
+        $type = $data['type'] === 'card' ? 'credit_card' : $data['type'];
+
+        $account->fill([
+            'name' => $data['name'],
+            'type' => $type,
+            'icon' => $data['icon'] ?? null,
+            'credit_limit' => $data['credit_limit'] ?? $account->credit_limit,
+            'closing_day' => $data['closing_day'] ?? $account->closing_day,
+            'due_day' => $data['due_day'] ?? $account->due_day,
+        ]);
+        $account->save();
+
+        return response()->json([
+            'account' => app(KitamoBootstrap::class)->account($account),
+        ]);
+    }
+
+    public function destroy(Request $request, Account $account): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless((int) $account->user_id === (int) $user->id, 404);
+
+        $account->delete();
+
+        return response()->json(['ok' => true]);
+    }
 }
