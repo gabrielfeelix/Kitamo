@@ -12,6 +12,7 @@ import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue'
 import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
+import CreateAccountFlowModal from '@/Components/CreateAccountFlowModal.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
 type ProjecaoResponse = {
@@ -294,6 +295,8 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
+const createAccountOpen = ref(false);
+
 const creditCardModalOpen = ref(false);
 const saveCreditCard = async (payload: CreditCardModalPayload) => {
     try {
@@ -566,7 +569,7 @@ const openBillDetails = (id: string) => {
             </div>
         </section>
 
-        <section class="mt-6 grid grid-cols-3 gap-3">
+	        <section class="mt-6 grid grid-cols-3 gap-3">
             <Link
                 :href="route('accounts.index', { kind: 'income' })"
                 class="relative rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
@@ -609,20 +612,21 @@ const openBillDetails = (id: string) => {
                 </div>
             </Link>
 
-            <button
-                type="button"
-                class="rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60"
-            >
-                <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-600">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 3v18" />
-                        <path d="M7 7h5a3 3 0 1 1 0 6H7" />
-                    </svg>
-                </div>
-                <div class="mt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Balanço</div>
-                <div class="mt-1 text-sm font-semibold text-emerald-600">+{{ formatBRL(receitas - despesas).replace('R$', '').trim() }}</div>
-            </button>
-        </section>
+	            <button
+	                type="button"
+	                class="rounded-2xl bg-white px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5"
+	                @click="createAccountOpen = true"
+	            >
+	                <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-600">
+	                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                        <path d="M12 3v18" />
+	                        <path d="M7 7h5a3 3 0 1 1 0 6H7" />
+	                    </svg>
+	                </div>
+	                <div class="mt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Contas</div>
+	                <div class="mt-1 text-sm font-semibold text-slate-700">Adicionar</div>
+	            </button>
+	        </section>
 
         <section v-if="needsAttention" class="mt-5 rounded-3xl bg-amber-50 px-4 py-4 shadow-sm ring-1 ring-amber-200/60">
             <div class="flex gap-4">
@@ -867,6 +871,7 @@ Ver lançamentos
 
 	        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
 	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
+	        <CreateAccountFlowModal :open="createAccountOpen" @close="createAccountOpen = false" @toast="showToast" />
 	        <TransactionDetailModal
 	            :open="mobileDetailOpen"
 	            :transaction="mobileTransactionDetail"
@@ -1175,6 +1180,7 @@ Ver lançamentos
 
 	        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
 	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
+	        <CreateAccountFlowModal :open="createAccountOpen" @close="createAccountOpen = false" @toast="showToast" />
 
 	        <DesktopTransactionDrawer
 	            :open="desktopDrawerOpen"
