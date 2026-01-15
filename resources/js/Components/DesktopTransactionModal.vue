@@ -35,6 +35,7 @@ const periodicidade = ref<'mensal' | 'quinzenal' | 'a_cada_x_dias'>('mensal');
 const intervalo_dias = ref<number | null>(null);
 const data_fim = ref('');
 const fimMode = ref<'sempre' | 'ate'>('sempre');
+const recurrenceError = ref<string>('');
 
 const transferFrom = ref('Banco Inter');
 const transferTo = ref('Carteira');
@@ -144,7 +145,22 @@ watch(
 );
 
 const save = () => {
+    recurrenceError.value = '';
     const dateOtherISO = dateKind.value === 'other' ? toISODate(dateOther.value) : '';
+    if (isRecorrente.value && periodicidade.value === 'a_cada_x_dias') {
+        const interval = Number(intervalo_dias.value ?? 0);
+        if (!Number.isFinite(interval) || interval < 1) {
+            recurrenceError.value = 'Informe um intervalo válido (mínimo 1 dia).';
+            return;
+        }
+    }
+    if (isRecorrente.value && fimMode.value === 'ate') {
+        const iso = toISODate(data_fim.value);
+        if (!iso) {
+            recurrenceError.value = 'Informe uma data final válida (dd/mm/aaaa).';
+            return;
+        }
+    }
     const dataFimISO = isRecorrente.value && fimMode.value === 'ate' && data_fim.value ? toISODate(data_fim.value) : null;
     const intervaloDiasValue = isRecorrente.value && periodicidade.value === 'a_cada_x_dias' ? intervalo_dias.value : null;
     emit('save', {
@@ -379,6 +395,10 @@ const save = () => {
 	                                        class="h-10 w-36 rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100"
 	                                    />
 	                                </label>
+	                            </div>
+
+	                            <div v-if="recurrenceError" class="text-xs font-semibold text-red-500">
+	                                {{ recurrenceError }}
 	                            </div>
 	                        </div>
 	                    </div>

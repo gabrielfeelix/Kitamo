@@ -53,10 +53,11 @@ const isInstallment = ref(false);
 const installmentCount = ref(1);
 const isPaid = ref(false);
 const isRecorrente = ref(false);
-const periodicidade = ref<'mensal' | 'quinzenal' | 'a_cada_x_dias'>('mensal');
-const intervalo_dias = ref<number | null>(null);
-const data_fim = ref<string>('');
-const fimMode = ref<'sempre' | 'ate'>('sempre');
+	const periodicidade = ref<'mensal' | 'quinzenal' | 'a_cada_x_dias'>('mensal');
+	const intervalo_dias = ref<number | null>(null);
+	const data_fim = ref<string>('');
+	const fimMode = ref<'sempre' | 'ate'>('sempre');
+	const recurrenceError = ref<string>('');
 
 const isExpense = computed(() => localKind.value === 'expense');
 const isTransfer = computed(() => localKind.value === 'transfer');
@@ -154,11 +155,26 @@ const reset = () => {
     fimMode.value = draft?.data_fim ? 'ate' : 'sempre';
 };
 
-const save = () => {
-    const dateOtherISO = dateKind.value === 'other' ? toISODate(dateOther.value) : '';
-    const dataFimISO = isRecorrente.value && fimMode.value === 'ate' && data_fim.value ? toISODate(data_fim.value) : null;
-    const intervaloDiasValue = isRecorrente.value && periodicidade.value === 'a_cada_x_dias' ? intervalo_dias.value : null;
-    emit('save', {
+	const save = () => {
+	    recurrenceError.value = '';
+	    const dateOtherISO = dateKind.value === 'other' ? toISODate(dateOther.value) : '';
+	    if (isRecorrente.value && periodicidade.value === 'a_cada_x_dias') {
+	        const interval = Number(intervalo_dias.value ?? 0);
+	        if (!Number.isFinite(interval) || interval < 1) {
+	            recurrenceError.value = 'Informe um intervalo válido (mínimo 1 dia).';
+	            return;
+	        }
+	    }
+	    if (isRecorrente.value && fimMode.value === 'ate') {
+	        const iso = toISODate(data_fim.value);
+	        if (!iso) {
+	            recurrenceError.value = 'Informe uma data final válida (dd/mm/aaaa).';
+	            return;
+	        }
+	    }
+	    const dataFimISO = isRecorrente.value && fimMode.value === 'ate' && data_fim.value ? toISODate(data_fim.value) : null;
+	    const intervaloDiasValue = isRecorrente.value && periodicidade.value === 'a_cada_x_dias' ? intervalo_dias.value : null;
+	    emit('save', {
         id: initialId.value,
         kind: localKind.value,
         amount: amountNumber.value,
@@ -453,7 +469,7 @@ watch(
                                     </button>
                                 </div>
 
-                                <div v-if="isRecorrente" class="mt-4 space-y-4">
+	                                <div v-if="isRecorrente" class="mt-4 space-y-4">
                                     <!-- Periodicidade -->
                                     <div>
                                         <div class="mb-2 text-xs text-[#6B7280]">Repetir:</div>
@@ -476,8 +492,8 @@ watch(
                                         </div>
                                     </div>
 
-                                    <!-- Até quando -->
-                                    <div>
+	                                    <!-- Até quando -->
+	                                    <div>
                                         <div class="mb-2 text-xs text-[#6B7280]">Até quando:</div>
                                         <div class="space-y-2">
                                             <label class="flex items-center gap-3">
@@ -496,10 +512,13 @@ watch(
                                                     class="ml-2 h-8 w-32 rounded border border-[#E5E7EB] px-2 text-sm"
                                                 />
                                             </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+	                                        </div>
+	                                        <div v-if="recurrenceError" class="mt-2 text-xs font-semibold text-red-500">
+	                                            {{ recurrenceError }}
+	                                        </div>
+	                                    </div>
+	                                </div>
+	                            </div>
 
                             <div>
                                 <div class="mb-2 text-sm font-bold text-[#374151]">Conta</div>
