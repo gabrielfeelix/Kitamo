@@ -13,6 +13,15 @@ import TransactionDetailModal, { type TransactionDetail } from '@/Components/Tra
 import MobileToast from '@/Components/MobileToast.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
 
+type ProjecaoResponse = {
+    projecao_diaria: Array<{
+        data: string;
+        saldo: number;
+    }>;
+    saldo_dia_30: number;
+    primeiro_dia_negativo: string | null;
+};
+
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const bootstrap = computed(
@@ -191,6 +200,8 @@ const mobileAccounts = computed(() =>
 );
 
 const needsAttention = computed(() => saldoAtual.value < 0);
+
+const projecao = computed(() => ((page.props as unknown as { projecao?: ProjecaoResponse }).projecao ?? null) as ProjecaoResponse | null);
 
 const hasEntries = computed(() => desktopEntries.value.length > 0);
 const hasGoals = computed(() => desktopGoals.value.length > 0);
@@ -540,31 +551,72 @@ Ver lançamentos
             </div>
         </section>
 
-        <section class="mt-5 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	        <section class="mt-5 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+	            <div class="flex items-center justify-between">
+	                <div class="flex items-center gap-3">
+	                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+	                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 19V5" />
                             <path d="M10 19V9" />
                             <path d="M16 19v-4" />
                             <path d="M22 19V7" />
                         </svg>
-                    </span>
-                    <div class="text-base font-semibold text-slate-900">Projeção 30 dias</div>
-                </div>
-                <div class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">31/jan: -R$ 250</div>
-            </div>
+	                    </span>
+	                    <div class="text-base font-semibold text-slate-900">Projeção 30 dias</div>
+	                </div>
+	                <div
+	                    v-if="projecao?.primeiro_dia_negativo"
+	                    class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500"
+	                >
+	                    ⚠️ {{ projecao.primeiro_dia_negativo }}
+	                </div>
+	                <div
+	                    v-else-if="projecao && projecao.saldo_dia_30 > 0"
+	                    class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600"
+	                >
+	                    ✅ {{ formatBRL(Math.abs(projecao.saldo_dia_30)) }}
+	                </div>
+	            </div>
 
-            <div v-if="hasCashflow" class="mt-4">
-                <div class="grid grid-cols-6 items-end gap-3">
-                    <div v-for="bar in cashflowSeries" :key="bar.label" class="text-center">
-                        <div class="text-[10px] font-semibold text-slate-400">{{ formatBRL(bar.amount).replace('R$', '').trim() }}</div>
-                        <div class="mx-auto mt-2 w-8 rounded-2xl" :class="bar.tone" :style="{ height: `${bar.height}px` }"></div>
-                        <div class="mt-2 text-[10px] font-semibold" :class="bar.highlight ? 'text-emerald-600' : 'text-slate-400'">{{ bar.label }}</div>
-                    </div>
-                </div>
-            </div>
+	            <div
+	                v-if="projecao?.primeiro_dia_negativo"
+	                class="mt-4 rounded-lg border-l-4 border-red-500 bg-red-50 p-4 flex items-start gap-3"
+	            >
+	                <div class="text-xl text-red-500">⚠️</div>
+	                <div class="flex-1">
+	                    <h3 class="mb-1 font-semibold text-red-900">Atenção ao saldo!</h3>
+	                    <p class="text-sm text-red-700">
+	                        No ritmo atual, seu saldo ficará negativo dia
+	                        {{ projecao.primeiro_dia_negativo }}
+	                    </p>
+	                    <Link :href="route('analysis')" class="mt-2 inline-flex text-sm font-medium text-red-600 hover:underline">
+	                        Ver análise detalhada →
+	                    </Link>
+	                </div>
+	            </div>
+
+	            <div
+	                v-else-if="projecao && projecao.saldo_dia_30 > 0"
+	                class="mt-4 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 p-4 flex items-start gap-3"
+	            >
+	                <div class="text-xl text-emerald-600">✅</div>
+	                <div class="flex-1">
+	                    <h3 class="mb-1 font-semibold text-emerald-900">Tá tranquilo!</h3>
+	                    <p class="text-sm text-emerald-700">
+	                        Você pode gastar até {{ formatBRL(Math.abs(projecao.saldo_dia_30)) }} até o fim do mês
+	                    </p>
+	                </div>
+	            </div>
+
+	            <div v-if="hasCashflow" class="mt-4">
+	                <div class="grid grid-cols-6 items-end gap-3">
+	                    <div v-for="bar in cashflowSeries" :key="bar.label" class="text-center">
+	                        <div class="text-[10px] font-semibold text-slate-400">{{ formatBRL(bar.amount).replace('R$', '').trim() }}</div>
+	                        <div class="mx-auto mt-2 w-8 rounded-2xl" :class="bar.tone" :style="{ height: `${bar.height}px` }"></div>
+	                        <div class="mt-2 text-[10px] font-semibold" :class="bar.highlight ? 'text-emerald-600' : 'text-slate-400'">{{ bar.label }}</div>
+	                    </div>
+	                </div>
+	            </div>
             <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
                     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
