@@ -216,10 +216,84 @@ const toastOpen = ref(false);
 	        />
 	    </MobileShell>
 
-    <KitamoLayout v-else :title="accountName" subtitle="Mobile-first por enquanto.">
-        <div class="rounded-[28px] border border-white/70 bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.4)]">
-            <div class="text-sm font-semibold text-slate-900">Detalhe de conta (desktop/tablet)</div>
-            <div class="mt-2 text-sm text-slate-500">Vamos adaptar essa tela depois da versão mobile.</div>
-        </div>
-    </KitamoLayout>
+	    <KitamoLayout v-else :title="accountName" subtitle="Detalhes da conta">
+	        <div class="space-y-8">
+	            <div class="flex items-center justify-between">
+	                <Link
+	                    :href="route('accounts.index')"
+	                    class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50"
+	                    aria-label="Voltar"
+	                >
+	                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                        <path d="M15 18l-6-6 6-6" />
+	                    </svg>
+	                </Link>
+
+	                <div class="flex items-center gap-3">
+	                    <button
+	                        type="button"
+	                        class="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+	                        @click="editOpen = true"
+	                    >
+	                        Editar
+	                    </button>
+	                    <button
+	                        type="button"
+	                        class="inline-flex h-11 items-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50"
+	                        @click="deleteOpen = true"
+	                    >
+	                        Excluir
+	                    </button>
+	                </div>
+	            </div>
+
+	            <div class="grid gap-6 xl:grid-cols-[420px_1fr]">
+	                <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
+	                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Saldo atual</div>
+	                    <div class="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+	                        {{ formatMoney(balance).replace('R$', 'R$') }}
+	                    </div>
+	                    <div class="mt-6 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+	                        Tipo: {{ account?.type ?? '-' }}
+	                    </div>
+	                </div>
+
+	                <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
+	                    <div class="flex items-center justify-between">
+	                        <div class="text-base font-semibold text-slate-900">Transações desta conta</div>
+	                        <Link :href="route('accounts.index')" class="text-sm font-semibold text-[#14B8A6]">Ver todas</Link>
+	                    </div>
+
+	                    <div v-if="transactions.length" class="mt-6 space-y-3">
+	                        <div v-for="t in transactions" :key="t.id" class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-5 py-4">
+	                            <div class="min-w-0">
+	                                <div class="truncate text-sm font-semibold text-slate-900">{{ t.title }}</div>
+	                                <div class="mt-1 text-xs font-semibold text-slate-400">{{ t.day }}</div>
+	                            </div>
+	                            <div class="text-sm font-semibold" :class="t.kind === 'income' ? 'text-emerald-600' : 'text-red-500'">
+	                                {{ t.kind === 'income' ? '+' : '-' }}{{ formatMoney(t.amount).replace('R$', 'R$') }}
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+	                        <div class="text-sm font-semibold text-slate-900">Sem lançamentos</div>
+	                        <div class="mt-1 text-xs text-slate-500">Adicione movimentações para ver o extrato.</div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+	        <NewAccountModal :open="editOpen" :initial="editInitial" @close="editOpen = false" @save="saveAccountEdit" />
+	        <ConfirmationModal
+	            :open="deleteOpen"
+	            title="Excluir conta?"
+	            :message="deleteMessage"
+	            :warningText="deleteWarningText"
+	            danger
+	            confirmLabel="Excluir"
+	            @close="deleteOpen = false"
+	            @confirm="confirmDelete"
+	        />
+	        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+	    </KitamoLayout>
 </template>
