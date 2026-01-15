@@ -203,6 +203,84 @@ const needsAttention = computed(() => saldoAtual.value < 0);
 
 const projecao = computed(() => ((page.props as unknown as { projecao?: ProjecaoResponse }).projecao ?? null) as ProjecaoResponse | null);
 
+const hasProjection = computed(() => Boolean(projecao.value?.projecao_diaria?.length));
+
+type ProjectionBar = {
+    key: string;
+    label: string;
+    labelShort: string;
+    saldo: number;
+    tone: string;
+    heightPx: number;
+    topPx: number;
+    showCriticalBadge: boolean;
+};
+
+const formatDDMM = (isoDate: string) => {
+    const [yyyy, mm, dd] = isoDate.split('-');
+    if (!yyyy || !mm || !dd) return isoDate;
+    return `${dd}/${mm}`;
+};
+
+const formatDDMon = (isoDate: string) => {
+    const [yyyy, mm, dd] = isoDate.split('-').map((part) => part.trim());
+    const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    const monthIdx = Number(mm) - 1;
+    const month = months[monthIdx] ?? mm;
+    return `${dd}/${month}`;
+};
+
+const projectionSeries = computed(() => {
+    if (!projecao.value) return null;
+    const data = projecao.value.projecao_diaria ?? [];
+    if (!data.length) return null;
+
+    const desiredBars = 6;
+    const indices =
+        data.length <= desiredBars
+            ? data.map((_, idx) => idx)
+            : Array.from({ length: desiredBars }, (_, idx) => Math.round((idx * (data.length - 1)) / (desiredBars - 1)));
+
+    const sampled = indices.map((idx) => data[idx]!).filter(Boolean);
+    const saldos = sampled.map((row) => row.saldo);
+    const posMax = Math.max(0, ...saldos);
+    const negMin = Math.min(0, ...saldos);
+
+    const chartHeight = 96;
+    const baselinePx = posMax === 0 && negMin === 0 ? Math.round(chartHeight / 2) : Math.round((posMax / (posMax - negMin)) * chartHeight);
+    const posScale = posMax > 0 ? baselinePx / posMax : 0;
+    const negScale = negMin < 0 ? (chartHeight - baselinePx) / Math.abs(negMin) : 0;
+
+    const criticalDDMM = projecao.value.primeiro_dia_negativo;
+
+    const bars: ProjectionBar[] = sampled.map((row) => {
+        const label = formatDDMM(row.data);
+        const isCritical = Boolean(criticalDDMM && label === criticalDDMM);
+        const tone = isCritical ? 'bg-[#EF4444]' : 'bg-[#14B8A6]';
+
+        const saldo = row.saldo;
+        const barHeightPx = saldo >= 0 ? Math.round(saldo * posScale) : Math.round(Math.abs(saldo) * negScale);
+        const topPx = saldo >= 0 ? Math.max(0, baselinePx - barHeightPx) : baselinePx;
+
+        return {
+            key: row.data,
+            label,
+            labelShort: formatDDMon(row.data),
+            saldo,
+            tone,
+            heightPx: Math.max(2, barHeightPx),
+            topPx,
+            showCriticalBadge: isCritical,
+        };
+    });
+
+    return {
+        bars,
+        baselinePx,
+        chartHeight,
+    };
+});
+
 const hasEntries = computed(() => desktopEntries.value.length > 0);
 const hasGoals = computed(() => desktopGoals.value.length > 0);
 const hasCashflow = computed(() => cashflowSeries.value.length > 0);
@@ -608,7 +686,38 @@ Ver lançamentos
 	                </div>
 	            </div>
 
-	            <div v-if="hasCashflow" class="mt-4">
+	            <div v-if="hasProjection && projectionSeries" class="mt-4">
+	                <div class="relative mx-auto h-24">
+	                    <div
+	                        class="pointer-events-none absolute left-0 right-0 border-t-2 border-dashed border-[#EF4444]"
+	                        :style="{ top: `${projectionSeries.baselinePx}px` }"
+	                    ></div>
+	                    <div class="pointer-events-none absolute right-0 -translate-y-1/2 text-[10px] font-semibold text-[#EF4444]" :style="{ top: `${projectionSeries.baselinePx}px` }">
+	                        Saldo zero
+	                    </div>
+
+	                    <div class="grid h-24 grid-cols-6 items-end gap-3">
+	                        <div v-for="bar in projectionSeries.bars" :key="bar.key" class="relative h-24 text-center">
+	                            <div
+	                                v-if="bar.showCriticalBadge"
+	                                class="absolute left-1/2 -translate-x-1/2 rounded-full bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-600"
+	                                :style="{ top: `${Math.max(0, bar.topPx - 22)}px` }"
+	                            >
+	                                ⚠️ {{ bar.labelShort }}
+	                            </div>
+	                            <div
+	                                class="mx-auto w-8 rounded-2xl"
+	                                :class="bar.tone"
+	                                :style="{ height: `${bar.heightPx}px`, position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: `${bar.topPx}px` }"
+	                            ></div>
+	                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-6 text-[10px] font-semibold text-slate-400">
+	                                {{ bar.labelShort }}
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	            </div>
+	            <div v-else-if="hasCashflow" class="mt-4">
 	                <div class="grid grid-cols-6 items-end gap-3">
 	                    <div v-for="bar in cashflowSeries" :key="bar.label" class="text-center">
 	                        <div class="text-[10px] font-semibold text-slate-400">{{ formatBRL(bar.amount).replace('R$', '').trim() }}</div>
