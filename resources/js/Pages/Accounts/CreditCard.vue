@@ -18,9 +18,11 @@ const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const isMobile = useMediaQuery('(max-width: 767px)');
 
 const account = computed(() => bootstrap.value.accounts.find((item) => item.type === 'credit_card') ?? null);
-const accountName = computed(() => account.value?.name ?? 'Cartão');
-const creditLimit = computed(() => account.value?.credit_limit ?? 0);
+	const accountName = computed(() => account.value?.name ?? 'Cartão');
+	const creditLimit = computed(() => account.value?.credit_limit ?? 0);
 	const currentBalance = computed(() => account.value?.current_balance ?? 0);
+	const closingDay = computed(() => account.value?.closing_day ?? null);
+	const dueDay = computed(() => account.value?.due_day ?? null);
 	const usagePct = computed(() => {
 	    if (!creditLimit.value) return 0;
 	    const ratio = currentBalance.value / creditLimit.value;
@@ -55,8 +57,8 @@ const creditLimit = computed(() => account.value?.credit_limit ?? 0);
 	        nome: account.value.name ?? 'Cartão',
 	        bandeira: 'visa',
 	        limite: Number(account.value.credit_limit ?? 0),
-	        dia_fechamento: 10,
-	        dia_vencimento: 17,
+	        dia_fechamento: Number(account.value.closing_day ?? 10),
+	        dia_vencimento: Number(account.value.due_day ?? 17),
 	        cor: '#8B5CF6',
 	    };
 	});
@@ -169,6 +171,10 @@ const formatMoney = (value: number) =>
 	                    </div>
 	                </div>
 
+	                <div v-if="closingDay && dueDay" class="mt-4 text-xs font-semibold text-slate-500">
+	                    📅 Fecha dia {{ closingDay }} <span class="text-slate-300">|</span> Vence dia {{ dueDay }}
+	                </div>
+
                 <button class="mt-5 w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white disabled:opacity-60" type="button" :disabled="!currentBalance">Pagar fatura</button>
             </div>
             <div v-else class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center">
@@ -257,6 +263,10 @@ const formatMoney = (value: number) =>
 	                            <div>Usado: {{ usagePct }}%</div>
 	                            <div>Disponível: {{ formatMoney(available) }}</div>
 	                        </div>
+	                    </div>
+
+	                    <div v-if="closingDay && dueDay" class="mt-4 text-xs font-semibold text-slate-500">
+	                        📅 Fecha dia {{ closingDay }} <span class="text-slate-300">|</span> Vence dia {{ dueDay }}
 	                    </div>
 
                     <button class="mt-8 w-full rounded-2xl py-3 text-sm font-semibold text-slate-900 disabled:opacity-60" type="button" :disabled="!currentBalance">
