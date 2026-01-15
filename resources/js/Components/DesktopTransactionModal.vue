@@ -240,7 +240,7 @@ const save = () => {
 	                                    <path d="M20 6 9 17l-5-5" />
 	                                </svg>
 	                            </span>
-	                            <span class="text-sm font-semibold text-slate-500">Pago</span>
+	                            <span class="text-sm font-semibold text-slate-500">Já paguei</span>
 	                            <span
 	                                class="absolute bottom-full left-0 mb-2 hidden w-64 rounded-lg bg-slate-800 px-3 py-2 text-xs font-medium text-white shadow-lg group-hover:block"
 	                            >
