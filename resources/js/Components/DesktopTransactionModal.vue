@@ -37,6 +37,14 @@ const data_fim = ref('');
 const fimMode = ref<'sempre' | 'ate'>('sempre');
 const recurrenceError = ref<string>('');
 
+watch(periodicidade, (value) => {
+    if (value !== 'a_cada_x_dias') intervalo_dias.value = null;
+});
+
+watch(fimMode, (value) => {
+    if (value !== 'ate') data_fim.value = '';
+});
+
 const transferFrom = ref('Banco Inter');
 const transferTo = ref('Carteira');
 const transferDescription = ref('');
@@ -369,12 +377,18 @@ const save = () => {
 	                                    <input type="radio" v-model="periodicidade" value="mensal" class="h-4 w-4" />
 	                                    Todo mês
 	                                </label>
-	                                <label class="mt-2 flex items-center gap-3 text-sm font-semibold text-slate-600">
-	                                    <input type="radio" v-model="periodicidade" value="a_cada_x_dias" class="h-4 w-4" />
-	                                    A cada
-	                                    <input v-model.number="intervalo_dias" type="number" min="1" class="h-10 w-20 rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100" />
-	                                    dias
-	                                </label>
+		                                <label class="mt-2 flex items-center gap-3 text-sm font-semibold text-slate-600">
+		                                    <input type="radio" v-model="periodicidade" value="a_cada_x_dias" class="h-4 w-4" />
+		                                    A cada
+		                                    <input
+		                                        v-if="periodicidade === 'a_cada_x_dias'"
+		                                        v-model.number="intervalo_dias"
+		                                        type="number"
+		                                        min="1"
+		                                        class="h-10 w-20 rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+		                                    />
+		                                    <span v-if="periodicidade === 'a_cada_x_dias'">dias</span>
+		                                </label>
 	                            </div>
 
 	                            <div>

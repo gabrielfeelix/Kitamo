@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+	import { computed, ref, watch } from 'vue';
 
 type TransactionKind = 'expense' | 'income' | 'transfer';
 type DateKind = 'today' | 'other';
@@ -58,6 +58,14 @@ const isRecorrente = ref(false);
 	const data_fim = ref<string>('');
 	const fimMode = ref<'sempre' | 'ate'>('sempre');
 	const recurrenceError = ref<string>('');
+
+	watch(periodicidade, (value) => {
+	    if (value !== 'a_cada_x_dias') intervalo_dias.value = null;
+	});
+
+	watch(fimMode, (value) => {
+	    if (value !== 'ate') data_fim.value = '';
+	});
 
 const isExpense = computed(() => localKind.value === 'expense');
 const isTransfer = computed(() => localKind.value === 'transfer');
@@ -478,17 +486,18 @@ watch(
                                                 <input type="radio" v-model="periodicidade" value="mensal" class="h-4 w-4" />
                                                 <span class="text-sm text-[#374151]">Todo mês</span>
                                             </label>
-                                            <label class="flex items-center gap-3">
-                                                <input type="radio" v-model="periodicidade" value="a_cada_x_dias" class="h-4 w-4" />
-                                                <span class="text-sm text-[#374151]">A cada</span>
-                                                <input
-                                                    v-model.number="intervalo_dias"
-                                                    type="number"
-                                                    min="1"
-                                                    class="h-8 w-20 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                                                />
-                                                <span class="text-sm text-[#374151]">dias</span>
-                                            </label>
+	                                            <label class="flex items-center gap-3">
+	                                                <input type="radio" v-model="periodicidade" value="a_cada_x_dias" class="h-4 w-4" />
+	                                                <span class="text-sm text-[#374151]">A cada</span>
+	                                                <input
+	                                                    v-if="periodicidade === 'a_cada_x_dias'"
+	                                                    v-model.number="intervalo_dias"
+	                                                    type="number"
+	                                                    min="1"
+	                                                    class="h-8 w-20 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+	                                                />
+	                                                <span v-if="periodicidade === 'a_cada_x_dias'" class="text-sm text-[#374151]">dias</span>
+	                                            </label>
                                         </div>
                                     </div>
 
