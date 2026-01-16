@@ -34,7 +34,6 @@ const form = useForm({
     email: userEmail.value,
     phone: userPhone.value,
     avatar: null as File | null,
-    _method: 'patch',
 });
 
 watch(
@@ -48,10 +47,19 @@ watch(
 
 const passwordOpen = ref(false);
 
-const submit = () => {
-    form.post(route('profile.update'), {
+const submitProfile = () => {
+    form.patch(route('profile.update'), {
+        preserveScroll: true,
+    });
+};
+
+const submitAvatar = () => {
+    form.transform((data) => ({ ...data, _method: 'patch' })).post(route('profile.update'), {
         forceFormData: true,
         preserveScroll: true,
+        onSuccess: () => {
+            form.avatar = null;
+        },
     });
 };
 
@@ -62,7 +70,7 @@ const onAvatarChange = (event: Event) => {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
     if (!file) return;
     form.avatar = file;
-    submit();
+    submitAvatar();
 };
 </script>
 
@@ -105,7 +113,7 @@ const onAvatarChange = (event: Event) => {
             </div>
         </div>
 
-        <form class="mt-8 space-y-5 pb-[calc(6rem+env(safe-area-inset-bottom))]" @submit.prevent="submit">
+        <form class="mt-8 space-y-5 pb-[calc(6rem+env(safe-area-inset-bottom))]" @submit.prevent="submitProfile">
             <div>
                 <div class="mb-2 text-sm font-semibold text-slate-700">Nome completo</div>
                 <input
@@ -165,7 +173,7 @@ const onAvatarChange = (event: Event) => {
                     type="button"
                     class="h-[52px] w-full rounded-2xl bg-[#14B8A6] text-base font-bold text-white shadow-[0_2px_8px_rgba(20,184,166,0.25)] disabled:opacity-60"
                     :disabled="form.processing"
-                    @click="submit"
+                    @click="submitProfile"
                 >
                     Salvar alterações
                 </button>
