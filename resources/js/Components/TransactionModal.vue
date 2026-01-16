@@ -264,7 +264,7 @@ watch(
                                 v-model="description"
                                 type="text"
                                 placeholder="Descrição (ex: Almoço de domingo)"
-                                class="w-full bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:outline-none"
+                                class="w-full appearance-none border-0 bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-300 outline-none focus:outline-none focus:ring-0"
                             />
                         </div>
                     </div>
