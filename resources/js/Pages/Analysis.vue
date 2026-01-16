@@ -10,13 +10,35 @@ import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import ExportReportModal from '@/Components/ExportReportModal.vue';
 import DesktopExportReportModal from '@/Components/DesktopExportReportModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
+import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
+import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 
 const page = usePage();
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
 );
 const entries = computed(() => bootstrap.value.entries ?? []);
+const pickerCategories = computed<CategoryOption[]>(() => {
+    const unique = new Map<string, CategoryOption>();
+    for (const c of bootstrap.value.categories ?? []) {
+        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate' });
+    }
+    return Array.from(unique.values());
+});
+
+const pickerAccounts = computed<AccountOption[]>(() => {
+    const tone = (name: string): AccountOption['tone'] => {
+        const n = name.toLowerCase();
+        if (n.includes('nubank')) return 'purple';
+        if (n.includes('inter')) return 'amber';
+        if (n.includes('carteira') || n.includes('dinheiro')) return 'emerald';
+        return 'slate';
+    };
+    return (bootstrap.value.accounts ?? [])
+        .filter((a) => a.type !== 'credit_card')
+        .map((a) => ({ key: a.name, label: a.name, subtitle: a.type === 'wallet' ? 'Carteira' : 'Conta', tone: tone(a.name) }));
+});
 
 const monthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
 const yearKey = (date: Date) => `${date.getFullYear()}`;
@@ -27,7 +49,7 @@ const monthLabel = computed(() => {
     const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
     return `${month} ${activeMonth.value.getFullYear()}`;
 });
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const shiftMonth = (delta: number) => {
     const d = new Date(activeMonth.value);
     d.setMonth(d.getMonth() + delta);
@@ -420,7 +442,14 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             </div>
         </div>
 
-        <TransactionModal :open="transactionOpen" :kind="transactionKind" @close="transactionOpen = false" @save="onTransactionSave" />
+        <TransactionModal
+            :open="transactionOpen"
+            :kind="transactionKind"
+            :categories="pickerCategories"
+            :accounts="pickerAccounts"
+            @close="transactionOpen = false"
+            @save="onTransactionSave"
+        />
         <ExportReportModal
             :open="exportOpen"
             @close="exportOpen = false"

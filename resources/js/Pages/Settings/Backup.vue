@@ -5,9 +5,9 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopSettingsShell from '@/Layouts/DesktopSettingsShell.vue';
 import ToggleSwitch from '@/Components/ToggleSwitch.vue';
 import MobileToast from '@/Components/MobileToast.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const synced = ref(true);
 const autoBackup = ref(true);

@@ -4,9 +4,9 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import type { BootstrapData } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const query = ref('');
 const page = usePage();
 const bootstrap = computed(

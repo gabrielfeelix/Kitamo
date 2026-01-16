@@ -8,7 +8,7 @@ import MobileToast from '@/Components/MobileToast.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import NewAccountModal from '@/Components/NewAccountModal.vue';
 import { requestJson } from '@/lib/kitamoApi';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 type AccountType = 'wallet' | 'bank' | 'card';
 
@@ -16,7 +16,7 @@ const props = defineProps<{
     accountKey: string;
 }>();
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const page = usePage();
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,

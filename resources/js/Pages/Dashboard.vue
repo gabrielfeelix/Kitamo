@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestJson } from '@/lib/kitamoApi';
 import { buildTransactionRequest } from '@/lib/transactions';
-import type { BootstrapData, Entry, Goal } from '@/types/kitamo';
+import type { BootstrapData, CreditCard, Entry, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
 import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
 import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
+import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
+import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
 import CreateAccountFlowModal from '@/Components/CreateAccountFlowModal.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 type ProjecaoResponse = {
     projecao_diaria: Array<{
@@ -32,7 +34,7 @@ const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
 );
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);
@@ -224,6 +226,18 @@ const creditCards = computed(() =>
         })),
 );
 
+const creditCardsApi = ref<CreditCard[]>([]);
+const loadCreditCardsApi = async () => {
+    // Se já veio via bootstrap.accounts, não precisa
+    if (creditCards.value.length > 0) return;
+    try {
+        const response = await requestJson<{ cartoes: CreditCard[] }>('/api/cartoes', { method: 'GET' });
+        creditCardsApi.value = response.cartoes ?? [];
+    } catch {
+        creditCardsApi.value = [];
+    }
+};
+
 type CreditCardTab = 'open' | 'closed';
 const creditCardsTab = ref<CreditCardTab>('open');
 
@@ -249,7 +263,26 @@ const isInvoiceClosed = (closingDay: number | null, now: Date) => {
 const creditCardsDisplay = computed(() => {
     const now = new Date();
 
-    return creditCards.value
+    const source =
+        creditCards.value.length > 0
+            ? creditCards.value.map((c) => ({
+                  id: c.id,
+                  label: c.label,
+                  limit: c.limit,
+                  used: c.used,
+                  closingDay: c.closingDay,
+                  dueDay: c.dueDay,
+              }))
+            : creditCardsApi.value.map((c) => ({
+                  id: c.id,
+                  label: c.nome,
+                  limit: c.limite,
+                  used: c.limite_usado ?? 0,
+                  closingDay: c.dia_fechamento ?? null,
+                  dueDay: c.dia_vencimento ?? null,
+              }));
+
+    return source
         .map((card) => {
             const percent = card.limit > 0 ? Math.min(100, Math.max(0, (card.used / card.limit) * 100)) : 0;
             const available = card.limit > 0 ? Math.max(0, card.limit - card.used) : 0;
@@ -380,6 +413,7 @@ const saveCreditCard = async (payload: CreditCardModalPayload) => {
         });
         showToast('Cartão adicionado com sucesso!');
         creditCardModalOpen.value = false;
+        await loadCreditCardsApi();
         router.reload();
     } catch {
         showToast('Não foi possível adicionar o cartão');
@@ -443,6 +477,48 @@ const toCategoryIcon = (entry: Entry): TransactionDetail['categoryIcon'] => {
     if (icon.includes('cart')) return 'cart';
     return 'bolt';
 };
+
+const pickerCategories = computed<CategoryOption[]>(() => {
+    const mapTone = (label: string) => {
+        const k = label.toLowerCase();
+        if (k.includes('aliment')) return 'amber';
+        if (k.includes('mora') || k.includes('casa')) return 'blue';
+        if (k.includes('transp') || k.includes('uber') || k.includes('car')) return 'slate';
+        if (k.includes('lazer')) return 'purple';
+        if (k.includes('saúd') || k.includes('saude')) return 'red';
+        if (k.includes('estud')) return 'green';
+        return 'slate';
+    };
+
+    const unique = new Map<string, { label: string; icon: 'food' | 'home' | 'car' | 'other'; tone: any }>();
+    for (const c of bootstrap.value.categories ?? []) {
+        const label = c.name;
+        const iconKey = toCategoryIcon({ categoryKey: c.name, icon: c.icon ?? '' } as any);
+        const icon = iconKey === 'home' ? 'home' : iconKey === 'car' ? 'car' : iconKey === 'food' || iconKey === 'cart' ? 'food' : 'other';
+        unique.set(label, { label, icon, tone: mapTone(label) });
+    }
+    if (!unique.size) return [];
+    return Array.from(unique.values()).map((meta) => ({ key: meta.label, ...meta }));
+});
+
+const pickerAccounts = computed<AccountOption[]>(() => {
+    const tone = (name: string): AccountOption['tone'] => {
+        const n = name.toLowerCase();
+        if (n.includes('nubank')) return 'purple';
+        if (n.includes('inter')) return 'amber';
+        if (n.includes('carteira') || n.includes('dinheiro')) return 'emerald';
+        return 'slate';
+    };
+
+    return (bootstrap.value.accounts ?? [])
+        .filter((a) => a.type !== 'credit_card')
+        .map((a) => ({
+            key: a.name,
+            label: a.name,
+            subtitle: a.type === 'wallet' ? 'Carteira' : a.type === 'bank' ? 'Conta' : 'Conta',
+            tone: tone(a.name),
+        }));
+});
 
 const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
     const entry = mobileSelectedEntry.value;
@@ -598,6 +674,10 @@ const openBillDetails = (id: string) => {
 
     openEntryDetail(entry);
 };
+
+onMounted(() => {
+    loadCreditCardsApi();
+});
 </script>
 
 <template>
@@ -1007,7 +1087,15 @@ const openBillDetails = (id: string) => {
             </div>
         </section>
 
-	        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
+	        <TransactionModal
+                :open="transactionOpen"
+                :kind="transactionKind"
+                :initial="transactionInitial"
+                :categories="pickerCategories"
+                :accounts="pickerAccounts"
+                @close="transactionOpen = false"
+                @save="onTransactionSave"
+            />
 	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
 	        <CreateAccountFlowModal :open="createAccountOpen" @close="createAccountOpen = false" @toast="showToast" />
 	        <TransactionDetailModal

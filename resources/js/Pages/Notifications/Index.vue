@@ -4,7 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { requestJson } from '@/lib/kitamoApi';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 type NotificationItem = {
   id: string;
@@ -14,7 +14,7 @@ type NotificationItem = {
   created_at: string;
 };
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const loading = ref(false);
 const items = ref<NotificationItem[]>([]);
 
@@ -102,4 +102,3 @@ onMounted(load);
     </div>
   </KitamoLayout>
 </template>
-

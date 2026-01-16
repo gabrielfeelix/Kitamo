@@ -5,10 +5,10 @@ import { requestJson } from '@/lib/kitamoApi';
 import type { Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { formatMoneyInputCentsShift, moneyInputToNumber } from '@/lib/moneyInput';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 type IconKey = 'home' | 'car' | 'plane' | 'cap' | 'bag' | 'laptop';
 

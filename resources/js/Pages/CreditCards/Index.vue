@@ -6,11 +6,11 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 import { requestJson } from '@/lib/kitamoApi';
 
 const page = usePage();
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 // Data
 const cardsList = ref<CreditCard[]>((page.props as any).creditCards || []);

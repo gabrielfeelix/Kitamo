@@ -5,9 +5,9 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopSettingsShell from '@/Layouts/DesktopSettingsShell.vue';
 import ToggleSwitch from '@/Components/ToggleSwitch.vue';
 import ChangePasswordModal from '@/Components/ChangePasswordModal.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const biometric = ref(true);
 const passwordOpen = ref(false);

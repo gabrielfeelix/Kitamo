@@ -7,14 +7,14 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import MobileShell from '@/Layouts/MobileShell.vue';
 import ChangePasswordModal from '@/Components/ChangePasswordModal.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 defineProps<{
     mustVerifyEmail?: boolean;
     status?: string;
 }>();
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');

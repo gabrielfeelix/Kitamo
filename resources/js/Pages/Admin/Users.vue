@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import MobileShell from '@/Layouts/MobileShell.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 const props = defineProps<{
     users: Array<{
@@ -15,7 +15,7 @@ const props = defineProps<{
     }>;
 }>();
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const activeUserId = ref<number | null>(null);
 
 const form = useForm({

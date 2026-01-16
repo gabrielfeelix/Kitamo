@@ -7,10 +7,10 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import DesktopTransactionModal from '@/Components/DesktopTransactionModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const page = usePage();
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,

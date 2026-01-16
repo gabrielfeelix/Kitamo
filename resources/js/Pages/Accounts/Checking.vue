@@ -4,14 +4,14 @@ import { Link, usePage } from '@inertiajs/vue3';
 import type { BootstrapData, Entry } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
 const page = usePage();
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
 );
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const account = computed(() =>
     bootstrap.value.accounts.find((item) => item.type === 'bank')

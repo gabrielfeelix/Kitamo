@@ -7,8 +7,9 @@ import { useMediaQuery } from '@/composables/useMediaQuery';
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const page = usePage<any>();
 const darkMode = ref(false);
 const brl = ref(true);

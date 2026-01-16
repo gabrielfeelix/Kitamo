@@ -2,9 +2,9 @@
 import { Head } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopSettingsShell from '@/Layouts/DesktopSettingsShell.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 </script>
 
 <template>
@@ -72,4 +72,3 @@ const isMobile = useMediaQuery('(max-width: 767px)');
         </div>
     </DesktopSettingsShell>
 </template>
-

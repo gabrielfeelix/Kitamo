@@ -14,14 +14,16 @@
 	import ImportInvoiceModal from '@/Components/ImportInvoiceModal.vue';
 	import DesktopImportChooserModal from '@/Components/DesktopImportChooserModal.vue';
 	import DesktopTransactionDrawer from '@/Components/DesktopTransactionDrawer.vue';
-	import { useMediaQuery } from '@/composables/useMediaQuery';
+	import { useIsMobile } from '@/composables/useIsMobile';
+import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
+import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
 );
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 type FilterKind = 'all' | 'paid' | 'to_pay';
 
@@ -41,6 +43,26 @@ const entryKindFilter = ref<'all' | 'income' | 'expense'>('all');
 const accountFilter = ref<'all' | string>('all');
 
 const entries = ref<Entry[]>(bootstrap.value.entries ?? []);
+const pickerCategories = computed<CategoryOption[]>(() => {
+    const unique = new Map<string, CategoryOption>();
+    for (const c of bootstrap.value.categories ?? []) {
+        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate' });
+    }
+    return Array.from(unique.values());
+});
+
+const pickerAccounts = computed<AccountOption[]>(() => {
+    const tone = (name: string): AccountOption['tone'] => {
+        const n = name.toLowerCase();
+        if (n.includes('nubank')) return 'purple';
+        if (n.includes('inter')) return 'amber';
+        if (n.includes('carteira') || n.includes('dinheiro')) return 'emerald';
+        return 'slate';
+    };
+    return (bootstrap.value.accounts ?? [])
+        .filter((a) => a.type !== 'credit_card')
+        .map((a) => ({ key: a.name, label: a.name, subtitle: a.type === 'wallet' ? 'Carteira' : 'Conta', tone: tone(a.name) }));
+});
 
 const accountOptions = computed(() => {
     const options = new Set<string>();
@@ -755,7 +777,15 @@ onMounted(() => {
             </div>
         </div>
 
-	        <TransactionModal :open="transactionOpen" :kind="transactionKind" :initial="transactionInitial" @close="transactionOpen = false" @save="onTransactionSave" />
+	        <TransactionModal
+                :open="transactionOpen"
+                :kind="transactionKind"
+                :initial="transactionInitial"
+                :categories="pickerCategories"
+                :accounts="pickerAccounts"
+                @close="transactionOpen = false"
+                @save="onTransactionSave"
+            />
 	        <TransactionDetailModal
 	            :open="detailOpen"
 	            :transaction="detailTransaction"

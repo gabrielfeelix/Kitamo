@@ -2,6 +2,8 @@
 	import { computed, ref, watch } from 'vue';
 import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 import DatePickerSheet from '@/Components/DatePickerSheet.vue';
+import CategoryPickerSheet, { type CategoryOption } from '@/Components/CategoryPickerSheet.vue';
+import AccountPickerSheet, { type AccountOption } from '@/Components/AccountPickerSheet.vue';
 
 type TransactionKind = 'expense' | 'income' | 'transfer';
 type DateKind = 'today' | 'other';
@@ -31,6 +33,8 @@ const props = defineProps<{
     open: boolean;
     kind: TransactionKind;
     initial?: TransactionModalPayload | null;
+    categories?: CategoryOption[];
+    accounts?: AccountOption[];
 }>();
 
 const emit = defineEmits<{
@@ -52,6 +56,8 @@ const transferDescription = ref('');
 const dateKind = ref<DateKind>('today');
 const dateOther = ref<string>('');
 const dateSheetOpen = ref(false);
+const categorySheetOpen = ref(false);
+const accountSheetOpen = ref(false);
 const isInstallment = ref(false);
 const installmentCount = ref(1);
 const isPaid = ref(false);
@@ -160,6 +166,35 @@ const selectToday = () => {
 const setDateOther = (br: string) => {
     dateKind.value = 'other';
     dateOther.value = br;
+};
+
+const categories = computed<CategoryOption[]>(() => {
+    const fallback: CategoryOption[] = [
+        { key: 'Alimentação', label: 'Alimentação', icon: 'food', tone: 'amber' },
+        { key: 'Moradia', label: 'Moradia', icon: 'home', tone: 'blue' },
+        { key: 'Transporte', label: 'Transporte', icon: 'car', tone: 'slate' },
+        { key: 'Lazer', label: 'Lazer', icon: 'other', tone: 'purple' },
+        { key: 'Saúde', label: 'Saúde', icon: 'other', tone: 'red' },
+        { key: 'Estudos', label: 'Estudos', icon: 'other', tone: 'green' },
+    ];
+    return props.categories?.length ? props.categories : fallback;
+});
+
+const accounts = computed<AccountOption[]>(() => {
+    const fallback: AccountOption[] = [
+        { key: 'Nubank', label: 'Nubank', subtitle: 'Conta Corrente', tone: 'purple' },
+        { key: 'Inter', label: 'Inter', subtitle: 'Conta Digital', tone: 'amber' },
+        { key: 'Dinheiro', label: 'Dinheiro', subtitle: 'Carteira Física', tone: 'emerald' },
+    ];
+    return props.accounts?.length ? props.accounts : fallback;
+});
+
+const openCategorySheet = () => {
+    categorySheetOpen.value = true;
+};
+
+const openAccountSheet = () => {
+    accountSheetOpen.value = true;
 };
 
 	const save = () => {
@@ -284,7 +319,7 @@ watch(
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70">
+                        <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openCategorySheet">
                             <div class="flex items-center gap-3">
                                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -305,7 +340,7 @@ watch(
                             </div>
                         </button>
 
-                        <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70">
+                        <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openAccountSheet">
                             <div class="flex items-center gap-3">
                                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-100 text-purple-600">
                                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -557,6 +592,20 @@ watch(
             @close="dateSheetOpen = false"
             @select-today="() => { selectToday(); dateSheetOpen = false; }"
             @update:model-value="(v) => { setDateOther(v); dateSheetOpen = false; }"
+        />
+
+        <CategoryPickerSheet
+            :open="categorySheetOpen"
+            :options="categories"
+            @close="categorySheetOpen = false"
+            @select="(key) => { category = key; categorySheetOpen = false; }"
+        />
+
+        <AccountPickerSheet
+            :open="accountSheetOpen"
+            :options="accounts"
+            @close="accountSheetOpen = false"
+            @select="(key) => { account = key; accountSheetOpen = false; }"
         />
     </div>
 </template>

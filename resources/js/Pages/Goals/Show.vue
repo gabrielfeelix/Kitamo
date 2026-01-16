@@ -7,9 +7,9 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import AddMoneyModal from '@/Components/AddMoneyModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 
 const page = usePage();
 const bootstrap = computed(

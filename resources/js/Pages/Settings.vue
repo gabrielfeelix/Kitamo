@@ -9,9 +9,9 @@ import TransactionModal, { type TransactionModalPayload } from '@/Components/Tra
 import NewAccountModal from '@/Components/NewAccountModal.vue';
 import NewCategoryModal from '@/Components/NewCategoryModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
-import { useMediaQuery } from '@/composables/useMediaQuery';
+import { useIsMobile } from '@/composables/useIsMobile';
 
-const isMobile = useMediaQuery('(max-width: 767px)');
+const isMobile = useIsMobile();
 const page = usePage();
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
