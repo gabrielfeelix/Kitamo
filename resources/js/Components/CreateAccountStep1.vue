@@ -84,22 +84,38 @@ const selectBanco = (banco: typeof bancos[0]) => {
           </div>
 
           <!-- Banks List -->
-          <div class="mt-6 space-y-2">
+          <div class="mt-6 grid grid-cols-2 gap-3">
             <button
               v-for="banco in bancosFiltrados"
               :key="banco.nome"
               type="button"
-              class="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50"
+              class="aspect-[2/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
               @click="selectBanco(banco)"
             >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <span class="text-2xl">{{ banco.logo }}</span>
-                  <span class="font-semibold text-slate-900">{{ banco.nome }}</span>
+              <div class="flex h-full flex-col">
+                <div class="flex items-start justify-between">
+                  <span
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl text-xl"
+                    :style="{ backgroundColor: `${banco.cor}22`, color: banco.cor }"
+                    aria-hidden="true"
+                  >
+                    {{ banco.logo }}
+                  </span>
+                  <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
-                <svg class="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 5l7 7-7 7" />
-                </svg>
+
+                <div class="mt-4 flex-1">
+                  <div class="line-clamp-2 text-base font-semibold leading-tight text-slate-900">
+                    {{ banco.nome }}
+                  </div>
+                  <div class="mt-2 text-xs font-semibold text-slate-400">Toque para selecionar</div>
+                </div>
+
+                <div class="mt-3 h-1 w-full rounded-full bg-slate-100">
+                  <div class="h-1 rounded-full" :style="{ width: '35%', backgroundColor: banco.cor }"></div>
+                </div>
               </div>
             </button>
           </div>
