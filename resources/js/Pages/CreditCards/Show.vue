@@ -9,6 +9,7 @@ import TransactionModal, { type TransactionModalPayload } from '@/Components/Tra
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
+import InstallmentInvoiceSheet from '@/Components/InstallmentInvoiceSheet.vue';
 import { requestJson } from '@/lib/kitamoApi';
 import { buildTransactionRequest } from '@/lib/transactions';
 
@@ -115,6 +116,7 @@ const transactionOpen = ref(false);
 const transactionInitial = ref<TransactionModalPayload | null>(null);
 const editOpen = ref(false);
 const deleteOpen = ref(false);
+const installmentOpen = ref(false);
 
 const toastOpen = ref(false);
 const toastMessage = ref('');
@@ -206,6 +208,15 @@ const confirmDelete = async () => {
     } finally {
         deleteOpen.value = false;
     }
+};
+
+const openInstallments = () => {
+    installmentOpen.value = true;
+};
+
+const confirmInstallments = (_payload: { installments: number; interestRate: number; fee: number }) => {
+    installmentOpen.value = false;
+    showToast('Em breve: parcelamento de fatura');
 };
 </script>
 
@@ -366,7 +377,7 @@ const confirmDelete = async () => {
 
         <footer class="fixed inset-x-0 bottom-0 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_-32px_rgba(15,23,42,0.45)]">
             <div class="mx-auto flex w-full max-w-md gap-3">
-                <button type="button" class="h-[52px] flex-1 rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500">
+                <button type="button" class="h-[52px] flex-1 rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500" @click="openInstallments">
                     Parcelar
                 </button>
                 <button type="button" class="h-[52px] flex-[1.2] rounded-2xl text-sm font-semibold text-white" :style="{ backgroundColor: cardColor }">
@@ -394,6 +405,14 @@ const confirmDelete = async () => {
             confirmLabel="Excluir"
             @close="deleteOpen = false"
             @confirm="confirmDelete"
+        />
+
+        <InstallmentInvoiceSheet
+            :open="installmentOpen"
+            :original-amount="currentInvoiceTotal"
+            :accent-color="cardColor"
+            @close="installmentOpen = false"
+            @confirm="confirmInstallments"
         />
 
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
