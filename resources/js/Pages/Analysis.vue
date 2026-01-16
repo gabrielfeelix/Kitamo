@@ -189,6 +189,11 @@ const exportTransactions = (format: 'pdf' | 'excel' | 'csv') => {
     window.location.href = url;
 };
 
+const openQuickTransaction = () => {
+    transactionKind.value = 'expense';
+    transactionOpen.value = true;
+};
+
 const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
         showToast('Transferência realizada');
@@ -216,7 +221,7 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
 </script>
 
 <template>
-    <MobileShell v-if="isMobile">
+    <MobileShell v-if="isMobile" @add="openQuickTransaction">
         <header class="flex items-center justify-between pt-2">
             <div>
                 <div class="text-2xl font-semibold tracking-tight text-slate-900">Análise</div>

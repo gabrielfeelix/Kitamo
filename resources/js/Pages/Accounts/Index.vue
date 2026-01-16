@@ -518,7 +518,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <MobileShell v-if="isMobile">
+    <MobileShell v-if="isMobile" @add="openCreate">
 	        <header class="flex items-center justify-between pt-2">
 	            <div>
 	                <div class="text-2xl font-semibold tracking-tight text-slate-900">Lançamentos</div>
