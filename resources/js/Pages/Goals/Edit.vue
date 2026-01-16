@@ -6,7 +6,7 @@ import type { BootstrapData, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
-import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber } from '@/lib/moneyInput';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -36,7 +36,7 @@ const due = ref(initial.value.due);
 
 const onTargetInput = (event: Event) => {
     const targetEl = event.target as HTMLInputElement;
-    target.value = formatMoneyInput(targetEl.value);
+    target.value = formatMoneyInputCentsShift(targetEl.value);
 };
 
 const parseDueDate = (label: string) => {
@@ -158,8 +158,6 @@ const submit = async () => {
                     :value="target"
                     @input="onTargetInput"
                     placeholder="0,00"
-                    @focus="() => { if (target === '0,00') target = '' }"
-                    @blur="() => { if (!target.trim()) target = '0,00' }"
                     class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 focus:border-[#14B8A6] focus:outline-none focus:ring-0"
                 />
             </div>

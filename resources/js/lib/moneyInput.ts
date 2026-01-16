@@ -56,3 +56,14 @@ export const formatMoneyInput = (raw: string) => {
     return `${negative ? '-' : ''}${wholeWithThousands},${cents}`;
 };
 
+// "Calculadora": digitar 1,9,0 => 1,90 ; adicionar 0,0 => 190,00
+export const formatMoneyInputCentsShift = (raw: string) => {
+    const digits = String(raw ?? '').replace(/[^\d]/g, '');
+    if (!digits) return '';
+
+    const padded = digits.padStart(3, '0');
+    const cents = padded.slice(-2);
+    const wholeRaw = padded.slice(0, -2).replace(/^0+/, '') || '0';
+    const whole = wholeRaw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${whole},${cents}`;
+};

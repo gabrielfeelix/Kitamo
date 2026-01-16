@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { formatMoneyInput, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 
 export type CreditCardModalPayload = {
   id?: string;
@@ -46,7 +46,7 @@ const cores = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#1F2937']
 
 const onLimiteInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  limite.value = formatMoneyInput(target.value);
+  limite.value = formatMoneyInputCentsShift(target.value);
 };
 
 const limiteNumber = computed(() => {
@@ -165,12 +165,10 @@ watch(
               <span class="text-base text-[#6B7280]">R$</span>
               <input
                 class="h-full w-full flex-1 bg-transparent text-center text-base text-[#374151] focus:outline-none focus:ring-0"
-                inputmode="decimal"
+                inputmode="numeric"
                 autocomplete="off"
                 :value="limite"
                 @input="onLimiteInput"
-                @focus="() => { if (limite === '0,00') limite = '' }"
-                @blur="() => { if (!limite.trim()) limite = '0,00' }"
                 placeholder="0,00"
                 aria-label="Limite"
               />

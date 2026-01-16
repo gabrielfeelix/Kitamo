@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { formatMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift } from '@/lib/moneyInput';
 
 export type TransactionFilterState = {
     categories: string[];
@@ -59,12 +59,12 @@ const toggleTag = (tag: string) => {
 
 const onMinInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    local.value.min = formatMoneyInput(target.value);
+    local.value.min = formatMoneyInputCentsShift(target.value);
 };
 
 const onMaxInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    local.value.max = formatMoneyInput(target.value);
+    local.value.max = formatMoneyInputCentsShift(target.value);
 };
 
 const centsFromMoneyInput = (value: string) => {

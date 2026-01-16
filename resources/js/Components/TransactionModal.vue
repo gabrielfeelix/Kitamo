@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { computed, ref, watch } from 'vue';
-import { formatMoneyInput, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 
 type TransactionKind = 'expense' | 'income' | 'transfer';
 type DateKind = 'today' | 'other';
@@ -86,7 +86,7 @@ const pillClass = (kind: TransactionKind) => {
 
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = formatMoneyInput(target.value);
+    amount.value = formatMoneyInputCentsShift(target.value);
 };
 
 const amountNumber = computed(() => {
@@ -237,15 +237,14 @@ watch(
                     <div class="mt-2 flex items-center justify-center gap-3">
                         <div class="text-2xl font-bold" :class="amountTextClass">R$</div>
                         <input
-                            class="amount-input w-[240px] bg-transparent text-center text-[56px] font-bold leading-none tracking-tight text-slate-200 focus:outline-none focus:ring-0"
+                            class="amount-input w-[240px] bg-transparent text-center text-[56px] font-bold leading-none tracking-tight text-slate-200 placeholder:text-slate-200 focus:outline-none focus:ring-0"
                             :class="amountTextClass"
-                            inputmode="decimal"
+                            inputmode="numeric"
                             autocomplete="off"
                             spellcheck="false"
-                            :value="amount || '0,00'"
+                            :value="amount"
                             @input="onAmountInput"
-                            @focus="() => { if (amount === '0,00' || !amount.trim()) amount = '' }"
-                            @blur="() => { if (!amount.trim()) amount = '0,00' }"
+                            placeholder="0,00"
                             aria-label="Valor"
                         />
                     </div>

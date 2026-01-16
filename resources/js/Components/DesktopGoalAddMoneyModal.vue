@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { formatMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift } from '@/lib/moneyInput';
 
 const props = defineProps<{
     open: boolean;
@@ -17,7 +17,7 @@ const amount = ref('');
 
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = formatMoneyInput(target.value);
+    amount.value = formatMoneyInputCentsShift(target.value);
 };
 
 watch(
@@ -53,8 +53,6 @@ watch(
                         inputmode="decimal"
                         :value="amount"
                         @input="onAmountInput"
-                        @focus="() => { if (amount === '0,00') amount = '' }"
-                        @blur="() => { if (!amount.trim()) amount = '0,00' }"
                         placeholder="0,00"
                         aria-label="Valor"
                     />

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { computed, ref, watch } from 'vue';
-import { formatMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift } from '@/lib/moneyInput';
 
 	type AccountType = 'wallet' | 'bank' | 'card';
 
@@ -23,7 +23,7 @@ const initialBalance = ref('');
 
 const onInitialBalanceInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    initialBalance.value = formatMoneyInput(target.value);
+    initialBalance.value = formatMoneyInputCentsShift(target.value);
 };
 
 const headerIcon = computed(() => {
@@ -145,8 +145,6 @@ const close = () => emit('close');
 	                        inputmode="decimal"
 	                        type="text"
 	                        placeholder="0,00"
-	                        @focus="() => { if (initialBalance === '0,00') initialBalance = '' }"
-	                        @blur="() => { if (!initialBalance.trim()) initialBalance = '0,00' }"
 	                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 focus:border-teal-400 focus:outline-none"
 	                        aria-label="Saldo inicial"
 	                    />

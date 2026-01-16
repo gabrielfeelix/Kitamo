@@ -89,13 +89,13 @@ const selectBanco = (banco: typeof bancos[0]) => {
               v-for="banco in bancosFiltrados"
               :key="banco.nome"
               type="button"
-              class="aspect-[2/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
+              class="h-28 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
               @click="selectBanco(banco)"
             >
               <div class="flex h-full flex-col">
                 <div class="flex items-start justify-between">
                   <span
-                    class="flex h-11 w-11 items-center justify-center rounded-2xl text-xl"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl text-lg"
                     :style="{ backgroundColor: `${banco.cor}22`, color: banco.cor }"
                     aria-hidden="true"
                   >
@@ -106,15 +106,14 @@ const selectBanco = (banco: typeof bancos[0]) => {
                   </svg>
                 </div>
 
-                <div class="mt-4 flex-1">
-                  <div class="line-clamp-2 text-base font-semibold leading-tight text-slate-900">
+                <div class="mt-3 flex-1">
+                  <div class="line-clamp-2 text-sm font-semibold leading-snug text-slate-900">
                     {{ banco.nome }}
                   </div>
-                  <div class="mt-2 text-xs font-semibold text-slate-400">Toque para selecionar</div>
                 </div>
 
-                <div class="mt-3 h-1 w-full rounded-full bg-slate-100">
-                  <div class="h-1 rounded-full" :style="{ width: '35%', backgroundColor: banco.cor }"></div>
+                <div class="mt-2 h-1 w-full rounded-full bg-slate-100">
+                  <div class="h-1 rounded-full" :style="{ width: '40%', backgroundColor: banco.cor }"></div>
                 </div>
               </div>
             </button>

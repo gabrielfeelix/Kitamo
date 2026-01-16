@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { requestJson } from '@/lib/kitamoApi';
 import type { Goal } from '@/types/kitamo';
-import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber } from '@/lib/moneyInput';
 
 const props = defineProps<{
     open: boolean;
@@ -24,7 +24,7 @@ const due = ref('2026-12'); // Formato YYYY-MM para input type="month"
 
 const onTargetInput = (event: Event) => {
     const targetEl = event.target as HTMLInputElement;
-    target.value = formatMoneyInput(targetEl.value);
+    target.value = formatMoneyInputCentsShift(targetEl.value);
 };
 
 const targetNumber = computed(() => moneyInputToNumber(target.value));
@@ -142,8 +142,6 @@ watch(
                                 inputmode="decimal"
                                 :value="target"
                                 @input="onTargetInput"
-                                @focus="() => { if (target === '0,00') target = '' }"
-                                @blur="() => { if (!target.trim()) target = '0,00' }"
                                 placeholder="0,00"
                                 aria-label="Valor objetivo"
                             />

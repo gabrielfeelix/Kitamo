@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
-import { formatMoneyInput, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 
 type TransactionKind = TransactionModalPayload['kind'];
 type DateKind = TransactionModalPayload['dateKind'];
@@ -68,7 +68,7 @@ const amountTextClass = computed(() => {
 
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = formatMoneyInput(target.value);
+    amount.value = formatMoneyInputCentsShift(target.value);
 };
 
 const amountNumber = computed(() => {
@@ -206,13 +206,11 @@ const save = () => {
                         <input
                             class="amount-input h-[64px] w-full bg-transparent text-center text-[52px] font-bold tracking-tight focus:outline-none focus:ring-0"
                             :class="amountTextClass"
-                            inputmode="decimal"
+                            inputmode="numeric"
                             autocomplete="off"
                             spellcheck="false"
                             :value="amount"
                             @input="onAmountInput"
-                            @focus="() => { if (amount === '0,00') amount = '' }"
-                            @blur="() => { if (!amount.trim()) amount = '0,00' }"
                             placeholder="0,00"
                             aria-label="Valor"
                         />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { BancoSelecionado } from './CreateAccountStep1.vue';
-import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
+import { formatMoneyInputCentsShift, moneyInputToNumber } from '@/lib/moneyInput';
 
 export type AccountPayload = {
   banco_nome: string;
@@ -46,7 +46,7 @@ const cores = ['#14B8A6', '#8B10AE', '#10B981', '#FF7A00'];
 
 const onSaldoInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  saldo.value = formatMoneyInput(target.value);
+  saldo.value = formatMoneyInputCentsShift(target.value);
 };
 
 const saldoNumber = computed(() => {
@@ -135,11 +135,9 @@ watch(
               <div class="text-4xl font-bold text-[#14B8A6]">R$</div>
               <input
                 class="mt-2 w-full bg-transparent text-center text-3xl font-bold text-slate-900 focus:outline-none focus:ring-0"
-                inputmode="decimal"
+                inputmode="numeric"
                 :value="saldo"
                 @input="onSaldoInput"
-                @focus="() => { if (saldo === '0,00') saldo = '' }"
-                @blur="() => { if (!saldo.trim()) saldo = '0,00' }"
                 placeholder="0,00"
                 aria-label="Saldo inicial"
               />
