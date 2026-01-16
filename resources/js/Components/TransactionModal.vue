@@ -91,6 +91,14 @@ const amountInputClass = computed(() => {
     return 'text-slate-900';
 });
 
+const amountSizeClass = computed(() => {
+    const len = String(amount.value ?? '').length;
+    if (len <= 6) return 'text-[56px]';
+    if (len <= 9) return 'text-[44px]';
+    if (len <= 12) return 'text-[36px]';
+    return 'text-[30px]';
+});
+
 const pillClass = (kind: TransactionKind) => {
     if (localKind.value !== kind) return 'bg-transparent text-[#9CA3AF] border border-[#E5E7EB]';
     if (kind === 'expense') return 'bg-[#FEE2E2] text-[#EF4444] border border-transparent';
@@ -292,8 +300,8 @@ watch(
                     <div class="mt-2 flex items-center justify-center gap-3">
                         <div class="text-2xl font-bold" :class="amountTextClass">R$</div>
                         <input
-                            class="amount-input w-[240px] bg-transparent text-center text-[56px] font-bold leading-none tracking-tight placeholder:text-slate-200 focus:outline-none focus:ring-0"
-                            :class="amountInputClass"
+                            class="amount-input w-full max-w-[340px] bg-transparent text-center font-bold leading-none tracking-tight placeholder:text-slate-200 focus:outline-none focus:ring-0"
+                            :class="[amountInputClass, amountSizeClass]"
                             inputmode="numeric"
                             autocomplete="off"
                             spellcheck="false"

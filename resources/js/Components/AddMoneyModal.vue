@@ -34,6 +34,14 @@ const onAmountInput = (event: Event) => {
     amount.value = formatMoneyInputCentsShift(target.value);
 };
 
+const amountSizeClass = computed(() => {
+    const len = String(amount.value ?? '').length;
+    if (len <= 6) return 'text-[56px]';
+    if (len <= 9) return 'text-[44px]';
+    if (len <= 12) return 'text-[36px]';
+    return 'text-[30px]';
+});
+
 const accentBg = computed(() => (props.accent === 'blue' ? 'bg-[#3B82F6]' : 'bg-[#14B8A6]'));
 const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8px_rgba(59,130,246,0.25)]' : 'shadow-[0_2px_8px_rgba(20,184,166,0.25)]'));
 </script>
@@ -61,7 +69,8 @@ const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8p
                         <div class="flex h-[120px] items-center">
                             <div class="w-10 text-base text-[#6B7280]">R$</div>
                             <input
-                                class="amount-input h-[72px] w-full flex-1 bg-transparent text-center text-[56px] font-bold leading-none tracking-tight focus:outline-none focus:ring-0"
+                                class="amount-input h-[72px] w-full flex-1 bg-transparent text-center font-bold leading-none tracking-tight focus:outline-none focus:ring-0"
+                                :class="amountSizeClass"
                                 type="text"
                                 inputmode="numeric"
                                 pattern="[0-9]*"
