@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	import { computed, ref, watch } from 'vue';
+import { formatMoneyInput } from '@/lib/moneyInput';
 
 	type AccountType = 'wallet' | 'bank' | 'card';
 
@@ -15,22 +16,14 @@
 
 const name = ref('');
 const type = ref<AccountType>('wallet');
-const initialBalance = ref('0,00');
+const initialBalance = ref('');
 	const icon = ref<'wallet' | 'bank' | 'card' | 'phone'>('wallet');
 
 	const isEdit = computed(() => Boolean(props.initial?.id));
 
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
-
 const onInitialBalanceInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    initialBalance.value = normalizeMoneyInput(target.value);
+    initialBalance.value = formatMoneyInput(target.value);
 };
 
 const headerIcon = computed(() => {
@@ -56,7 +49,7 @@ const close = () => emit('close');
 	        if (!isOpen) return;
 	        name.value = props.initial?.name ?? '';
 	        type.value = props.initial?.type ?? 'wallet';
-	        initialBalance.value = '0,00';
+	        initialBalance.value = '';
 	        icon.value = (props.initial?.icon as any) ?? 'wallet';
 	    },
 	);
@@ -149,8 +142,11 @@ const close = () => emit('close');
 	                    <input
 	                        :value="initialBalance"
 	                        @input="onInitialBalanceInput"
-	                        inputmode="numeric"
+	                        inputmode="decimal"
 	                        type="text"
+	                        placeholder="0,00"
+	                        @focus="() => { if (initialBalance === '0,00') initialBalance = '' }"
+	                        @blur="() => { if (!initialBalance.trim()) initialBalance = '0,00' }"
 	                        class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 focus:border-teal-400 focus:outline-none"
 	                        aria-label="Saldo inicial"
 	                    />

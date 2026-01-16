@@ -6,6 +6,7 @@ import type { Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
+import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -13,23 +14,15 @@ type IconKey = 'home' | 'car' | 'plane' | 'cap' | 'bag' | 'laptop';
 
 const name = ref('');
 const icon = ref<IconKey>('home');
-const target = ref('0,00');
+const target = ref('');
 const due = ref('Dezembro 2026');
-
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
 
 const onTargetInput = (event: Event) => {
     const targetEl = event.target as HTMLInputElement;
-    target.value = normalizeMoneyInput(targetEl.value);
+    target.value = formatMoneyInput(targetEl.value);
 };
 
-const targetNumber = computed(() => Number(target.value.replace(/\./g, '').replace(',', '.')) || 0);
+const targetNumber = computed(() => moneyInputToNumber(target.value));
 const monthly = computed(() => {
     if (!targetNumber.value) return 0;
     return 500;
@@ -157,8 +150,11 @@ const submit = async () => {
                 <input
                     :value="target"
                     @input="onTargetInput"
-                    inputmode="numeric"
+                    inputmode="decimal"
                     type="text"
+                    placeholder="0,00"
+                    @focus="() => { if (target === '0,00') target = '' }"
+                    @blur="() => { if (!target.trim()) target = '0,00' }"
                     class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 focus:border-[#14B8A6] focus:outline-none focus:ring-0"
                 />
             </div>

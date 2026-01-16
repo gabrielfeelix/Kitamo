@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { requestJson } from '@/lib/kitamoApi';
 import type { Goal } from '@/types/kitamo';
+import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
 
 const props = defineProps<{
     open: boolean;
@@ -18,23 +19,15 @@ const close = () => emit('close');
 
 const name = ref('');
 const icon = ref<IconKey>('home');
-const target = ref('0,00');
+const target = ref('');
 const due = ref('2026-12'); // Formato YYYY-MM para input type="month"
-
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
 
 const onTargetInput = (event: Event) => {
     const targetEl = event.target as HTMLInputElement;
-    target.value = normalizeMoneyInput(targetEl.value);
+    target.value = formatMoneyInput(targetEl.value);
 };
 
-const targetNumber = computed(() => Number(target.value.replace(/\./g, '').replace(',', '.')) || 0);
+const targetNumber = computed(() => moneyInputToNumber(target.value));
 
 const mapIcon = (key: IconKey) => {
     if (key === 'plane') return 'plane';
@@ -75,7 +68,7 @@ watch(
         if (!isOpen) return;
         name.value = '';
         icon.value = 'home';
-        target.value = '0,00';
+        target.value = '';
         // Define prazo padrão como dezembro do próximo ano
         const nextYear = new Date().getFullYear() + 1;
         due.value = `${nextYear}-12`;
@@ -146,9 +139,12 @@ watch(
                             <div class="text-sm font-semibold text-slate-400">R$</div>
                             <input
                                 class="w-full bg-transparent text-lg font-bold tracking-tight text-slate-900 focus:outline-none"
-                                inputmode="numeric"
+                                inputmode="decimal"
                                 :value="target"
                                 @input="onTargetInput"
+                                @focus="() => { if (target === '0,00') target = '' }"
+                                @blur="() => { if (!target.trim()) target = '0,00' }"
+                                placeholder="0,00"
                                 aria-label="Valor objetivo"
                             />
                         </div>
@@ -173,4 +169,3 @@ watch(
         </div>
     </div>
 </template>
-

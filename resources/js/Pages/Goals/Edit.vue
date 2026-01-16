@@ -6,6 +6,7 @@ import type { BootstrapData, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useMediaQuery } from '@/composables/useMediaQuery';
+import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
 
 const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -33,12 +34,9 @@ const icon = ref<IconKey>(initial.value.icon);
 const target = ref(initial.value.target);
 const due = ref(initial.value.due);
 
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
+const onTargetInput = (event: Event) => {
+    const targetEl = event.target as HTMLInputElement;
+    target.value = formatMoneyInput(targetEl.value);
 };
 
 const parseDueDate = (label: string) => {
@@ -67,7 +65,7 @@ const parseDueDate = (label: string) => {
 };
 
 const submit = async () => {
-    const newTarget = Number(normalizeMoneyInput(target.value).replace(/\./g, '').replace(',', '.')) || 0;
+    const newTarget = moneyInputToNumber(target.value);
     await requestJson(route('goals.update', props.goalId), {
         method: 'PATCH',
         body: JSON.stringify({
@@ -155,8 +153,13 @@ const submit = async () => {
             <div>
                 <div class="mb-2 text-sm font-semibold text-slate-700">Valor objetivo</div>
                 <input
-                    v-model="target"
                     type="text"
+                    inputmode="decimal"
+                    :value="target"
+                    @input="onTargetInput"
+                    placeholder="0,00"
+                    @focus="() => { if (target === '0,00') target = '' }"
+                    @blur="() => { if (!target.trim()) target = '0,00' }"
                     class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 focus:border-[#14B8A6] focus:outline-none focus:ring-0"
                 />
             </div>

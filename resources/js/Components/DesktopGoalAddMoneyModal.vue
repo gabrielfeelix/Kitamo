@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { formatMoneyInput } from '@/lib/moneyInput';
 
 const props = defineProps<{
     open: boolean;
@@ -12,25 +13,18 @@ const emit = defineEmits<{
 
 const close = () => emit('close');
 
-const amount = ref('0,00');
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
+const amount = ref('');
 
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = normalizeMoneyInput(target.value);
+    amount.value = formatMoneyInput(target.value);
 };
 
 watch(
     () => props.open,
     (isOpen) => {
         if (!isOpen) return;
-        amount.value = '0,00';
+        amount.value = '';
     },
 );
 </script>
@@ -56,9 +50,12 @@ watch(
                     <div class="text-sm font-semibold text-slate-400">R$</div>
                     <input
                         class="w-full bg-transparent text-2xl font-bold tracking-tight text-slate-900 focus:outline-none"
-                        inputmode="numeric"
+                        inputmode="decimal"
                         :value="amount"
                         @input="onAmountInput"
+                        @focus="() => { if (amount === '0,00') amount = '' }"
+                        @blur="() => { if (!amount.trim()) amount = '0,00' }"
+                        placeholder="0,00"
                         aria-label="Valor"
                     />
                 </div>
@@ -79,4 +76,3 @@ watch(
         </div>
     </div>
 </template>
-

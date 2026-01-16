@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { formatMoneyInput, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 
 export type CreditCardModalPayload = {
   id?: string;
@@ -27,9 +28,9 @@ const close = () => emit('close');
 const initialId = ref<string | undefined>(undefined);
 const nome = ref('');
 const bandeira = ref<'visa' | 'mastercard' | 'elo' | 'amex'>('visa');
-const limite = ref('0,00');
-const dia_fechamento = ref(10);
-const dia_vencimento = ref(17);
+const limite = ref('');
+const dia_fechamento = ref<number | null>(null);
+const dia_vencimento = ref<number | null>(null);
 const cor = ref('#8B5CF6');
 
 // Bandeiras
@@ -43,32 +44,13 @@ const bandeiras = [
 // Cores
 const cores = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#1F2937'];
 
-// Conversão de número
-const normalizeMoneyInput = (raw: string) => {
-  const digits = raw.replace(/[^\d]/g, '');
-  const padded = digits.padStart(3, '0');
-  const cents = padded.slice(-2);
-  const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-  return `${whole},${cents}`;
-};
-
-const toMoneyInput = (value: number) => {
-  const normalized = Number.isFinite(value) ? value : 0;
-  const fixed = normalized.toFixed(2).replace('.', ',');
-  const [whole, cents] = fixed.split(',');
-  const withThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${withThousands},${cents}`;
-};
-
 const onLimiteInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  limite.value = normalizeMoneyInput(target.value);
+  limite.value = formatMoneyInput(target.value);
 };
 
 const limiteNumber = computed(() => {
-  const normalized = limite.value.replace(/\./g, '').replace(',', '.');
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : 0;
+  return moneyInputToNumber(limite.value);
 });
 
 const title = computed(() => (initialId.value ? 'Editar cartão' : 'Adicionar cartão de crédito'));
@@ -78,14 +60,20 @@ const reset = () => {
   initialId.value = draft?.id;
   nome.value = draft?.nome ?? '';
   bandeira.value = (draft?.bandeira ?? 'visa') as any;
-  limite.value = draft ? toMoneyInput(draft.limite) : '0,00';
-  dia_fechamento.value = draft?.dia_fechamento ?? 10;
-  dia_vencimento.value = draft?.dia_vencimento ?? 17;
+  limite.value = draft ? numberToMoneyInput(draft.limite) : '';
+  dia_fechamento.value = draft?.dia_fechamento ?? null;
+  dia_vencimento.value = draft?.dia_vencimento ?? null;
   cor.value = draft?.cor ?? '#8B5CF6';
 };
 
 const save = () => {
   if (!nome.value.trim()) return; // Validação mínima
+  if (!bandeira.value) return;
+  if (!limite.value.trim()) return;
+  if (dia_fechamento.value == null) return;
+  if (dia_vencimento.value == null) return;
+  if (dia_fechamento.value < 1 || dia_fechamento.value > 31) return;
+  if (dia_vencimento.value < 1 || dia_vencimento.value > 31) return;
 
   emit('save', {
     id: initialId.value,
@@ -177,10 +165,13 @@ watch(
               <span class="text-base text-[#6B7280]">R$</span>
               <input
                 class="h-full w-full flex-1 bg-transparent text-center text-base text-[#374151] focus:outline-none focus:ring-0"
-                inputmode="numeric"
+                inputmode="decimal"
                 autocomplete="off"
                 :value="limite"
                 @input="onLimiteInput"
+                @focus="() => { if (limite === '0,00') limite = '' }"
+                @blur="() => { if (!limite.trim()) limite = '0,00' }"
+                placeholder="0,00"
                 aria-label="Limite"
               />
             </div>
@@ -192,29 +183,27 @@ watch(
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="mb-2 block text-xs text-[#6B7280]">Fechamento</label>
-                <div class="flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3">
-                  <span class="text-[#6B7280]">Dia</span>
-                  <input
-                    v-model.number="dia_fechamento"
-                    type="number"
-                    min="1"
-                    max="31"
-                    class="h-11 w-full bg-transparent text-center text-base text-[#374151] focus:outline-none focus:ring-0"
-                  />
-                </div>
+                <input
+                  :value="dia_fechamento ?? ''"
+                  type="number"
+                  min="1"
+                  max="31"
+                  placeholder="Dia"
+                  class="h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-center text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                  @input="(e) => { const v = Number((e.target as HTMLInputElement).value); dia_fechamento = Number.isFinite(v) && v > 0 ? v : null }"
+                />
               </div>
               <div>
                 <label class="mb-2 block text-xs text-[#6B7280]">Vencimento</label>
-                <div class="flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3">
-                  <span class="text-[#6B7280]">Dia</span>
-                  <input
-                    v-model.number="dia_vencimento"
-                    type="number"
-                    min="1"
-                    max="31"
-                    class="h-11 w-full bg-transparent text-center text-base text-[#374151] focus:outline-none focus:ring-0"
-                  />
-                </div>
+                <input
+                  :value="dia_vencimento ?? ''"
+                  type="number"
+                  min="1"
+                  max="31"
+                  placeholder="Dia"
+                  class="h-11 w-full rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-center text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                  @input="(e) => { const v = Number((e.target as HTMLInputElement).value); dia_vencimento = Number.isFinite(v) && v > 0 ? v : null }"
+                />
               </div>
             </div>
           </div>

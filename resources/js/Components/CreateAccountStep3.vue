@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { BancoSelecionado } from './CreateAccountStep1.vue';
+import { formatMoneyInput, moneyInputToNumber } from '@/lib/moneyInput';
 
 export type AccountPayload = {
   banco_nome: string;
@@ -24,7 +25,7 @@ const emit = defineEmits<{
 }>();
 
 // State
-const saldo = ref('0,00');
+const saldo = ref('');
 const descricao = ref('');
 const tipo = ref('corrente');
 const cor = ref('#14B8A6');
@@ -43,38 +44,19 @@ const tipos = [
 // Cores
 const cores = ['#14B8A6', '#8B10AE', '#10B981', '#FF7A00'];
 
-// Conversão de número
-const normalizeMoneyInput = (raw: string) => {
-  const digits = raw.replace(/[^\d]/g, '');
-  const padded = digits.padStart(3, '0');
-  const cents = padded.slice(-2);
-  const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-  return `${whole},${cents}`;
-};
-
-const toMoneyInput = (value: number) => {
-  const normalized = Number.isFinite(value) ? value : 0;
-  const fixed = normalized.toFixed(2).replace('.', ',');
-  const [whole, cents] = fixed.split(',');
-  const withThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${withThousands},${cents}`;
-};
-
 const onSaldoInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  saldo.value = normalizeMoneyInput(target.value);
+  saldo.value = formatMoneyInput(target.value);
 };
 
 const saldoNumber = computed(() => {
-  const normalized = saldo.value.replace(/\./g, '').replace(',', '.');
-  const value = Number(normalized);
-  return Number.isFinite(value) ? value : 0;
+  return moneyInputToNumber(saldo.value);
 });
 
 const tipoSelecionado = computed(() => tipos.find((t) => t.id === tipo.value));
 
 const reset = () => {
-  saldo.value = '0,00';
+  saldo.value = '';
   descricao.value = '';
   tipo.value = 'corrente';
   cor.value = '#14B8A6';
@@ -153,9 +135,12 @@ watch(
               <div class="text-4xl font-bold text-[#14B8A6]">R$</div>
               <input
                 class="mt-2 w-full bg-transparent text-center text-3xl font-bold text-slate-900 focus:outline-none focus:ring-0"
-                inputmode="numeric"
+                inputmode="decimal"
                 :value="saldo"
                 @input="onSaldoInput"
+                @focus="() => { if (saldo === '0,00') saldo = '' }"
+                @blur="() => { if (!saldo.trim()) saldo = '0,00' }"
+                placeholder="0,00"
                 aria-label="Saldo inicial"
               />
             </div>

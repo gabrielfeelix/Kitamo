@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
+import { formatMoneyInput, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 
 type TransactionKind = TransactionModalPayload['kind'];
 type DateKind = TransactionModalPayload['dateKind'];
@@ -21,7 +22,7 @@ const close = () => emit('close');
 const localKind = ref<TransactionKind>(props.kind);
 const initialId = ref<string | undefined>(undefined);
 
-const amount = ref('0,00');
+const amount = ref('');
 const description = ref('');
 const category = ref('Alimentação');
 const account = ref('Carteira');
@@ -65,31 +66,13 @@ const amountTextClass = computed(() => {
     return 'text-[#14B8A6]';
 });
 
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
-
-const toMoneyInput = (value: number) => {
-    const normalized = Number.isFinite(value) ? value : 0;
-    const fixed = normalized.toFixed(2).replace('.', ',');
-    const [whole, cents] = fixed.split(',');
-    const withThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${withThousands},${cents}`;
-};
-
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = normalizeMoneyInput(target.value);
+    amount.value = formatMoneyInput(target.value);
 };
 
 const amountNumber = computed(() => {
-    const normalized = amount.value.replace(/\./g, '').replace(',', '.');
-    const value = Number(normalized);
-    return Number.isFinite(value) ? value : 0;
+    return moneyInputToNumber(amount.value);
 });
 
 const formatBRL2 = (value: number) =>
@@ -125,7 +108,7 @@ const reset = () => {
     const draft = props.initial ?? null;
     initialId.value = draft?.id;
     localKind.value = draft?.kind ?? props.kind;
-    amount.value = draft ? toMoneyInput(draft.amount) : '0,00';
+    amount.value = draft ? numberToMoneyInput(draft.amount) : '';
     description.value = draft?.description ?? '';
     category.value = draft?.category ?? 'Alimentação';
     account.value = draft?.account ?? 'Carteira';
@@ -223,11 +206,14 @@ const save = () => {
                         <input
                             class="amount-input h-[64px] w-full bg-transparent text-center text-[52px] font-bold tracking-tight focus:outline-none focus:ring-0"
                             :class="amountTextClass"
-                            inputmode="numeric"
+                            inputmode="decimal"
                             autocomplete="off"
                             spellcheck="false"
                             :value="amount"
                             @input="onAmountInput"
+                            @focus="() => { if (amount === '0,00') amount = '' }"
+                            @blur="() => { if (!amount.trim()) amount = '0,00' }"
+                            placeholder="0,00"
                             aria-label="Valor"
                         />
                         <div class="w-6"></div>

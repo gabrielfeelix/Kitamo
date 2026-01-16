@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { formatMoneyInput } from '@/lib/moneyInput';
 
 const props = defineProps<{
     open: boolean;
@@ -13,7 +14,7 @@ const emit = defineEmits<{
 
 const close = () => emit('close');
 
-const amount = ref('0,00');
+const amount = ref('');
 const from = ref('Banco Inter');
 const repeat = ref(false);
 
@@ -21,23 +22,15 @@ watch(
     () => props.open,
     (isOpen) => {
         if (!isOpen) return;
-        amount.value = '0,00';
+        amount.value = '';
         from.value = 'Banco Inter';
         repeat.value = false;
     },
 );
 
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
-
 const onAmountInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    amount.value = normalizeMoneyInput(target.value);
+    amount.value = formatMoneyInput(target.value);
 };
 
 const accentBg = computed(() => (props.accent === 'blue' ? 'bg-[#3B82F6]' : 'bg-[#14B8A6]'));
@@ -68,11 +61,14 @@ const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8p
                             <div class="w-10 text-base text-[#6B7280]">R$</div>
                             <input
                                 class="amount-input h-[72px] w-full flex-1 bg-transparent text-center text-[56px] font-bold leading-none tracking-tight focus:outline-none focus:ring-0"
-                                inputmode="numeric"
+                                inputmode="decimal"
                                 autocomplete="off"
                                 spellcheck="false"
                                 :value="amount"
                                 @input="onAmountInput"
+                                @focus="() => { if (amount === '0,00') amount = '' }"
+                                @blur="() => { if (!amount.trim()) amount = '0,00' }"
+                                placeholder="0,00"
                                 aria-label="Valor"
                             />
                             <div class="w-10"></div>
@@ -142,4 +138,3 @@ const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8p
     border: 0 !important;
 }
 </style>
-

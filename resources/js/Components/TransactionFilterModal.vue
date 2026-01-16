@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { formatMoneyInput } from '@/lib/moneyInput';
 
 export type TransactionFilterState = {
     categories: string[];
@@ -56,22 +57,14 @@ const toggleTag = (tag: string) => {
     local.value.tags = Array.from(list);
 };
 
-const normalizeMoneyInput = (raw: string) => {
-    const digits = raw.replace(/[^\d]/g, '');
-    const padded = digits.padStart(3, '0');
-    const cents = padded.slice(-2);
-    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
-    return `${whole},${cents}`;
-};
-
 const onMinInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    local.value.min = normalizeMoneyInput(target.value);
+    local.value.min = formatMoneyInput(target.value);
 };
 
 const onMaxInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    local.value.max = normalizeMoneyInput(target.value);
+    local.value.max = formatMoneyInput(target.value);
 };
 
 const centsFromMoneyInput = (value: string) => {
