@@ -351,7 +351,7 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                             />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <div class="text-3xl font-semibold text-slate-900">{{ despesas }}</div>
+                            <div class="text-3xl font-semibold text-slate-900">{{ formatBRL(despesas) }}</div>
                             <div class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Total de despesas</div>
                         </div>
                     </div>
