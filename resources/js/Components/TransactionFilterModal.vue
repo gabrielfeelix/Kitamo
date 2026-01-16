@@ -31,7 +31,7 @@ const local = ref<TransactionFilterState>({
     period: 'month',
     status: 'all',
     min: '0,00',
-    max: '1000,00',
+    max: '10.000,00',
 });
 
 watch(
@@ -72,6 +72,62 @@ const onMinInput = (event: Event) => {
 const onMaxInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
     local.value.max = normalizeMoneyInput(target.value);
+};
+
+const centsFromMoneyInput = (value: string) => {
+    const digits = value.replace(/[^\d]/g, '');
+    const padded = digits.padStart(3, '0');
+    const cents = Number(padded);
+    return Number.isFinite(cents) ? cents : 0;
+};
+
+const moneyInputFromCents = (cents: number) => {
+    const safe = Math.max(0, Math.floor(cents));
+    const padded = String(safe).padStart(3, '0');
+    const centsPart = padded.slice(-2);
+    const whole = padded.slice(0, -2).replace(/^0+/, '') || '0';
+    const wholeWithThousands = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${wholeWithThousands},${centsPart}`;
+};
+
+const RANGE_MAX_CENTS = 1_000_000; // R$ 10.000,00
+const rangeMinCents = computed(() => Math.min(RANGE_MAX_CENTS, centsFromMoneyInput(local.value.min)));
+const rangeMaxCents = computed(() => Math.min(RANGE_MAX_CENTS, centsFromMoneyInput(local.value.max)));
+const rangeMinPct = computed(() => (RANGE_MAX_CENTS ? (rangeMinCents.value / RANGE_MAX_CENTS) * 100 : 0));
+const rangeMaxPct = computed(() => (RANGE_MAX_CENTS ? (rangeMaxCents.value / RANGE_MAX_CENTS) * 100 : 0));
+
+watch(
+    () => local.value.min,
+    () => {
+        const minCents = rangeMinCents.value;
+        const maxCents = rangeMaxCents.value;
+        if (minCents > maxCents) {
+            local.value.max = moneyInputFromCents(minCents);
+        }
+    },
+);
+
+watch(
+    () => local.value.max,
+    () => {
+        const minCents = rangeMinCents.value;
+        const maxCents = rangeMaxCents.value;
+        if (maxCents < minCents) {
+            local.value.min = moneyInputFromCents(maxCents);
+        }
+    },
+);
+
+const onRangeMinInput = (event: Event) => {
+    const value = Number((event.target as HTMLInputElement).value);
+    const next = Math.max(0, Math.min(value, rangeMaxCents.value));
+    local.value.min = moneyInputFromCents(next);
+};
+
+const onRangeMaxInput = (event: Event) => {
+    const value = Number((event.target as HTMLInputElement).value);
+    const next = Math.min(RANGE_MAX_CENTS, Math.max(value, rangeMinCents.value));
+    local.value.max = moneyInputFromCents(next);
 };
 
 const periodButtonClass = (value: TransactionFilterState['period']) =>
@@ -204,16 +260,75 @@ const canApply = computed(() => true);
                         <div>
                             <div class="text-xs font-bold text-slate-400">MÍNIMO</div>
                             <div class="mt-2 border-b border-slate-200 pb-2">
-                                <div class="text-xs font-semibold text-slate-900">R$ {{ local.min }}</div>
-                                <input class="sr-only" :value="local.min" @input="onMinInput" />
+                                <div class="flex items-center gap-2 text-xs font-semibold text-slate-900">
+                                    <span class="text-slate-500">R$</span>
+                                    <input
+                                        class="w-full bg-transparent text-xs font-semibold text-slate-900 focus:outline-none"
+                                        :value="local.min"
+                                        inputmode="numeric"
+                                        @input="onMinInput"
+                                        aria-label="Valor mínimo"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div>
                             <div class="text-xs font-bold text-slate-400">MÁXIMO</div>
                             <div class="mt-2 border-b border-slate-200 pb-2">
-                                <div class="text-xs font-semibold text-slate-900">R$ {{ local.max }}</div>
-                                <input class="sr-only" :value="local.max" @input="onMaxInput" />
+                                <div class="flex items-center gap-2 text-xs font-semibold text-slate-900">
+                                    <span class="text-slate-500">R$</span>
+                                    <input
+                                        class="w-full bg-transparent text-xs font-semibold text-slate-900 focus:outline-none"
+                                        :value="local.max"
+                                        inputmode="numeric"
+                                        @input="onMaxInput"
+                                        aria-label="Valor máximo"
+                                    />
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="relative h-2 rounded-full bg-slate-200">
+                            <div
+                                class="absolute h-2 rounded-full bg-[#14B8A6]"
+                                :style="{ left: `${rangeMinPct}%`, width: `${Math.max(0, rangeMaxPct - rangeMinPct)}%` }"
+                            ></div>
+                        </div>
+                        <div class="relative mt-2 h-6">
+                            <input
+                                type="range"
+                                min="0"
+                                :max="RANGE_MAX_CENTS"
+                                step="100"
+                                :value="rangeMinCents"
+                                class="absolute inset-0 h-6 w-full bg-transparent opacity-0"
+                                @input="onRangeMinInput"
+                                aria-label="Controle mínimo"
+                            />
+                            <input
+                                type="range"
+                                min="0"
+                                :max="RANGE_MAX_CENTS"
+                                step="100"
+                                :value="rangeMaxCents"
+                                class="absolute inset-0 h-6 w-full bg-transparent opacity-0"
+                                @input="onRangeMaxInput"
+                                aria-label="Controle máximo"
+                            />
+                            <div
+                                class="pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-slate-200 bg-white shadow"
+                                :style="{ left: `calc(${rangeMinPct}% - 8px)` }"
+                            ></div>
+                            <div
+                                class="pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-slate-200 bg-white shadow"
+                                :style="{ left: `calc(${rangeMaxPct}% - 8px)` }"
+                            ></div>
+                        </div>
+                        <div class="mt-1 flex items-center justify-between text-[10px] font-semibold text-slate-400">
+                            <span>R$ 0</span>
+                            <span>R$ 10.000</span>
                         </div>
                     </div>
                 </div>

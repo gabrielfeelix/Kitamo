@@ -325,7 +325,7 @@ const filterState = ref<TransactionFilterState>({
     period: 'month',
     status: 'all',
     min: '0,00',
-    max: '1000,00',
+    max: '10.000,00',
 });
 
 const filterCategories = [
@@ -384,7 +384,7 @@ const toggleCategory = (key: TransactionFilterState['categories'][number]) => {
 
 const clearFilters = () => {
     filter.value = 'all';
-    filterState.value = { categories: [], tags: [], period: 'month', status: 'all', min: '0,00', max: '1000,00' };
+    filterState.value = { categories: [], tags: [], period: 'month', status: 'all', min: '0,00', max: '10.000,00' };
     filterOpen.value = false;
 };
 
