@@ -57,6 +57,7 @@ const transferDescription = ref('');
 const dateKind = ref<DateKind>('today');
 const dateOther = ref<string>('');
 const dateSheetOpen = ref(false);
+const endDateSheetOpen = ref(false);
 const categorySheetOpen = ref(false);
 const accountSheetOpen = ref(false);
 const isInstallment = ref(false);
@@ -180,6 +181,41 @@ const selectToday = () => {
 const setDateOther = (br: string) => {
     dateKind.value = 'other';
     dateOther.value = br;
+};
+
+const openEndDateSheet = () => {
+    endDateSheetOpen.value = true;
+};
+
+const setEndDate = (br: string) => {
+    data_fim.value = br;
+    fimMode.value = 'ate';
+};
+
+const clampInt = (value: unknown, min: number, max: number) => {
+    const digits = String(value ?? '').replace(/[^\d]/g, '');
+    if (!digits) return min;
+    const parsed = Number(digits);
+    if (!Number.isFinite(parsed)) return min;
+    return Math.min(max, Math.max(min, parsed));
+};
+
+const decInstallments = () => {
+    installmentCount.value = Math.max(1, Math.floor(installmentCount.value || 1) - 1);
+};
+
+const incInstallments = () => {
+    installmentCount.value = Math.min(999, Math.floor(installmentCount.value || 1) + 1);
+};
+
+const decIntervalDays = () => {
+    const current = clampInt(intervalo_dias.value ?? 1, 1, 999);
+    intervalo_dias.value = Math.max(1, current - 1);
+};
+
+const incIntervalDays = () => {
+    const current = clampInt(intervalo_dias.value ?? 1, 1, 999);
+    intervalo_dias.value = Math.min(999, current + 1);
 };
 
 const categories = computed<CategoryOption[]>(() => {
@@ -453,12 +489,30 @@ watch(
                             <div v-if="isInstallment" class="mt-4 grid grid-cols-2 gap-3">
                                 <div>
                                     <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Qtd.</div>
-                                    <input
-                                        v-model.number="installmentCount"
-                                        type="number"
-                                        min="1"
-                                        class="mt-2 h-11 w-full rounded-xl bg-slate-50 px-4 text-center text-sm font-bold text-slate-900 ring-1 ring-slate-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                                    />
+                                    <div class="mt-2 flex h-11 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200/60">
+                                        <input
+                                            :value="installmentCount"
+                                            type="text"
+                                            inputmode="numeric"
+                                            pattern="[0-9]*"
+                                            class="w-full appearance-none border-0 bg-transparent px-4 text-center text-sm font-bold text-slate-900 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none"
+                                            @keydown="preventNonDigitKeydown"
+                                            @input="(e) => { installmentCount = clampInt((e.target as HTMLInputElement).value, 1, 999) }"
+                                            aria-label="Quantidade de parcelas"
+                                        />
+                                        <div class="grid w-12 grid-rows-2 border-l border-slate-200/70">
+                                            <button type="button" class="flex items-center justify-center text-slate-500" aria-label="Aumentar" @click="incInstallments">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M6 15l6-6 6 6" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" class="flex items-center justify-center text-slate-500" aria-label="Diminuir" @click="decInstallments">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M6 9l6 6 6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Valor parcela</div>
@@ -500,14 +554,31 @@ watch(
                                         <option value="quinzenal">Quinzenal</option>
                                         <option value="a_cada_x_dias">A cada X dias</option>
                                     </select>
-                                    <input
-                                        v-if="periodicidade === 'a_cada_x_dias'"
-                                        v-model.number="intervalo_dias"
-                                        type="number"
-                                        min="1"
-                                        placeholder="Dias"
-                                        class="mt-2 h-11 w-full rounded-xl bg-white px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                                    />
+                                    <div v-if="periodicidade === 'a_cada_x_dias'" class="mt-2 flex h-11 overflow-hidden rounded-xl bg-white ring-1 ring-slate-200/60">
+                                        <input
+                                            :value="intervalo_dias ?? ''"
+                                            type="text"
+                                            inputmode="numeric"
+                                            pattern="[0-9]*"
+                                            placeholder="Dias"
+                                            class="w-full appearance-none border-0 bg-transparent px-4 text-sm font-semibold text-slate-700 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none"
+                                            @keydown="preventNonDigitKeydown"
+                                            @input="(e) => { intervalo_dias = clampInt((e.target as HTMLInputElement).value, 1, 999) }"
+                                            aria-label="Intervalo em dias"
+                                        />
+                                        <div class="grid w-12 grid-rows-2 border-l border-slate-200/70">
+                                            <button type="button" class="flex items-center justify-center text-slate-500" aria-label="Aumentar" @click="incIntervalDays">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M6 15l6-6 6 6" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" class="flex items-center justify-center text-slate-500" aria-label="Diminuir" @click="decIntervalDays">
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M6 9l6 6 6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Duração</div>
@@ -515,14 +586,20 @@ watch(
                                         <option value="sempre">Sempre</option>
                                         <option value="ate">Até data</option>
                                     </select>
-                                    <input
+                                    <button
                                         v-if="fimMode === 'ate'"
-                                        v-model="data_fim"
-                                        type="text"
-                                        placeholder="dd/mm/aaaa"
-                                        inputmode="numeric"
-                                        class="mt-2 h-11 w-full rounded-xl bg-white px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                                    />
+                                        type="button"
+                                        class="mt-2 flex h-11 w-full items-center justify-between rounded-xl bg-white px-4 text-left text-sm font-semibold ring-1 ring-slate-200/60"
+                                        @click="openEndDateSheet"
+                                        aria-label="Selecionar data final"
+                                    >
+                                        <span :class="data_fim ? 'text-slate-900' : 'text-slate-400'">
+                                            {{ data_fim || 'Selecionar data' }}
+                                        </span>
+                                        <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path d="M6 9l6 6 6-6" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                             <div v-if="recurrenceError" class="mt-3 text-xs font-semibold text-red-500">
@@ -607,6 +684,14 @@ watch(
             @close="dateSheetOpen = false"
             @select-today="() => { selectToday(); dateSheetOpen = false; }"
             @update:model-value="(v) => { setDateOther(v); dateSheetOpen = false; }"
+        />
+
+        <DatePickerSheet
+            :open="endDateSheetOpen"
+            :model-value="data_fim"
+            @close="endDateSheetOpen = false"
+            @select-today="() => { setEndDate(toBRDate(new Date().toISOString().slice(0, 10))); endDateSheetOpen = false; }"
+            @update:model-value="(v) => { setEndDate(v); endDateSheetOpen = false; }"
         />
 
         <CategoryPickerSheet

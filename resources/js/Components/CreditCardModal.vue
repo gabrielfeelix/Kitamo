@@ -44,25 +44,11 @@ const bandeiras = [
 
 // Cores
 const cores = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#1F2937'];
+const dias = Array.from({ length: 31 }, (_, idx) => idx + 1);
 
 const onLimiteInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
   limite.value = formatMoneyInputCentsShift(target.value);
-};
-
-const onDayInput = (event: Event, which: 'fechamento' | 'vencimento') => {
-  const target = event.target as HTMLInputElement;
-  const next = clampDay(target.value);
-  if (which === 'fechamento') dia_fechamento.value = next;
-  else dia_vencimento.value = next;
-};
-
-const clampDay = (value: string) => {
-  const digits = String(value ?? '').replace(/[^\d]/g, '');
-  if (!digits) return null;
-  const parsed = Number(digits);
-  if (!Number.isFinite(parsed)) return null;
-  return Math.min(31, Math.max(1, parsed));
 };
 
 const limiteNumber = computed(() => {
@@ -200,29 +186,39 @@ watch(
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="mb-2 block text-xs text-[#6B7280]">Fechamento</label>
-                <input
-                  :value="dia_fechamento ?? ''"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="Dia"
-                  class="h-11 w-full appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-center text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0 focus-visible:outline-none"
-                  @input="(e) => onDayInput(e, 'fechamento')"
-                  @keydown="preventNonDigitKeydown"
-                />
+                <div class="relative">
+                  <select
+                    :value="dia_fechamento ?? ''"
+                    class="h-11 w-full appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 pr-9 text-center text-base text-[#374151] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                    @change="(e) => { dia_fechamento = Number((e.target as HTMLSelectElement).value) || null }"
+                  >
+                    <option value="" disabled>Dia</option>
+                    <option v-for="d in dias" :key="d" :value="d">{{ d }}</option>
+                  </select>
+                  <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </span>
+                </div>
               </div>
               <div>
                 <label class="mb-2 block text-xs text-[#6B7280]">Vencimento</label>
-                <input
-                  :value="dia_vencimento ?? ''"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="Dia"
-                  class="h-11 w-full appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 text-center text-base text-[#374151] placeholder:text-[#9CA3AF] focus:border-[#14B8A6] focus:outline-none focus:ring-0 focus-visible:outline-none"
-                  @input="(e) => onDayInput(e, 'vencimento')"
-                  @keydown="preventNonDigitKeydown"
-                />
+                <div class="relative">
+                  <select
+                    :value="dia_vencimento ?? ''"
+                    class="h-11 w-full appearance-none rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 pr-9 text-center text-base text-[#374151] focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                    @change="(e) => { dia_vencimento = Number((e.target as HTMLSelectElement).value) || null }"
+                  >
+                    <option value="" disabled>Dia</option>
+                    <option v-for="d in dias" :key="d" :value="d">{{ d }}</option>
+                  </select>
+                  <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
