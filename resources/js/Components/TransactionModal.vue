@@ -200,7 +200,7 @@ watch(
 </script>
 
 <template>
-    <div v-if="open" class="fixed inset-0 z-[60] bg-white" role="dialog" aria-modal="true">
+    <div v-if="open" class="transaction-modal fixed inset-0 z-[60] bg-white" role="dialog" aria-modal="true">
         <div class="flex h-full flex-col">
                 <header class="relative flex h-14 items-center px-4 pt-[env(safe-area-inset-top)]">
                     <button class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-[#6B7280]" type="button" @click="close" aria-label="Fechar">
@@ -552,6 +552,24 @@ watch(
 </template>
 
 <style scoped>
+.transaction-modal input,
+.transaction-modal select,
+.transaction-modal textarea {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+}
+.transaction-modal input:focus,
+.transaction-modal input:focus-visible,
+.transaction-modal select:focus,
+.transaction-modal select:focus-visible,
+.transaction-modal textarea:focus,
+.transaction-modal textarea:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+}
+
 .amount-input {
     outline: none !important;
     box-shadow: none !important;
