@@ -237,6 +237,28 @@ const onSaveCategory = async (payload: { name: string; type: 'expense' | 'income
             </Link>
         </div>
 
+        <div class="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60">
+            <Link :href="route('settings.home-widgets')" class="flex items-center justify-between gap-4 px-5 py-5">
+                <div class="flex items-center gap-4">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="8" height="8" rx="2" />
+                            <rect x="13" y="3" width="8" height="5" rx="2" />
+                            <rect x="13" y="10" width="8" height="11" rx="2" />
+                            <rect x="3" y="13" width="8" height="8" rx="2" />
+                        </svg>
+                    </span>
+                    <div>
+                        <div class="text-sm font-semibold text-slate-900">Gerenciar tela inicial</div>
+                        <div class="mt-1 text-xs font-semibold text-slate-400">Escolha o que aparece na Home</div>
+                    </div>
+                </div>
+                <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6" />
+                </svg>
+            </Link>
+        </div>
+
         <div class="mt-8">
             <div class="text-lg font-semibold text-slate-900">Minhas Contas</div>
 

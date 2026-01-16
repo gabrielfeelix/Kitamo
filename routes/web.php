@@ -113,6 +113,10 @@ Route::get('/settings/about', function () {
     return Inertia::render('Settings/About');
 })->middleware(['auth', 'verified'])->name('settings.about');
 
+Route::get('/settings/home-widgets', function () {
+    return Inertia::render('Settings/HomeWidgets');
+})->middleware(['auth', 'verified'])->name('settings.home-widgets');
+
 Route::get('/accounts', function () {
     return Inertia::render('Accounts/Index');
 })->middleware(['auth', 'verified'])->name('accounts.index');

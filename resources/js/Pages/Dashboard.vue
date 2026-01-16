@@ -36,6 +36,36 @@ const bootstrap = computed(
 
 const isMobile = useIsMobile();
 
+type HomeWidgetsState = {
+    accounts: boolean;
+    creditCards: boolean;
+    projection: boolean;
+    upcomingBills: boolean;
+};
+const HOME_WIDGETS_KEY = 'kitamo:home_widgets';
+const homeWidgets = ref<HomeWidgetsState>({
+    accounts: true,
+    creditCards: true,
+    projection: true,
+    upcomingBills: true,
+});
+
+const loadHomeWidgets = () => {
+    try {
+        const raw = localStorage.getItem(HOME_WIDGETS_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as Partial<HomeWidgetsState>;
+        homeWidgets.value = { ...homeWidgets.value, ...parsed };
+    } catch {
+        // ignore
+    }
+};
+
+const showAccountsSection = computed(() => homeWidgets.value.accounts);
+const showCreditCardsSection = computed(() => homeWidgets.value.creditCards);
+const showProjectionSection = computed(() => homeWidgets.value.projection);
+const showUpcomingBillsSection = computed(() => homeWidgets.value.upcomingBills);
+
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);
     const first = parts[0]?.[0] ?? 'G';
@@ -688,6 +718,7 @@ const openBillDetails = (id: string) => {
 };
 
 onMounted(() => {
+    loadHomeWidgets();
     loadCreditCardsApi();
 });
 </script>
@@ -783,7 +814,7 @@ onMounted(() => {
 
 	        <!-- Alertas de saldo removidos do mobile -->
 
-	        <section class="mt-5 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+	        <section v-if="showProjectionSection" class="mt-5 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 	            <div class="flex items-center justify-between">
 	                <div class="flex items-center gap-3">
 	                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
@@ -896,7 +927,7 @@ onMounted(() => {
             </div>
         </section>
 
-	        <section class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+	        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 	            <div class="flex items-center justify-between">
 	                <div class="text-lg font-semibold text-slate-900">Contas bancárias</div>
 	                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar conta" @click="createAccountOpen = true">
@@ -954,7 +985,7 @@ onMounted(() => {
 	            </div>
 	        </section>
 
-	        <section class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+	        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 	            <div class="flex items-center justify-between">
 	                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
 	                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar cartão" @click="creditCardModalOpen = true">
@@ -1074,7 +1105,7 @@ onMounted(() => {
 	            </div>
 	        </section>
 
-	        <section class="mt-6">
+	        <section v-if="showUpcomingBillsSection" class="mt-6">
 	            <div class="flex items-center justify-between">
 	                <div class="text-lg font-semibold text-slate-900">Próximas contas</div>
                 <Link :href="route('accounts.index')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
