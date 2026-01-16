@@ -210,6 +210,7 @@ const bankAccounts = computed(() =>
             label: account.name,
             subtitle: 'Saldo atual',
             amount: account.current_balance,
+            color: account.color ?? null,
         })),
 );
 
@@ -919,7 +920,11 @@ onMounted(() => {
 	                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
 	                >
 	                    <div class="flex items-center gap-3">
-	                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
+	                        <span
+                                class="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
+                                :class="account.color ? '' : 'bg-slate-900'"
+                                :style="account.color ? { backgroundColor: account.color } : undefined"
+                            >
 	                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 	                                <path d="M3 10h18" />
 	                                <path d="M5 10V8l7-5 7 5v2" />

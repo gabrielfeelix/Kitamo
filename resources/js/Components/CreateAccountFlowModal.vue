@@ -59,6 +59,7 @@ const createAccount = async (payload: AccountPayload) => {
       type,
       icon,
       initial_balance: payload.saldo_inicial,
+      color: payload.cor,
     }),
   });
   return response;
@@ -103,4 +104,3 @@ const openStep3 = computed(() => props.open && step.value === 3);
     @save="handleSave"
   />
 </template>
-

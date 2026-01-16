@@ -45,6 +45,7 @@ export type Account = {
     name: string;
     type: string;
     icon?: string | null;
+    color?: string | null;
     current_balance: number;
     credit_limit?: number | null;
     closing_day?: number | null;
