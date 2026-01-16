@@ -5,6 +5,7 @@ export type TransactionFilterState = {
     categories: string[];
     tags: string[];
     period: 'month' | '3m' | '6m';
+    status: 'all' | 'paid' | 'to_pay';
     min: string;
     max: string;
 };
@@ -28,6 +29,7 @@ const local = ref<TransactionFilterState>({
     categories: [],
     tags: [],
     period: 'month',
+    status: 'all',
     min: '0,00',
     max: '1000,00',
 });
@@ -74,6 +76,9 @@ const onMaxInput = (event: Event) => {
 
 const periodButtonClass = (value: TransactionFilterState['period']) =>
     local.value.period === value ? 'border-[#14B8A6] text-[#14B8A6] bg-[#E6FFFB]' : 'border-slate-200 text-slate-600 bg-white';
+
+const statusButtonClass = (value: TransactionFilterState['status']) =>
+    local.value.status === value ? 'border-[#14B8A6] text-[#14B8A6] bg-[#E6FFFB]' : 'border-slate-200 text-slate-600 bg-white';
 
 const canApply = computed(() => true);
 </script>
@@ -165,6 +170,19 @@ const canApply = computed(() => true);
                             @click="toggleTag('Urgente')"
                         >
                             Urgente
+                        </button>
+                    </div>
+
+                    <div class="mt-6 text-sm font-bold text-slate-900">Status</div>
+                    <div class="mt-3 flex flex-wrap gap-3">
+                        <button type="button" class="rounded-full border px-4 py-2 text-sm font-semibold" :class="statusButtonClass('all')" @click="local.status = 'all'">
+                            Todas
+                        </button>
+                        <button type="button" class="rounded-full border px-4 py-2 text-sm font-semibold" :class="statusButtonClass('paid')" @click="local.status = 'paid'">
+                            Pagas
+                        </button>
+                        <button type="button" class="rounded-full border px-4 py-2 text-sm font-semibold" :class="statusButtonClass('to_pay')" @click="local.status = 'to_pay'">
+                            A pagar
                         </button>
                     </div>
 

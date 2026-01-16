@@ -323,6 +323,7 @@ const filterState = ref<TransactionFilterState>({
     categories: ['food', 'home', 'car'],
     tags: [],
     period: 'month',
+    status: 'all',
     min: '0,00',
     max: '1000,00',
 });
@@ -382,11 +383,13 @@ const toggleCategory = (key: TransactionFilterState['categories'][number]) => {
 };
 
 const clearFilters = () => {
-    filterState.value = { categories: [], tags: [], period: 'month', min: '0,00', max: '1000,00' };
+    filter.value = 'all';
+    filterState.value = { categories: [], tags: [], period: 'month', status: 'all', min: '0,00', max: '1000,00' };
     filterOpen.value = false;
 };
 
 const applyFilters = (payload: TransactionFilterState) => {
+    filter.value = payload.status;
     filterState.value = payload;
     filterOpen.value = false;
 };
@@ -584,37 +587,10 @@ onMounted(() => {
             </div>
         </div>
 
-        <div class="mt-4 flex items-center gap-2">
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="filter === 'all' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="filter = 'all'"
-            >
-                Todas
-            </button>
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="filter === 'paid' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="filter = 'paid'"
-            >
-                Pagas
-            </button>
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="filter === 'to_pay' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="filter = 'to_pay'"
-            >
-                A pagar
-            </button>
-        </div>
-
-        <div class="mt-3 flex flex-wrap items-center gap-2">
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
+	        <div class="mt-3 flex flex-wrap items-center gap-2">
+	            <button
+	                type="button"
+	                class="rounded-full px-4 py-2 text-sm font-semibold transition"
                 :class="entryKindFilter === 'all' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
                 @click="setEntryKindFilter('all')"
             >
