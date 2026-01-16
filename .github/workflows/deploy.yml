@@ -17,6 +17,11 @@ jobs:
       - run: composer install --no-interaction --no-progress --prefer-dist
       - run: npm ci --legacy-peer-deps
       - run: npm run build
+      - name: Prepare build folder for Hostinger docroot
+        run: |
+          rm -rf build
+          mkdir -p build
+          rsync -a --delete public/build/ build/
       - name: Deploy
         run: |
           mkdir -p ~/.ssh
@@ -30,12 +35,12 @@ jobs:
               ./ u626119115@147.79.84.203:~/domains/kitamo.com.br/public_html && break
             sleep 10
           done
-      - name: Fix build path (Hostinger docroot)
+      - name: Verify build assets exist on Hostinger
         run: |
           SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
           ssh $SSH_OPTS \
             u626119115@147.79.84.203 \
-            'cd ~/domains/kitamo.com.br/public_html && mkdir -p build && rsync -a --delete public/build/ build/'
+            'cd ~/domains/kitamo.com.br/public_html && test -f build/manifest.json && ls -la build/assets | head -50'
       - name: Run migrations + cache (Hostinger)
         run: |
           SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
