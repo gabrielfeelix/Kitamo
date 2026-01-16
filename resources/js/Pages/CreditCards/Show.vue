@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import type { BootstrapData, Entry } from '@/types/kitamo';
+import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
+import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
+import ConfirmationModal from '@/Components/ConfirmationModal.vue';
+import MobileToast from '@/Components/MobileToast.vue';
+import { requestJson } from '@/lib/kitamoApi';
+import { buildTransactionRequest } from '@/lib/transactions';
 
 const props = defineProps<{
     accountId: string;
@@ -103,6 +109,104 @@ const grouped = computed(() => {
 
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+
+const actionsOpen = ref(false);
+const transactionOpen = ref(false);
+const transactionInitial = ref<TransactionModalPayload | null>(null);
+const editOpen = ref(false);
+const deleteOpen = ref(false);
+
+const toastOpen = ref(false);
+const toastMessage = ref('');
+const showToast = (message: string) => {
+    toastMessage.value = message;
+    toastOpen.value = true;
+};
+
+const openAddTransaction = () => {
+    actionsOpen.value = false;
+    transactionInitial.value = {
+        kind: 'expense',
+        amount: 0,
+        description: '',
+        category: 'Alimentação',
+        account: accountName.value,
+        dateKind: 'today',
+        dateOther: '',
+        isInstallment: false,
+        installmentCount: 1,
+        isPaid: false,
+        transferFrom: '',
+        transferTo: '',
+        transferDescription: '',
+    };
+    transactionOpen.value = true;
+};
+
+const openEditCard = () => {
+    actionsOpen.value = false;
+    editOpen.value = true;
+};
+
+const openDeleteCard = () => {
+    actionsOpen.value = false;
+    deleteOpen.value = true;
+};
+
+const editInitial = computed<CreditCardModalPayload | null>(() => {
+    if (!account.value) return null;
+    return {
+        id: String(account.value.id),
+        nome: account.value.name ?? 'Cartão',
+        bandeira: (brand.value as any) ?? 'visa',
+        limite: Number(account.value.credit_limit ?? 0),
+        dia_fechamento: Number(account.value.closing_day ?? 10),
+        dia_vencimento: Number(account.value.due_day ?? 17),
+        cor: cardColor.value,
+    };
+});
+
+const onTransactionSave = async (payload: TransactionModalPayload) => {
+    try {
+        const response = await requestJson<{ entry: Entry }>(route('transactions.store'), {
+            method: 'POST',
+            body: JSON.stringify(buildTransactionRequest(payload)),
+        });
+        showToast('Movimentação adicionada');
+        router.reload({ only: ['bootstrap'] });
+        return response;
+    } catch {
+        showToast('Não foi possível adicionar');
+        return null;
+    }
+};
+
+const onSaveCard = async (payload: CreditCardModalPayload) => {
+    if (!payload.id) return;
+    try {
+        await requestJson(`/api/cartoes/${payload.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+        showToast('Cartão atualizado');
+        router.reload({ only: ['bootstrap'] });
+    } catch {
+        showToast('Não foi possível atualizar');
+    }
+};
+
+const confirmDelete = async () => {
+    if (!account.value) return;
+    try {
+        await requestJson(`/api/cartoes/${account.value.id}`, { method: 'DELETE' });
+        showToast('Cartão excluído');
+        router.visit(route('dashboard'));
+    } catch {
+        showToast('Não foi possível excluir');
+    } finally {
+        deleteOpen.value = false;
+    }
+};
 </script>
 
 <template>
@@ -125,17 +229,54 @@ const formatBRL = (value: number) =>
                 <div class="text-lg font-semibold text-slate-900">{{ accountName }}</div>
             </div>
 
-            <button
-                type="button"
-                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
-                aria-label="Ações"
-            >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
-                    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
-                    <path d="M12 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
-                </svg>
-            </button>
+            <div class="relative">
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
+                    aria-label="Ações"
+                    @click="actionsOpen = !actionsOpen"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+                        <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+                        <path d="M12 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+                    </svg>
+                </button>
+
+                <div
+                    v-if="actionsOpen"
+                    class="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-slate-200/70"
+                >
+                    <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openAddTransaction">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </span>
+                        Adicionar movimentação
+                    </button>
+                    <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="openEditCard">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                            </svg>
+                        </span>
+                        Editar cartão
+                    </button>
+                    <button type="button" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50" @click="openDeleteCard">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4h8v2" />
+                                <path d="M6 6l1 16h10l1-16" />
+                            </svg>
+                        </span>
+                        Excluir cartão
+                    </button>
+                </div>
+            </div>
         </header>
 
         <div class="mt-6">
@@ -233,6 +374,29 @@ const formatBRL = (value: number) =>
                 </button>
             </div>
         </footer>
+
+        <TransactionModal
+            :open="transactionOpen"
+            kind="expense"
+            :initial="transactionInitial"
+            @close="transactionOpen = false"
+            @save="onTransactionSave"
+        />
+
+        <CreditCardModal :open="editOpen" :initial="editInitial" @close="editOpen = false" @save="onSaveCard" />
+
+        <ConfirmationModal
+            :open="deleteOpen"
+            title="Excluir cartão de crédito?"
+            :message="`Tem certeza que deseja excluir o cartão “${accountName}”?`"
+            warningText="ATENÇÃO: Isso irá excluir também todas as transações vinculadas a este cartão. Esta ação não pode ser desfeita."
+            danger
+            confirmLabel="Excluir"
+            @close="deleteOpen = false"
+            @confirm="confirmDelete"
+        />
+
+        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </MobileShell>
 
     <KitamoLayout v-else title="Cartão de crédito" :subtitle="accountName">
@@ -241,4 +405,3 @@ const formatBRL = (value: number) =>
         </div>
     </KitamoLayout>
 </template>
-
