@@ -35,12 +35,17 @@ const handleSelectBank = (value: BancoSelecionado) => {
   step.value = 2;
 };
 
+const handleSelectWallet = () => {
+  banco.value = { nome: 'Carteira', logo: '💼', cor: '#14B8A6' };
+  step.value = 3;
+};
+
 const handleSelectMethod = (method: 'manual' | 'automatic') => {
   if (method === 'manual') step.value = 3;
 };
 
-const mapAccountType = (payload: AccountPayload) => {
-  if (payload.tipo === 'dinheiro') return { type: 'wallet', icon: 'wallet' };
+const mapAccountType = (payload: AccountPayload, isWallet: boolean = false) => {
+  if (isWallet || payload.tipo === 'dinheiro') return { type: 'wallet', icon: 'wallet' };
   return { type: 'bank', icon: 'bank' };
 };
 
@@ -51,7 +56,8 @@ const buildName = (payload: AccountPayload) => {
 };
 
 const createAccount = async (payload: AccountPayload) => {
-  const { type, icon } = mapAccountType(payload);
+  const isWallet = banco.value?.nome === 'Carteira';
+  const { type, icon } = mapAccountType(payload, isWallet);
   const response = await requestJson<{ account: unknown }>('/api/contas', {
     method: 'POST',
     body: JSON.stringify({
@@ -88,7 +94,7 @@ const openStep3 = computed(() => props.open && step.value === 3);
 </script>
 
 <template>
-  <CreateAccountStep1 :open="openStep1" @close="close" @select="handleSelectBank" />
+  <CreateAccountStep1 :open="openStep1" @close="close" @select="handleSelectBank" @select-wallet="handleSelectWallet" />
   <CreateAccountStep2
     :open="openStep2"
     :banco="banco"

@@ -111,7 +111,7 @@ watch(
           </button>
 
           <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div class="text-[14px] font-bold text-[#1F2937]">Nova conta</div>
+            <div class="text-[14px] font-bold text-[#1F2937]">{{ props.banco?.nome === 'Carteira' ? 'Nova Carteira' : 'Nova conta' }}</div>
           </div>
 
           <button class="ml-auto h-6 w-6 text-[#6B7280]" type="button" @click="$emit('close')" aria-label="Fechar">
@@ -123,6 +123,17 @@ watch(
         </header>
 
         <div class="flex-1 overflow-y-auto px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <!-- Wallet Icon for Carteira -->
+          <div v-if="props.banco?.nome === 'Carteira'" class="flex justify-center mt-6 mb-6">
+            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-teal-50 text-teal-600">
+              <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="5" width="20" height="14" rx="3"/>
+                <path d="M2 10h20"/>
+                <circle cx="16" cy="14" r="2"/>
+              </svg>
+            </div>
+          </div>
+
           <!-- Saldo Display -->
           <div class="mt-6 flex items-center justify-center py-6">
             <div class="text-center">
@@ -142,7 +153,7 @@ watch(
           </div>
 
           <!-- Banco -->
-          <div v-if="banco" class="mt-6">
+          <div v-if="banco && banco.nome !== 'Carteira'" class="mt-6">
             <div class="mb-2 text-xs font-semibold uppercase text-slate-500">Instituição financeira</div>
             <button
               type="button"

@@ -107,6 +107,7 @@ const receitas = ref(0);
 const despesas = ref(0);
 const hideValues = ref(false);
 const homeWidgetsModalOpen = ref(false);
+const accountMenuOpen = ref(false);
 
 const syncTotals = () => {
     const totals = computeTotals(desktopEntries.value);
@@ -750,6 +751,18 @@ const openProfileSettings = () => {
     router.visit(route('settings'));
 };
 
+const openAccountMenuOption = (option: 'bank' | 'wallet' | 'card') => {
+    accountMenuOpen.value = false;
+    if (option === 'bank') {
+        createAccountOpen.value = true;
+    } else if (option === 'wallet') {
+        // Abre o fluxo de carteira
+        createAccountOpen.value = true;
+    } else if (option === 'card') {
+        creditCardModalOpen.value = true;
+    }
+};
+
 onMounted(() => {
     loadHomeWidgets();
     loadCreditCardsApi();
@@ -787,27 +800,66 @@ onMounted(() => {
             <section class="mt-6 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 shadow-lg ring-1 ring-slate-900/10">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-300">Saldo total</div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-300">Saldo Total</div>
                         <div class="mt-2 text-4xl font-semibold tracking-tight text-emerald-400">
                             {{ formatBRLMasked(saldoAtual) }}
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        class="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10"
-                        :aria-label="hideValues ? 'Mostrar valores' : 'Ocultar valores'"
-                        @click="setHideValues(!hideValues)"
-                    >
-                        <svg v-if="hideValues" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-                            <path d="M12 15a3 3 0 1 0 0-6" />
-                            <path d="M4 4l16 16" />
-                        </svg>
-                        <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10"
+                            :aria-label="hideValues ? 'Mostrar valores' : 'Ocultar valores'"
+                            @click="setHideValues(!hideValues)"
+                        >
+                            <svg v-if="hideValues" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                                <path d="M12 15a3 3 0 1 0 0-6" />
+                                <path d="M4 4l16 16" />
+                            </svg>
+                            <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10"
+                                aria-label="Menu de contas"
+                                @click="accountMenuOpen = !accountMenuOpen"
+                            >
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2" />
+                                    <circle cx="12" cy="12" r="2" />
+                                    <circle cx="12" cy="19" r="2" />
+                                </svg>
+                            </button>
+                            <div v-if="accountMenuOpen" class="absolute right-0 mt-2 w-48 rounded-2xl bg-white shadow-lg ring-1 ring-slate-200/60 z-50">
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-t-2xl border-b border-slate-100"
+                                    @click="openAccountMenuOption('bank')"
+                                >
+                                    Adicionar Conta Bancária
+                                </button>
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 border-b border-slate-100"
+                                    @click="openAccountMenuOption('wallet')"
+                                >
+                                    Carteira
+                                </button>
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-b-2xl"
+                                    @click="openAccountMenuOption('card')"
+                                >
+                                    Cartão de Crédito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-3">
@@ -962,18 +1014,10 @@ onMounted(() => {
 
 		        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
-		                <div class="text-lg font-semibold text-slate-900">Contas bancárias</div>
-                        <div class="flex items-center gap-1">
-                            <Link :href="route('accounts.overview')" class="rounded-2xl px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-slate-50">
-                                Ver todas
-                            </Link>
-		                    <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar conta" @click="createAccountOpen = true">
-		                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-		                            <path d="M12 5v14" />
-		                            <path d="M5 12h14" />
-		                        </svg>
-		                    </button>
-                        </div>
+		                <div class="text-lg font-semibold text-slate-900">Contas</div>
+                        <Link :href="route('accounts.overview')" class="rounded-2xl px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-slate-50">
+                            Ver todas
+                        </Link>
 		            </div>
 
 	            <div v-if="bankAccounts.length === 0" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
@@ -1026,12 +1070,6 @@ onMounted(() => {
 		        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
 		                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
-		                <button class="rounded-2xl p-2 text-slate-400 hover:bg-slate-100" type="button" aria-label="Adicionar cartão" @click="creditCardModalOpen = true">
-		                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-		                        <path d="M12 5v14" />
-		                        <path d="M5 12h14" />
-		                    </svg>
-		                </button>
 		            </div>
 
                 <div

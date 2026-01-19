@@ -14,11 +14,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'close'): void;
   (event: 'select', banco: BancoSelecionado): void;
+  (event: 'select-wallet'): void;
 }>();
 
 const search = ref('');
 
 const bancos = [
+  { nome: 'Carteira', logo: '💼', cor: '#14B8A6' },
   { nome: 'Nubank', logo: '🟣', cor: '#8B10AE' },
   { nome: 'Banco Inter', logo: '🟢', cor: '#FF7A00' },
   { nome: 'Itaú', logo: '🟠', cor: '#EC7000' },
@@ -38,7 +40,11 @@ const bancosFiltrados = computed(() => {
 });
 
 const selectBanco = (banco: typeof bancos[0]) => {
-  emit('select', banco);
+  if (banco.nome === 'Carteira') {
+    emit('select-wallet');
+  } else {
+    emit('select', banco);
+  }
 };
 </script>
 
