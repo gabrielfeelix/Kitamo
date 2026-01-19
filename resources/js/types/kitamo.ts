@@ -47,6 +47,7 @@ export type Account = {
     icon?: string | null;
     color?: string | null;
     card_brand?: string | null;
+    initial_balance?: number;
     current_balance: number;
     credit_limit?: number | null;
     closing_day?: number | null;

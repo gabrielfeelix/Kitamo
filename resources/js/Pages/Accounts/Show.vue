@@ -7,6 +7,7 @@
 import MobileToast from '@/Components/MobileToast.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import NewAccountModal from '@/Components/NewAccountModal.vue';
+import WalletEditModal from '@/Components/WalletEditModal.vue';
 import { requestJson } from '@/lib/kitamoApi';
 import { useIsMobile } from '@/composables/useIsMobile';
 
@@ -153,6 +154,7 @@ const toastOpen = ref(false);
 
 	const actionsOpen = ref(false);
 	const editOpen = ref(false);
+	const walletEditOpen = ref(false);
 	const deleteOpen = ref(false);
 
 	const editInitial = computed(() => {
@@ -216,6 +218,26 @@ const toastOpen = ref(false);
 	    transactionModalInitial.value = { account: accountName.value };
 	    transactionModalOpen.value = true;
 	};
+
+	const saveWalletEdit = async (payload: { id: string; name: string; initial_balance: number; color: string }) => {
+	    try {
+	        await requestJson(`/api/contas/${payload.id}`, {
+	            method: 'PATCH',
+	            body: JSON.stringify({
+	                name: payload.name,
+	                type: 'wallet',
+	                icon: 'wallet',
+	                initial_balance: payload.initial_balance,
+	                color: payload.color,
+	            }),
+	        });
+	        showToast('Carteira atualizada');
+	        walletEditOpen.value = false;
+	        router.reload();
+	    } catch {
+	        showToast('Não foi possível atualizar a carteira');
+	    }
+	};
 </script>
 
 
@@ -261,7 +283,7 @@ const toastOpen = ref(false);
                                 <button
                                     type="button"
                                     class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                                    @click="editOpen = true; actionsOpen = false"
+                                    @click="account?.type === 'wallet' ? (walletEditOpen = true, actionsOpen = false) : (editOpen = true, actionsOpen = false)"
                                 >
                                     <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
                                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -478,6 +500,18 @@ const toastOpen = ref(false);
 	        </div>
 
 	        <NewAccountModal :open="editOpen" :initial="editInitial" @close="editOpen = false" @save="saveAccountEdit" />
+	        <WalletEditModal
+	            :open="walletEditOpen"
+	            :wallet="account ? {
+	                id: account.id,
+	                name: account.name,
+	                initial_balance: account.initial_balance,
+	                current_balance: account.current_balance,
+	                color: account.color ?? '#14B8A6',
+	            } : null"
+	            @close="walletEditOpen = false"
+	            @save="saveWalletEdit"
+	        />
 	        <ConfirmationModal
 	            :open="deleteOpen"
 	            title="Excluir conta?"
