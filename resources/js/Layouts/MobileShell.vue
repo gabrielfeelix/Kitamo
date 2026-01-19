@@ -173,7 +173,7 @@ const mainPaddingClass = computed(() =>
                 <button
                     type="button"
                     class="flex flex-1 flex-col items-center justify-center gap-1 py-2 transition text-slate-400"
-                    aria-label="Configurações"
+                    aria-label="Gerenciamento"
                     @click="emit('config')"
                 >
                     <span class="flex h-11 w-11 items-center justify-center">
@@ -183,7 +183,7 @@ const mainPaddingClass = computed(() =>
                             <path d="M4 18h16" />
                         </svg>
                     </span>
-                    <span class="text-[10px] font-semibold leading-none">Config</span>
+                    <span class="text-[10px] font-semibold leading-none">Mais</span>
                 </button>
             </nav>
         </div>
