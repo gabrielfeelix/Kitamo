@@ -26,19 +26,19 @@ const menuItems = computed(() => [
     },
     {
         label: 'Metas',
-        href: '/goals',
+        href: route('goals.index'),
         icon: 'target',
         tone: 'red' as const,
     },
     {
-        label: 'Contas',
-        href: '/accounts',
+        label: 'Contas Bancárias',
+        href: route('accounts.index'),
         icon: 'wallet',
         tone: 'emerald' as const,
     },
     {
         label: 'Cartão de Crédito',
-        href: '/credit-cards',
+        href: route('accounts.card'),
         icon: 'card',
         tone: 'purple' as const,
     },
