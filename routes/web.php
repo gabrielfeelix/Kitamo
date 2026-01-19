@@ -90,7 +90,25 @@ Route::get('/settings/notifications', function () {
 })->middleware(['auth', 'verified'])->name('settings.notifications');
 
 Route::get('/settings/categories', function () {
-    return Inertia::render('Settings/Categories');
+    $user = request()->user();
+    $categories = \App\Models\Category::query()
+        ->whereNull('user_id')
+        ->orWhere('user_id', $user->id)
+        ->orderBy('is_default', 'desc')
+        ->orderBy('name')
+        ->get()
+        ->map(fn ($category) => [
+            'id' => (string) $category->id,
+            'name' => $category->name,
+            'type' => $category->type,
+            'color' => $category->color,
+            'icon' => $category->icon,
+            'is_default' => (bool) $category->is_default,
+        ]);
+
+    return Inertia::render('Settings/Categories', [
+        'userCategories' => $categories,
+    ]);
 })->middleware(['auth', 'verified'])->name('settings.categories');
 
 Route::get('/settings/tags', function () {
@@ -167,6 +185,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/exports/transactions', [ExportController::class, 'transactions'])->name('exports.transactions');
     Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+
+    Route::post('/api/categories', [CategoryController::class, 'store'])->name('api.categories.store');
+    Route::patch('/api/categories/{category}', [CategoryController::class, 'update'])->name('api.categories.update');
+    Route::delete('/api/categories/{category}', [CategoryController::class, 'destroy'])->name('api.categories.destroy');
 
     Route::post('/api/contas', [AccountController::class, 'store'])->name('api.contas.store');
     Route::patch('/api/contas/{account}', [AccountController::class, 'update'])->name('api.contas.update');
