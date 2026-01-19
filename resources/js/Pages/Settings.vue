@@ -141,11 +141,6 @@ const formatMoney = (value: number) =>
 const transactionOpen = ref(false);
 const transactionKind = ref<'expense' | 'income'>('expense');
 
-const openQuickTransaction = () => {
-    transactionKind.value = 'expense';
-    transactionOpen.value = true;
-};
-
 const newAccountOpen = ref(false);
 const newCategoryOpen = ref(false);
 
@@ -223,7 +218,7 @@ const onSaveCategory = async (payload: { name: string; type: 'expense' | 'income
 
 
 <template>
-    <MobileShell v-if="isMobile" @add="openQuickTransaction">
+    <MobileShell v-if="isMobile">
         <header class="pt-2">
             <div class="text-2xl font-semibold tracking-tight text-slate-900">Configurações</div>
         </header>

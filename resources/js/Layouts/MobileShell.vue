@@ -4,6 +4,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const emit = defineEmits<{
     (e: 'add'): void;
+    (e: 'config'): void;
 }>();
 
 const props = withDefaults(
@@ -169,22 +170,21 @@ const mainPaddingClass = computed(() =>
                     <span class="text-[10px] font-semibold leading-none">{{ navItems[2].label }}</span>
                 </Link>
 
-                <Link
-                    :href="navItems[3].href"
-                    class="flex flex-1 flex-col items-center justify-center gap-1 py-2 transition"
-                    :class="navItems[3].active ? 'text-emerald-600' : 'text-slate-400'"
-                    :aria-label="navItems[3].label"
+                <button
+                    type="button"
+                    class="flex flex-1 flex-col items-center justify-center gap-1 py-2 transition text-slate-400"
+                    aria-label="Configurações"
+                    @click="emit('config')"
                 >
                     <span class="flex h-11 w-11 items-center justify-center">
                         <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path
-                                d="M19.4 15a1 1 0 0 1 .2 1.1l-1 1.8a1 1 0 0 1-1 .5l-1.7-.2a6 6 0 0 1-2 1.2l-.5 1.6a1 1 0 0 1-1 .7h-2a1 1 0 0 1-1-.7l-.5-1.6a6 6 0 0 1-2-1.2l-1.7.2a1 1 0 0 1-1-.5l-1-1.8a1 1 0 0 1 .2-1.1l1.3-1.2a6 6 0 0 1 0-2.4L3.3 10a1 1 0 0 1-.2-1.1l1-1.8a1 1 0 0 1 1-.5l1.7.2a6 6 0 0 1 2-1.2l.5-1.6a1 1 0 0 1 1-.7h2a1 1 0 0 1 1 .7l.5 1.6a6 6 0 0 1 2 1.2l1.7-.2a1 1 0 0 1 1 .5l1 1.8a1 1 0 0 1-.2 1.1l-1.3 1.2a6 6 0 0 1 0 2.4Z"
-                            />
-                            <path d="M12 15.5a3.5 3.5 0 1 0-3.5-3.5" />
+                            <path d="M4 6h16" />
+                            <path d="M4 12h16" />
+                            <path d="M4 18h16" />
                         </svg>
                     </span>
-                    <span class="text-[10px] font-semibold leading-none">{{ navItems[3].label }}</span>
-                </Link>
+                    <span class="text-[10px] font-semibold leading-none">Config</span>
+                </button>
             </nav>
         </div>
 

@@ -18,6 +18,7 @@ import CreateAccountFlowModal from '@/Components/CreateAccountFlowModal.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import Modal from '@/Components/Modal.vue';
 import HomeWidgetsManager from '@/Components/HomeWidgetsManager.vue';
+import ConfigModal from '@/Components/ConfigModal.vue';
 
 type ProjecaoResponse = {
     projecao_diaria: Array<{
@@ -37,6 +38,8 @@ const bootstrap = computed(
 );
 
 const isMobile = useIsMobile();
+
+const configModalOpen = ref(false);
 
 type HomeWidgetsState = {
     accounts: boolean;
@@ -746,6 +749,10 @@ const openBillDetails = (id: string) => {
     openEntryDetail(entry);
 };
 
+const openProfileSettings = () => {
+    router.visit(route('settings'));
+};
+
 onMounted(() => {
     loadHomeWidgets();
     loadCreditCardsApi();
@@ -753,9 +760,9 @@ onMounted(() => {
 </script>
 
 <template>
-	    <MobileShell v-if="isMobile" @add="openTransaction('expense')">
+	    <MobileShell v-if="isMobile" @add="openTransaction('expense')" @config="configModalOpen = true">
 	        <header class="flex items-center justify-between pt-2">
-	            <Link :href="route('settings')" class="flex items-center gap-3" aria-label="Abrir configurações">
+	            <button type="button" @click="openProfileSettings" class="flex items-center gap-3" aria-label="Abrir perfil">
 	                <span class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
 	                    <img v-if="avatarUrl" :src="avatarUrl" alt="" class="h-full w-full object-cover" />
 	                    <span v-else>{{ initials }}</span>
@@ -764,7 +771,7 @@ onMounted(() => {
 	                    <div class="text-xs font-semibold text-slate-400">OLÁ, {{ firstName.toUpperCase() }}</div>
 	                    <div class="text-xl font-semibold tracking-tight text-slate-900">Visão Geral</div>
 	                </div>
-	            </Link>
+	            </button>
 
 	            <div class="flex items-center gap-2">
 	                <Link
@@ -1261,6 +1268,7 @@ onMounted(() => {
         </Modal>
 
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+        <ConfigModal :open="configModalOpen" @close="configModalOpen = false" />
     </MobileShell>
 
 	    <DesktopShell v-else title="Visão Geral" subtitle="Domingo, 11 Jan 2026" @new-transaction="openDesktopTransaction">
