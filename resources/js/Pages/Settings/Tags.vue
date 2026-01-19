@@ -154,9 +154,9 @@ const closeEditModal = () => {
                             v-for="cor in corOptions"
                             :key="cor"
                             type="button"
-                            class="h-10 w-10 rounded-xl transition ring-2"
-                            :style="{ backgroundColor: cor, ringColor: newTagCor === cor ? '#000' : 'transparent' }"
-                            :class="newTagCor === cor ? 'ring-offset-2 ring-slate-900' : 'ring-transparent'"
+                            class="h-10 w-10 rounded-xl transition"
+                            :style="{ backgroundColor: cor }"
+                            :class="newTagCor === cor ? 'ring-2 ring-offset-2 ring-slate-900' : 'ring-2 ring-transparent'"
                             @click="newTagCor = cor"
                         />
                     </div>
@@ -206,9 +206,9 @@ const closeEditModal = () => {
                             v-for="cor in corOptions"
                             :key="cor"
                             type="button"
-                            class="h-10 w-10 rounded-xl transition ring-2"
-                            :style="{ backgroundColor: cor, ringColor: newTagCor === cor ? '#000' : 'transparent' }"
-                            :class="newTagCor === cor ? 'ring-offset-2 ring-slate-900' : 'ring-transparent'"
+                            class="h-10 w-10 rounded-xl transition"
+                            :style="{ backgroundColor: cor }"
+                            :class="newTagCor === cor ? 'ring-2 ring-offset-2 ring-slate-900' : 'ring-2 ring-transparent'"
                             @click="newTagCor = cor"
                         />
                     </div>
