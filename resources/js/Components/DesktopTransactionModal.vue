@@ -11,6 +11,7 @@ const props = defineProps<{
     open: boolean;
     kind: TransactionKind;
     initial?: TransactionModalPayload | null;
+    lockKind?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -213,8 +214,8 @@ const save = () => {
             <div class="max-h-[70vh] overflow-y-auto px-8 py-7">
                 <div class="grid grid-cols-3 gap-3">
                     <button type="button" class="h-11 rounded-xl text-sm font-semibold" :class="pillClass('expense')" @click="localKind = 'expense'">↓ Gasto</button>
-                    <button type="button" class="h-11 rounded-xl text-sm font-semibold" :class="pillClass('income')" @click="localKind = 'income'">↑ Receita</button>
-                    <button type="button" class="h-11 rounded-xl text-sm font-semibold" :class="pillClass('transfer')" @click="localKind = 'transfer'">⇄ Transf.</button>
+                    <button type="button" class="h-11 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('income')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'income')">↑ Receita</button>
+                    <button type="button" class="h-11 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('transfer')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'transfer')">⇄ Transf.</button>
                 </div>
 
                 <div class="mt-6">

@@ -6,6 +6,7 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import CreateAccountFlowModal from '@/Components/CreateAccountFlowModal.vue';
+import CreateCreditCardFlowModal from '@/Components/CreateCreditCardFlowModal.vue';
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import { requestJson } from '@/lib/kitamoApi';
@@ -68,6 +69,23 @@ const showToast = (message: string) => {
 
 const createAccountOpen = ref(false);
 const creditCardModalOpen = ref(false);
+const createCreditCardFlowOpen = ref(false);
+const accountMenuOpen = ref(false);
+
+const openAccountMenuOption = (option: 'bank' | 'wallet' | 'card') => {
+    accountMenuOpen.value = false;
+    if (option === 'bank') {
+        createAccountOpen.value = true;
+    } else if (option === 'wallet') {
+        createAccountOpen.value = true;
+    } else if (option === 'card') {
+        createCreditCardFlowOpen.value = true;
+    }
+};
+
+const handleCreateCreditCardFlowSave = () => {
+    window.location.reload();
+};
 
 const saveCreditCard = async (payload: CreditCardModalPayload) => {
     try {
@@ -111,17 +129,49 @@ const closingLabel = (closingDay: number | null) => {
                 <div class="text-lg font-semibold text-slate-900">Minhas Contas</div>
             </div>
 
-            <button
-                type="button"
-                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
-                aria-label="Adicionar"
-                @click="createAccountOpen = true"
-            >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 5v14" />
-                    <path d="M5 12h14" />
-                </svg>
-            </button>
+            <div class="relative">
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
+                    aria-label="Menu"
+                    @click="accountMenuOpen = !accountMenuOpen"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                    </svg>
+                </button>
+
+                <div v-if="accountMenuOpen" class="fixed inset-0 z-[65]" @click="accountMenuOpen = false">
+                    <div
+                        class="absolute right-5 top-16 w-56 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/70"
+                        @click.stop
+                    >
+                        <button
+                            type="button"
+                            class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-t-2xl border-b border-slate-100"
+                            @click="openAccountMenuOption('bank')"
+                        >
+                            Adicionar Conta Bancária
+                        </button>
+                        <button
+                            type="button"
+                            class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 border-b border-slate-100"
+                            @click="openAccountMenuOption('wallet')"
+                        >
+                            Criar Carteira
+                        </button>
+                        <button
+                            type="button"
+                            class="w-full text-left px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-b-2xl"
+                            @click="openAccountMenuOption('card')"
+                        >
+                            Adicionar Cartão de Crédito
+                        </button>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <div class="mt-6">
@@ -230,6 +280,7 @@ const closingLabel = (closingDay: number | null) => {
 
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
         <CreateAccountFlowModal :open="createAccountOpen" @close="createAccountOpen = false" @toast="showToast" />
+        <CreateCreditCardFlowModal :open="createCreditCardFlowOpen" @close="createCreditCardFlowOpen = false" @save="handleCreateCreditCardFlowSave" />
         <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
     </MobileShell>
 

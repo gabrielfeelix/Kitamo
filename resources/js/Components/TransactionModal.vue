@@ -36,6 +36,7 @@ const props = defineProps<{
     initial?: TransactionModalPayload | null;
     categories?: CategoryOption[];
     accounts?: AccountOption[];
+    lockKind?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -321,10 +322,10 @@ watch(
                             <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('expense')" @click="localKind = 'expense'">
                                 Gasto
                             </button>
-                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('income')" @click="localKind = 'income'">
+                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('income')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'income')">
                                 Receita
                             </button>
-                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold" :class="pillClass('transfer')" @click="localKind = 'transfer'">
+                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('transfer')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'transfer')">
                                 Transf.
                             </button>
                         </div>

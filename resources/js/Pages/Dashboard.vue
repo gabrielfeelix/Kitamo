@@ -314,6 +314,7 @@ const creditCardsDisplay = computed(() => {
                   used: c.used,
                   closingDay: c.closingDay,
                   dueDay: c.dueDay,
+                  is_primary: false, // TODO: get from API when credit_card model has is_primary
               }))
             : creditCardsApi.value.map((c) => ({
                   id: c.id,
@@ -324,6 +325,7 @@ const creditCardsDisplay = computed(() => {
                   used: c.limite_usado ?? 0,
                   closingDay: c.dia_fechamento ?? null,
                   dueDay: c.dia_vencimento ?? null,
+                  is_primary: c.is_primary ?? false,
               }));
 
     return source
@@ -597,16 +599,19 @@ const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
 const transactionOpen = ref(false);
 const transactionKind = ref<'expense' | 'income' | 'transfer'>('expense');
 const transactionInitial = ref<TransactionModalPayload | null>(null);
+const transactionLockKind = ref(false);
 const openTransaction = (kind: 'expense' | 'income' | 'transfer') => {
     transactionKind.value = kind;
     transactionInitial.value = null;
     desktopTransactionInitial.value = null;
+    transactionLockKind.value = false;
     if (isMobile.value) transactionOpen.value = true;
     else desktopTransactionOpen.value = true;
 };
 
 const openAddCardTransaction = (cardName: string) => {
     transactionKind.value = 'expense';
+    transactionLockKind.value = true;
     const initial: TransactionModalPayload = {
         kind: 'expense',
         amount: 0,
@@ -1080,6 +1085,7 @@ onMounted(() => {
 		        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
 		                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
+		                <Link :href="route('accounts.index')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
 		            </div>
 
                 <div
@@ -1147,7 +1153,7 @@ onMounted(() => {
                                         </div>
                                         <span class="text-sm font-semibold">{{ card.label }}</span>
                                     </div>
-                                    <span class="rounded bg-white/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide">
+                                    <span v-if="creditCardsDisplay.find(c => c.id === card.id)?.is_primary" class="rounded bg-white/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide">
                                         PRINCIPAL
                                     </span>
                                 </div>
@@ -1274,6 +1280,7 @@ onMounted(() => {
                 :initial="transactionInitial"
                 :categories="pickerCategories"
                 :accounts="pickerAccounts"
+                :lock-kind="transactionLockKind"
                 @close="transactionOpen = false"
                 @save="onTransactionSave"
             />
@@ -1607,7 +1614,7 @@ onMounted(() => {
             </div>
         </div>
 
-	        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
+	        <DesktopTransactionModal :open="desktopTransactionOpen" :kind="transactionKind" :initial="desktopTransactionInitial" :lock-kind="transactionLockKind" @close="desktopTransactionOpen = false" @save="onTransactionSave" />
 	        <CreditCardModal :open="creditCardModalOpen" @close="creditCardModalOpen = false" @save="saveCreditCard" />
 	        <CreateAccountFlowModal :open="createAccountOpen" @close="createAccountOpen = false" @toast="showToast" />
 	        <CreateCreditCardFlowModal :open="createCreditCardFlowOpen" @close="createCreditCardFlowOpen = false" @save="handleCreateCreditCardFlowSave" />
