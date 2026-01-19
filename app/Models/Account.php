@@ -25,6 +25,8 @@ class Account extends Model
         'closing_day',
         'due_day',
         'is_archived',
+        'incluir_soma',
+        'is_primary',
     ];
 
     protected function casts(): array
@@ -34,6 +36,8 @@ class Account extends Model
             'current_balance' => 'decimal:2',
             'credit_limit' => 'decimal:2',
             'is_archived' => 'boolean',
+            'incluir_soma' => 'boolean',
+            'is_primary' => 'boolean',
         ];
     }
 

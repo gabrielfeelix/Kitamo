@@ -24,6 +24,7 @@ const limite = ref('');
 const dia_fechamento = ref<number | null>(null);
 const dia_vencimento = ref<number | null>(null);
 const cor = ref('#8B5CF6');
+const is_primary = ref(false);
 
 // Bandeiras
 const bandeiras = [
@@ -67,6 +68,7 @@ const reset = () => {
   dia_fechamento.value = null;
   dia_vencimento.value = null;
   cor.value = props.banco?.cor ?? '#8B5CF6';
+  is_primary.value = false;
 };
 
 const isSaving = ref(false);
@@ -86,6 +88,7 @@ const save = async () => {
         dia_vencimento: dia_vencimento.value,
         cor: cor.value,
         icone: 'credit-card',
+        is_primary: is_primary.value,
       }),
     });
     emit('save');
@@ -258,6 +261,25 @@ watch(
                 @click="cor = c"
                 :aria-label="`Cor ${c}`"
               ></button>
+            </div>
+          </div>
+
+          <!-- Is Primary -->
+          <div class="mt-6 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-slate-700">Marcar como principal</div>
+              <button
+                type="button"
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition"
+                :class="is_primary ? 'bg-[#14B8A6]' : 'bg-[#E5E7EB]'"
+                @click="is_primary = !is_primary"
+                aria-label="Marcar como principal"
+              >
+                <span
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition"
+                  :class="is_primary ? 'translate-x-5' : 'translate-x-0.5'"
+                ></span>
+              </button>
             </div>
           </div>
         </div>

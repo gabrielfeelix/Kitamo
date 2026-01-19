@@ -66,6 +66,7 @@ const createAccount = async (payload: AccountPayload) => {
       icon,
       initial_balance: payload.saldo_inicial,
       color: payload.cor,
+      incluir_soma: payload.incluir_soma_inicial,
     }),
   });
   return response;

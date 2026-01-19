@@ -53,6 +53,7 @@ export type Account = {
     closing_day?: number | null;
     due_day?: number | null;
     incluir_soma?: boolean;
+    is_primary?: boolean;
 };
 
 export type CreditCard = {
@@ -64,6 +65,7 @@ export type CreditCard = {
     dia_fechamento: number;
     dia_vencimento: number;
     cor: string;
+    is_primary?: boolean;
     created_at?: string;
     updated_at?: string;
 };

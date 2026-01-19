@@ -42,6 +42,7 @@ class CreditCardController extends Controller
             'dia_vencimento' => ['required', 'integer', 'min:1', 'max:31'],
             'cor' => ['nullable', 'string', 'max:20'],
             'icone' => ['nullable', 'string', 'max:50'],
+            'is_primary' => ['nullable', 'boolean'],
         ]);
 
         $account = Account::create([
@@ -56,6 +57,7 @@ class CreditCardController extends Controller
             'credit_limit' => $data['limite'],
             'closing_day' => $data['dia_fechamento'],
             'due_day' => $data['dia_vencimento'],
+            'is_primary' => $data['is_primary'] ?? false,
         ]);
 
         return response()->json([
@@ -76,6 +78,7 @@ class CreditCardController extends Controller
             'dia_vencimento' => ['sometimes', 'required', 'integer', 'min:1', 'max:31'],
             'cor' => ['nullable', 'string', 'max:20'],
             'icone' => ['nullable', 'string', 'max:50'],
+            'is_primary' => ['nullable', 'boolean'],
         ]);
 
         $cartao->fill([
@@ -86,6 +89,7 @@ class CreditCardController extends Controller
             'icon' => $data['icone'] ?? $cartao->icon,
             'color' => $data['cor'] ?? $cartao->color,
             'card_brand' => $data['bandeira'] ?? $cartao->card_brand,
+            'is_primary' => array_key_exists('is_primary', $data) ? $data['is_primary'] : $cartao->is_primary,
         ]);
         $cartao->save();
 

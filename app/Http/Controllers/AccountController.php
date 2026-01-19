@@ -22,6 +22,8 @@ class AccountController extends Controller
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
             'closing_day' => ['nullable', 'integer', 'min:1', 'max:31'],
             'due_day' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'incluir_soma' => ['nullable', 'boolean'],
+            'is_primary' => ['nullable', 'boolean'],
         ]);
 
         $type = $data['type'] === 'card' ? 'credit_card' : $data['type'];
@@ -38,6 +40,8 @@ class AccountController extends Controller
             'credit_limit' => $data['credit_limit'] ?? null,
             'closing_day' => $data['closing_day'] ?? null,
             'due_day' => $data['due_day'] ?? null,
+            'incluir_soma' => $data['incluir_soma'] ?? true,
+            'is_primary' => $data['is_primary'] ?? false,
         ]);
 
         return response()->json([
@@ -55,9 +59,12 @@ class AccountController extends Controller
             'type' => ['required', 'in:wallet,bank,card,credit_card'],
             'icon' => ['nullable', 'string', 'max:64'],
             'color' => ['nullable', 'string', 'max:20'],
+            'initial_balance' => ['nullable', 'numeric', 'min:0'],
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
             'closing_day' => ['nullable', 'integer', 'min:1', 'max:31'],
             'due_day' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'incluir_soma' => ['nullable', 'boolean'],
+            'is_primary' => ['nullable', 'boolean'],
         ]);
 
         $type = $data['type'] === 'card' ? 'credit_card' : $data['type'];
@@ -70,7 +77,12 @@ class AccountController extends Controller
             'credit_limit' => $data['credit_limit'] ?? $account->credit_limit,
             'closing_day' => $data['closing_day'] ?? $account->closing_day,
             'due_day' => $data['due_day'] ?? $account->due_day,
+            'incluir_soma' => array_key_exists('incluir_soma', $data) ? $data['incluir_soma'] : $account->incluir_soma,
+            'is_primary' => array_key_exists('is_primary', $data) ? $data['is_primary'] : $account->is_primary,
         ]);
+        if (array_key_exists('initial_balance', $data)) {
+            $account->initial_balance = $data['initial_balance'];
+        }
         $account->save();
 
         return response()->json([
