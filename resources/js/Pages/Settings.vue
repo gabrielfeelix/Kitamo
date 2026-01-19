@@ -164,7 +164,7 @@ const initials = computed(() => {
                 </div>
 
                 <!-- Versão -->
-                <div class="pb-[calc(5.5rem+env(safe-area-inset-bottom))] text-center text-[11px] font-semibold text-slate-300">
+                <div class="pb-[calc(6.5rem+env(safe-area-inset-bottom))] text-center text-[11px] font-semibold text-slate-300">
                     v1.0.2 (Build 8402)
                 </div>
             </div>
