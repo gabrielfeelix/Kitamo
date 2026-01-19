@@ -334,7 +334,7 @@ const toastOpen = ref(false);
                     </div>
                     <div class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ formatMoney(balance) }}</div>
                     <div v-if="!isCurrentMonth && account?.type === 'wallet'" class="mt-2 text-xs text-slate-400">
-                        (início: {{ formatMoney(monthStartBalance) }} - final: {{ formatMoney(monthEndBalance) }})
+                        (início: {{ selectedMonth?.date?.getDate() === 1 ? '01' : String(selectedMonth?.date?.getDate()).padStart(2, '0') }} - final: {{ new Date(selectedMonth?.date?.getFullYear() ?? 2024, (selectedMonth?.date?.getMonth() ?? 0) + 1, 0).getDate() }})
                     </div>
     
                     <div class="mt-5 grid grid-cols-2 gap-3">
