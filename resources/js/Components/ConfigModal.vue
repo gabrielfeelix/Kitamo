@@ -14,7 +14,7 @@ const emit = defineEmits<{
 const menuItems = computed(() => [
     {
         label: 'Categorias',
-        href: route('settings'),
+        href: route('settings.categories'),
         icon: 'tag',
         tone: 'teal' as const,
     },
@@ -26,19 +26,19 @@ const menuItems = computed(() => [
     },
     {
         label: 'Metas',
-        href: route('settings'),
+        href: '/goals',
         icon: 'target',
         tone: 'red' as const,
     },
     {
         label: 'Contas',
-        href: route('settings'),
+        href: '/accounts',
         icon: 'wallet',
         tone: 'emerald' as const,
     },
     {
         label: 'Cartão de Crédito',
-        href: route('settings'),
+        href: '/credit-cards',
         icon: 'card',
         tone: 'purple' as const,
     },
