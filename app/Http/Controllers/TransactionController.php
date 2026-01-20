@@ -142,13 +142,16 @@ class TransactionController extends Controller
             $transaction->update($stored);
         }
 
-        $this->applyBalanceAdjustment($account, $transaction, 1);
+        $willSplitInstallments = $isParcelado && $transaction->kind === 'expense';
+        if (!$willSplitInstallments) {
+            $this->applyBalanceAdjustment($account, $transaction, 1);
+        }
 
         if ($isRecorrente && $recorrenciaGrupoId) {
             $this->gerarRecorrenciasFuturas($recorrenciaGrupoId, $scheduler, 12);
         }
 
-        if ($isParcelado && $transaction->kind === 'expense') {
+        if ($willSplitInstallments) {
             $parcelamentoGrupoId = (string) Str::uuid();
             $firstInstallmentDate = $this->calcularDataPrimeiraParcela($account, CarbonImmutable::parse($date));
 
@@ -166,6 +169,7 @@ class TransactionController extends Controller
 
             $this->gerarParcelas($transaction, $parcelamentoGrupoId, $firstInstallmentDate, (int) $data['installmentCount']);
             $transaction = Transaction::query()->findOrFail($transaction->id);
+            $this->applyBalanceAdjustment($account, $transaction, 1);
         }
 
         return response()->json([
@@ -487,23 +491,7 @@ class TransactionController extends Controller
 
     private function calcularDataPrimeiraParcela(Account $account, CarbonImmutable $purchaseDate): CarbonImmutable
     {
-        if ($account->type !== 'credit_card') {
-            return $purchaseDate;
-        }
-
-        $closingDay = (int) ($account->closing_day ?? 0);
-        $dueDay = (int) ($account->due_day ?? 0);
-
-        if ($closingDay <= 0 || $dueDay <= 0) {
-            return $purchaseDate->addMonthNoOverflow();
-        }
-
-        $sameCycle = $purchaseDate->day <= $closingDay;
-        $cycleMonth = $sameCycle ? $purchaseDate : $purchaseDate->addMonthNoOverflow();
-
-        $targetDay = min($dueDay, $cycleMonth->daysInMonth);
-
-        return $cycleMonth->setDay($targetDay);
+        return $purchaseDate;
     }
 
     private function gerarParcelas(Transaction $first, string $grupoId, CarbonImmutable $dataPrimeiraParcela, int $quantidade): void
@@ -511,6 +499,9 @@ class TransactionController extends Controller
         $total = round((float) $first->amount, 2);
         $valorParcela = round($total / $quantidade, 2);
         $sobra = round($total - ($valorParcela * $quantidade), 2);
+        $baseDescription = (string) $first->description;
+        $firstStatus = (string) $first->status;
+        $firstPaidAt = $first->data_pagamento;
 
         for ($i = 1; $i <= $quantidade; $i++) {
             $valor = $valorParcela;
@@ -519,15 +510,17 @@ class TransactionController extends Controller
             }
 
             $dataParcela = $dataPrimeiraParcela->addMonthsNoOverflow($i - 1);
+            $status = $i === 1 ? $firstStatus : 'pending';
+            $dataPagamento = $i === 1 && in_array($status, ['paid', 'received'], true) ? ($firstPaidAt ?? now()) : null;
 
             $payload = [
                 'user_id' => $first->user_id,
                 'account_id' => $first->account_id,
                 'category_id' => $first->category_id,
                 'kind' => $first->kind,
-                'status' => $first->status,
+                'status' => $status,
                 'amount' => $valor,
-                'description' => "{$first->description} ({$i}/{$quantidade})",
+                'description' => "{$baseDescription} ({$i}/{$quantidade})",
                 'transaction_date' => $dataParcela->toDateString(),
                 'priority' => (bool) $first->priority,
                 'installment_label' => "Parcela {$i}/{$quantidade}",
@@ -541,6 +534,7 @@ class TransactionController extends Controller
                 'recorrencia_grupo_id' => $first->recorrencia_grupo_id,
                 'recurrence_interval' => $first->recurrence_interval,
                 'recurrence_end_at' => $first->recurrence_end_at,
+                'data_pagamento' => $dataPagamento,
                 'tags' => $first->tags ?? [],
             ];
 

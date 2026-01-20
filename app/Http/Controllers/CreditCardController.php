@@ -11,6 +11,39 @@ use Illuminate\Http\Request;
 
 class CreditCardController extends Controller
 {
+    private function invoicePeriod(Account $cartao, int $year, int $monthIndex): array
+    {
+        $closingDayRaw = (int) ($cartao->closing_day ?? 0);
+
+        $monthStart = Carbon::create($year, $monthIndex + 1, 1)->startOfDay();
+        $monthDays = (int) $monthStart->daysInMonth;
+        $closingDayThisMonth = $closingDayRaw > 0 ? min($closingDayRaw, $monthDays) : 0;
+
+        if ($closingDayThisMonth <= 0) {
+            return [
+                'start' => $monthStart->copy(),
+                'end' => $monthStart->copy()->endOfMonth()->endOfDay(),
+            ];
+        }
+
+        $end = Carbon::create($year, $monthIndex + 1, $closingDayThisMonth)->endOfDay();
+
+        $prevMonth = $monthStart->copy()->subMonthNoOverflow();
+        $prevMonthDays = (int) $prevMonth->daysInMonth;
+
+        if ($closingDayRaw >= $prevMonthDays) {
+            $start = $monthStart->copy();
+        } else {
+            $startDay = $closingDayRaw + 1;
+            $start = Carbon::create($prevMonth->year, $prevMonth->month, $startDay)->startOfDay();
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end,
+        ];
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -122,24 +155,24 @@ class CreditCardController extends Controller
         $year = (int) $data['year'];
         $month = (int) $data['month'];
 
-        // Get the first and last day of the month
-        $startOfMonth = Carbon::create($year, $month + 1, 1)->startOfDay();
-        $endOfMonth = $startOfMonth->copy()->endOfMonth();
-
         $creditCards = Account::where('user_id', $user->id)
             ->where('type', 'credit_card')
             ->get();
 
-        $result = $creditCards->map(function (Account $account) use ($startOfMonth, $endOfMonth, $user) {
+        $result = $creditCards->map(function (Account $account) use ($year, $month, $user) {
+            $period = $this->invoicePeriod($account, $year, $month);
+            $start = $period['start'];
+            $end = $period['end'];
+
             $accountCreatedAt = $account->created_at ? Carbon::parse($account->created_at) : null;
-            if ($accountCreatedAt && $accountCreatedAt->greaterThan($endOfMonth)) {
+            if ($accountCreatedAt && $accountCreatedAt->greaterThan($end)) {
                 $balanceUsed = 0.0;
             } else {
                 $expenseSum = (float) Transaction::query()
                     ->where('user_id', $user->id)
                     ->where('account_id', $account->id)
                     ->where('kind', 'expense')
-                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->whereBetween('transaction_date', [$start, $end])
                     ->where('status', 'pending')
                     ->sum('amount');
 
@@ -147,7 +180,7 @@ class CreditCardController extends Controller
                     ->where('user_id', $user->id)
                     ->where('account_id', $account->id)
                     ->where('kind', 'income')
-                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->whereBetween('transaction_date', [$start, $end])
                     ->whereIn('status', ['received'])
                     ->sum('amount');
 
@@ -198,14 +231,15 @@ class CreditCardController extends Controller
             return response()->json(['message' => 'Conta para pagamento inválida.'], 422);
         }
 
-        $startOfMonth = Carbon::create($year, $month + 1, 1)->startOfDay();
-        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+        $period = $this->invoicePeriod($cartao, $year, $month);
+        $start = $period['start'];
+        $end = $period['end'];
 
         $invoiceQuery = Transaction::query()
             ->where('user_id', $user->id)
             ->where('account_id', $cartao->id)
             ->where('kind', 'expense')
-            ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+            ->whereBetween('transaction_date', [$start, $end])
             ->where('status', 'pending');
 
         $invoiceTotal = (float) $invoiceQuery->sum('amount');

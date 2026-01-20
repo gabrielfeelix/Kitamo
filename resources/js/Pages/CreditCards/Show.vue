@@ -36,8 +36,6 @@ const brand = computed(() => String((account.value as any)?.card_brand ?? 'visa'
 const brandLabel = computed(() => (brand.value === 'mastercard' ? 'Mastercard' : brand.value === 'elo' ? 'Elo' : brand.value === 'amex' ? 'Amex' : 'Visa'));
 const cardColor = computed(() => String((account.value as any)?.color ?? '#8B5CF6'));
 const limit = computed(() => Number(account.value?.credit_limit ?? 0));
-const usedLimit = computed(() => Math.max(0, Number(account.value?.current_balance ?? 0)));
-const availableLimit = computed(() => (limit.value ? Math.max(0, limit.value - usedLimit.value) : 0));
 const closingDay = computed(() => Number(account.value?.closing_day ?? 0) || null);
 const dueDay = computed(() => Number(account.value?.due_day ?? 0) || null);
 
@@ -64,14 +62,61 @@ const entriesForCard = computed(() => {
     return (bootstrap.value.entries ?? []).filter((e) => e.accountLabel === name);
 });
 
+type InvoicePeriod = { start: Date; end: Date };
+const invoicePeriod = computed<InvoicePeriod | null>(() => {
+    const ref = selectedMonth.value?.date;
+    if (!ref) return null;
+
+    const closingDayRaw = closingDay.value ?? 0;
+    const year = ref.getFullYear();
+    const monthIndex = ref.getMonth();
+
+    const monthStart = new Date(year, monthIndex, 1);
+    const monthDays = new Date(year, monthIndex + 1, 0).getDate();
+    const closingDayThisMonth = closingDayRaw > 0 ? Math.min(closingDayRaw, monthDays) : 0;
+
+    if (!closingDayThisMonth) {
+        const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+        return { start: monthStart, end: endOfMonth };
+    }
+
+    const end = new Date(year, monthIndex, closingDayThisMonth, 23, 59, 59, 999);
+    const prevMonthDays = new Date(year, monthIndex, 0).getDate();
+
+    let start: Date;
+    if (closingDayRaw >= prevMonthDays) {
+        start = new Date(year, monthIndex, 1);
+    } else {
+        start = new Date(year, monthIndex - 1, closingDayRaw + 1);
+    }
+    start.setHours(0, 0, 0, 0);
+
+    return { start, end };
+});
+
+const usedLimit = computed(() => {
+    const pendingExpenses = entriesForCard.value
+        .filter((e) => e.kind === 'expense')
+        .filter((e) => e.status === 'pending')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    const receivedIncomes = entriesForCard.value
+        .filter((e) => e.kind === 'income')
+        .filter((e) => e.status === 'received')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    return Math.max(0, pendingExpenses - receivedIncomes);
+});
+
+const availableLimit = computed(() => (limit.value ? Math.max(0, limit.value - usedLimit.value) : 0));
+
 const entriesForMonth = computed(() => {
-    const month = selectedMonth.value?.date?.getMonth();
-    const year = selectedMonth.value?.date?.getFullYear();
-    if (month == null || year == null) return [];
+    const period = invoicePeriod.value;
+    if (!period) return [];
     return entriesForCard.value.filter((e) => {
         if (!e.transactionDate) return true;
         const d = new Date(e.transactionDate);
-        return d.getMonth() === month && d.getFullYear() === year;
+        return d >= period.start && d <= period.end;
     });
 });
 
@@ -83,9 +128,9 @@ const currentInvoiceTotal = computed(() =>
 );
 
 const invoiceStatus = computed(() => {
-    const now = new Date();
-    if (!closingDay.value) return 'Aberta';
-    return now.getDate() > closingDay.value ? 'Fechada' : 'Aberta';
+    const period = invoicePeriod.value;
+    if (!period) return 'Aberta';
+    return new Date().getTime() > period.end.getTime() ? 'Fechada' : 'Aberta';
 });
 
 const percentUsed = computed(() => (limit.value ? Math.min(100, Math.max(0, (usedLimit.value / limit.value) * 100)) : 0));
@@ -93,13 +138,27 @@ const percentLabel = computed(() => `${percentUsed.value.toFixed(2)}%`);
 
 const dueDateLabel = computed(() => {
     if (!dueDay.value) return '';
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const targetMonth = now.getDate() <= dueDay.value ? month : month + 1;
-    const lastDay = new Date(year, targetMonth + 1, 0).getDate();
-    const day = Math.min(dueDay.value, lastDay);
-    const d = new Date(year, targetMonth, day);
+    const ref = selectedMonth.value?.date;
+    if (!ref) return '';
+
+    const closing = closingDay.value ?? 0;
+    const due = dueDay.value ?? 0;
+    if (!due) return '';
+
+    let year = ref.getFullYear();
+    let month = ref.getMonth();
+
+    if (closing > 0 && due <= closing) {
+        month += 1;
+        if (month > 11) {
+            month = 0;
+            year += 1;
+        }
+    }
+
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const day = Math.min(due, lastDay);
+    const d = new Date(year, month, day);
     const dd = String(d.getDate()).padStart(2, '0');
     const mon = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(d).replace('.', '').toUpperCase();
     return `${dd} ${mon}`;
