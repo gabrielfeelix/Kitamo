@@ -225,18 +225,21 @@ const toastOpen = ref(false);
 	    transactionModalOpen.value = true;
 	};
 
-	const saveWalletEdit = async (payload: { id: string; name: string; initial_balance: number; color: string; incluir_soma: boolean }) => {
+	const saveWalletEdit = async (payload: { id: string; name: string; initial_balance: number; color: string; incluir_soma?: boolean }) => {
 	    try {
+	        const body: any = {
+	            name: payload.name,
+	            type: 'wallet',
+	            icon: 'wallet',
+	            initial_balance: payload.initial_balance,
+	            color: payload.color,
+	        };
+	        if (payload.incluir_soma !== undefined) {
+	            body.incluir_soma = payload.incluir_soma;
+	        }
 	        await requestJson(`/api/contas/${payload.id}`, {
 	            method: 'PATCH',
-	            body: JSON.stringify({
-	                name: payload.name,
-	                type: 'wallet',
-	                icon: 'wallet',
-	                initial_balance: payload.initial_balance,
-	                color: payload.color,
-	                incluir_soma: payload.incluir_soma,
-	            }),
+	            body: JSON.stringify(body),
 	        });
 	        showToast('Carteira atualizada');
 	        walletEditOpen.value = false;
