@@ -77,7 +77,7 @@ const loadAccountsForMonth = async (monthKey: string) => {
 const bankAccounts = computed(() => {
     const monthKey = selectedMonthKey.value;
     const monthData = accountsDataByMonth.value.get(monthKey);
-    
+
     if (monthData) {
         return monthData.filter((a: any) => a.type !== 'credit_card').map((a: any) => ({
             id: a.id,
@@ -87,6 +87,11 @@ const bankAccounts = computed(() => {
             color: a.color ?? '#14B8A6',
             icon: a.icon ?? (a.type === 'wallet' ? 'wallet' : 'bank'),
         }));
+    }
+
+    // Only use bootstrap if we have not attempted to load yet
+    if (!monthKey) {
+        return [];
     }
 
     return (bootstrap.value.accounts ?? []).filter((a) => a.type !== 'credit_card').map((a) => ({
@@ -113,6 +118,11 @@ const creditCards = computed(() => {
             brand: c.bandeira ?? 'visa',
             closingDay: Number(c.dia_fechamento ?? 0) || null,
         }));
+    }
+
+    // Only use bootstrap if we have not attempted to load yet
+    if (!monthKey) {
+        return [];
     }
 
     return (bootstrap.value.accounts ?? []).filter((a) => a.type === 'credit_card').map((a) => ({
