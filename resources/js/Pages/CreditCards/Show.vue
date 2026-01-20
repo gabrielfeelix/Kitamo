@@ -12,6 +12,8 @@ import MobileToast from '@/Components/MobileToast.vue';
 import InstallmentInvoiceSheet from '@/Components/InstallmentInvoiceSheet.vue';
 import { requestJson } from '@/lib/kitamoApi';
 import { buildTransactionRequest } from '@/lib/transactions';
+import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
+import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
 
 const props = defineProps<{
     accountId: string;
@@ -218,6 +220,26 @@ const confirmInstallments = (_payload: { installments: number; interestRate: num
     installmentOpen.value = false;
     showToast('Em breve: parcelamento de fatura');
 };
+
+const categoryOptions = computed<CategoryOption[]>(() => {
+    return (bootstrap.value.categories ?? []).map((cat) => ({
+        key: cat.name,
+        label: cat.name,
+        icon: cat.icon ?? 'other',
+        customColor: cat.color ?? undefined,
+    }));
+});
+
+const accountOptions = computed<AccountOption[]>(() => {
+    return (bootstrap.value.accounts ?? []).map((acc) => ({
+        key: acc.name,
+        label: acc.name,
+        subtitle: acc.type === 'wallet' ? 'Carteira' : acc.type === 'bank' ? 'Conta' : 'Cartão de Crédito',
+        type: acc.type as 'bank' | 'wallet' | 'credit_card',
+        customColor: (acc as any).color ?? undefined,
+        icon: acc.icon ?? undefined,
+    }));
+});
 </script>
 
 <template>
@@ -392,6 +414,8 @@ const confirmInstallments = (_payload: { installments: number; interestRate: num
             :open="transactionOpen"
             kind="expense"
             :initial="transactionInitial"
+            :categories="categoryOptions"
+            :accounts="accountOptions"
             @close="transactionOpen = false"
             @save="onTransactionSave"
         />

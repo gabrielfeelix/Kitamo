@@ -6,6 +6,7 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import KitamoLayout from '@/Layouts/KitamoLayout.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import { requestJson } from '@/lib/kitamoApi';
+import CreateCreditCardFlowModal from '@/Components/CreateCreditCardFlowModal.vue';
 
 const isMobile = useIsMobile();
 const page = usePage();
@@ -147,6 +148,13 @@ watch(
 onMounted(() => {
     loadCardsForMonth(selectedMonthKey.value);
 });
+
+const createCreditCardFlowOpen = ref(false);
+
+const handleCreateCreditCardFlowSave = () => {
+    createCreditCardFlowOpen.value = false;
+    window.location.reload();
+};
 </script>
 
 <template>
@@ -169,16 +177,17 @@ onMounted(() => {
                 <div class="text-lg font-semibold text-slate-900">Meus Cartões</div>
             </div>
 
-            <Link
-                :href="route('dashboard')"
+            <button
+                type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
                 aria-label="Adicionar cartão"
+                @click="createCreditCardFlowOpen = true"
             >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-            </Link>
+            </button>
         </header>
 
         <!-- Month Navigation -->
@@ -326,6 +335,8 @@ onMounted(() => {
                 <div class="mt-1 text-xs text-slate-500">Adicione um cartão para começar</div>
             </div>
         </div>
+
+        <CreateCreditCardFlowModal :open="createCreditCardFlowOpen" @close="createCreditCardFlowOpen = false" @save="handleCreateCreditCardFlowSave" />
     </MobileShell>
 
     <KitamoLayout v-else title="Meus Cartões" subtitle="Gerencie seus cartões de crédito">
