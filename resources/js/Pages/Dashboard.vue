@@ -566,15 +566,20 @@ const pickerCategories = computed<CategoryOption[]>(() => {
         return 'slate';
     };
 
-    const unique = new Map<string, { label: string; icon: string; customColor?: string; tone?: any }>();
+    const unique = new Map<string, { label: string; icon: string; kind?: 'expense' | 'income'; customColor?: string; tone?: any }>();
     for (const c of bootstrap.value.categories ?? []) {
         const label = c.name;
         const icon = c.icon ?? 'other';
-        unique.set(label, { 
-            label, 
-            icon,
-            customColor: c.color || undefined,
-            tone: !c.icon || /^[a-z]+$/.test(c.icon) ? mapTone(label) : undefined 
+        const kind = c.type === 'income' ? 'income' : c.type === 'expense' ? 'expense' : undefined;
+        const current = unique.get(label);
+        const mergedKind = current?.kind && kind && current.kind !== kind ? undefined : (current?.kind ?? kind);
+
+        unique.set(label, {
+            label,
+            icon: current?.icon && current.icon !== 'other' ? current.icon : icon,
+            kind: mergedKind,
+            customColor: current?.customColor ?? (c.color || undefined),
+            tone: current?.tone ?? (!c.icon || /^[a-z]+$/.test(c.icon) ? mapTone(label) : undefined),
         });
     }
     if (!unique.size) return [];
@@ -583,7 +588,8 @@ const pickerCategories = computed<CategoryOption[]>(() => {
         label: meta.label,
         icon: meta.icon,
         customColor: meta.customColor,
-        tone: meta.tone
+        tone: meta.tone,
+        kind: meta.kind,
     }));
 });
 

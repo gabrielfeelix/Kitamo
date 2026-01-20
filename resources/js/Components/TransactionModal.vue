@@ -2,9 +2,11 @@
 import { computed, ref, watch } from 'vue';
 import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 import { preventNonDigitKeydown } from '@/lib/inputGuards';
+import { requestJson } from '@/lib/kitamoApi';
 import DatePickerSheet from '@/Components/DatePickerSheet.vue';
 import CategoryPickerSheet, { type CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import AccountPickerSheet, { type AccountOption } from '@/Components/AccountPickerSheet.vue';
+import NewCategoryModal from '@/Components/NewCategoryModal.vue';
 
 type TransactionKind = 'expense' | 'income' | 'transfer';
 type DateKind = 'today' | 'other';
@@ -60,6 +62,7 @@ const dateOther = ref<string>('');
 const dateSheetOpen = ref(false);
 const endDateSheetOpen = ref(false);
 const categorySheetOpen = ref(false);
+const newCategoryOpen = ref(false);
 const accountSheetOpen = ref(false);
 const isInstallment = ref(false);
 const installmentCount = ref(1);
@@ -293,6 +296,12 @@ const reset = () => {
     intervalo_dias.value = draft?.intervalo_dias ?? null;
     data_fim.value = draft?.data_fim ? toBRDate(draft.data_fim) : '';
     fimMode.value = draft?.data_fim ? 'ate' : 'sempre';
+
+    dateSheetOpen.value = false;
+    endDateSheetOpen.value = false;
+    categorySheetOpen.value = false;
+    accountSheetOpen.value = false;
+    newCategoryOpen.value = false;
 };
 
 const openDateSheet = () => {
@@ -344,16 +353,64 @@ const incIntervalDays = () => {
     intervalo_dias.value = Math.min(999, current + 1);
 };
 
+const normalizeCategoryKind = (kind: unknown): CategoryOption['kind'] => {
+    if (kind === 'expense' || kind === 'income') return kind;
+    return undefined;
+};
+
+const mergeCategoryOptions = (options: CategoryOption[]) => {
+    const map = new Map<string, CategoryOption>();
+    for (const opt of options) {
+        const current = map.get(opt.key);
+        if (!current) {
+            map.set(opt.key, { ...opt, kind: normalizeCategoryKind(opt.kind) });
+            continue;
+        }
+
+        const nextKind = normalizeCategoryKind(opt.kind);
+        const mergedKind =
+            current.kind && nextKind && current.kind !== nextKind ? undefined : (current.kind ?? nextKind);
+
+        map.set(opt.key, {
+            ...current,
+            ...opt,
+            customColor: current.customColor ?? opt.customColor,
+            tone: current.tone ?? opt.tone,
+            icon: (current.icon && current.icon !== 'other' ? current.icon : opt.icon) ?? current.icon,
+            kind: mergedKind,
+        });
+    }
+    return Array.from(map.values());
+};
+
+const createdCategories = ref<CategoryOption[]>([]);
+
 const categories = computed<CategoryOption[]>(() => {
     const fallback: CategoryOption[] = [
-        { key: 'Alimentação', label: 'Alimentação', icon: 'food', tone: 'amber' },
-        { key: 'Moradia', label: 'Moradia', icon: 'home', tone: 'blue' },
-        { key: 'Transporte', label: 'Transporte', icon: 'car', tone: 'slate' },
-        { key: 'Lazer', label: 'Lazer', icon: 'other', tone: 'purple' },
-        { key: 'Saúde', label: 'Saúde', icon: 'other', tone: 'red' },
-        { key: 'Estudos', label: 'Estudos', icon: 'other', tone: 'green' },
+        { key: 'Alimentação', label: 'Alimentação', icon: 'food', tone: 'amber', kind: 'expense' },
+        { key: 'Moradia', label: 'Moradia', icon: 'home', tone: 'blue', kind: 'expense' },
+        { key: 'Transporte', label: 'Transporte', icon: 'car', tone: 'slate', kind: 'expense' },
+        { key: 'Lazer', label: 'Lazer', icon: 'other', tone: 'purple', kind: 'expense' },
+        { key: 'Saúde', label: 'Saúde', icon: 'other', tone: 'red', kind: 'expense' },
+        { key: 'Estudos', label: 'Estudos', icon: 'other', tone: 'green', kind: 'expense' },
+        { key: 'Salário', label: 'Salário', icon: 'other', tone: 'green', kind: 'income' },
+        { key: 'Freelance', label: 'Freelance', icon: 'other', tone: 'blue', kind: 'income' },
+        { key: 'Investimentos', label: 'Investimentos', icon: 'other', tone: 'purple', kind: 'income' },
+        { key: 'Outros', label: 'Outros', icon: 'other', tone: 'slate' },
     ];
-    return props.categories?.length ? props.categories : fallback;
+    const base = props.categories?.length ? props.categories : fallback;
+    return mergeCategoryOptions([...base, ...createdCategories.value]);
+});
+
+const categoryKind = computed<CategoryOption['kind']>(() => {
+    if (localKind.value === 'expense') return 'expense';
+    if (localKind.value === 'income') return 'income';
+    return undefined;
+});
+
+const categoriesForKind = computed(() => {
+    if (!categoryKind.value) return [];
+    return categories.value.filter((opt) => !opt.kind || opt.kind === categoryKind.value);
 });
 
 const accounts = computed<AccountOption[]>(() => {
@@ -371,6 +428,49 @@ const openCategorySheet = () => {
 
 const openAccountSheet = () => {
     accountSheetOpen.value = true;
+};
+
+const openCreateCategory = () => {
+    newCategoryOpen.value = true;
+};
+
+const createCategory = async (payload: { name: string; type: 'expense' | 'income'; icon: string }) => {
+    const name = payload.name.trim();
+    if (!name) return;
+
+    try {
+        const response = await requestJson<{
+            id: string;
+            name: string;
+            type: 'expense' | 'income';
+            icon?: string | null;
+            color?: string | null;
+        }>('/api/categories', {
+            method: 'POST',
+            body: JSON.stringify({
+                name,
+                type: payload.type,
+                icon: payload.icon,
+                color: '#6B7280',
+            }),
+        });
+
+        createdCategories.value = mergeCategoryOptions([
+            ...createdCategories.value,
+            {
+                key: response.name,
+                label: response.name,
+                icon: response.icon ?? payload.icon ?? 'other',
+                customColor: response.color ?? undefined,
+                kind: normalizeCategoryKind(response.type),
+            },
+        ]);
+
+        category.value = response.name;
+        newCategoryOpen.value = false;
+    } catch {
+        window.alert('Não foi possível criar a categoria. Tente novamente.');
+    }
 };
 
 	const save = () => {
@@ -414,6 +514,21 @@ const openAccountSheet = () => {
     });
     close();
 };
+
+watch(
+    [localKind, categoriesForKind],
+    () => {
+        if (localKind.value === 'transfer') return;
+        if (!categoriesForKind.value.length) return;
+        const exists = categoriesForKind.value.some((opt) => opt.key === category.value);
+        if (!exists) category.value = categoriesForKind.value[0]!.key;
+    },
+    { immediate: true },
+);
+
+watch(localKind, (value) => {
+    if (value === 'transfer') isInstallment.value = false;
+});
 
 watch(
     () => props.open,
@@ -481,8 +596,8 @@ watch(
                     </div>
                 </div>
 
-                <div v-if="!isTransfer" class="mt-6 space-y-4 px-5 md:px-8">
-                    <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70">
+                <div class="mt-6 space-y-4 px-5 md:px-8">
+                    <div v-if="!isTransfer" class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70">
                         <div class="flex items-center gap-3">
                             <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-200/60">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -500,7 +615,7 @@ watch(
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div v-if="!isTransfer" class="grid grid-cols-2 gap-3">
                         <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openCategorySheet">
                             <div class="flex items-center gap-3">
                                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
@@ -543,7 +658,7 @@ watch(
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div v-if="!isTransfer" class="grid grid-cols-2 gap-3">
                         <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openDateSheet">
                             <div class="flex items-center gap-3">
                                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
@@ -585,7 +700,8 @@ watch(
 
                     <button
                         type="button"
-                        class="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-4 text-left text-sm font-bold tracking-wide text-emerald-600 ring-1 ring-slate-200/60"
+                        class="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-4 text-left text-sm font-bold tracking-wide ring-1 ring-slate-200/60"
+                        :class="localKind === 'transfer' ? 'text-blue-600' : 'text-emerald-600'"
                         @click="showAdvanced = !showAdvanced"
                     >
                         <span>OPÇÕES AVANÇADAS</span>
@@ -595,7 +711,7 @@ watch(
                     </button>
 
                     <div v-if="showAdvanced" class="space-y-4 pb-4">
-                        <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/60">
+                        <div v-if="!isTransfer" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/60">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
                                     <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
@@ -868,8 +984,17 @@ watch(
         <CategoryPickerSheet
             :open="categorySheetOpen"
             :options="categories"
+            :kind="categoryKind"
             @close="categorySheetOpen = false"
             @select="(key) => { category = key; categorySheetOpen = false; }"
+            @create="() => { categorySheetOpen = false; openCreateCategory(); }"
+        />
+
+        <NewCategoryModal
+            :open="newCategoryOpen"
+            :initial-type="categoryKind ?? 'expense'"
+            @close="newCategoryOpen = false"
+            @save="createCategory"
         />
 
         <AccountPickerSheet

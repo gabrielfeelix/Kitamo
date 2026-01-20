@@ -6,6 +6,7 @@ type IconKey = 'food' | 'home' | 'car' | 'pill' | 'briefcase' | 'heart' | 'shirt
 
 const props = defineProps<{
     open: boolean;
+    initialType?: CategoryType;
 }>();
 
 const emit = defineEmits<{
@@ -27,7 +28,7 @@ watch(
     (isOpen) => {
         if (!isOpen) return;
         name.value = '';
-        type.value = 'expense';
+        type.value = props.initialType ?? 'expense';
         icon.value = 'food';
     },
 );
@@ -201,4 +202,3 @@ watch(
         </footer>
     </div>
 </template>
-

@@ -26,7 +26,10 @@ const bootstrap = computed(
 const pickerCategories = computed<CategoryOption[]>(() => {
     const unique = new Map<string, CategoryOption>();
     for (const c of bootstrap.value.categories ?? []) {
-        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate' });
+        const kind = c.type === 'income' ? 'income' : c.type === 'expense' ? 'expense' : undefined;
+        const current = unique.get(c.name);
+        const mergedKind = current?.kind && kind && current.kind !== kind ? undefined : (current?.kind ?? kind);
+        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate', kind: mergedKind });
     }
     return Array.from(unique.values());
 });

@@ -287,12 +287,20 @@ const confirmInstallments = (_payload: { installments: number; interestRate: num
 };
 
 const categoryOptions = computed<CategoryOption[]>(() => {
-    return (bootstrap.value.categories ?? []).map((cat) => ({
-        key: cat.name,
-        label: cat.name,
-        icon: cat.icon ?? 'other',
-        customColor: cat.color ?? undefined,
-    }));
+    const unique = new Map<string, CategoryOption>();
+    for (const cat of bootstrap.value.categories ?? []) {
+        const kind = cat.type === 'income' ? 'income' : cat.type === 'expense' ? 'expense' : undefined;
+        const current = unique.get(cat.name);
+        const mergedKind = current?.kind && kind && current.kind !== kind ? undefined : (current?.kind ?? kind);
+        unique.set(cat.name, {
+            key: cat.name,
+            label: cat.name,
+            icon: current?.icon && current.icon !== 'other' ? current.icon : (cat.icon ?? 'other'),
+            customColor: current?.customColor ?? (cat.color ?? undefined),
+            kind: mergedKind,
+        });
+    }
+    return Array.from(unique.values());
 });
 
 const accountOptions = computed<AccountOption[]>(() => {
