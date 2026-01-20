@@ -20,6 +20,8 @@ class ProjecaoService
         $today = CarbonImmutable::today();
         $end = $today->addDays(30);
 
+        $cashAccountIds = $this->cashAccountIds($userId);
+
         $saldoAtual = (float) Account::query()
             ->where('user_id', $userId)
             ->includedInNetWorth()
@@ -28,11 +30,14 @@ class ProjecaoService
         $transacoes = Transaction::query()
             ->where('user_id', $userId)
             ->where('status', 'pending')
+            ->whereIn('account_id', $cashAccountIds)
             ->whereBetween('transaction_date', [$today->toDateString(), $end->toDateString()])
             ->orderBy('transaction_date', 'asc')
-            ->get(['id', 'kind', 'amount', 'transaction_date', 'recorrencia_grupo_id']);
+            ->get(['id', 'account_id', 'kind', 'amount', 'transaction_date', 'recorrencia_grupo_id']);
 
         $extrasRecorrencias = $this->simularRecorrenciasNaoCriadas($userId, $today, $end);
+        $extrasPorConta = $this->groupExtrasByAccount($extrasRecorrencias);
+        $pagamentosFaturaCartao = $this->simularPagamentosFaturaCartao($userId, $today, $end, $extrasPorConta);
 
         $porDia = [];
         foreach ($transacoes as $t) {
@@ -40,7 +45,13 @@ class ProjecaoService
             $porDia[$key][] = ['kind' => $t->kind, 'amount' => (float) $t->amount];
         }
         foreach ($extrasRecorrencias as $extra) {
+            if (!in_array($extra['account_id'], $cashAccountIds, true)) {
+                continue;
+            }
             $porDia[$extra['date']][] = ['kind' => $extra['kind'], 'amount' => (float) $extra['amount']];
+        }
+        foreach ($pagamentosFaturaCartao as $payment) {
+            $porDia[$payment['date']][] = ['kind' => 'expense', 'amount' => (float) $payment['amount']];
         }
 
         $projecaoDiaria = [];
@@ -91,6 +102,8 @@ class ProjecaoService
         $inicioMes = $today->startOfMonth();
         $fimMes = $today->endOfMonth();
 
+        $cashAccountIds = $this->cashAccountIds($userId);
+
         $projecao = $this->calcularProjecao30Dias($userId);
         $primeiroDiaNegativo = $projecao['primeiro_dia_negativo'];
 
@@ -112,6 +125,7 @@ class ProjecaoService
             ->where('user_id', $userId)
             ->where('kind', 'income')
             ->where('status', 'pending')
+            ->whereIn('account_id', $cashAccountIds)
             ->whereBetween('transaction_date', [$today->toDateString(), $fimMes->toDateString()])
             ->sum('amount');
 
@@ -121,19 +135,36 @@ class ProjecaoService
             ->sum('current_balance');
 
         $extrasRecorrenciasMes = $this->simularRecorrenciasNaoCriadas($userId, $today, $fimMes);
+        $extrasRecorrenciasMesCash = array_values(array_filter(
+            $extrasRecorrenciasMes,
+            fn (array $extra) => in_array($extra['account_id'], $cashAccountIds, true),
+        ));
+
+        $receitasRecorrenciasMes = array_sum(array_map(
+            fn (array $extra) => $extra['kind'] === 'income' ? (float) $extra['amount'] : 0.0,
+            $extrasRecorrenciasMesCash,
+        ));
         $despesasRecorrenciasMes = array_sum(array_map(
             fn (array $extra) => $extra['kind'] === 'expense' ? (float) $extra['amount'] : 0.0,
-            $extrasRecorrenciasMes
+            $extrasRecorrenciasMesCash,
         ));
 
         $despesasPendentesMes = (float) Transaction::query()
             ->where('user_id', $userId)
             ->where('kind', 'expense')
             ->where('status', 'pending')
+            ->whereIn('account_id', $cashAccountIds)
             ->whereBetween('transaction_date', [$today->toDateString(), $fimMes->toDateString()])
             ->sum('amount');
 
-        $saldoFinalEstimado = $saldoAtual + $receitasPendentes - ($despesasPendentesMes + $despesasRecorrenciasMes);
+        $extrasPorContaMes = $this->groupExtrasByAccount($extrasRecorrenciasMes);
+        $pagamentosFaturaCartaoMes = $this->simularPagamentosFaturaCartao($userId, $today, $fimMes, $extrasPorContaMes);
+        $totalFaturasMes = array_sum(array_map(fn (array $p) => (float) $p['amount'], $pagamentosFaturaCartaoMes));
+
+        $saldoFinalEstimado = $saldoAtual
+            + $receitasPendentes
+            + $receitasRecorrenciasMes
+            - ($despesasPendentesMes + $despesasRecorrenciasMes + $totalFaturasMes);
 
         $insights = [];
 
@@ -249,6 +280,7 @@ class ProjecaoService
                 if ($cursor->greaterThanOrEqualTo($start) && !in_array($key, $knownDates, true)) {
                     $extras[] = [
                         'date' => $key,
+                        'account_id' => (string) $grupo->account_id,
                         'kind' => $grupo->kind,
                         'amount' => (float) $grupo->amount,
                     ];
@@ -258,5 +290,177 @@ class ProjecaoService
         }
 
         return $extras;
+    }
+
+    private function cashAccountIds(int $userId): array
+    {
+        return Account::query()
+            ->where('user_id', $userId)
+            ->includedInNetWorth()
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+    }
+
+    /**
+     * @param array<int, array{date:string, account_id:string, kind:string, amount:float}> $extras
+     * @return array<string, array<int, array{date:string, kind:string, amount:float}>>
+     */
+    private function groupExtrasByAccount(array $extras): array
+    {
+        $by = [];
+        foreach ($extras as $extra) {
+            $accountId = (string) $extra['account_id'];
+            $by[$accountId][] = [
+                'date' => $extra['date'],
+                'kind' => $extra['kind'],
+                'amount' => (float) $extra['amount'],
+            ];
+        }
+        return $by;
+    }
+
+    /**
+     * Simula pagamentos de fatura de cartões de crédito como saída no fluxo de caixa,
+     * considerando o due_day (vencimento) e o closing_day (fechamento).
+     *
+     * @param array<string, array<int, array{date:string, kind:string, amount:float}>> $extrasPorConta
+     * @return array<int, array{date:string, amount:float}>
+     */
+    private function simularPagamentosFaturaCartao(int $userId, CarbonImmutable $start, CarbonImmutable $end, array $extrasPorConta): array
+    {
+        $cartoes = Account::query()
+            ->where('user_id', $userId)
+            ->where('type', 'credit_card')
+            ->get(['id', 'closing_day', 'due_day', 'created_at']);
+
+        if ($cartoes->isEmpty()) {
+            return [];
+        }
+
+        $monthCursor = $start->startOfMonth()->subMonthNoOverflow();
+        $monthEnd = $end->startOfMonth()->addMonthNoOverflow();
+
+        $payments = [];
+
+        while ($monthCursor->lessThanOrEqualTo($monthEnd)) {
+            foreach ($cartoes as $cartao) {
+                $dueDayRaw = (int) ($cartao->due_day ?? 0);
+                if ($dueDayRaw <= 0) {
+                    continue;
+                }
+
+                $dueDate = $this->clampDay($monthCursor, $dueDayRaw)->startOfDay();
+                if ($dueDate->lessThan($start) || $dueDate->greaterThan($end)) {
+                    continue;
+                }
+
+                $refMonth = $this->invoiceReferenceMonthForDue($cartao, $monthCursor);
+                $period = $this->invoicePeriodForMonth($cartao, $refMonth);
+
+                $accountCreatedAt = $cartao->created_at ? CarbonImmutable::parse($cartao->created_at) : null;
+                if ($accountCreatedAt && $accountCreatedAt->greaterThan($period['end'])) {
+                    continue;
+                }
+
+                $expenseSum = (float) Transaction::query()
+                    ->where('user_id', $userId)
+                    ->where('account_id', $cartao->id)
+                    ->where('kind', 'expense')
+                    ->where('status', 'pending')
+                    ->whereBetween('transaction_date', [$period['start']->toDateString(), $period['end']->toDateString()])
+                    ->sum('amount');
+
+                $incomeSum = (float) Transaction::query()
+                    ->where('user_id', $userId)
+                    ->where('account_id', $cartao->id)
+                    ->where('kind', 'income')
+                    ->whereIn('status', ['received'])
+                    ->whereBetween('transaction_date', [$period['start']->toDateString(), $period['end']->toDateString()])
+                    ->sum('amount');
+
+                $extras = $extrasPorConta[(string) $cartao->id] ?? [];
+                $extraExpense = 0.0;
+                $extraIncome = 0.0;
+                foreach ($extras as $extra) {
+                    $d = CarbonImmutable::parse($extra['date']);
+                    if ($d->lessThan($period['start']) || $d->greaterThan($period['end'])) {
+                        continue;
+                    }
+                    if ($extra['kind'] === 'income') {
+                        $extraIncome += (float) $extra['amount'];
+                    } else {
+                        $extraExpense += (float) $extra['amount'];
+                    }
+                }
+
+                $invoiceTotal = max(0.0, ($expenseSum + $extraExpense) - ($incomeSum + $extraIncome));
+                if ($invoiceTotal <= 0) {
+                    continue;
+                }
+
+                $key = $dueDate->toDateString();
+                $payments[$key] = ($payments[$key] ?? 0.0) + $invoiceTotal;
+            }
+
+            $monthCursor = $monthCursor->addMonthNoOverflow();
+        }
+
+        ksort($payments);
+
+        return array_map(
+            fn (string $date, float $amount) => ['date' => $date, 'amount' => round($amount, 2)],
+            array_keys($payments),
+            array_values($payments),
+        );
+    }
+
+    private function invoiceReferenceMonthForDue(Account $cartao, CarbonImmutable $dueMonth): CarbonImmutable
+    {
+        $closingDay = (int) ($cartao->closing_day ?? 0);
+        $dueDay = (int) ($cartao->due_day ?? 0);
+
+        if ($closingDay > 0 && $dueDay > 0 && $dueDay <= $closingDay) {
+            return $dueMonth->subMonthNoOverflow();
+        }
+
+        return $dueMonth;
+    }
+
+    /**
+     * @return array{start:CarbonImmutable, end:CarbonImmutable}
+     */
+    private function invoicePeriodForMonth(Account $cartao, CarbonImmutable $refMonth): array
+    {
+        $closingDayRaw = (int) ($cartao->closing_day ?? 0);
+        $monthStart = $refMonth->startOfMonth()->startOfDay();
+        $monthDays = (int) $monthStart->daysInMonth;
+        $closingDayThisMonth = $closingDayRaw > 0 ? min($closingDayRaw, $monthDays) : 0;
+
+        if ($closingDayThisMonth <= 0) {
+            return [
+                'start' => $monthStart,
+                'end' => $monthStart->endOfMonth()->endOfDay(),
+            ];
+        }
+
+        $end = $monthStart->setDay($closingDayThisMonth)->endOfDay();
+        $prevMonth = $monthStart->subMonthNoOverflow();
+        $prevMonthDays = (int) $prevMonth->daysInMonth;
+
+        if ($closingDayRaw >= $prevMonthDays) {
+            $start = $monthStart;
+        } else {
+            $startDay = $closingDayRaw + 1;
+            $start = $prevMonth->setDay($startDay)->startOfDay();
+        }
+
+        return ['start' => $start, 'end' => $end];
+    }
+
+    private function clampDay(CarbonImmutable $monthStart, int $day): CarbonImmutable
+    {
+        $safeDay = min(max(1, $day), (int) $monthStart->daysInMonth);
+        return $monthStart->startOfMonth()->setDay($safeDay);
     }
 }

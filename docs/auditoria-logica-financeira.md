@@ -43,3 +43,15 @@ Arquivos alterados neste lote:
 - `app/Http/Controllers/CreditCardController.php`
 - `app/Http/Controllers/TransactionController.php`
 - `resources/js/Pages/CreditCards/Show.vue`
+
+### Lote 3
+
+**RN05 — Recorrência**
+- Projeção/insights passam a considerar corretamente recorrências ainda não geradas (inclui receitas e despesas), sem aplicar recorrências de cartão como saída imediata do caixa.
+
+**RN06 — Projeção**
+- Projeção de 30 dias agora ignora compras pendentes no cartão como saída diária (não são débito imediato do caixa).
+- Em vez disso, simula a saída no vencimento (`due_day`), usando o mesmo conceito de período por fechamento (`closing_day`) para somar a fatura em aberto.
+
+Arquivos alterados neste lote:
+- `app/Services/ProjecaoService.php`
