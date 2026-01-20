@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PickerSheet from '@/Components/PickerSheet.vue';
+import AccountIcon from '@/Components/AccountIcon.vue';
 
 export type AccountOption = {
     key: string;
@@ -27,33 +28,6 @@ const toneClass = (tone?: AccountOption['tone']) => {
     if (tone === 'emerald') return 'bg-emerald-100 text-emerald-600';
     return 'bg-slate-200 text-slate-600';
 };
-
-const isEmojiIcon = (icon?: string) => {
-    if (!icon) return false;
-    return /^[\p{Emoji}]+$/u.test(icon) || icon.length > 2;
-};
-
-const getIconSVG = (type?: string) => {
-    if (type === 'wallet') {
-        return `<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 7h16v12H4z" />
-            <path d="M4 7V5h12v2" />
-            <path d="M16 12h4" />
-        </svg>`;
-    }
-    if (type === 'credit_card') {
-        return `<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="5" width="18" height="14" rx="3" />
-            <path d="M3 10h18" />
-        </svg>`;
-    }
-    return `<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 10h18" />
-        <path d="M5 10V8l7-5 7 5v2" />
-        <path d="M6 10v9" />
-        <path d="M18 10v9" />
-    </svg>`;
-};
 </script>
 
 <template>
@@ -66,15 +40,12 @@ const getIconSVG = (type?: string) => {
                 class="flex w-full items-center gap-4 rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70"
                 @click="emit('select', opt.key)"
             >
-                <span 
+                <span
                     class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold"
                     :class="opt.customColor ? '' : toneClass(opt.tone)"
                     :style="opt.customColor ? { backgroundColor: opt.customColor, color: 'white' } : {}"
                 >
-                    <template v-if="isEmojiIcon(opt.icon)">
-                        {{ opt.icon }}
-                    </template>
-                    <template v-else v-html="getIconSVG(opt.type)"></template>
+                    <AccountIcon :type="opt.type" :icon="opt.icon" class="h-6 w-6" />
                 </span>
                 <div class="min-w-0 flex-1">
                     <div class="truncate text-base font-semibold text-slate-900">{{ opt.label }}</div>
