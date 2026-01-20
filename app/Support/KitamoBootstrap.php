@@ -10,6 +10,7 @@ use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class KitamoBootstrap
 {
@@ -119,6 +120,8 @@ class KitamoBootstrap
             'categoryKey' => $categoryKey,
             'accountLabel' => $transaction->account?->name ?? 'Conta',
             'tags' => $tags,
+            'receiptUrl' => $transaction->receipt_path ? Storage::disk('public')->url($transaction->receipt_path) : null,
+            'receiptName' => $transaction->receipt_original_name,
         ];
     }
 

@@ -25,6 +25,10 @@ export type TransactionModalPayload = {
     installmentCount: number;
     isPaid: boolean;
     tags?: string[];
+    receiptFile?: File | null;
+    receiptUrl?: string | null;
+    receiptName?: string | null;
+    removeReceipt?: boolean;
     transferFrom: string;
     transferTo: string;
     transferDescription: string;
@@ -49,7 +53,10 @@ const emit = defineEmits<{
     (event: 'save', payload: TransactionModalPayload): void;
 }>();
 
-const close = () => emit('close');
+const close = () => {
+    setReceiptFile(null);
+    emit('close');
+};
 
 const localKind = ref<TransactionKind>(props.kind);
 const initialId = ref<string | undefined>(undefined);
@@ -103,6 +110,13 @@ const createTagOpen = ref(false);
 const createTagName = ref('');
 const createTagBusy = ref(false);
 const createdTags = ref<UserTag[]>([]);
+const receiptFile = ref<File | null>(null);
+const receiptPreviewUrl = ref<string | null>(null);
+const existingReceiptUrl = ref<string | null>(null);
+const existingReceiptName = ref<string | null>(null);
+const removeReceipt = ref(false);
+const receiptFileInput = ref<HTMLInputElement | null>(null);
+const receiptCameraInput = ref<HTMLInputElement | null>(null);
 
 const amountTextClass = computed(() => {
     if (localKind.value === 'expense') return 'text-[#EF4444]';
@@ -329,6 +343,46 @@ const tagOptions = computed<UserTag[]>(() => {
     return Array.from(map.values()).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 });
 
+const clearReceiptPreview = () => {
+    if (!receiptPreviewUrl.value) return;
+    URL.revokeObjectURL(receiptPreviewUrl.value);
+    receiptPreviewUrl.value = null;
+};
+
+const setReceiptFile = (file: File | null) => {
+    clearReceiptPreview();
+    receiptFile.value = file;
+    if (file && file.type.startsWith('image/')) {
+        receiptPreviewUrl.value = URL.createObjectURL(file);
+    }
+    if (file) removeReceipt.value = false;
+};
+
+const hasReceipt = computed(() => Boolean(receiptFile.value) || (Boolean(existingReceiptUrl.value) && !removeReceipt.value));
+const receiptLabel = computed(() => receiptFile.value?.name || existingReceiptName.value || 'Comprovante');
+const receiptIsImage = computed(() => Boolean(receiptFile.value?.type?.startsWith('image/')));
+
+const pickReceiptFile = () => receiptFileInput.value?.click();
+const pickReceiptCamera = () => receiptCameraInput.value?.click();
+const onReceiptChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
+    setReceiptFile(file);
+    target.value = '';
+};
+
+const removeReceiptNow = () => {
+    if (receiptFile.value) {
+        setReceiptFile(null);
+        return;
+    }
+    if (existingReceiptUrl.value) {
+        existingReceiptUrl.value = null;
+        existingReceiptName.value = null;
+        removeReceipt.value = true;
+    }
+};
+
 const createTag = async () => {
     const nome = normalizeTagName(createTagName.value);
     if (!nome) return;
@@ -394,7 +448,16 @@ const reset = () => {
     installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
     setSelectedTags(draft?.tags ?? []);
-    showAdvanced.value = Boolean(draft?.isInstallment || draft?.isRecorrente || (draft?.tags?.length ?? 0));
+    setReceiptFile(null);
+    existingReceiptUrl.value = draft?.receiptUrl ?? null;
+    existingReceiptName.value = draft?.receiptName ?? null;
+    removeReceipt.value = false;
+    showAdvanced.value = Boolean(
+        draft?.isInstallment ||
+            draft?.isRecorrente ||
+            (draft?.tags?.length ?? 0) ||
+            Boolean(draft?.receiptUrl),
+    );
 
     transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
     transferTo.value = draft?.transferTo ?? 'Carteira';
@@ -413,6 +476,7 @@ const reset = () => {
     createTagOpen.value = false;
     createTagName.value = '';
     createTagBusy.value = false;
+    clearReceiptPreview();
 };
 
 const openDateSheet = () => {
@@ -616,6 +680,8 @@ const createCategory = async (payload: { name: string; type: 'expense' | 'income
         installmentCount: installmentCount.value,
         isPaid: isPaid.value,
         tags: selectedTags.value,
+        receiptFile: receiptFile.value,
+        removeReceipt: removeReceipt.value,
         transferFrom: transferFrom.value,
         transferTo: transferTo.value,
         transferDescription: transferDescription.value.trim(),
@@ -1064,6 +1130,90 @@ watch(
                                     >
                                         Criar
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="!isTransfer" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/60">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500" aria-hidden="true">📎</span>
+                                    <div class="text-sm font-semibold text-slate-900">Comprovante</div>
+                                </div>
+                                <button v-if="hasReceipt" type="button" class="text-sm font-semibold text-slate-500 hover:text-slate-700" @click="pickReceiptFile">
+                                    Trocar
+                                </button>
+                            </div>
+
+                            <input ref="receiptCameraInput" class="hidden" type="file" accept="image/*" capture="environment" @change="onReceiptChange" />
+                            <input ref="receiptFileInput" class="hidden" type="file" accept="application/pdf,image/*" @change="onReceiptChange" />
+
+                            <div v-if="!hasReceipt" class="mt-4 grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    class="flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-50 text-sm font-semibold text-slate-600 ring-1 ring-slate-200/60"
+                                    @click="pickReceiptCamera"
+                                >
+                                    <span aria-hidden="true">📷</span>
+                                    Tirar foto
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-50 text-sm font-semibold text-slate-600 ring-1 ring-slate-200/60"
+                                    @click="pickReceiptFile"
+                                >
+                                    <span aria-hidden="true">📁</span>
+                                    Escolher arquivo
+                                </button>
+                                <div class="col-span-2 text-xs font-semibold text-slate-400">Aceita imagem ou PDF (até 10MB).</div>
+                            </div>
+
+                            <div v-else class="mt-4 overflow-hidden rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/60">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex min-w-0 items-center gap-3">
+                                        <div v-if="receiptIsImage && receiptPreviewUrl" class="h-12 w-12 overflow-hidden rounded-xl bg-white ring-1 ring-slate-200/60">
+                                            <img :src="receiptPreviewUrl" alt="" class="h-full w-full object-cover" />
+                                        </div>
+                                        <div v-else class="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-slate-400 ring-1 ring-slate-200/60">
+                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <rect x="4" y="5" width="16" height="14" rx="2" />
+                                                <path d="M8 9h8" />
+                                                <path d="M8 13h6" />
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="truncate text-sm font-semibold text-slate-700">{{ receiptLabel }}</div>
+                                            <div class="mt-0.5 text-xs font-semibold text-slate-400">
+                                                {{ existingReceiptUrl && !receiptFile && !removeReceipt ? 'Salvo' : 'Será anexado ao salvar' }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <a
+                                            v-if="existingReceiptUrl && !receiptFile && !removeReceipt"
+                                            :href="existingReceiptUrl"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="flex h-10 items-center justify-center rounded-xl bg-white px-4 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/60"
+                                        >
+                                            Ver
+                                        </a>
+                                        <button
+                                            type="button"
+                                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/60"
+                                            aria-label="Remover"
+                                            @click="removeReceiptNow"
+                                        >
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M3 6h18" />
+                                                <path d="M8 6V4h8v2" />
+                                                <path d="M19 6l-1 16H6L5 6" />
+                                                <path d="M10 11v6" />
+                                                <path d="M14 11v6" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

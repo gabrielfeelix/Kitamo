@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { requestJson } from '@/lib/kitamoApi';
+import { requestFormData, requestJson } from '@/lib/kitamoApi';
+import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
 import type { BootstrapData } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -286,20 +287,9 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
         return;
     }
 
-    await requestJson(route('transactions.store'), {
+    await (hasTransactionReceipt(payload) ? requestFormData : requestJson)(route('transactions.store'), {
         method: 'POST',
-        body: JSON.stringify({
-            kind: payload.kind,
-            amount: payload.amount,
-            description: payload.description,
-            category: payload.category,
-            account: payload.account,
-            dateKind: payload.dateKind,
-            dateOther: payload.dateOther,
-            isPaid: payload.isPaid,
-            isInstallment: payload.isInstallment,
-            installmentCount: payload.installmentCount,
-        }),
+        body: hasTransactionReceipt(payload) ? buildTransactionFormData(payload) : JSON.stringify(buildTransactionRequest(payload)),
     });
 
     showToast('Movimentação salva');

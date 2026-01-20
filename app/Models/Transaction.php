@@ -37,6 +37,10 @@ class Transaction extends Model
         'parcelamento_grupo_id',
         'data_pagamento',
         'tags',
+        'receipt_path',
+        'receipt_original_name',
+        'receipt_mime',
+        'receipt_size',
     ];
 
     protected function casts(): array

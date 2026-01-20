@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { requestJson } from '@/lib/kitamoApi';
-import { buildTransactionRequest } from '@/lib/transactions';
+import { requestFormData, requestJson } from '@/lib/kitamoApi';
+import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
 import type { BootstrapData, CreditCard, Entry, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -58,6 +58,16 @@ const loadHomeWidgets = () => {
         if (!raw) return;
         const parsed = JSON.parse(raw) as Partial<HomeWidgetsState>;
         homeWidgets.value = { ...homeWidgets.value, ...parsed };
+    } catch {
+        // ignore
+    }
+};
+
+const unreadNotifications = ref(0);
+const loadUnreadNotifications = async () => {
+    try {
+        const response = await requestJson<{ count: number }>(route('api.notifications.count-unread'));
+        unreadNotifications.value = Number(response.count ?? 0);
     } catch {
         // ignore
     }
@@ -668,6 +678,8 @@ const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
         accountIcon: toAccountIcon(entry.accountLabel),
         dateLabel: formatDetailDate(entry.transactionDate) || entry.dateLabel,
         installmentLabel: entry.installment ?? undefined,
+        receiptUrl: entry.receiptUrl ?? null,
+        receiptName: entry.receiptName ?? null,
     };
 });
 
@@ -697,6 +709,10 @@ const openAddCardTransaction = (cardName: string) => {
         installmentCount: 1,
         isPaid: false,
         tags: [],
+        receiptFile: null,
+        receiptUrl: null,
+        receiptName: null,
+        removeReceipt: false,
         transferFrom: '',
         transferTo: '',
         transferDescription: '',
@@ -735,6 +751,10 @@ const openEntryEdit = (entry: Entry) => {
         installmentCount: parseInstallmentCount(entry.installment),
         isPaid: entry.status === 'paid',
         tags: entry.tags ?? [],
+        receiptFile: null,
+        receiptUrl: entry.receiptUrl ?? null,
+        receiptName: entry.receiptName ?? null,
+        removeReceipt: false,
         transferFrom: 'Banco Inter',
         transferTo: 'Carteira',
         transferDescription: '',
@@ -804,9 +824,9 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
     const url = payload.id ? route('transactions.update', payload.id) : route('transactions.store');
     const method = payload.id ? 'PATCH' : 'POST';
 
-    const response = await requestJson<{ entry: Entry }>(url, {
+    const response = await (hasTransactionReceipt(payload) ? requestFormData : requestJson)<{ entry: Entry }>(url, {
         method,
-        body: JSON.stringify(buildTransactionRequest(payload)),
+        body: hasTransactionReceipt(payload) ? buildTransactionFormData(payload) : JSON.stringify(buildTransactionRequest(payload)),
     });
 
     replaceEntry(response.entry);
@@ -854,6 +874,7 @@ const openAccountMenuOption = (option: 'bank' | 'wallet' | 'card') => {
 onMounted(() => {
     loadHomeWidgets();
     loadCreditCardsApi();
+    loadUnreadNotifications();
     try {
         const alreadyDone = window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
         const hasAccounts = (bootstrap.value.accounts ?? []).length > 0;
@@ -881,9 +902,15 @@ onMounted(() => {
 	            <div class="flex items-center gap-2">
 	                <Link
 	                    :href="route('notifications.index')"
-	                    class="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60 hover:bg-slate-50"
+	                    class="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60 hover:bg-slate-50"
 	                    aria-label="Notificações"
 	                >
+                        <span
+                            v-if="unreadNotifications > 0"
+                            class="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white"
+                        >
+                            {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+                        </span>
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
                         <path d="M10 21a2 2 0 0 0 4 0" />

@@ -54,3 +54,36 @@ export const requestJson = async <T>(url: string, options: RequestInit = {}): Pr
 
     return (await res.json()) as T;
 };
+
+export const requestFormData = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+    const makeRequest = async (token: string) => {
+        const headers = new Headers(options.headers ?? {});
+        headers.set('X-Requested-With', 'XMLHttpRequest');
+        headers.set('X-CSRF-TOKEN', token);
+
+        return fetch(url, {
+            credentials: 'same-origin',
+            ...options,
+            headers,
+        });
+    };
+
+    let res = await makeRequest(csrfToken());
+
+    if (res.status === 419) {
+        try {
+            const newToken = await refreshCsrfToken();
+            res = await makeRequest(newToken);
+        } catch {
+            window.location.reload();
+            throw new Error('Session expired. Reloading page...');
+        }
+    }
+
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `Request failed: ${res.status}`);
+    }
+
+    return (await res.json()) as T;
+};

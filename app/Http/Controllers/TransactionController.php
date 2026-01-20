@@ -12,7 +12,9 @@ use App\Support\KitamoBootstrap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
 {
@@ -37,6 +39,7 @@ class TransactionController extends Controller
             'data_fim' => ['nullable', 'date'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
+            'receipt' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp,heic,heif'],
         ]);
 
         $accountName = trim($data['account'] ?? 'Carteira');
@@ -134,6 +137,11 @@ class TransactionController extends Controller
             'tags' => $data['tags'] ?? [],
         ]);
 
+        if ($request->hasFile('receipt')) {
+            $stored = $this->storeReceipt($user->id, $request->file('receipt'));
+            $transaction->update($stored);
+        }
+
         $this->applyBalanceAdjustment($account, $transaction, 1);
 
         if ($isRecorrente && $recorrenciaGrupoId) {
@@ -189,6 +197,8 @@ class TransactionController extends Controller
             'data_fim' => ['nullable', 'date'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
+            'receipt' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp,heic,heif'],
+            'remove_receipt' => ['nullable', 'boolean'],
         ]);
 
         $editarEscopo = $data['editar_escopo'] ?? null;
@@ -265,6 +275,14 @@ class TransactionController extends Controller
             'tags' => $data['tags'] ?? [],
         ];
 
+        if ($request->boolean('remove_receipt')) {
+            $this->deleteReceiptIfAny($transaction);
+            $payload['receipt_path'] = null;
+            $payload['receipt_original_name'] = null;
+            $payload['receipt_mime'] = null;
+            $payload['receipt_size'] = null;
+        }
+
         if ($isRecorrenteEdit && in_array($editarEscopo, ['proximos', 'todos'], true)) {
             $grupoId = $transaction->recorrencia_grupo_id;
             $query = Transaction::query()->where('recorrencia_grupo_id', $grupoId);
@@ -318,6 +336,12 @@ class TransactionController extends Controller
             $transaction->update($payload);
         }
 
+        if ($request->hasFile('receipt')) {
+            $this->deleteReceiptIfAny($transaction);
+            $stored = $this->storeReceipt($user->id, $request->file('receipt'));
+            $transaction->update($stored);
+        }
+
         $transaction->refresh();
         $this->applyBalanceAdjustment($transaction->account, $transaction, 1);
 
@@ -334,9 +358,34 @@ class TransactionController extends Controller
         }
 
         $this->applyBalanceAdjustment($transaction->account, $transaction, -1);
+        $this->deleteReceiptIfAny($transaction);
         $transaction->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    private function storeReceipt(int $userId, UploadedFile $file): array
+    {
+        $disk = Storage::disk('public');
+
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
+        $path = $disk->putFileAs("receipts/{$userId}", $file, (string) Str::uuid() . ".{$ext}");
+
+        return [
+            'receipt_path' => $path,
+            'receipt_original_name' => $file->getClientOriginalName(),
+            'receipt_mime' => $file->getClientMimeType(),
+            'receipt_size' => $file->getSize(),
+        ];
+    }
+
+    private function deleteReceiptIfAny(Transaction $transaction): void
+    {
+        $path = (string) ($transaction->receipt_path ?? '');
+        if (!$path) return;
+        if (!str_starts_with($path, 'receipts/')) return;
+
+        Storage::disk('public')->delete($path);
     }
 
     public function togglePago(Request $request, Transaction $transaction): JsonResponse

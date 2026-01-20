@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 
 export type TransactionDetail = {
     id?: string;
@@ -13,6 +13,8 @@ export type TransactionDetail = {
     accountIcon: 'wallet' | 'bank' | 'card';
     dateLabel: string;
     installmentLabel?: string;
+    receiptUrl?: string | null;
+    receiptName?: string | null;
 };
 
 const props = defineProps<{
@@ -51,25 +53,6 @@ const statusPillClass = computed(() => {
     if (status === 'paid' || status === 'received') return 'bg-emerald-50 text-emerald-600';
     return 'bg-slate-100 text-slate-500';
 });
-
-const receipt = ref<File | null>(null);
-const receiptInput = ref<HTMLInputElement | null>(null);
-
-watch(
-    () => props.open,
-    (isOpen) => {
-        if (!isOpen) return;
-        receipt.value = null;
-    },
-);
-
-const pickReceipt = () => receiptInput.value?.click();
-const onReceiptChange = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const selected = target.files?.[0] ?? null;
-    receipt.value = selected;
-    target.value = '';
-};
 </script>
 
 <template>
@@ -136,23 +119,7 @@ const onReceiptChange = (event: Event) => {
                 <div class="mt-6 w-full">
                     <div class="text-sm font-bold text-slate-900">Comprovante</div>
                     <div class="mt-3">
-                        <input ref="receiptInput" class="hidden" type="file" accept="application/pdf,image/*" @change="onReceiptChange" />
-
-                        <button
-                            v-if="!receipt"
-                            type="button"
-                            class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#14B8A6] bg-white text-sm font-semibold text-[#14B8A6]"
-                            @click="pickReceipt"
-                        >
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path
-                                    d="M21.4 11.6 12.9 20a5 5 0 0 1-7.1-7.1l8.5-8.5a3.5 3.5 0 1 1 5 5l-8.2 8.2a2 2 0 1 1-2.8-2.8l7.3-7.3"
-                                />
-                            </svg>
-                            Anexar comprovante
-                        </button>
-
-                        <div v-else class="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3">
+                        <div v-if="transaction?.receiptUrl" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
                                     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -160,18 +127,21 @@ const onReceiptChange = (event: Event) => {
                                         <path d="m8 13 2-2 3 3 3-4 2 3" />
                                     </svg>
                                 </div>
-                                <div class="text-sm font-semibold text-slate-700">{{ receipt.name }}</div>
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-slate-700">{{ transaction.receiptName || 'Comprovante' }}</div>
+                                    <div class="mt-0.5 text-xs font-semibold text-slate-400">Salvo</div>
+                                </div>
                             </div>
-                            <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500" aria-label="Remover" @click="receipt = null">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 6h18" />
-                                    <path d="M8 6V4h8v2" />
-                                    <path d="M19 6l-1 16H6L5 6" />
-                                    <path d="M10 11v6" />
-                                    <path d="M14 11v6" />
-                                </svg>
-                            </button>
+                            <a
+                                :href="transaction.receiptUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex h-10 items-center justify-center rounded-xl bg-slate-100 px-4 text-xs font-semibold text-slate-600"
+                            >
+                                Ver
+                            </a>
                         </div>
+                        <div v-else class="text-xs font-semibold text-slate-400">Sem comprovante.</div>
                     </div>
                 </div>
 

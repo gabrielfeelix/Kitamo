@@ -39,9 +39,26 @@ class NotificationsController extends Controller
 
         $limit = (int) ($data['limit'] ?? 20);
 
-        return response()->json(
-            $query->limit($limit)->get()
-        );
+        $items = $query->limit($limit)->get()->map(function (KitamoNotification $notification) {
+            return [
+                'id' => (string) $notification->id,
+                'title' => $notification->titulo,
+                'body' => $notification->mensagem,
+                'type' => $notification->tipo,
+                'priority' => $notification->prioridade,
+                'read_at' => $notification->data_leitura?->toISOString(),
+                'created_at' => $notification->created_at?->toISOString(),
+                'action' => [
+                    'type' => $notification->acao_primaria_tipo,
+                    'url' => $notification->acao_primaria_url,
+                ],
+                'metadata' => $notification->metadata,
+            ];
+        });
+
+        return response()->json([
+            'notifications' => $items->values(),
+        ]);
     }
 
     public function marcarLida(Request $request, KitamoNotification $notification): JsonResponse
@@ -121,4 +138,3 @@ class NotificationsController extends Controller
         ]);
     }
 }
-

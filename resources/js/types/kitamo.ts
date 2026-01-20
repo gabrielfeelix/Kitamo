@@ -23,6 +23,8 @@ export type Entry = {
     categoryKey: 'food' | 'home' | 'car' | 'other' | string;
     accountLabel: string;
     tags: EntryTag[];
+    receiptUrl?: string | null;
+    receiptName?: string | null;
 };
 
 export type GoalDeposit = {

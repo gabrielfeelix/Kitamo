@@ -1,8 +1,8 @@
 <script setup lang="ts">
 	import { computed, onMounted, ref } from 'vue';
 	import { Link, usePage } from '@inertiajs/vue3';
-	import { requestJson } from '@/lib/kitamoApi';
-	import { buildTransactionRequest } from '@/lib/transactions';
+import { requestFormData, requestJson } from '@/lib/kitamoApi';
+import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
 	import type { BootstrapData, Entry } from '@/types/kitamo';
 	import MobileShell from '@/Layouts/MobileShell.vue';
 	import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -274,6 +274,8 @@ const openDetail = (entry: Entry) => {
         accountIcon: 'wallet',
         dateLabel: `20 de janeiro de 2026`,
         installmentLabel: entry.installment ? entry.installment.replace('Parcela ', '') : undefined,
+        receiptUrl: entry.receiptUrl ?? null,
+        receiptName: entry.receiptName ?? null,
     };
     detailOpen.value = true;
 };
@@ -301,6 +303,10 @@ const openEdit = (id: string, options?: { mode?: 'edit' | 'duplicate' }) => {
         installmentCount: parseInstallmentCount(entry.installment),
         isPaid: entry.status === 'paid',
         tags: entry.tags ?? [],
+        receiptFile: null,
+        receiptUrl: entry.receiptUrl ?? null,
+        receiptName: entry.receiptName ?? null,
+        removeReceipt: false,
         transferFrom: 'Banco Inter',
         transferTo: 'Carteira',
         transferDescription: '',
@@ -355,9 +361,9 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
 
     const url = payload.id ? route('transactions.update', payload.id) : route('transactions.store');
     const method = payload.id ? 'PATCH' : 'POST';
-    const response = await requestJson<{ entry: Entry }>(url, {
+    const response = await (hasTransactionReceipt(payload) ? requestFormData : requestJson)<{ entry: Entry }>(url, {
         method,
-        body: JSON.stringify(buildTransactionRequest(payload)),
+        body: hasTransactionReceipt(payload) ? buildTransactionFormData(payload) : JSON.stringify(buildTransactionRequest(payload)),
     });
     replaceEntry(response.entry);
     showToast(payload.id ? 'Lançamento atualizado' : 'Lançamento criado');

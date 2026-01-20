@@ -11,8 +11,8 @@ import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import InstallmentInvoiceSheet from '@/Components/InstallmentInvoiceSheet.vue';
 import PickerSheet from '@/Components/PickerSheet.vue';
-import { requestJson } from '@/lib/kitamoApi';
-import { buildTransactionRequest } from '@/lib/transactions';
+import { requestFormData, requestJson } from '@/lib/kitamoApi';
+import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
 import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
 
@@ -206,6 +206,10 @@ const openAddTransaction = () => {
         installmentCount: 1,
         isPaid: false,
         tags: [],
+        receiptFile: null,
+        receiptUrl: null,
+        receiptName: null,
+        removeReceipt: false,
         transferFrom: '',
         transferTo: '',
         transferDescription: '',
@@ -238,9 +242,9 @@ const editInitial = computed<CreditCardModalPayload | null>(() => {
 
 const onTransactionSave = async (payload: TransactionModalPayload) => {
     try {
-        const response = await requestJson<{ entry: Entry }>(route('transactions.store'), {
+        const response = await (hasTransactionReceipt(payload) ? requestFormData : requestJson)<{ entry: Entry }>(route('transactions.store'), {
             method: 'POST',
-            body: JSON.stringify(buildTransactionRequest(payload)),
+            body: hasTransactionReceipt(payload) ? buildTransactionFormData(payload) : JSON.stringify(buildTransactionRequest(payload)),
         });
         showToast('Movimentação adicionada');
         router.reload({ only: ['bootstrap'] });

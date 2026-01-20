@@ -10,8 +10,12 @@ type NotificationItem = {
   id: string;
   title: string;
   body: string;
+  type?: string;
+  priority?: string;
   read_at: string | null;
   created_at: string;
+  action?: { type?: string | null; url?: string | null } | null;
+  metadata?: any;
 };
 
 const isMobile = useIsMobile();
@@ -36,6 +40,42 @@ const load = async () => {
   }
 };
 
+const formatWhen = (iso: string) => {
+  try {
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+};
+
+const iconForType = (type?: string) => {
+  if (type === 'vencimento') return '⏰';
+  if (type === 'alerta_saldo') return '⚠️';
+  if (type === 'resumo_semanal') return '📊';
+  return '🔔';
+};
+
+const markRead = async (id: string) => {
+  await requestJson(route('api.notifications.read', id), { method: 'PATCH' });
+  items.value = items.value.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+};
+
+const markAllRead = async () => {
+  await requestJson(route('api.notifications.read-all'), { method: 'POST' });
+  const now = new Date().toISOString();
+  items.value = items.value.map((n) => (n.read_at ? n : { ...n, read_at: now }));
+};
+
+const clearRead = async () => {
+  await requestJson(route('api.notifications.clear-read'), { method: 'DELETE' });
+  items.value = items.value.filter((n) => !n.read_at);
+};
+
+const removeNotification = async (id: string) => {
+  await requestJson(route('api.notifications.delete', id), { method: 'DELETE' });
+  items.value = items.value.filter((n) => n.id !== id);
+};
+
 onMounted(load);
 </script>
 
@@ -57,16 +97,29 @@ onMounted(load);
         <div class="text-xl font-semibold tracking-tight text-slate-900">Notificações</div>
         <div class="text-xs font-semibold text-slate-400">{{ unreadCount }} não lidas</div>
       </div>
-      <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600" @click="load" :disabled="loading">
-        Atualizar
-      </button>
+      <div class="flex items-center gap-2">
+        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60" @click="markAllRead" :disabled="loading || unreadCount === 0">
+          Marcar lidas
+        </button>
+        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60" @click="load" :disabled="loading">
+          Atualizar
+        </button>
+      </div>
     </header>
 
     <div v-if="!isMobile" class="flex items-center justify-between">
       <div class="text-sm font-semibold text-slate-500">{{ unreadCount }} não lidas</div>
-      <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600" @click="load" :disabled="loading">
-        Atualizar
-      </button>
+      <div class="flex items-center gap-2">
+        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60" @click="markAllRead" :disabled="loading || unreadCount === 0">
+          Marcar todas como lidas
+        </button>
+        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60" @click="clearRead" :disabled="loading || items.every((n) => !n.read_at)">
+          Limpar lidas
+        </button>
+        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60" @click="load" :disabled="loading">
+          Atualizar
+        </button>
+      </div>
     </div>
 
     <div v-if="!items.length && !loading" class="mt-8 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center md:mx-auto md:max-w-2xl">
@@ -83,11 +136,39 @@ onMounted(load);
     <div v-else class="mt-6 space-y-3 md:mx-auto md:max-w-2xl">
       <div v-for="n in items" :key="n.id" class="rounded-3xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200/60">
         <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <div class="truncate text-sm font-semibold" :class="n.read_at ? 'text-slate-700' : 'text-slate-900'">{{ n.title }}</div>
-            <div class="mt-1 text-xs text-slate-500">{{ n.body }}</div>
+          <div class="flex min-w-0 gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 ring-1 ring-slate-200/60">{{ iconForType(n.type) }}</div>
+            <div class="min-w-0">
+              <div class="truncate text-sm font-semibold" :class="n.read_at ? 'text-slate-700' : 'text-slate-900'">{{ n.title }}</div>
+              <div class="mt-1 text-xs text-slate-500">{{ n.body }}</div>
+              <div v-if="n.created_at" class="mt-2 text-[11px] font-semibold text-slate-400">{{ formatWhen(n.created_at) }}</div>
+            </div>
           </div>
-          <span v-if="!n.read_at" class="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="!n.read_at"
+              type="button"
+              class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600"
+              @click="markRead(n.id)"
+            >
+              Marcar lida
+            </button>
+            <button
+              type="button"
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500"
+              aria-label="Excluir"
+              @click="removeNotification(n.id)"
+            >
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M19 6l-1 16H6L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+            </button>
+            <span v-if="!n.read_at" class="h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
+          </div>
         </div>
       </div>
     </div>
