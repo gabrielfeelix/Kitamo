@@ -37,8 +37,8 @@ const menuItems = computed(() => [
         tone: 'emerald' as const,
     },
     {
-        label: 'Cartão de Crédito',
-        href: route('accounts.card'),
+        label: 'Cartões de Crédito',
+        href: route('credit-cards.my-cards'),
         icon: 'card',
         tone: 'purple' as const,
     },
