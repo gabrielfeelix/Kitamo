@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { BancoSelecionado } from './CreateAccountStep1.vue';
 
 const props = defineProps<{
@@ -12,20 +11,10 @@ const emit = defineEmits<{
   (event: 'close'): void;
   (event: 'selectMethod', method: 'manual' | 'automatic'): void;
 }>();
-
-const showComingSoon = ref(false);
-
-const selectMethod = (method: 'manual' | 'automatic') => {
-  if (method === 'automatic') {
-    showComingSoon.value = true;
-  } else {
-    emit('selectMethod', method);
-  }
-};
 </script>
 
 <template>
-  <div v-if="open && !showComingSoon" class="fixed inset-0 z-[60]">
+  <div v-if="open" class="fixed inset-0 z-[60]">
     <button
       class="absolute inset-0 bg-black/50 backdrop-blur-sm"
       type="button"
@@ -71,10 +60,13 @@ const selectMethod = (method: 'manual' | 'automatic') => {
           <!-- Option 1: Automatic -->
           <button
             type="button"
-            class="mt-4 w-full rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50"
-            @click="selectMethod('automatic')"
+            disabled
+            class="mt-4 w-full cursor-not-allowed rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-left opacity-50"
           >
-            <div class="font-semibold text-slate-900">Automática</div>
+            <div class="flex items-center justify-between gap-3">
+              <div class="font-semibold text-slate-900">Automática</div>
+              <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-700">EM BREVE</span>
+            </div>
             <p class="mt-2 text-xs text-slate-600">
               As receitas e despesas serão atualizadas automaticamente uma vez ao dia, cabendo a você somente categorizá-las.
             </p>
@@ -84,7 +76,7 @@ const selectMethod = (method: 'manual' | 'automatic') => {
           <button
             type="button"
             class="mt-3 w-full rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:bg-slate-50"
-            @click="selectMethod('manual')"
+            @click="emit('selectMethod', 'manual')"
           >
             <div class="font-semibold text-slate-900">Manual</div>
             <p class="mt-2 text-xs text-slate-600">
@@ -93,38 +85,6 @@ const selectMethod = (method: 'manual' | 'automatic') => {
           </button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Coming Soon Modal -->
-  <div v-if="open && showComingSoon" class="fixed inset-0 z-[60]">
-    <button
-      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-      type="button"
-      @click="showComingSoon = false"
-      aria-label="Fechar"
-    ></button>
-
-    <div
-      class="absolute left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-xl"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div class="text-center">
-        <div class="text-4xl">ℹ️</div>
-        <h2 class="mt-4 text-lg font-semibold text-slate-900">Em breve!</h2>
-        <p class="mt-2 text-sm text-slate-600">
-          A conexão automática via Open Finance estará disponível em breve. Por enquanto, utilize o modo manual.
-        </p>
-      </div>
-
-      <button
-        class="mt-6 w-full rounded-xl bg-[#14B8A6] py-3 font-semibold text-white hover:bg-[#0D9488]"
-        type="button"
-        @click="showComingSoon = false"
-      >
-        Entendi
-      </button>
     </div>
   </div>
 </template>

@@ -449,7 +449,7 @@ const closeEditModal = () => {
                         <path d="M5 12h14" />
                     </svg>
                 </div>
-                <div class="text-sm font-semibold text-slate-400">Nova {{ categoryType === 'expense' ? 'Despesa' : 'Receita' }}</div>
+                <div class="text-sm font-semibold text-slate-400">Nova Categoria</div>
             </button>
         </div>
 
