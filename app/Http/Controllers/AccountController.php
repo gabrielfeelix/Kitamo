@@ -122,11 +122,28 @@ class AccountController extends Controller
             ->get();
 
         $result = $accounts->map(function (Account $account) use ($startOfMonth, $endOfMonth, $user) {
+            $accountCreatedAt = $account->created_at ? Carbon::parse($account->created_at) : null;
+            if ($accountCreatedAt && $accountCreatedAt->greaterThan($endOfMonth)) {
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'type' => $account->type,
+                    'icon' => $account->icon,
+                    'color' => $account->color,
+                    'current_balance' => 0.0,
+                    'initial_balance' => (float) $account->initial_balance,
+                    'credit_limit' => $account->credit_limit,
+                    'closing_day' => $account->closing_day,
+                    'due_day' => $account->due_day,
+                    'subtitle' => $account->type === 'wallet' ? 'Dinheiro físico' : ($account->type === 'bank' ? 'Corrente' : 'Conta'),
+                ];
+            }
+
             // Get all transactions for this account in this month
             $transactions = $account->transactions()
                 ->where('user_id', $user->id)
                 ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
-                ->where('status', 'completed')
+                ->whereIn('status', ['paid', 'received'])
                 ->get();
 
             // Calculate balance at end of month
@@ -136,7 +153,7 @@ class AccountController extends Controller
             $transactionsBefore = $account->transactions()
                 ->where('user_id', $user->id)
                 ->where('transaction_date', '<', $startOfMonth)
-                ->where('status', 'completed')
+                ->whereIn('status', ['paid', 'received'])
                 ->get();
 
             foreach ($transactionsBefore as $transaction) {

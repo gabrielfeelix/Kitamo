@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CreditCardController extends Controller
@@ -128,8 +130,28 @@ class CreditCardController extends Controller
             ->get();
 
         $result = $creditCards->map(function (Account $account) use ($startOfMonth, $endOfMonth, $user) {
-            // Use current_balance which already has the correct used amount
-            $balanceUsed = max(0, (float) $account->current_balance);
+            $accountCreatedAt = $account->created_at ? Carbon::parse($account->created_at) : null;
+            if ($accountCreatedAt && $accountCreatedAt->greaterThan($endOfMonth)) {
+                $balanceUsed = 0.0;
+            } else {
+                $expenseSum = (float) Transaction::query()
+                    ->where('user_id', $user->id)
+                    ->where('account_id', $account->id)
+                    ->where('kind', 'expense')
+                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->whereIn('status', ['pending', 'paid'])
+                    ->sum('amount');
+
+                $incomeSum = (float) Transaction::query()
+                    ->where('user_id', $user->id)
+                    ->where('account_id', $account->id)
+                    ->where('kind', 'income')
+                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->whereIn('status', ['received'])
+                    ->sum('amount');
+
+                $balanceUsed = max(0.0, $expenseSum - $incomeSum);
+            }
 
             return [
                 'id' => (string) $account->id,
