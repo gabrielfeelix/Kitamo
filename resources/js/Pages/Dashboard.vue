@@ -1073,7 +1073,10 @@ onMounted(() => {
 		        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
 		                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
-	                <Link :href="route('credit-cards.my-cards')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
+		                <Link :href="route('credit-cards.my-cards')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
+		            </div>
+
+                <div
                     v-if="creditCards.length > 0"
                     class="mt-4 inline-flex w-full rounded-full bg-slate-50 p-1 ring-1 ring-slate-200/70"
                 >
