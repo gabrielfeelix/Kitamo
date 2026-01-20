@@ -35,7 +35,6 @@ const incluirSoma = ref(true);
 // Tipos de conta
 const tipos = [
   { id: 'corrente', nome: 'Conta corrente', icone: '🏛️' },
-  { id: 'dinheiro', nome: 'Dinheiro', icone: '💵' },
   { id: 'poupanca', nome: 'Poupança', icone: '📊' },
   { id: 'investimentos', nome: 'Investimentos', icone: '📈' },
   { id: 'vr_va', nome: 'VR/VA', icone: '🎫' },
@@ -59,7 +58,7 @@ const tipoSelecionado = computed(() => tipos.find((t) => t.id === tipo.value));
 const reset = () => {
   saldo.value = '';
   descricao.value = '';
-  tipo.value = 'corrente';
+  tipo.value = props.banco?.nome === 'Carteira' ? 'wallet' : 'corrente';
   cor.value = '#14B8A6';
   incluirSoma.value = true;
 };
@@ -184,7 +183,7 @@ watch(
           </div>
 
           <!-- Tipo de Conta -->
-          <div class="mt-6">
+          <div v-if="props.banco?.nome !== 'Carteira'" class="mt-6">
             <div class="mb-3 text-xs font-semibold uppercase text-slate-500">Tipo de conta</div>
             <div class="relative rounded-xl border border-[#E5E7EB] bg-[#F9FAFB]">
               <select

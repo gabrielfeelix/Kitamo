@@ -20,7 +20,6 @@ const emit = defineEmits<{
 const search = ref('');
 
 const bancos = [
-  { nome: 'Carteira', logo: '💼', cor: '#14B8A6' },
   { nome: 'Nubank', logo: '🟣', cor: '#8B10AE' },
   { nome: 'Banco Inter', logo: '🟢', cor: '#FF7A00' },
   { nome: 'Itaú', logo: '🟠', cor: '#EC7000' },

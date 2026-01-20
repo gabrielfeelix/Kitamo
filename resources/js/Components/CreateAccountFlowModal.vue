@@ -50,8 +50,8 @@ const handleSelectMethod = (method: 'manual' | 'automatic') => {
   if (method === 'manual') step.value = 3;
 };
 
-const mapAccountType = (payload: AccountPayload, isWallet: boolean = false) => {
-  if (isWallet || payload.tipo === 'dinheiro') return { type: 'wallet', icon: 'wallet' };
+const mapAccountType = (_payload: AccountPayload, isWallet: boolean = false) => {
+  if (isWallet) return { type: 'wallet', icon: 'wallet' };
   return { type: 'bank', icon: 'bank' };
 };
 
