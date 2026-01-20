@@ -65,7 +65,7 @@ const items = computed(() => [
     },
     {
         key: 'upcomingBills' as const,
-        title: 'Próximas contas',
+        title: 'A Vencer',
         description: 'Lista de gastos a pagar',
         icon: 'calendar' as const,
     },
@@ -127,4 +127,3 @@ const items = computed(() => [
         </div>
     </div>
 </template>
-

@@ -1201,7 +1201,7 @@ onMounted(() => {
 
 		        <section v-if="showUpcomingBillsSection" class="mt-6">
 	            <div class="flex items-center justify-between">
-	                <div class="text-lg font-semibold text-slate-900">Próximas contas</div>
+	                <div class="text-lg font-semibold text-slate-900">A Vencer</div>
                 <Link :href="route('accounts.index')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
             </div>
 

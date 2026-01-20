@@ -71,6 +71,14 @@ const isRecorrente = ref(false);
 	const fimMode = ref<'sempre' | 'ate'>('sempre');
 	const recurrenceError = ref<string>('');
 
+watch(isInstallment, (value) => {
+    if (value) isRecorrente.value = false;
+});
+
+watch(isRecorrente, (value) => {
+    if (value) isInstallment.value = false;
+});
+
 	watch(periodicidade, (value) => {
 	    if (value !== 'a_cada_x_dias') intervalo_dias.value = null;
 	});
@@ -146,6 +154,11 @@ const toBRDate = (isoDate: string) => {
 
 const reset = () => {
     const draft = props.initial ?? null;
+    const draftInstallment = draft?.isInstallment ?? false;
+    let draftRecorrente = draft?.isRecorrente ?? false;
+    if (draftInstallment && draftRecorrente) {
+        draftRecorrente = false;
+    }
 
     initialId.value = draft?.id;
     localKind.value = draft?.kind ?? props.kind;
@@ -155,7 +168,7 @@ const reset = () => {
     account.value = draft?.account ?? 'Carteira';
     dateKind.value = draft?.dateKind ?? 'today';
     dateOther.value = draft?.dateOther ? toBRDate(draft.dateOther) : '';
-    isInstallment.value = draft?.isInstallment ?? false;
+    isInstallment.value = draftInstallment;
     installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
     showAdvanced.value = Boolean(draft?.isInstallment || draft?.isRecorrente);
@@ -163,7 +176,7 @@ const reset = () => {
     transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
     transferTo.value = draft?.transferTo ?? 'Carteira';
     transferDescription.value = draft?.transferDescription ?? '';
-    isRecorrente.value = draft?.isRecorrente ?? false;
+    isRecorrente.value = draftRecorrente;
     periodicidade.value = draft?.periodicidade ?? 'mensal';
     intervalo_dias.value = draft?.intervalo_dias ?? null;
     data_fim.value = draft?.data_fim ? toBRDate(draft.data_fim) : '';
