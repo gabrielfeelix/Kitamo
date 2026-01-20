@@ -31,6 +31,19 @@ const selectedMonthKey = ref(monthItems.value[2]?.key ?? monthItems.value[0]?.ke
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
+const getBankLabel = (accountName: string) => {
+    const name = String(accountName).toLowerCase();
+    if (name.includes('nubank')) return 'NUBANK';
+    if (name.includes('xp') || name.includes('x p')) return 'XP';
+    if (name.includes('inter')) return 'INTER';
+    if (name.includes('itau')) return 'ITAÚ';
+    if (name.includes('bradesco')) return 'BRADESCO';
+    if (name.includes('santander')) return 'SANTANDER';
+    if (name.includes('caixa')) return 'CAIXA';
+    if (name.includes('bb') || name.includes('banco do brasil')) return 'BB';
+    return name.toUpperCase();
+};
+
 const creditCards = computed(() =>
     (bootstrap.value.accounts ?? [])
         .filter((a) => a.type === 'credit_card')
@@ -43,6 +56,7 @@ const creditCards = computed(() =>
             return {
                 id: a.id,
                 nome: a.name,
+                banco: getBankLabel(a.name),
                 cor: (a as any).color ?? '#8B5CF6',
                 limite,
                 usado,
@@ -184,7 +198,7 @@ const getProgressColor = (percentual: number) => {
                 </div>
             </div>
 
-            <div v-if="creditCards.length" class="mt-4 space-y-4">
+            <div v-if="creditCards.length" class="mt-4 space-y-3">
                 <Link
                     v-for="card in creditCards"
                     :key="card.id"
@@ -192,40 +206,52 @@ const getProgressColor = (percentual: number) => {
                     class="block"
                 >
                     <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
-                        <!-- Card Header -->
+                        <!-- Card Header - Colorido -->
                         <div
                             class="flex items-start justify-between p-4 text-white"
                             :style="{ backgroundColor: card.cor }"
                         >
-                            <div>
-                                <div class="text-sm font-semibold opacity-80">{{ card.nome }}</div>
-                                <div class="mt-1 text-lg font-bold">{{ formatBRL(card.usado) }}</div>
+                            <div class="flex-1">
+                                <div class="text-xs font-semibold opacity-75">{{ card.nome }}</div>
+                                <div class="text-[10px] font-semibold uppercase opacity-60 mt-0.5">{{ card.banco }}</div>
                             </div>
-                            <div
-                                class="rounded-full px-3 py-1 text-xs font-bold uppercase"
-                                :class="getStatusBg(card.status)"
-                            >
-                                <span :class="getStatusColor(card.status)">{{ card.status }}</span>
+                            <div class="text-right">
+                                <div class="text-sm font-bold">{{ formatBRL(card.usado) }}</div>
+                                <div
+                                    class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase mt-1"
+                                    :class="getStatusBg(card.status)"
+                                >
+                                    <span :class="getStatusColor(card.status)">{{ card.status }}</span>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Card Stats -->
-                        <div class="bg-slate-50 px-4 py-3">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Limite Usado {{ card.percentualUsado }}%
+                        <div class="bg-slate-50 px-4 py-3 space-y-2">
+                            <!-- Progress Bar -->
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        Limite Usado {{ card.percentualUsado }}%
+                                    </div>
+                                </div>
+                                <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-300">
+                                    <div
+                                        class="h-full transition-all"
+                                        :class="getProgressColor(card.percentualUsado)"
+                                        :style="{ width: `${Math.min(100, card.percentualUsado)}%` }"
+                                    ></div>
+                                </div>
                             </div>
-                            <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
-                                <div
-                                    class="h-full transition-all"
-                                    :class="getProgressColor(card.percentualUsado)"
-                                    :style="{ width: `${Math.min(100, card.percentualUsado)}%` }"
-                                ></div>
+
+                            <!-- Values Row -->
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-600">{{ formatBRL(card.usado) }}</span>
+                                <span class="text-slate-400 font-medium">{{ formatBRL(card.limite) }}</span>
                             </div>
-                            <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
-                                <span>{{ formatBRL(card.usado) }}</span>
-                                <span>{{ formatBRL(card.disponivel) }}</span>
-                            </div>
-                            <div class="mt-2 text-xs font-semibold text-slate-600">
+
+                            <!-- Available -->
+                            <div class="text-xs font-semibold text-slate-600">
                                 DISP {{ formatBRL(card.disponivel) }}
                             </div>
                         </div>
