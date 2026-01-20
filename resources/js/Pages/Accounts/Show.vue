@@ -284,10 +284,11 @@ const toastOpen = ref(false);
                         </svg>
                     </Link>
     
-                    <div class="text-center">
-                        <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Conta</div>
-                        <div class="text-lg font-semibold text-slate-900">{{ accountName }}</div>
-                    </div>
+	                    <div class="text-center">
+	                        <div v-if="account?.type !== 'wallet'" class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Conta</div>
+	                        <div v-else class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Carteira</div>
+	                        <div class="text-lg font-semibold text-slate-900">{{ accountName }}</div>
+	                    </div>
     
                     <div class="relative">
                         <button

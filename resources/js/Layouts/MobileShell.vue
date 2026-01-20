@@ -68,13 +68,13 @@ const navItems = computed(() => [
         icon: 'home' as const,
     },
     {
-        label: 'Lançamentos',
+        label: 'Transações',
         href: route('accounts.index'),
         active: route().current('accounts.*') && !route().current('accounts.overview'),
         icon: 'cards' as const,
     },
     {
-        label: 'Análise',
+        label: 'Relatórios',
         href: route('analysis'),
         active: route().current('analysis*'),
         icon: 'pie' as const,

@@ -368,11 +368,11 @@ watch(
             </div>
         </section>
 
-        <section class="mt-8">
-            <div class="flex items-center justify-between">
-                <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Contas e carteira</div>
-                <div class="text-xs font-bold text-emerald-600">{{ formatBRL(totalBankBalance) }}</div>
-            </div>
+	        <section class="mt-8">
+	            <div class="flex items-center justify-between">
+	                <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Contas e carteiras</div>
+	                <div class="text-xs font-bold text-emerald-600">{{ formatBRL(totalBankBalance) }}</div>
+	            </div>
 
             <div class="mt-4 space-y-3">
                 <Link

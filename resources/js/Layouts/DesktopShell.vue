@@ -53,12 +53,12 @@ const navItems = computed(() => [
         active: route().current('accounts.overview'),
         icon: 'accounts' as const,
     },
-    {
-        label: 'Lançamentos',
-        href: route('accounts.index'),
-        active: route().current('accounts.*') && !route().current('accounts.overview'),
-        icon: 'cards' as const,
-    },
+	    {
+	        label: 'Transações',
+	        href: route('accounts.index'),
+	        active: route().current('accounts.*') && !route().current('accounts.overview'),
+	        icon: 'cards' as const,
+	    },
     {
         label: 'Cartões de crédito',
         href: route('credit-cards.my-cards'),

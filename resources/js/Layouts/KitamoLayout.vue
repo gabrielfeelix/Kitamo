@@ -42,32 +42,32 @@ const goBack = () => {
     else window.location.href = route('dashboard');
 };
 
-const navItems = computed(() => [
-    {
-        label: 'Início',
-        href: route('dashboard'),
-        active: route().current('dashboard'),
-        icon: 'home' as const,
-    },
-    {
-        label: 'Análise',
-        href: route('analysis'),
-        active: route().current('analysis*'),
-        icon: 'chart' as const,
-    },
-    {
-        label: 'Lançamentos',
-        href: route('accounts.index'),
-        active: route().current('accounts.*'),
-        icon: 'card' as const,
-    },
-    {
-        label: 'Metas',
-        href: route('goals.index'),
-        active: route().current('goals.*'),
-        icon: 'target' as const,
-    },
-]);
+	const navItems = computed(() => [
+	    {
+	        label: 'Início',
+	        href: route('dashboard'),
+	        active: route().current('dashboard'),
+	        icon: 'home' as const,
+	    },
+	    {
+	        label: 'Relatórios',
+	        href: route('analysis'),
+	        active: route().current('analysis*'),
+	        icon: 'chart' as const,
+	    },
+	    {
+	        label: 'Transações',
+	        href: route('accounts.index'),
+	        active: route().current('accounts.*'),
+	        icon: 'card' as const,
+	    },
+	    {
+	        label: 'Metas',
+	        href: route('goals.index'),
+	        active: route().current('goals.*'),
+	        icon: 'target' as const,
+	    },
+	]);
 </script>
 
 <template>

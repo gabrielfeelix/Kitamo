@@ -38,10 +38,10 @@ const shellProps = computed(() =>
                 </svg>
             </div>
 
-            <div class="mt-6 text-2xl font-bold text-slate-900">Financas</div>
-            <div class="mt-2 text-center text-sm font-semibold text-slate-500">Controle financeiro simples e eficiente</div>
-            <div class="mt-3 rounded-full bg-slate-100 px-4 py-1 text-xs font-semibold text-slate-500">Versão 1.0.0</div>
-        </div>
+	            <div class="mt-6 text-2xl font-bold text-slate-900">KITAMO</div>
+	            <div class="mt-2 text-center text-sm font-semibold text-slate-500">Saiba se vai dar</div>
+	            <div class="mt-3 rounded-full bg-slate-100 px-4 py-1 text-xs font-semibold text-slate-500">Versão 1.0.0</div>
+	        </div>
 
         <div class="mt-10 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60">
             <button type="button" class="flex w-full items-center justify-between px-5 py-4 text-left">

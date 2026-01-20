@@ -286,12 +286,12 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
 
 <template>
     <component :is="Shell" v-bind="shellProps" @add="openQuickTransaction">
-        <header class="flex items-center justify-between pt-2">
-            <div v-if="isMobile">
-                <div class="text-2xl font-semibold tracking-tight text-slate-900">Análise</div>
-            </div>
-            <button
-                type="button"
+	        <header class="flex items-center justify-between pt-2">
+	            <div v-if="isMobile">
+	                <div class="text-2xl font-semibold tracking-tight text-slate-900">Relatórios</div>
+	            </div>
+	            <button
+	                type="button"
                 class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
                 aria-label="Exportar relatório"
                 @click="exportOpen = true"

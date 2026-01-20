@@ -23,16 +23,16 @@ const bootstrap = computed(
 );
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
-const shellProps = computed(() =>
-    isMobile.value
-        ? { showNav: true }
-        : {
-              title: 'Lançamentos',
-              subtitle: monthLabel.value,
-              searchPlaceholder: 'Buscar transação…',
-              newActionLabel: 'Nova Transação',
-          },
-);
+	const shellProps = computed(() =>
+	    isMobile.value
+	        ? { showNav: true }
+	        : {
+	              title: 'Transações',
+	              subtitle: monthLabel.value,
+	              searchPlaceholder: 'Buscar transação…',
+	              newActionLabel: 'Nova Transação',
+	          },
+	);
 
 type FilterKind = 'all' | 'paid' | 'to_pay';
 
@@ -421,11 +421,11 @@ const toggleDesktopAccountMenu = () => {
     desktopCategoryOpen.value = false;
 };
 
-const desktopTypeLabel = computed(() => {
-    if (entryKindFilter.value === 'income') return 'Receitas';
-    if (entryKindFilter.value === 'expense') return 'Despesas';
-    return 'Todos Tipos';
-});
+	const desktopTypeLabel = computed(() => {
+	    if (entryKindFilter.value === 'income') return 'Receitas';
+	    if (entryKindFilter.value === 'expense') return 'Despesas';
+	    return 'Todos os tipos';
+	});
 const desktopCategoryLabel = computed(() => (filterState.value.categories.length ? `Categorias (${filterState.value.categories.length})` : 'Categorias'));
 
 const desktopAccountLabel = computed(() => (accountFilter.value === 'all' ? 'Contas' : accountFilter.value));
@@ -582,13 +582,13 @@ onMounted(() => {
 
 <template>
     <component :is="Shell" v-bind="shellProps" @add="openCreate">
-	        <header class="flex items-center justify-between pt-2">
-	            <div v-if="isMobile">
-	                <div class="text-2xl font-semibold tracking-tight text-slate-900">Lançamentos</div>
-	            </div>
-	            <div class="flex items-center gap-2">
-	                <button
-	                    type="button"
+		        <header class="flex items-center justify-between pt-2">
+		            <div v-if="isMobile">
+		                <div class="text-2xl font-semibold tracking-tight text-slate-900">Transações</div>
+		            </div>
+		            <div class="flex items-center gap-2">
+		                <button
+		                    type="button"
 	                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
 	                    aria-label="Filtrar"
                     @click="filterOpen = true"

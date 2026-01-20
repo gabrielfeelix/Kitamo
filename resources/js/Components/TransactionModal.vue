@@ -87,9 +87,11 @@ watch(isRecorrente, (value) => {
 	    if (value !== 'ate') data_fim.value = '';
 	});
 
-const isExpense = computed(() => localKind.value === 'expense');
-const isTransfer = computed(() => localKind.value === 'transfer');
-const showAdvanced = ref(false);
+	const isExpense = computed(() => localKind.value === 'expense');
+	const isTransfer = computed(() => localKind.value === 'transfer');
+	const paidLabel = computed(() => (localKind.value === 'income' ? 'Recebido?' : 'Pago?'));
+	const paidAriaLabel = computed(() => (localKind.value === 'income' ? 'Recebido' : 'Pago'));
+	const showAdvanced = ref(false);
 const amountTextClass = computed(() => {
     if (localKind.value === 'expense') return 'text-[#EF4444]';
     if (localKind.value === 'transfer') return 'text-[#3B82F6]';
@@ -343,9 +345,9 @@ watch(
                             <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('income')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'income')">
                                 Receita
                             </button>
-                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('transfer')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'transfer')">
-                                Transf.
-                            </button>
+	                            <button type="button" class="flex h-11 items-center justify-center rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed" :class="pillClass('transfer')" :disabled="props.lockKind" @click="!props.lockKind && (localKind = 'transfer')">
+	                                Transferência
+	                            </button>
                         </div>
                     </div>
                 </div>
@@ -449,26 +451,26 @@ watch(
                             </div>
                         </button>
 
-                        <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70">
-                            <div class="flex items-center justify-between gap-3">
-                                <div>
-                                    <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Pago?</div>
-                                    <div class="text-sm font-semibold text-slate-900">{{ isPaid ? 'Sim' : 'Não' }}</div>
-                                </div>
-                                <button
-                                    type="button"
-                                    class="relative inline-flex h-7 w-12 items-center rounded-full transition"
-                                    :class="isPaid ? 'bg-[#14B8A6]' : 'bg-slate-300'"
-                                    @click="isPaid = !isPaid"
-                                    aria-label="Pago"
-                                >
-                                    <span
-                                        class="inline-block h-6 w-6 transform rounded-full bg-white transition"
-                                        :class="isPaid ? 'translate-x-5' : 'translate-x-1'"
-                                    ></span>
-                                </button>
-                            </div>
-                        </div>
+	                        <div class="rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70">
+	                            <div class="flex items-center justify-between gap-3">
+	                                <div>
+	                                    <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ paidLabel }}</div>
+	                                    <div class="text-sm font-semibold text-slate-900">{{ isPaid ? 'Sim' : 'Não' }}</div>
+	                                </div>
+	                                <button
+	                                    type="button"
+	                                    class="relative inline-flex h-7 w-12 items-center rounded-full transition"
+	                                    :class="isPaid ? 'bg-[#14B8A6]' : 'bg-slate-300'"
+	                                    @click="isPaid = !isPaid"
+	                                    :aria-label="paidAriaLabel"
+	                                >
+	                                    <span
+	                                        class="inline-block h-6 w-6 transform rounded-full bg-white transition"
+	                                        :class="isPaid ? 'translate-x-5' : 'translate-x-1'"
+	                                    ></span>
+	                                </button>
+	                            </div>
+	                        </div>
                     </div>
 
                     <button
