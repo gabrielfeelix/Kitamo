@@ -19,7 +19,7 @@ import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
@@ -142,6 +142,7 @@ const entryToRequest = (entry: Entry) => ({
     isPaid: entry.status === 'paid' || entry.status === 'received',
     isInstallment: Boolean(entry.installment),
     installmentCount: entry.installment ? parseInstallmentCount(entry.installment) : undefined,
+    tags: entry.tags ?? [],
 });
 
 const toggleEntryPaid = async (id: string) => {
@@ -299,6 +300,7 @@ const openEdit = (id: string, options?: { mode?: 'edit' | 'duplicate' }) => {
         isInstallment: Boolean(entry.installment),
         installmentCount: parseInstallmentCount(entry.installment),
         isPaid: entry.status === 'paid',
+        tags: entry.tags ?? [],
         transferFrom: 'Banco Inter',
         transferTo: 'Carteira',
         transferDescription: '',
@@ -827,6 +829,7 @@ onMounted(() => {
                 :initial="transactionInitial"
                 :categories="pickerCategories"
                 :accounts="pickerAccounts"
+                :tags="bootstrap.tags"
                 @close="transactionOpen = false"
                 @save="onTransactionSave"
             />

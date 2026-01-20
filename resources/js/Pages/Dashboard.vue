@@ -12,6 +12,7 @@ import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
 import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import MobileToast from '@/Components/MobileToast.vue';
 import CreditCardModal, { type CreditCardModalPayload } from '@/Components/CreditCardModal.vue';
+import OnboardingModal from '@/Components/OnboardingModal.vue';
 import CreateAccountFlowModal from '@/Components/CreateAccountFlowModal.vue';
 import CreateCreditCardFlowModal from '@/Components/CreateCreditCardFlowModal.vue';
 import Modal from '@/Components/Modal.vue';
@@ -32,7 +33,7 @@ const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const firstName = computed(() => String(userName.value).trim().split(/\s+/)[0] ?? userName.value);
 const avatarUrl = computed(() => (page.props as any)?.auth?.user?.profile_photo_url ?? null);
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 
 const isMobile = useIsMobile();
@@ -119,6 +120,8 @@ const despesas = ref(0);
 const hideValues = ref(false);
 const homeWidgetsModalOpen = ref(false);
 const accountMenuOpen = ref(false);
+const onboardingOpen = ref(false);
+const ONBOARDING_STORAGE_KEY = 'kitamo:onboarding:v1';
 
 const computeSaldoTotal = () => {
     return (bootstrap.value.accounts ?? [])
@@ -537,6 +540,7 @@ const entryToRequest = (entry: Entry) => ({
     isPaid: entry.status === 'paid' || entry.status === 'received',
     isInstallment: Boolean(entry.installment),
     installmentCount: entry.installment ? parseInstallmentCount(entry.installment) : undefined,
+    tags: entry.tags ?? [],
 });
 
 const desktopDrawerOpen = ref(false);
@@ -692,6 +696,7 @@ const openAddCardTransaction = (cardName: string) => {
         isInstallment: false,
         installmentCount: 1,
         isPaid: false,
+        tags: [],
         transferFrom: '',
         transferTo: '',
         transferDescription: '',
@@ -729,6 +734,7 @@ const openEntryEdit = (entry: Entry) => {
         isInstallment: Boolean(entry.installment),
         installmentCount: parseInstallmentCount(entry.installment),
         isPaid: entry.status === 'paid',
+        tags: entry.tags ?? [],
         transferFrom: 'Banco Inter',
         transferTo: 'Carteira',
         transferDescription: '',
@@ -848,6 +854,13 @@ const openAccountMenuOption = (option: 'bank' | 'wallet' | 'card') => {
 onMounted(() => {
     loadHomeWidgets();
     loadCreditCardsApi();
+    try {
+        const alreadyDone = window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
+        const hasAccounts = (bootstrap.value.accounts ?? []).length > 0;
+        if (!alreadyDone && !hasAccounts) onboardingOpen.value = true;
+    } catch {
+        // ignore
+    }
 });
 </script>
 
@@ -1311,6 +1324,7 @@ onMounted(() => {
                 :initial="transactionInitial"
                 :categories="pickerCategories"
                 :accounts="pickerAccounts"
+                :tags="bootstrap.tags"
                 :lock-kind="transactionLockKind"
                 @close="transactionOpen = false"
                 @save="onTransactionSave"
@@ -1350,5 +1364,6 @@ onMounted(() => {
         </Modal>
 
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+        <OnboardingModal :open="onboardingOpen" @close="onboardingOpen = false" @done="onboardingOpen = false" />
     </component>
 </template>

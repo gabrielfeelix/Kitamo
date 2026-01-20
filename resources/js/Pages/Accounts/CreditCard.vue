@@ -12,7 +12,7 @@
 
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const isMobile = useIsMobile();

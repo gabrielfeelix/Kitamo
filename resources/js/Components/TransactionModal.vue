@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 import { preventNonDigitKeydown } from '@/lib/inputGuards';
 import { requestJson } from '@/lib/kitamoApi';
+import type { UserTag } from '@/types/kitamo';
 import DatePickerSheet from '@/Components/DatePickerSheet.vue';
 import CategoryPickerSheet, { type CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import AccountPickerSheet, { type AccountOption } from '@/Components/AccountPickerSheet.vue';
@@ -23,6 +24,7 @@ export type TransactionModalPayload = {
     isInstallment: boolean;
     installmentCount: number;
     isPaid: boolean;
+    tags?: string[];
     transferFrom: string;
     transferTo: string;
     transferDescription: string;
@@ -38,6 +40,7 @@ const props = defineProps<{
     initial?: TransactionModalPayload | null;
     categories?: CategoryOption[];
     accounts?: AccountOption[];
+    tags?: UserTag[];
     lockKind?: boolean;
 }>();
 
@@ -94,7 +97,13 @@ watch(isRecorrente, (value) => {
 	const isTransfer = computed(() => localKind.value === 'transfer');
 	const paidLabel = computed(() => (localKind.value === 'income' ? 'Recebido?' : 'Pago?'));
 	const paidAriaLabel = computed(() => (localKind.value === 'income' ? 'Recebido' : 'Pago'));
-	const showAdvanced = ref(false);
+const showAdvanced = ref(false);
+const selectedTags = ref<string[]>([]);
+const createTagOpen = ref(false);
+const createTagName = ref('');
+const createTagBusy = ref(false);
+const createdTags = ref<UserTag[]>([]);
+
 const amountTextClass = computed(() => {
     if (localKind.value === 'expense') return 'text-[#EF4444]';
     if (localKind.value === 'transfer') return 'text-[#3B82F6]';
@@ -262,6 +271,95 @@ const recurrenceEveryDaysHint = computed(() => {
     return `ℹ️ Repetirá a cada ${interval} dias (próxima: ${next})`;
 });
 
+const normalizeTagName = (raw: unknown) =>
+    String(raw ?? '')
+        .trim()
+        .replace(/^#\s*/g, '')
+        .slice(0, 50);
+
+const setSelectedTags = (names: unknown[]) => {
+    const map = new Map<string, string>();
+    for (const name of names) {
+        const normalized = normalizeTagName(name);
+        if (!normalized) continue;
+        const key = normalized.toLowerCase();
+        if (!map.has(key)) map.set(key, normalized);
+    }
+    selectedTags.value = Array.from(map.values());
+};
+
+const selectedTagKeys = computed(() => new Set(selectedTags.value.map((t) => normalizeTagName(t).toLowerCase()).filter(Boolean)));
+
+const toggleTag = (name: string) => {
+    const normalized = normalizeTagName(name);
+    if (!normalized) return;
+    const key = normalized.toLowerCase();
+    if (selectedTagKeys.value.has(key)) {
+        setSelectedTags(selectedTags.value.filter((t) => normalizeTagName(t).toLowerCase() !== key));
+        return;
+    }
+    setSelectedTags([...selectedTags.value, normalized]);
+};
+
+const tagOptions = computed<UserTag[]>(() => {
+    const map = new Map<string, UserTag>();
+    const add = (tag: UserTag) => {
+        const nome = normalizeTagName(tag?.nome);
+        if (!nome) return;
+        const key = nome.toLowerCase();
+        if (map.has(key)) return;
+        map.set(key, { id: tag.id, nome, cor: tag.cor || '#64748B' });
+    };
+
+    for (const nome of ['Essencial', 'Recorrente', 'Urgente', 'Supérfluo']) {
+        add({ id: `builtin:${nome}`, nome, cor: '#64748B' });
+    }
+
+    for (const tag of props.tags ?? []) add(tag);
+    for (const tag of createdTags.value) add(tag);
+
+    for (const nome of selectedTags.value) {
+        const normalized = normalizeTagName(nome);
+        if (!normalized) continue;
+        const key = normalized.toLowerCase();
+        if (map.has(key)) continue;
+        add({ id: `custom:${key}`, nome: normalized, cor: '#64748B' });
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+});
+
+const createTag = async () => {
+    const nome = normalizeTagName(createTagName.value);
+    if (!nome) return;
+
+    const existing = tagOptions.value.find((t) => t.nome.toLowerCase() === nome.toLowerCase());
+    if (existing) {
+        setSelectedTags([...selectedTags.value, existing.nome]);
+        createTagOpen.value = false;
+        createTagName.value = '';
+        return;
+    }
+
+    createTagBusy.value = true;
+    try {
+        const response = await requestJson<UserTag>('/api/tags', {
+            method: 'POST',
+            body: JSON.stringify({ nome, cor: '#64748B' }),
+        });
+
+        const created: UserTag = { id: response.id, nome: response.nome, cor: response.cor };
+        createdTags.value = [...createdTags.value, created];
+        setSelectedTags([...selectedTags.value, created.nome]);
+        createTagOpen.value = false;
+        createTagName.value = '';
+    } catch {
+        window.alert('Não foi possível criar a tag. Tente novamente.');
+    } finally {
+        createTagBusy.value = false;
+    }
+};
+
 const toISODate = (brDate: string) => {
     const match = brDate.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (!match) return '';
@@ -295,7 +393,8 @@ const reset = () => {
     isInstallment.value = draftInstallment;
     installmentCount.value = draft?.installmentCount ?? 1;
     isPaid.value = draft?.isPaid ?? false;
-    showAdvanced.value = Boolean(draft?.isInstallment || draft?.isRecorrente);
+    setSelectedTags(draft?.tags ?? []);
+    showAdvanced.value = Boolean(draft?.isInstallment || draft?.isRecorrente || (draft?.tags?.length ?? 0));
 
     transferFrom.value = draft?.transferFrom ?? 'Banco Inter';
     transferTo.value = draft?.transferTo ?? 'Carteira';
@@ -311,6 +410,9 @@ const reset = () => {
     categorySheetOpen.value = false;
     accountSheetOpen.value = false;
     newCategoryOpen.value = false;
+    createTagOpen.value = false;
+    createTagName.value = '';
+    createTagBusy.value = false;
 };
 
 const openDateSheet = () => {
@@ -513,6 +615,7 @@ const createCategory = async (payload: { name: string; type: 'expense' | 'income
         isInstallment: isInstallment.value,
         installmentCount: installmentCount.value,
         isPaid: isPaid.value,
+        tags: selectedTags.value,
         transferFrom: transferFrom.value,
         transferTo: transferTo.value,
         transferDescription: transferDescription.value.trim(),
@@ -907,6 +1010,61 @@ watch(
                             </div>
                             <div v-if="recurrenceError" class="mt-3 text-xs font-semibold text-red-500">
                                 {{ recurrenceError }}
+                            </div>
+                        </div>
+
+                        <div v-if="!isTransfer" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/60">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500" aria-hidden="true">🏷️</span>
+                                    <div class="text-sm font-semibold text-slate-900">Tags</div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="text-sm font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-50"
+                                    :disabled="createTagBusy"
+                                    @click="createTagOpen = !createTagOpen"
+                                >
+                                    + Tag
+                                </button>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button
+                                    v-for="tag in tagOptions"
+                                    :key="tag.id"
+                                    type="button"
+                                    class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold ring-1 transition"
+                                    :class="selectedTagKeys.has(tag.nome.toLowerCase()) ? 'bg-slate-900 text-white ring-slate-900' : 'bg-slate-50 text-slate-600 ring-slate-200/70 hover:bg-slate-100'"
+                                    @click="toggleTag(tag.nome)"
+                                >
+                                    <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: tag.cor }" aria-hidden="true"></span>
+                                    <span># {{ tag.nome }}</span>
+                                </button>
+                                <div v-if="tagOptions.length === 0" class="text-xs font-semibold text-slate-400">Nenhuma tag ainda.</div>
+                            </div>
+
+                            <div v-if="createTagOpen" class="mt-4 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/60">
+                                <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Nova tag</div>
+                                <div class="mt-2 flex items-center gap-2">
+                                    <input
+                                        v-model="createTagName"
+                                        type="text"
+                                        maxlength="50"
+                                        placeholder="Ex: Essencial"
+                                        class="h-11 w-full rounded-xl bg-white px-4 text-sm font-semibold text-slate-900 ring-1 ring-slate-200/70 focus:outline-none"
+                                        :disabled="createTagBusy"
+                                        @keydown.enter.prevent="createTag"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-50"
+                                        :disabled="createTagBusy || !createTagName.trim()"
+                                        @click="createTag"
+                                    >
+                                        Criar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

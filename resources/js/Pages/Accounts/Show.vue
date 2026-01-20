@@ -20,7 +20,7 @@ const props = defineProps<{
 const isMobile = useIsMobile();
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 
 const account = computed(() => bootstrap.value.accounts.find((item) => item.id === props.accountKey));

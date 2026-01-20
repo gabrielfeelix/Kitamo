@@ -15,7 +15,7 @@ import { useIsMobile } from '@/composables/useIsMobile';
 
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 const entries = computed(() => bootstrap.value.entries ?? []);
 const pickerCategories = computed<CategoryOption[]>(() => {
@@ -516,6 +516,7 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             :kind="transactionKind"
             :categories="pickerCategories"
             :accounts="pickerAccounts"
+            :tags="bootstrap.tags"
             @close="transactionOpen = false"
             @save="onTransactionSave"
         />

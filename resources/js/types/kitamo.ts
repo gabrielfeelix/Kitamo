@@ -1,5 +1,11 @@
 export type EntryTag = 'Essencial' | 'Recorrente' | 'Urgente' | 'Supérfluo' | string;
 
+export type UserTag = {
+    id: string;
+    nome: string;
+    cor: string;
+};
+
 export type Entry = {
     id: string;
     dateLabel: string;
@@ -94,4 +100,5 @@ export type BootstrapData = {
     goals: Goal[];
     accounts: Account[];
     categories: Category[];
+    tags: UserTag[];
 };

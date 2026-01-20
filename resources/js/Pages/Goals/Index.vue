@@ -20,7 +20,7 @@ const shellProps = computed(() =>
 
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 
 const pickerCategories = computed<CategoryOption[]>(() => {
@@ -305,6 +305,7 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             :initial="transactionInitial"
             :categories="pickerCategories"
             :accounts="pickerAccounts"
+            :tags="bootstrap.tags"
             @close="transactionOpen = false"
             @save="onTransactionSave"
         />

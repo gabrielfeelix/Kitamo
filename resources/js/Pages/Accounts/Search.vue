@@ -14,7 +14,7 @@ const shellProps = computed(() =>
 const query = ref('');
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 const entries = computed(() => bootstrap.value.entries ?? []);
 

@@ -24,7 +24,7 @@ const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const page = usePage();
 const bootstrap = computed(
-    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [] }) as BootstrapData,
+    () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 
 const account = computed(() => bootstrap.value.accounts.find((a) => a.id === props.accountId) ?? null);
@@ -205,6 +205,7 @@ const openAddTransaction = () => {
         isInstallment: false,
         installmentCount: 1,
         isPaid: false,
+        tags: [],
         transferFrom: '',
         transferTo: '',
         transferDescription: '',
@@ -504,6 +505,7 @@ const accountOptions = computed<AccountOption[]>(() => {
             :initial="transactionInitial"
             :categories="categoryOptions"
             :accounts="accountOptions"
+            :tags="bootstrap.tags"
             @close="transactionOpen = false"
             @save="onTransactionSave"
         />
