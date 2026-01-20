@@ -116,12 +116,13 @@ const handleCreateCreditCardFlowSave = () => {
         <!-- Dívida Consolidada Card -->
         <div class="px-6">
             <div class="rounded-3xl bg-[#1E293B] p-6 shadow-xl">
+                <!-- Header -->
                 <div class="flex items-start justify-between">
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
                         Dívida Consolidada
                     </div>
-                    <div class="flex h-8 w-8 items-center justify-center">
-                        <svg class="h-4 w-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <div class="flex h-6 w-6 items-center justify-center">
+                        <svg class="h-4 w-4 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <line x1="3" y1="12" x2="21" y2="12" />
                             <line x1="3" y1="18" x2="21" y2="18" />
@@ -129,38 +130,38 @@ const handleCreateCreditCardFlowSave = () => {
                     </div>
                 </div>
 
+                <!-- Valor principal -->
                 <div class="mt-3 text-[32px] font-bold leading-none text-white">
                     {{ formatBRL(devedaConsolidada) }}
                 </div>
 
-                <div class="mt-5 grid grid-cols-2 gap-4">
-                    <!-- Uso de Crédito -->
+                <!-- Grid de 2 colunas -->
+                <div class="mt-6 grid grid-cols-2 gap-6">
+                    <!-- Coluna esquerda: Uso de crédito + barra -->
                     <div>
                         <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
                             Uso de Crédito
                         </div>
-                        <div class="mt-1 text-2xl font-bold text-[#14B8A6]">
+                        <div class="mt-1 text-xl font-bold text-[#14B8A6]">
                             {{ formatPercentage(percentualUsoConsolidado) }}
                         </div>
-                    </div>
-
-                    <!-- Progress bar vertical -->
-                    <div class="flex items-end justify-end">
-                        <div class="h-16 w-2 overflow-hidden rounded-full bg-[#334155]">
+                        <!-- Barra horizontal -->
+                        <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#334155]">
                             <div
-                                class="w-full bg-[#14B8A6] transition-all"
-                                :style="{ height: `${Math.min(100, percentualUsoConsolidado)}%` }"
+                                class="h-full bg-[#14B8A6] transition-all"
+                                :style="{ width: `${Math.min(100, percentualUsoConsolidado)}%` }"
                             ></div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mt-4">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                        Disp. Consolidado
-                    </div>
-                    <div class="mt-1 text-xl font-bold text-white">
-                        {{ formatBRL(disponivelConsolidado) }}
+                    <!-- Coluna direita: Disponível consolidado -->
+                    <div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                            Disp. Consolidado
+                        </div>
+                        <div class="mt-1 text-xl font-bold text-white">
+                            {{ formatBRL(disponivelConsolidado) }}
+                        </div>
                     </div>
                 </div>
             </div>
