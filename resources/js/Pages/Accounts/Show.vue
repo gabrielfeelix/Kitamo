@@ -334,6 +334,34 @@ const toastOpen = ref(false);
                         </button>
                     </div>
                 </div>
+
+                <!-- Alerta de saldo negativo (apenas para carteiras no mês atual) -->
+                <div v-if="hasNegativeBalance" class="mt-6 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-3">
+                    <div class="flex items-start gap-2">
+                        <div class="text-lg">⚠️</div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-semibold text-amber-900">
+                                Você registrou mais gastos do que tinha na carteira
+                            </h3>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    class="flex items-center justify-center rounded-lg bg-white px-3 py-2 text-center text-sm font-semibold text-amber-700 hover:bg-amber-100"
+                                    @click="handleAddMoney"
+                                >
+                                    <span>Adicionar dinheiro</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex items-center justify-center rounded-lg bg-white px-3 py-2 text-center text-sm font-semibold text-amber-700 hover:bg-amber-100"
+                                    @click="handleCreateTransfer"
+                                >
+                                    <span>Criar transferência</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
     
                 <section class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
                     <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">
@@ -358,34 +386,6 @@ const toastOpen = ref(false);
                                 <span>›</span>
                             </div>
                             <div class="mt-1 text-base font-semibold text-red-600">{{ formatMoney(monthExpense) }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Alerta de saldo negativo (apenas para carteiras no mês atual) -->
-                    <div v-if="hasNegativeBalance" class="mt-4 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-3">
-                        <div class="flex items-start gap-2">
-                            <div class="text-lg">⚠️</div>
-                            <div class="flex-1">
-                                <h3 class="text-sm font-semibold text-amber-900">
-                                    Você registrou mais gastos do que tinha na carteira
-                                </h3>
-                                <div class="mt-2 space-y-1">
-                                    <button
-                                        type="button"
-                                        class="flex w-full items-center gap-2 rounded-lg bg-white px-3 py-2 text-left text-sm font-semibold text-amber-700 hover:bg-amber-100"
-                                        @click="handleAddMoney"
-                                    >
-                                        <span>Adicionar dinheiro</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="flex w-full items-center gap-2 rounded-lg bg-white px-3 py-2 text-left text-sm font-semibold text-amber-700 hover:bg-amber-100"
-                                        @click="handleCreateTransfer"
-                                    >
-                                        <span>Criar transferência</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </section>

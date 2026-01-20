@@ -111,7 +111,7 @@ const getProgressColor = (percentual: number) => {
             </div>
 
             <Link
-                :href="route('credit-cards.index')"
+                :href="route('accounts.card')"
                 class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#14B8A6] text-white shadow-sm"
                 aria-label="Adicionar cartão"
             >
