@@ -35,16 +35,31 @@ const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 
 const loadAccountsForMonth = async (monthKey: string) => {
-    if (accountsDataByMonth.value.has(monthKey)) {
+    const accountsKey = monthKey;
+    const cardsKey = `cards-${monthKey}`;
+
+    if (accountsDataByMonth.value.has(accountsKey) && accountsDataByMonth.value.has(cardsKey)) {
         return;
     }
 
     try {
         const [year, month] = monthKey.split('-').map(Number);
-        const response = await requestJson<{ accounts: any[] }>(`/api/contas-by-month?year=${year}&month=${month}`, {
-            method: 'GET',
-        });
-        accountsDataByMonth.value.set(monthKey, response.accounts);
+
+        // Load bank accounts and wallets
+        if (!accountsDataByMonth.value.has(accountsKey)) {
+            const accountsResponse = await requestJson<{ accounts: any[] }>(`/api/contas-by-month?year=${year}&month=${month}`, {
+                method: 'GET',
+            });
+            accountsDataByMonth.value.set(accountsKey, accountsResponse.accounts);
+        }
+
+        // Load credit cards
+        if (!accountsDataByMonth.value.has(cardsKey)) {
+            const cardsResponse = await requestJson<{ cartoes: any[] }>(`/api/cartoes-by-month?year=${year}&month=${month}`, {
+                method: 'GET',
+            });
+            accountsDataByMonth.value.set(cardsKey, cardsResponse.cartoes);
+        }
     } catch {
         // Fallback to bootstrap data if API call fails
         console.error('Failed to load accounts for month');
@@ -76,8 +91,23 @@ const bankAccounts = computed(() => {
     }));
 });
 
-const creditCards = computed(() =>
-    (bootstrap.value.accounts ?? []).filter((a) => a.type === 'credit_card').map((a) => ({
+const creditCards = computed(() => {
+    const monthKey = selectedMonthKey.value;
+    const monthData = accountsDataByMonth.value.get(`cards-${monthKey}`);
+
+    if (monthData) {
+        return monthData.map((c: any) => ({
+            id: c.id,
+            name: c.nome,
+            balance: Math.max(0, Number(c.limite_usado ?? 0)),
+            limit: Number(c.limite ?? 0),
+            color: c.cor ?? '#8B5CF6',
+            brand: c.bandeira ?? 'visa',
+            closingDay: Number(c.dia_fechamento ?? 0) || null,
+        }));
+    }
+
+    return (bootstrap.value.accounts ?? []).filter((a) => a.type === 'credit_card').map((a) => ({
         id: a.id,
         name: a.name,
         balance: Math.max(0, Number(a.current_balance ?? 0)),
@@ -85,8 +115,8 @@ const creditCards = computed(() =>
         color: (a as any).color ?? '#8B5CF6',
         brand: String((a as any).card_brand ?? 'visa'),
         closingDay: Number(a.closing_day ?? 0) || null,
-    })),
-);
+    }));
+});
 
 const totalBankBalance = computed(() => bankAccounts.value.reduce((sum, a) => sum + a.balance, 0));
 const totalCardsBalance = computed(() => creditCards.value.reduce((sum, c) => sum + c.balance, 0));
