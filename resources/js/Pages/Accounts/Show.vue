@@ -8,6 +8,7 @@ import MobileToast from '@/Components/MobileToast.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import NewAccountModal from '@/Components/NewAccountModal.vue';
 import WalletEditModal from '@/Components/WalletEditModal.vue';
+import MonthNavigator from '@/Components/MonthNavigator.vue';
 import { requestJson } from '@/lib/kitamoApi';
 import { useIsMobile } from '@/composables/useIsMobile';
 
@@ -371,19 +372,7 @@ const toastOpen = ref(false);
                 </header>
     
                 <div class="mt-6">
-                    <div class="flex gap-4 overflow-x-auto pb-2 text-xs font-bold text-slate-300">
-                        <button
-                            v-for="m in months"
-                            :key="m.key"
-                            type="button"
-                            class="relative shrink-0 px-2 py-1"
-                            :class="m.key === selectedMonthKey ? 'text-[#14B8A6]' : ''"
-                            @click="selectedMonthKey = m.key"
-                        >
-                            {{ m.label }}
-                            <span v-if="m.key === selectedMonthKey" class="absolute inset-x-0 -bottom-1 mx-auto h-1 w-4 rounded-full bg-[#14B8A6]"></span>
-                        </button>
-                    </div>
+                    <MonthNavigator v-model="selectedMonthKey" :months="months" />
                 </div>
 
                 <!-- Alerta de saldo negativo (apenas para carteiras no mês atual) -->

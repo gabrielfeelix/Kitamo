@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { computed, onMounted, ref } from 'vue';
+	import { computed, onMounted, ref, watch } from 'vue';
 	import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestFormData, requestJson } from '@/lib/kitamoApi';
 import { buildTransactionFormData, buildTransactionRequest, executeTransfer, hasTransactionReceipt } from '@/lib/transactions';
@@ -11,6 +11,7 @@ import { buildTransactionFormData, buildTransactionRequest, executeTransfer, has
 	import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
 	import TransactionFilterModal, { type TransactionFilterState } from '@/Components/TransactionFilterModal.vue';
 	import ImportInvoiceModal from '@/Components/ImportInvoiceModal.vue';
+import MonthNavigator from '@/Components/MonthNavigator.vue';
 	import { useIsMobile } from '@/composables/useIsMobile';
 	
 import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
@@ -37,15 +38,28 @@ const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 type FilterKind = 'all' | 'paid' | 'to_pay';
 
 const activeMonth = ref(new Date(2026, 0, 1));
-const monthLabel = computed(() => {
-    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
-    return `${month} ${activeMonth.value.getFullYear()}`;
+const months = computed(() => {
+    const now = new Date();
+    const items: Array<{ key: string; label: string; date: Date }> = [];
+    for (let i = -2; i <= 2; i += 1) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const label = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(d).replace('.', '').toUpperCase();
+        items.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label, date: d });
+    }
+    return items;
 });
-const shiftMonth = (delta: number) => {
-    const d = new Date(activeMonth.value);
-    d.setMonth(d.getMonth() + delta);
-    activeMonth.value = d;
-};
+const selectedMonthKey = ref(months.value.find((m) => m.date.getMonth() === new Date().getMonth())?.key ?? months.value[0]?.key ?? '');
+const selectedMonth = computed(() => months.value.find((m) => m.key === selectedMonthKey.value) ?? months.value[0]);
+const monthLabel = computed(() => {
+    if (!selectedMonth.value) return '';
+    const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(selectedMonth.value.date);
+    const year = selectedMonth.value.date.getFullYear();
+    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+});
+watch(selectedMonthKey, (key) => {
+    const m = months.value.find((month) => month.key === key);
+    if (m) activeMonth.value = m.date;
+});
 
 const filter = ref<FilterKind>('all');
 const entryKindFilter = ref<'all' | 'income' | 'expense'>('all');
@@ -641,30 +655,8 @@ onMounted(() => {
             </div>
         </header>
 
-        <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
-            <div class="flex items-center justify-between">
-                <button
-                    type="button"
-                    class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
-                    aria-label="Mês anterior"
-                    @click="shiftMonth(-1)"
-                >
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
-                <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
-                <button
-                    type="button"
-                    class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
-                    aria-label="Próximo mês"
-                    @click="shiftMonth(1)"
-                >
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18l6-6-6-6" />
-                    </svg>
-                </button>
-            </div>
+        <div class="mt-5">
+            <MonthNavigator v-model="selectedMonthKey" :months="months" />
         </div>
 
 	        <div class="mt-3 flex flex-wrap items-center gap-2">
