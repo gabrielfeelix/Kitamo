@@ -171,7 +171,7 @@ const isLoading = computed(() => {
 
     const monthStartBalance = computed(() => {
         if (!account.value) return 0;
-        const currentBalance = balance.value;
+        const currentBalance = balance.value ?? 0;
         // Balanço final = saldo atual
         // Balanço inicial = saldo atual - (entradas - saídas do mês)
         return currentBalance - (monthIncome.value - monthExpense.value);

@@ -39,10 +39,18 @@ const loadingMonthKeys = ref<Set<string>>(new Set());
 
 onMounted(() => {
     selectedMonthKey.value = monthItems.value[2]?.key ?? monthItems.value[0]?.key ?? '';
-    if (selectedMonthKey.value) {
-        loadCardsForMonth(selectedMonthKey.value);
-    }
 });
+
+// Watch for month changes and load data
+watch(
+    selectedMonthKey,
+    (key) => {
+        if (key) {
+            void loadCardsForMonth(key);
+        }
+    },
+    { immediate: true },
+);
 
 const loadCardsForMonth = async (monthKey: string) => {
     const cacheKey = `cards-${monthKey}`;

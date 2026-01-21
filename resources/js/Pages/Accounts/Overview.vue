@@ -40,10 +40,18 @@ const isLoadingMonth = ref<Map<string, boolean>>(new Map());
 // Initialize selectedMonthKey after monthItems is computed
 onMounted(() => {
     selectedMonthKey.value = monthItems.value[2]?.key ?? monthItems.value[0]?.key ?? '';
-    if (selectedMonthKey.value) {
-        loadAccountsForMonth(selectedMonthKey.value);
-    }
 });
+
+// Watch for month changes and load data
+watch(
+    selectedMonthKey,
+    (key) => {
+        if (key) {
+            void loadAccountsForMonth(key);
+        }
+    },
+    { immediate: true },
+);
 
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
