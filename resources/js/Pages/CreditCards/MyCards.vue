@@ -46,9 +46,10 @@ onMounted(() => {
 
 const loadCardsForMonth = async (monthKey: string) => {
     const cacheKey = `cards-${monthKey}`;
-    if (cardsDataByMonth.value.has(cacheKey)) {
-        return;
-    }
+
+    // Clear previous data for this month to avoid showing stale data
+    cardsDataByMonth.value.delete(cacheKey);
+
     if (loadingMonthKeys.value.has(cacheKey)) {
         return;
     }
@@ -60,18 +61,31 @@ const loadCardsForMonth = async (monthKey: string) => {
             method: 'GET',
         });
         cardsDataByMonth.value.set(cacheKey, Array.isArray((response as any)?.cartoes) ? (response as any).cartoes : []);
-    } catch {
-        console.error('Failed to load credit cards for month');
+    } catch (error) {
+        console.error('Failed to load credit cards for month', error);
         cardsDataByMonth.value.set(cacheKey, []);
     } finally {
         loadingMonthKeys.value.delete(cacheKey);
     }
 };
 
+const isLoading = computed(() => {
+    const monthKey = selectedMonthKey.value;
+    if (!monthKey) return false;
+    const cacheKey = `cards-${monthKey}`;
+    return loadingMonthKeys.value.has(cacheKey);
+});
+
 const creditCards = computed(() => {
     const monthKey = selectedMonthKey.value;
     if (!monthKey) return [];
     const cacheKey = `cards-${monthKey}`;
+
+    // If loading, return empty array to show loading state
+    if (loadingMonthKeys.value.has(cacheKey)) {
+        return [];
+    }
+
     const monthData = cardsDataByMonth.value.get(cacheKey) ?? [];
     if (!cardsDataByMonth.value.has(cacheKey)) return [];
 
@@ -245,12 +259,34 @@ const handleCreateCreditCardFlowSave = () => {
                 </div>
 
                 <!-- Valor principal -->
-                <div class="mt-3 text-[32px] font-bold leading-none text-white">
+                <div v-if="isLoading" class="mt-3 h-10 w-48 animate-pulse rounded-lg bg-white/10"></div>
+                <div v-else class="mt-3 text-[32px] font-bold leading-none text-white">
                     {{ formatBRL(devedaConsolidada) }}
                 </div>
 
                 <!-- Grid de 2 colunas -->
-                <div class="mt-6 grid grid-cols-2 gap-6">
+                <div v-if="isLoading" class="mt-6 grid grid-cols-2 gap-6">
+                    <!-- Coluna esquerda: Uso de crédito -->
+                    <div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                            Uso de Crédito
+                        </div>
+                        <div class="mt-1 flex items-center gap-2">
+                            <div class="h-7 w-16 animate-pulse rounded bg-white/10"></div>
+                            <div class="h-1.5 flex-1 animate-pulse rounded-full bg-[#334155]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna direita: Disponível consolidado -->
+                    <div>
+                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                            Disp. Consolidado
+                        </div>
+                        <div class="mt-1 h-7 w-32 animate-pulse rounded bg-white/10"></div>
+                    </div>
+                </div>
+
+                <div v-else class="mt-6 grid grid-cols-2 gap-6">
                     <!-- Coluna esquerda: Uso de crédito -->
                     <div>
                         <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
@@ -295,9 +331,39 @@ const handleCreateCreditCardFlowSave = () => {
                 </div>
             </div>
 
+            <!-- Loading Skeletons -->
+            <div
+                v-if="isLoading"
+                :class="isMobile ? 'mt-4 space-y-3 pb-8' : 'mt-5 grid grid-cols-2 gap-4 pb-10 xl:grid-cols-3'"
+            >
+                <div v-for="i in 3" :key="i" class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-slate-200"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="h-5 w-32 animate-pulse rounded bg-slate-200"></div>
+                                <div class="mt-2 flex gap-1">
+                                    <div class="h-5 w-12 animate-pulse rounded-md bg-slate-100"></div>
+                                    <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
+                                    <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="h-5 w-20 animate-pulse rounded bg-slate-200"></div>
+                                <div class="mt-1 h-5 w-16 animate-pulse rounded-md bg-slate-100"></div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            <div class="h-4 w-32 animate-pulse rounded bg-slate-100"></div>
+                            <div class="h-4 w-24 animate-pulse rounded bg-slate-100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Cards -->
             <div
-                v-if="creditCards.length"
+                v-else-if="creditCards.length"
                 :class="isMobile ? 'mt-4 space-y-3 pb-8' : 'mt-5 grid grid-cols-2 gap-4 pb-10 xl:grid-cols-3'"
             >
                 <Link

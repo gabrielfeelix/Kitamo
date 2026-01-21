@@ -28,10 +28,18 @@ const account = computed(() => bootstrap.value.accounts.find((item) => item.id =
 const accountName = computed(() => account.value?.name ?? 'Conta');
 const balancesByMonth = ref<Map<string, number>>(new Map());
 const modeByMonth = ref<Map<string, string>>(new Map());
+const isLoadingMonth = ref<Map<string, boolean>>(new Map());
 
 const loadBalanceForMonth = async (monthKey: string) => {
     if (!monthKey) return;
-    if (balancesByMonth.value.has(monthKey)) return;
+
+    // Clear previous data for this month to avoid showing stale data
+    balancesByMonth.value.delete(monthKey);
+    modeByMonth.value.delete(monthKey);
+
+    // Mark as loading
+    isLoadingMonth.value.set(monthKey, true);
+
     try {
         const [year, month] = monthKey.split('-').map(Number);
         const response = await requestJson<{ accounts?: any[]; contas?: any[]; mode?: string }>(`/api/contas-by-month?year=${year}&month=${month}`, {
@@ -42,8 +50,13 @@ const loadBalanceForMonth = async (monthKey: string) => {
         const value = Number(row?.current_balance ?? row?.saldo_atual ?? row?.saldo ?? 0);
         balancesByMonth.value.set(monthKey, Number.isFinite(value) ? value : 0);
         if ((response as any)?.mode) modeByMonth.value.set(monthKey, String((response as any).mode));
-    } catch {
-        // fallback: usa saldo do bootstrap
+    } catch (error) {
+        console.error('Failed to load balance for month', error);
+        // Set to 0 on error to prevent showing bootstrap data
+        balancesByMonth.value.set(monthKey, 0);
+    } finally {
+        // Mark as loaded
+        isLoadingMonth.value.set(monthKey, false);
     }
 };
 const entries = computed(() => bootstrap.value.entries ?? []);
@@ -96,7 +109,28 @@ watch(
     { immediate: true },
 );
 
-const balance = computed(() => balancesByMonth.value.get(selectedMonthKey.value) ?? account.value?.current_balance ?? 0);
+const balance = computed(() => {
+    const monthKey = selectedMonthKey.value;
+
+    // If loading, return null to show loading state
+    if (isLoadingMonth.value.get(monthKey)) {
+        return null;
+    }
+
+    // If data is available, use it
+    if (balancesByMonth.value.has(monthKey)) {
+        return balancesByMonth.value.get(monthKey) ?? 0;
+    }
+
+    // No data available yet
+    return null;
+});
+
+const isLoading = computed(() => {
+    const monthKey = selectedMonthKey.value;
+    if (!monthKey) return false;
+    return isLoadingMonth.value.get(monthKey) ?? false;
+});
 
     const entriesForAccount = computed(() => {
         const name = accountName.value;
@@ -407,12 +441,30 @@ const toastOpen = ref(false);
                     <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">
                         {{ isCurrentMonth ? 'Saldo atual' : 'Balanço final' }}
                     </div>
-                    <div class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ formatMoney(balance) }}</div>
+                    <div v-if="isLoading" class="mt-2 h-9 w-48 animate-pulse rounded-lg bg-slate-200"></div>
+                    <div v-else class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ formatMoney(balance ?? 0) }}</div>
                     <div v-if="!isCurrentMonth && account?.type === 'wallet'" class="mt-2 text-xs text-slate-400">
                         (início: {{ selectedMonth?.date?.getDate() === 1 ? '01' : String(selectedMonth?.date?.getDate()).padStart(2, '0') }} - final: {{ new Date(selectedMonth?.date?.getFullYear() ?? 2024, (selectedMonth?.date?.getMonth() ?? 0) + 1, 0).getDate() }})
                     </div>
-    
-                    <div class="mt-5 grid grid-cols-2 gap-3">
+
+                    <div v-if="isLoading" class="mt-5 grid grid-cols-2 gap-3">
+                        <div class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+                            <div class="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                                <span>Entrou</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mt-1 h-6 w-24 animate-pulse rounded bg-emerald-200"></div>
+                        </div>
+                        <div class="rounded-2xl bg-red-50 p-4 ring-1 ring-red-100">
+                            <div class="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-red-600">
+                                <span>Saiu</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mt-1 h-6 w-24 animate-pulse rounded bg-red-200"></div>
+                        </div>
+                    </div>
+
+                    <div v-else class="mt-5 grid grid-cols-2 gap-3">
                         <div class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
                             <div class="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                                 <span>Entrou</span>
@@ -518,8 +570,9 @@ const toastOpen = ref(false);
 	            <div class="grid gap-6 xl:grid-cols-[420px_1fr]">
 	                <div class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60">
 	                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Saldo atual</div>
-	                    <div class="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-	                        {{ formatMoney(balance).replace('R$', 'R$') }}
+	                    <div v-if="isLoading" class="mt-3 h-9 w-48 animate-pulse rounded-lg bg-slate-200"></div>
+	                    <div v-else class="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+	                        {{ formatMoney(balance ?? 0).replace('R$', 'R$') }}
 	                    </div>
 	                    <div class="mt-6 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
 	                        Tipo: {{ account?.type ?? '-' }}

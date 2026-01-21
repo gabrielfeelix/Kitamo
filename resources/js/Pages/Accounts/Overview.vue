@@ -35,6 +35,7 @@ const monthItems = computed(() => {
 const selectedMonthKey = ref('');
 const accountsDataByMonth = ref<Map<string, any[]>>(new Map());
 const accountsModeByMonth = ref<Map<string, string>>(new Map());
+const isLoadingMonth = ref<Map<string, boolean>>(new Map());
 
 // Initialize selectedMonthKey after monthItems is computed
 onMounted(() => {
@@ -51,110 +52,105 @@ const loadAccountsForMonth = async (monthKey: string) => {
     const accountsKey = monthKey;
     const cardsKey = `cards-${monthKey}`;
 
-    if (accountsDataByMonth.value.has(accountsKey) && accountsDataByMonth.value.has(cardsKey)) {
-        return;
-    }
+    // Clear previous data for this month to avoid showing stale data
+    accountsDataByMonth.value.delete(accountsKey);
+    accountsDataByMonth.value.delete(cardsKey);
+    accountsModeByMonth.value.delete(accountsKey);
+
+    // Mark as loading
+    isLoadingMonth.value.set(monthKey, true);
 
     try {
         const [year, month] = monthKey.split('-').map(Number);
 
-        // Load bank accounts and wallets
-        if (!accountsDataByMonth.value.has(accountsKey)) {
-            const accountsResponse = await requestJson<{ accounts: any[]; mode?: string }>(`/api/contas-by-month?year=${year}&month=${month}`, {
+        // Load both bank accounts and credit cards in parallel
+        const [accountsResponse, cardsResponse] = await Promise.all([
+            requestJson<{ accounts: any[]; mode?: string }>(`/api/contas-by-month?year=${year}&month=${month}`, {
                 method: 'GET',
-            });
-            const accounts = (accountsResponse as any)?.accounts ?? (accountsResponse as any)?.contas ?? [];
-            accountsDataByMonth.value.set(accountsKey, Array.isArray(accounts) ? accounts : []);
-            const mode = String((accountsResponse as any)?.mode ?? '');
-            if (mode) accountsModeByMonth.value.set(accountsKey, mode);
-        }
+            }),
+            requestJson<{ cartoes: any[] }>(`/api/cartoes-by-month?year=${year}&month=${month}`, {
+                method: 'GET',
+            }),
+        ]);
 
-        // Load credit cards
-        if (!accountsDataByMonth.value.has(cardsKey)) {
-            const cardsResponse = await requestJson<{ cartoes: any[] }>(`/api/cartoes-by-month?year=${year}&month=${month}`, {
-                method: 'GET',
-            });
-            const cards = (cardsResponse as any)?.cartoes ?? (cardsResponse as any)?.cards ?? [];
-            accountsDataByMonth.value.set(cardsKey, Array.isArray(cards) ? cards : []);
-        }
-    } catch {
-        // Fallback to bootstrap data if API call fails
-        console.error('Failed to load accounts for month');
+        // Process bank accounts
+        const accounts = (accountsResponse as any)?.accounts ?? (accountsResponse as any)?.contas ?? [];
+        accountsDataByMonth.value.set(accountsKey, Array.isArray(accounts) ? accounts : []);
+        const mode = String((accountsResponse as any)?.mode ?? '');
+        if (mode) accountsModeByMonth.value.set(accountsKey, mode);
+
+        // Process credit cards
+        const cards = (cardsResponse as any)?.cartoes ?? (cardsResponse as any)?.cards ?? [];
+        accountsDataByMonth.value.set(cardsKey, Array.isArray(cards) ? cards : []);
+    } catch (error) {
+        console.error('Failed to load accounts for month', error);
+        // Set empty arrays on error to prevent showing bootstrap data
+        accountsDataByMonth.value.set(accountsKey, []);
+        accountsDataByMonth.value.set(cardsKey, []);
+    } finally {
+        // Mark as loaded
+        isLoadingMonth.value.set(monthKey, false);
     }
 };
 
 const bankAccounts = computed(() => {
     const monthKey = selectedMonthKey.value;
-    const hasMonthData = Boolean(monthKey) && accountsDataByMonth.value.has(monthKey);
-    const monthData = hasMonthData ? (accountsDataByMonth.value.get(monthKey) ?? []) : null;
 
-    if (Array.isArray(monthData)) {
-        return monthData
-            .filter((a: any) => (a.type ?? a.tipo) !== 'credit_card')
-            .map((a: any) => {
-                const type = (a.type ?? a.tipo) as string | undefined;
-                return {
-                    id: a.id,
-                    name: a.name ?? a.nome,
-                    subtitle: a.subtitle ?? a.subtitulo ?? (type === 'wallet' ? 'Dinheiro físico' : type === 'bank' ? 'Corrente' : 'Conta'),
-                    balance: Number(a.current_balance ?? a.saldo_atual ?? a.saldo ?? 0),
-                    color: a.color ?? a.cor ?? '#14B8A6',
-                    icon: a.icon ?? a.icone ?? (type === 'wallet' ? 'wallet' : 'bank'),
-                    hasData: Boolean(a.has_data ?? true),
-                    balanceKind: String(a.balance_kind ?? ''),
-                };
-            });
+    // If loading or no data available yet, return empty array
+    if (!monthKey || isLoadingMonth.value.get(monthKey)) {
+        return [];
     }
 
-    if (!monthKey || accountsDataByMonth.value.has(monthKey)) return [];
+    const hasMonthData = accountsDataByMonth.value.has(monthKey);
+    if (!hasMonthData) {
+        return [];
+    }
 
-    return (bootstrap.value.accounts ?? [])
-        .filter((a) => a.type !== 'credit_card')
-        .map((a) => ({
-            id: a.id,
-            name: a.name,
-            subtitle: a.type === 'wallet' ? 'Dinheiro físico' : a.type === 'bank' ? 'Corrente' : 'Conta',
-            balance: Number(a.current_balance ?? 0),
-            color: (a as any).color ?? '#14B8A6',
-            icon: a.icon ?? (a.type === 'wallet' ? 'wallet' : 'bank'),
-            hasData: true,
-            balanceKind: '',
-        }));
+    const monthData = accountsDataByMonth.value.get(monthKey) ?? [];
+
+    return monthData
+        .filter((a: any) => (a.type ?? a.tipo) !== 'credit_card')
+        .map((a: any) => {
+            const type = (a.type ?? a.tipo) as string | undefined;
+            return {
+                id: a.id,
+                name: a.name ?? a.nome,
+                subtitle: a.subtitle ?? a.subtitulo ?? (type === 'wallet' ? 'Dinheiro físico' : type === 'bank' ? 'Corrente' : 'Conta'),
+                balance: Number(a.current_balance ?? a.saldo_atual ?? a.saldo ?? 0),
+                color: a.color ?? a.cor ?? '#14B8A6',
+                icon: a.icon ?? a.icone ?? (type === 'wallet' ? 'wallet' : 'bank'),
+                hasData: Boolean(a.has_data ?? true),
+                balanceKind: String(a.balance_kind ?? ''),
+            };
+        });
 });
 
 const creditCards = computed(() => {
     const monthKey = selectedMonthKey.value;
     const cardsKey = `cards-${monthKey}`;
-    const hasMonthData = Boolean(monthKey) && accountsDataByMonth.value.has(cardsKey);
-    const monthData = hasMonthData ? (accountsDataByMonth.value.get(cardsKey) ?? []) : null;
 
-    if (Array.isArray(monthData)) {
-        return monthData.map((c: any) => ({
-            id: c.id,
-            name: c.name ?? c.nome,
-            balance: Math.max(0, Number(c.limite_usado ?? c.current_balance ?? 0)),
-            limit: Number(c.limite ?? c.credit_limit ?? 0),
-            color: c.cor ?? c.color ?? '#8B5CF6',
-            brand: c.bandeira ?? c.card_brand ?? 'visa',
-            closingDay: Number(c.dia_fechamento ?? c.closing_day ?? 0) || null,
-            dueDay: Number(c.dia_vencimento ?? c.due_day ?? 0) || null,
-        }));
+    // If loading or no data available yet, return empty array
+    if (!monthKey || isLoadingMonth.value.get(monthKey)) {
+        return [];
     }
 
-    if (!monthKey || accountsDataByMonth.value.has(cardsKey)) return [];
+    const hasMonthData = accountsDataByMonth.value.has(cardsKey);
+    if (!hasMonthData) {
+        return [];
+    }
 
-    return (bootstrap.value.accounts ?? [])
-        .filter((a) => a.type === 'credit_card')
-        .map((a) => ({
-            id: a.id,
-            name: a.name,
-            balance: Math.max(0, Number(a.current_balance ?? 0)),
-            limit: Number(a.credit_limit ?? 0),
-            color: (a as any).color ?? '#8B5CF6',
-            brand: String((a as any).card_brand ?? 'visa'),
-            closingDay: Number(a.closing_day ?? 0) || null,
-            dueDay: Number((a as any).due_day ?? 0) || null,
-        }));
+    const monthData = accountsDataByMonth.value.get(cardsKey) ?? [];
+
+    return monthData.map((c: any) => ({
+        id: c.id,
+        name: c.name ?? c.nome,
+        balance: Math.max(0, Number(c.limite_usado ?? c.current_balance ?? 0)),
+        limit: Number(c.limite ?? c.credit_limit ?? 0),
+        color: c.cor ?? c.color ?? '#8B5CF6',
+        brand: c.bandeira ?? c.card_brand ?? 'visa',
+        closingDay: Number(c.dia_fechamento ?? c.closing_day ?? 0) || null,
+        dueDay: Number(c.dia_vencimento ?? c.due_day ?? 0) || null,
+    }));
 });
 
 const creditCardsDisplay = computed(() => {
@@ -199,6 +195,12 @@ const selectedMonthMode = computed(() => {
     const key = selectedMonthKey.value;
     if (!key) return '';
     return String(accountsModeByMonth.value.get(key) ?? '');
+});
+
+const isLoading = computed(() => {
+    const monthKey = selectedMonthKey.value;
+    if (!monthKey) return false;
+    return isLoadingMonth.value.get(monthKey) ?? false;
 });
 
 const toastOpen = ref(false);
@@ -392,16 +394,31 @@ watch(
 
         <section class="mt-6 rounded-3xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] p-5 text-white shadow-lg shadow-teal-600/20">
             <div class="text-[11px] font-bold uppercase tracking-wide text-white/80">Patrimônio líquido</div>
-            <div class="mt-2 text-3xl font-bold tracking-tight">{{ formatBRL(netWorth) }}</div>
+            <div v-if="isLoading" class="mt-2 h-9 w-48 animate-pulse rounded-lg bg-white/20"></div>
+            <div v-else class="mt-2 text-3xl font-bold tracking-tight">{{ formatBRL(netWorth) }}</div>
         </section>
 
 	        <section class="mt-8">
 	            <div class="flex items-center justify-between">
 	                <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Contas e carteiras</div>
-	                <div class="text-xs font-bold text-emerald-600">{{ formatBRL(totalBankBalance) }}</div>
+	                <div v-if="isLoading" class="h-4 w-20 animate-pulse rounded bg-slate-200"></div>
+	                <div v-else class="text-xs font-bold text-emerald-600">{{ formatBRL(totalBankBalance) }}</div>
 	            </div>
 
-            <div class="mt-4 space-y-3">
+            <div v-if="isLoading" class="mt-4 space-y-3">
+                <div v-for="i in 3" :key="i" class="flex items-center justify-between rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 animate-pulse rounded-2xl bg-slate-200"></div>
+                        <div>
+                            <div class="h-4 w-32 animate-pulse rounded bg-slate-200"></div>
+                            <div class="mt-1 h-3 w-24 animate-pulse rounded bg-slate-100"></div>
+                        </div>
+                    </div>
+                    <div class="h-4 w-20 animate-pulse rounded bg-slate-200"></div>
+                </div>
+            </div>
+
+            <div v-else class="mt-4 space-y-3">
                 <Link
                     v-for="account in bankAccounts"
                     :key="account.id"
@@ -439,10 +456,31 @@ watch(
         <section class="mt-8 pb-[calc(2rem+env(safe-area-inset-bottom))]">
             <div class="flex items-center justify-between">
                 <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Cartões de crédito</div>
-                <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ formatBRL(totalCardsBalance) }}</div>
+                <div v-if="isLoading" class="h-6 w-24 animate-pulse rounded-full bg-slate-200"></div>
+                <div v-else class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ formatBRL(totalCardsBalance) }}</div>
             </div>
 
-            <div class="mt-4 space-y-3">
+            <div v-if="isLoading" class="mt-4 space-y-3">
+                <div v-for="i in 2" :key="i" class="flex items-center justify-between rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 animate-pulse rounded-2xl bg-slate-200"></div>
+                        <div>
+                            <div class="h-4 w-32 animate-pulse rounded bg-slate-200"></div>
+                            <div class="mt-2 flex gap-1">
+                                <div class="h-5 w-12 animate-pulse rounded-md bg-slate-100"></div>
+                                <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
+                                <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="h-4 w-20 animate-pulse rounded bg-slate-200"></div>
+                        <div class="mt-1 h-3 w-16 animate-pulse rounded bg-slate-100"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="mt-4 space-y-3">
                 <Link
                     v-for="card in creditCardsDisplay"
                     :key="card.id"
