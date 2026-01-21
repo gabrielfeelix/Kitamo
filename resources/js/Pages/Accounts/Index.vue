@@ -1,8 +1,8 @@
 <script setup lang="ts">
 	import { computed, onMounted, ref } from 'vue';
-	import { Link, usePage } from '@inertiajs/vue3';
+	import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestFormData, requestJson } from '@/lib/kitamoApi';
-import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
+import { buildTransactionFormData, buildTransactionRequest, executeTransfer, hasTransactionReceipt } from '@/lib/transactions';
 	import type { BootstrapData, Entry } from '@/types/kitamo';
 	import MobileShell from '@/Layouts/MobileShell.vue';
 	import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -301,7 +301,7 @@ const openEdit = (id: string, options?: { mode?: 'edit' | 'duplicate' }) => {
         dateKind: 'today',
         isInstallment: Boolean(entry.installment),
         installmentCount: parseInstallmentCount(entry.installment),
-        isPaid: entry.status === 'paid',
+        isPaid: entry.status === 'paid' || entry.status === 'received',
         tags: entry.tags ?? [],
         receiptFile: null,
         receiptUrl: entry.receiptUrl ?? null,
@@ -342,7 +342,7 @@ const toEntryModel = (payload: TransactionModalPayload): Entry | null => {
         subtitle: installment ?? existing?.subtitle ?? '',
         amount: payload.amount,
         kind: payload.kind,
-        status: payload.kind === 'income' ? 'received' : payload.isPaid ? 'paid' : 'pending',
+        status: payload.kind === 'income' ? (payload.isPaid ? 'received' : 'pending') : payload.isPaid ? 'paid' : 'pending',
         priority: existing?.priority ?? false,
         installment,
         icon: existing?.icon ?? icon,
@@ -355,7 +355,13 @@ const toEntryModel = (payload: TransactionModalPayload): Entry | null => {
 
 const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
-        showToast('Transferência realizada');
+        try {
+            await executeTransfer(payload);
+            showToast('Transferência realizada');
+            router.reload({ only: ['bootstrap'] });
+        } catch {
+            showToast('Não foi possível realizar a transferência');
+        }
         return;
     }
 
@@ -523,7 +529,7 @@ const openDesktopEdit = (entry: Entry) => {
         dateKind: 'today',
         isInstallment: Boolean(entry.installment),
         installmentCount: parseInstallmentCount(entry.installment),
-        isPaid: entry.status === 'paid',
+        isPaid: entry.status === 'paid' || entry.status === 'received',
         transferFrom: 'Banco Inter',
         transferTo: 'Carteira',
         transferDescription: '',

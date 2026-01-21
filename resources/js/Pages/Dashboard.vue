@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestFormData, requestJson } from '@/lib/kitamoApi';
-import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
+import { buildTransactionFormData, buildTransactionRequest, executeTransfer, hasTransactionReceipt } from '@/lib/transactions';
 import type { BootstrapData, CreditCard, Entry, Goal } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -749,7 +749,7 @@ const openEntryEdit = (entry: Entry) => {
         dateOther: '',
         isInstallment: Boolean(entry.installment),
         installmentCount: parseInstallmentCount(entry.installment),
-        isPaid: entry.status === 'paid',
+        isPaid: entry.status === 'paid' || entry.status === 'received',
         tags: entry.tags ?? [],
         receiptFile: null,
         receiptUrl: entry.receiptUrl ?? null,
@@ -817,7 +817,13 @@ const handleDetailMarkPaid = async () => {
 
 const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
-        showToast('Transferência realizada');
+        try {
+            await executeTransfer(payload);
+            showToast('Transferência realizada');
+            router.reload({ only: ['bootstrap'] });
+        } catch {
+            showToast('Não foi possível realizar a transferência');
+        }
         return;
     }
 

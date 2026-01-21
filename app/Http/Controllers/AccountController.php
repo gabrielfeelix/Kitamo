@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Transferencia;
 use App\Support\KitamoBootstrap;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -108,9 +109,26 @@ class AccountController extends Controller
         $user = $request->user();
         abort_unless((int) $account->user_id === (int) $user->id, 404);
 
+        $transactionsCount = $account->transactions()->count();
+        $transferenciasSaida = Transferencia::query()
+            ->where('user_id', $user->id)
+            ->where('conta_origem_id', $account->id)
+            ->count();
+        $transferenciasEntrada = Transferencia::query()
+            ->where('user_id', $user->id)
+            ->where('conta_destino_id', $account->id)
+            ->count();
+
         $account->delete();
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'ok' => true,
+            'deleted' => [
+                'transactions' => $transactionsCount,
+                'transferencias_saida' => $transferenciasSaida,
+                'transferencias_entrada' => $transferenciasEntrada,
+            ],
+        ]);
     }
 
     public function getByMonth(Request $request): JsonResponse
@@ -127,7 +145,7 @@ class AccountController extends Controller
 
         // Get the first and last day of the month
         $startOfMonth = Carbon::create($year, $month + 1, 1)->startOfDay();
-        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth()->endOfDay();
         $now = Carbon::now();
 
         $currentMonthStart = $now->copy()->startOfMonth();
@@ -179,27 +197,109 @@ class AccountController extends Controller
 
             // Get all transactions for this account in this month
             if ($mode === 'past') {
-                $transactions = $account->transactions()
+                $startDate = $startOfMonth->toDateString();
+                $endDate = $endOfMonth->toDateString();
+
+                $transferStart = $startOfMonth->toDateTimeString();
+                $transferEnd = $endOfMonth->toDateTimeString();
+
+                $incomeBefore = (float) $account->transactions()
                     ->where('user_id', $user->id)
-                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
-                    ->whereIn('status', ['paid', 'received'])
-                    ->get();
+                    ->where('kind', 'income')
+                    ->where('status', 'received')
+                    ->whereNotNull('data_pagamento')
+                    ->where('data_pagamento', '<', $transferStart)
+                    ->sum('amount');
 
-                $balanceAtMonth = (float) $account->initial_balance;
-
-                $transactionsBefore = $account->transactions()
+                $incomeBeforeFallback = (float) $account->transactions()
                     ->where('user_id', $user->id)
-                    ->where('transaction_date', '<', $startOfMonth)
-                    ->whereIn('status', ['paid', 'received'])
-                    ->get();
+                    ->where('kind', 'income')
+                    ->where('status', 'received')
+                    ->whereNull('data_pagamento')
+                    ->where('transaction_date', '<', $startDate)
+                    ->sum('amount');
 
-                foreach ($transactionsBefore as $transaction) {
-                    $balanceAtMonth += $transaction->kind === 'income' ? (float) $transaction->amount : -(float) $transaction->amount;
-                }
+                $expenseBefore = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'expense')
+                    ->where('status', 'paid')
+                    ->whereNotNull('data_pagamento')
+                    ->where('data_pagamento', '<', $transferStart)
+                    ->sum('amount');
 
-                foreach ($transactions as $transaction) {
-                    $balanceAtMonth += $transaction->kind === 'income' ? (float) $transaction->amount : -(float) $transaction->amount;
-                }
+                $expenseBeforeFallback = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'expense')
+                    ->where('status', 'paid')
+                    ->whereNull('data_pagamento')
+                    ->where('transaction_date', '<', $startDate)
+                    ->sum('amount');
+
+                $incomeMonth = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'income')
+                    ->where('status', 'received')
+                    ->whereNotNull('data_pagamento')
+                    ->whereBetween('data_pagamento', [$transferStart, $transferEnd])
+                    ->sum('amount');
+
+                $incomeMonthFallback = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'income')
+                    ->where('status', 'received')
+                    ->whereNull('data_pagamento')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $expenseMonth = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'expense')
+                    ->where('status', 'paid')
+                    ->whereNotNull('data_pagamento')
+                    ->whereBetween('data_pagamento', [$transferStart, $transferEnd])
+                    ->sum('amount');
+
+                $expenseMonthFallback = (float) $account->transactions()
+                    ->where('user_id', $user->id)
+                    ->where('kind', 'expense')
+                    ->where('status', 'paid')
+                    ->whereNull('data_pagamento')
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->sum('amount');
+
+                $incomingTransfersBefore = (float) Transferencia::query()
+                    ->where('user_id', $user->id)
+                    ->where('conta_destino_id', $account->id)
+                    ->where('transferido_em', '<', $transferStart)
+                    ->sum('valor');
+
+                $outgoingTransfersBefore = (float) Transferencia::query()
+                    ->where('user_id', $user->id)
+                    ->where('conta_origem_id', $account->id)
+                    ->where('transferido_em', '<', $transferStart)
+                    ->sum('valor');
+
+                $incomingTransfersMonth = (float) Transferencia::query()
+                    ->where('user_id', $user->id)
+                    ->where('conta_destino_id', $account->id)
+                    ->whereBetween('transferido_em', [$transferStart, $transferEnd])
+                    ->sum('valor');
+
+                $outgoingTransfersMonth = (float) Transferencia::query()
+                    ->where('user_id', $user->id)
+                    ->where('conta_origem_id', $account->id)
+                    ->whereBetween('transferido_em', [$transferStart, $transferEnd])
+                    ->sum('valor');
+
+                $balanceAtMonth = (float) $account->initial_balance
+                    + ($incomeBefore + $incomeBeforeFallback)
+                    - ($expenseBefore + $expenseBeforeFallback)
+                    + $incomingTransfersBefore
+                    - $outgoingTransfersBefore
+                    + ($incomeMonth + $incomeMonthFallback)
+                    - ($expenseMonth + $expenseMonthFallback)
+                    + $incomingTransfersMonth
+                    - $outgoingTransfersMonth;
 
                 return [
                     'id' => $account->id,
@@ -222,8 +322,8 @@ class AccountController extends Controller
             $futureTransactions = $account->transactions()
                 ->where('user_id', $user->id)
                 ->where('transaction_date', '>', $now->toDateString())
-                ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
-                ->whereIn('status', ['pending', 'paid', 'received'])
+                ->whereBetween('transaction_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                ->where('status', 'pending')
                 ->get();
 
             foreach ($futureTransactions as $transaction) {

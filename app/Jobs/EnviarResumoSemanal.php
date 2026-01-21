@@ -38,7 +38,7 @@ class EnviarResumoSemanal implements ShouldQueue
                     $totalReceitas = (float) Transaction::query()
                         ->where('user_id', $user->id)
                         ->where('kind', 'income')
-                        ->whereIn('status', ['paid', 'received'])
+                        ->where('status', 'received')
                         ->whereBetween('data_pagamento', [$start->toDateTimeString(), $end->toDateTimeString()])
                         ->sum('amount');
 
@@ -87,4 +87,3 @@ class EnviarResumoSemanal implements ShouldQueue
             });
     }
 }
-

@@ -34,6 +34,7 @@ class ApplyRecurringTransactions implements ShouldQueue
                         'amount' => $item->amount,
                         'description' => $item->description,
                         'transaction_date' => $item->next_run_at,
+                        'data_pagamento' => $item->kind === 'income' ? now() : null,
                         'tags' => $item->tags,
                     ]);
 

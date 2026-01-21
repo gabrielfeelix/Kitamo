@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Account;
+use App\Models\Transferencia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -21,7 +22,7 @@ class RecalculateAccountBalances implements ShouldQueue
             foreach ($accounts as $account) {
                 $income = $account->transactions()
                     ->where('kind', 'income')
-                    ->whereIn('status', ['received', 'paid'])
+                    ->where('status', 'received')
                     ->sum('amount');
 
                 $expense = $account->transactions()
@@ -29,7 +30,21 @@ class RecalculateAccountBalances implements ShouldQueue
                     ->where('status', 'paid')
                     ->sum('amount');
 
-                $balance = (float) $account->initial_balance + (float) $income - (float) $expense;
+                $incomingTransfers = (float) Transferencia::query()
+                    ->where('user_id', $account->user_id)
+                    ->where('conta_destino_id', $account->id)
+                    ->sum('valor');
+
+                $outgoingTransfers = (float) Transferencia::query()
+                    ->where('user_id', $account->user_id)
+                    ->where('conta_origem_id', $account->id)
+                    ->sum('valor');
+
+                $balance = (float) $account->initial_balance
+                    + (float) $income
+                    - (float) $expense
+                    + $incomingTransfers
+                    - $outgoingTransfers;
 
                 $account->forceFill([
                     'current_balance' => $balance,

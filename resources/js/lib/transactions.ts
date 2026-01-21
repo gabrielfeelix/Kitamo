@@ -1,4 +1,5 @@
 import type { TransactionModalPayload } from '@/Components/TransactionModal.vue';
+import { requestJson } from '@/lib/kitamoApi';
 
 export const buildTransactionRequest = (payload: TransactionModalPayload) => ({
     kind: payload.kind,
@@ -52,4 +53,27 @@ export const buildTransactionFormData = (payload: TransactionModalPayload) => {
     }
 
     return data;
+};
+
+export const executeTransfer = async (payload: TransactionModalPayload) => {
+    const origem = (payload.transferFrom ?? '').trim();
+    const destino = (payload.transferTo ?? '').trim();
+    if (!origem || !destino) {
+        throw new Error('Conta de origem/destino inválida.');
+    }
+    if (origem === destino) {
+        throw new Error('Conta de origem e destino devem ser diferentes.');
+    }
+
+    const descricao = (payload.transferDescription ?? '').trim() || 'Transferência';
+
+    return requestJson('/api/transferencias', {
+        method: 'POST',
+        body: JSON.stringify({
+            conta_origem: origem,
+            conta_destino: destino,
+            valor: payload.amount,
+            descricao,
+        }),
+    });
 };

@@ -65,15 +65,23 @@ class TransactionController extends Controller
             ], 422);
         }
 
+        $isParcelado = !empty($data['isInstallment']) && !empty($data['installmentCount']) && (int) $data['installmentCount'] > 1;
+        if ($isRecorrente && $isParcelado) {
+            return response()->json([
+                'message' => 'Não é possível usar parcelamento e recorrência ao mesmo tempo.',
+            ], 422);
+        }
+
         if (!empty($data['data_fim']) && CarbonImmutable::parse($data['data_fim'])->lessThan(CarbonImmutable::today())) {
             return response()->json([
                 'message' => 'data_fim deve ser hoje ou no futuro.',
             ], 422);
         }
 
+        $isPaid = !empty($data['isPaid']);
         $status = $data['kind'] === 'income'
-            ? 'received'
-            : (!empty($data['isPaid']) ? 'paid' : 'pending');
+            ? ($isPaid ? 'received' : 'pending')
+            : ($isPaid ? 'paid' : 'pending');
 
         $installmentLabel = null;
         $installmentIndex = null;
@@ -81,7 +89,6 @@ class TransactionController extends Controller
         $parcelamentoGrupoId = null;
         $parcelaAtual = null;
         $parcelaTotal = null;
-        $isParcelado = !empty($data['isInstallment']) && !empty($data['installmentCount']) && (int) $data['installmentCount'] > 1;
 
         if (!empty($data['isInstallment']) && !empty($data['installmentCount']) && $data['installmentCount'] > 1) {
             $installmentIndex = 1;
@@ -226,6 +233,13 @@ class TransactionController extends Controller
             $transaction->save();
         }
 
+        $requestedParcelado = !empty($data['isInstallment']) && !empty($data['installmentCount']) && (int) $data['installmentCount'] > 1;
+        if ($requestedParcelado && !empty($transaction->recorrencia_grupo_id)) {
+            return response()->json([
+                'message' => 'Não é possível usar parcelamento e recorrência ao mesmo tempo.',
+            ], 422);
+        }
+
         $this->applyBalanceAdjustment($transaction->account, $transaction, -1);
 
         $accountName = trim($data['account'] ?? $transaction->account?->name ?? 'Carteira');
@@ -244,9 +258,10 @@ class TransactionController extends Controller
             ? $data['dateOther']
             : now()->toDateString();
 
+        $isPaid = !empty($data['isPaid']);
         $status = $data['kind'] === 'income'
-            ? 'received'
-            : (!empty($data['isPaid']) ? 'paid' : 'pending');
+            ? ($isPaid ? 'received' : 'pending')
+            : ($isPaid ? 'paid' : 'pending');
 
         $installmentLabel = null;
         $installmentIndex = null;

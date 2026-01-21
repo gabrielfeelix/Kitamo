@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { requestJson } from '@/lib/kitamoApi';
+import { executeTransfer } from '@/lib/transactions';
 import type { BootstrapData, Entry } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -134,7 +135,13 @@ const showToast = (message: string) => {
 
 const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
-        showToast('Transferência realizada');
+        try {
+            await executeTransfer(payload);
+            showToast('Transferência realizada');
+            router.reload({ only: ['bootstrap'] });
+        } catch {
+            showToast('Não foi possível realizar a transferência');
+        }
         return;
     }
 

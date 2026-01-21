@@ -55,3 +55,39 @@ Arquivos alterados neste lote:
 
 Arquivos alterados neste lote:
 - `app/Services/ProjecaoService.php`
+
+### Lote 4
+
+**RN07 — Navegação temporal**
+- API mensal de contas (`/api/contas-by-month`) passa a calcular fechamento de mês baseado em `data_pagamento` (com fallback para `transaction_date` quando necessário) e considera transferências.
+- Tela de detalhe da conta usa `/api/contas-by-month` para exibir saldo do mês selecionado (fechamento/projeção), em vez de reaproveitar apenas o `current_balance` atual do bootstrap.
+
+**RN08 — Pagar fatura**
+- Fluxo já existia via `CreditCardController@payInvoice` (sem alterações neste lote).
+
+**RN09 — Transferência entre contas**
+- Endpoints de transferência aceitam seleção por nome (compatível com o modal) e bloqueiam transferências envolvendo `credit_card`.
+- Job `RecalculateAccountBalances` passa a considerar `transferencias` no saldo para evitar que o recálculo sobrescreva transferências.
+- Frontend: ao salvar uma movimentação do tipo `transfer`, chama `/api/transferencias` e recarrega o bootstrap.
+
+**RN10/RN11 — Exclusões seguras**
+- Exclusão de conta/cartão ainda usa o comportamento atual (cascade delete). O backend passa a retornar contagens do que foi removido, mas melhorias de “mover transações”/avisos detalhados seguem pendentes.
+
+**RN13 — Parcelamento e recorrência mutuamente exclusivos**
+- Backend passa a validar e rejeitar quando o usuário tenta aplicar parcelamento em transação recorrente (store/update).
+
+Arquivos alterados neste lote:
+- `app/Http/Controllers/AccountController.php`
+- `app/Http/Controllers/TransferenciaController.php`
+- `app/Http/Controllers/TransactionController.php`
+- `app/Http/Controllers/WidgetController.php`
+- `app/Jobs/RecalculateAccountBalances.php`
+- `app/Jobs/EnviarResumoSemanal.php`
+- `resources/js/Components/TransactionModal.vue`
+- `resources/js/lib/transactions.ts`
+- `resources/js/Pages/Accounts/Show.vue`
+- `resources/js/Pages/Accounts/Index.vue`
+- `resources/js/Pages/Analysis.vue`
+- `resources/js/Pages/Analysis/Compare.vue`
+- `resources/js/Pages/Dashboard.vue`
+- `resources/js/Pages/Goals/Index.vue`

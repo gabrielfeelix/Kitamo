@@ -138,9 +138,39 @@ class CreditCardController extends Controller
         abort_unless($request->user()->id === $cartao->user_id, 403);
         abort_unless($cartao->type === 'credit_card', 404);
 
+        $userId = $request->user()->id;
+        $today = Carbon::today()->toDateString();
+
+        $totalTransactions = (int) Transaction::query()
+            ->where('user_id', $userId)
+            ->where('account_id', $cartao->id)
+            ->count();
+
+        $parcelasPendentes = (int) Transaction::query()
+            ->where('user_id', $userId)
+            ->where('account_id', $cartao->id)
+            ->whereNotNull('parcelamento_grupo_id')
+            ->where('status', 'pending')
+            ->where('transaction_date', '>', $today)
+            ->count();
+
+        $comprasPendentes = (int) Transaction::query()
+            ->where('user_id', $userId)
+            ->where('account_id', $cartao->id)
+            ->where('kind', 'expense')
+            ->where('status', 'pending')
+            ->count();
+
         $cartao->delete();
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'ok' => true,
+            'deleted' => [
+                'transactions' => $totalTransactions,
+                'compras_pendentes' => $comprasPendentes,
+                'parcelas_pendentes_futuras' => $parcelasPendentes,
+            ],
+        ]);
     }
 
     public function getByMonth(Request $request)

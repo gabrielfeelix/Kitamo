@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestFormData, requestJson } from '@/lib/kitamoApi';
-import { buildTransactionFormData, buildTransactionRequest, hasTransactionReceipt } from '@/lib/transactions';
+import { buildTransactionFormData, buildTransactionRequest, executeTransfer, hasTransactionReceipt } from '@/lib/transactions';
 import type { BootstrapData } from '@/types/kitamo';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -283,7 +283,13 @@ const openQuickTransaction = () => {
 
 const onTransactionSave = async (payload: TransactionModalPayload) => {
     if (payload.kind === 'transfer') {
-        showToast('Transferência realizada');
+        try {
+            await executeTransfer(payload);
+            showToast('Transferência realizada');
+            router.reload({ only: ['bootstrap'] });
+        } catch {
+            showToast('Não foi possível realizar a transferência');
+        }
         return;
     }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { computed, ref } from 'vue';
+	import { computed, ref, watch } from 'vue';
 	import { Head, Link, router, usePage } from '@inertiajs/vue3';
 	import type { BootstrapData, Entry } from '@/types/kitamo';
 	import MobileShell from '@/Layouts/MobileShell.vue';
@@ -25,7 +25,26 @@ const bootstrap = computed(
 
 const account = computed(() => bootstrap.value.accounts.find((item) => item.id === props.accountKey));
 const accountName = computed(() => account.value?.name ?? 'Conta');
-const balance = computed(() => account.value?.current_balance ?? 0);
+const balancesByMonth = ref<Map<string, number>>(new Map());
+const modeByMonth = ref<Map<string, string>>(new Map());
+
+const loadBalanceForMonth = async (monthKey: string) => {
+    if (!monthKey) return;
+    if (balancesByMonth.value.has(monthKey)) return;
+    try {
+        const [year, month] = monthKey.split('-').map(Number);
+        const response = await requestJson<{ accounts?: any[]; contas?: any[]; mode?: string }>(`/api/contas-by-month?year=${year}&month=${month}`, {
+            method: 'GET',
+        });
+        const list = (response as any)?.accounts ?? (response as any)?.contas ?? [];
+        const row = Array.isArray(list) ? list.find((a: any) => String(a.id) === String(props.accountKey)) : null;
+        const value = Number(row?.current_balance ?? row?.saldo_atual ?? row?.saldo ?? 0);
+        balancesByMonth.value.set(monthKey, Number.isFinite(value) ? value : 0);
+        if ((response as any)?.mode) modeByMonth.value.set(monthKey, String((response as any).mode));
+    } catch {
+        // fallback: usa saldo do bootstrap
+    }
+};
 const entries = computed(() => bootstrap.value.entries ?? []);
 
 	const formatMoney = (value: number) =>
@@ -68,6 +87,16 @@ const entries = computed(() => bootstrap.value.entries ?? []);
     );
     const selectedMonth = computed(() => months.value.find((m) => m.key === selectedMonthKey.value) ?? months.value[0]);
 
+watch(
+    selectedMonthKey,
+    (key) => {
+        void loadBalanceForMonth(key);
+    },
+    { immediate: true },
+);
+
+const balance = computed(() => balancesByMonth.value.get(selectedMonthKey.value) ?? account.value?.current_balance ?? 0);
+
     const entriesForAccount = computed(() => {
         const name = accountName.value;
         if (!name) return [];
@@ -107,7 +136,7 @@ const entries = computed(() => bootstrap.value.entries ?? []);
 
     const monthStartBalance = computed(() => {
         if (!account.value) return 0;
-        const currentBalance = account.value.current_balance;
+        const currentBalance = balance.value;
         // Balanço final = saldo atual
         // Balanço inicial = saldo atual - (entradas - saídas do mês)
         return currentBalance - (monthIncome.value - monthExpense.value);

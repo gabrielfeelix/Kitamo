@@ -47,7 +47,7 @@ class WidgetController extends Controller
         $receitas = (float) Transaction::query()
             ->where('user_id', $user->id)
             ->where('kind', 'income')
-            ->whereIn('status', ['paid', 'received'])
+            ->where('status', 'received')
             ->where('data_pagamento', '>=', $startMonth->toDateTimeString())
             ->sum('amount');
 
