@@ -20,6 +20,7 @@ const type = ref<CategoryType>('expense');
 const icon = ref<IconKey>('food');
 
 const headerIcon = computed(() => icon.value);
+const headerColor = computed(() => (type.value === 'expense' ? '#EF4444' : '#10B981'));
 const canSave = computed(() => name.value.trim().length > 0);
 
 const close = () => emit('close');
@@ -54,7 +55,7 @@ watch(
 
         <main class="mx-auto w-full max-w-md px-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
             <div class="flex justify-center pt-2">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-orange-400 text-white shadow-lg shadow-black/10">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg shadow-black/10" :style="{ backgroundColor: headerColor }">
                     <CategoryIcon :icon="headerIcon" class="h-7 w-7 text-white" />
                 </div>
             </div>
