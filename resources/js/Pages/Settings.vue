@@ -14,6 +14,7 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
+const avatarUrl = computed(() => (page.props.auth?.user as any)?.avatar_url ?? (page.props.auth?.user as any)?.profile_photo_url ?? null);
 
 const form = useForm({
     name: userName.value,
@@ -64,8 +65,9 @@ const initials = computed(() => {
                 </Link>
 
                 <div class="text-center">
-                    <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white">
-                        {{ initials }}
+                    <div class="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white/20 text-xl font-bold text-white">
+                        <img v-if="avatarUrl" :src="avatarUrl" alt="Foto do perfil" class="h-full w-full object-cover" />
+                        <span v-else>{{ initials }}</span>
                     </div>
                     <div class="mt-3 text-lg font-bold text-white">{{ userName.split(' ')[0] }}</div>
                     <div class="mt-0.5 text-sm font-medium text-white/80">@{{ userEmail.split('@')[0] }}</div>

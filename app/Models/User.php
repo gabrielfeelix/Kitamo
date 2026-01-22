@@ -41,6 +41,7 @@ class User extends Authenticatable
 
     protected $appends = [
         'avatar_url',
+        'profile_photo_url',
         'is_google_auth',
     ];
 
@@ -77,6 +78,11 @@ class User extends Authenticatable
     public function getIsGoogleAuthAttribute(): bool
     {
         return $this->auth_provider === 'google';
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        return $this->avatar_url;
     }
 
     public function accounts()

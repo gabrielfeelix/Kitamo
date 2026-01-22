@@ -3,6 +3,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { computed } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
 defineProps<{
@@ -10,7 +11,8 @@ defineProps<{
     status?: String;
 }>();
 
-const user = usePage().props.auth.user;
+const user = usePage().props.auth.user as any;
+const isGoogleAuth = computed(() => user?.is_google_auth === true || user?.auth_provider === 'google');
 
 const form = useForm({
     name: user.name,
@@ -46,9 +48,11 @@ const form = useForm({
                     required
                     autofocus
                     autocomplete="name"
+                    :disabled="isGoogleAuth"
                 />
 
                 <InputError class="mt-2" :message="form.errors.name" />
+                <p v-if="isGoogleAuth" class="mt-2 text-sm text-gray-500">Gerenciado pelo Google</p>
             </div>
 
             <div>
@@ -61,6 +65,7 @@ const form = useForm({
                     v-model="form.email"
                     required
                     autocomplete="username"
+                    :disabled="isGoogleAuth"
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />

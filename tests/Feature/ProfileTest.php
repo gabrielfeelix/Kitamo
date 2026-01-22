@@ -27,6 +27,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from('/profile')
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
@@ -49,6 +50,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from('/profile')
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
@@ -59,6 +61,35 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
+    }
+
+    public function test_google_user_profile_update_only_allows_phone_change(): void
+    {
+        $user = User::factory()->create([
+            'auth_provider' => 'google',
+            'name' => 'Original Name',
+            'email' => 'original@example.com',
+            'phone' => '111',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => 'New Name',
+                'email' => 'new@example.com',
+                'phone' => '222',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Original Name', $user->name);
+        $this->assertSame('original@example.com', $user->email);
+        $this->assertSame('222', $user->phone);
     }
 
     public function test_user_can_delete_their_account(): void

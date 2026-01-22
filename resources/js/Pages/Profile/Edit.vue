@@ -17,11 +17,14 @@ defineProps<{
 const isMobile = useIsMobile();
 
 const page = usePage();
-const isGoogleAuth = computed(() => (page.props.auth?.user as any)?.is_google_auth ?? false);
+const isGoogleAuth = computed(() => {
+    const user = page.props.auth?.user as any;
+    return user?.is_google_auth === true || user?.auth_provider === 'google';
+});
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
-const avatarUrl = computed(() => (page.props.auth?.user as any)?.avatar_url ?? null);
+const avatarUrl = computed(() => (page.props.auth?.user as any)?.avatar_url ?? (page.props.auth?.user as any)?.profile_photo_url ?? null);
 
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);

@@ -31,7 +31,7 @@ type ProjecaoResponse = {
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const firstName = computed(() => String(userName.value).trim().split(/\s+/)[0] ?? userName.value);
-const avatarUrl = computed(() => (page.props as any)?.auth?.user?.profile_photo_url ?? null);
+const avatarUrl = computed(() => (page.props as any)?.auth?.user?.avatar_url ?? (page.props as any)?.auth?.user?.profile_photo_url ?? null);
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );

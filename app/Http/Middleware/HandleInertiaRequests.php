@@ -32,16 +32,6 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        \Log::debug('HandleInertiaRequests - User Data', [
-            'user_id' => $user?->id,
-            'user_name' => $user?->name,
-            'user_email' => $user?->email,
-            'user_phone' => $user?->phone,
-            'user_avatar_path' => $user?->avatar_path,
-            'user_avatar_url' => $user?->avatar_url,
-            'is_null' => is_null($user),
-        ]);
-
         return [
             ...parent::share($request),
             'auth' => [

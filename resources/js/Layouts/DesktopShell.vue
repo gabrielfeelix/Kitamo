@@ -31,7 +31,7 @@ const props = withDefaults(
 const page = usePage();
 const userName = computed(() => String((page.props as any)?.auth?.user?.name ?? ''));
 const firstName = computed(() => userName.value.trim().split(/\s+/)[0] ?? userName.value);
-const avatarUrl = computed(() => (page.props as any)?.auth?.user?.profile_photo_url ?? null);
+const avatarUrl = computed(() => (page.props as any)?.auth?.user?.avatar_url ?? (page.props as any)?.auth?.user?.profile_photo_url ?? null);
 
 const initials = computed(() => {
     const parts = userName.value.trim().split(/\s+/).filter(Boolean);
