@@ -44,6 +44,12 @@ const amountSizeClass = computed(() => {
 
 const accentBg = computed(() => (props.accent === 'blue' ? 'bg-[#3B82F6]' : 'bg-[#14B8A6]'));
 const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8px_rgba(59,130,246,0.25)]' : 'shadow-[0_2px_8px_rgba(20,184,166,0.25)]'));
+
+const canConfirm = computed(() => {
+    // Amount must be greater than 0
+    const numAmount = parseFloat(amount.value.replace(/[^0-9,-]/g, '').replace(',', '.'));
+    return !isNaN(numAmount) && numAmount > 0;
+});
 </script>
 
 <template>
@@ -120,8 +126,11 @@ const accentShadow = computed(() => (props.accent === 'blue' ? 'shadow-[0_2px_8p
                 <footer class="px-6 pt-4 pb-[calc(24px+env(safe-area-inset-bottom))]">
                     <button
                         type="button"
-                        class="h-[52px] w-full rounded-2xl text-base font-bold text-white"
-                        :class="[accentBg, accentShadow]"
+                        class="h-[52px] w-full rounded-2xl text-base font-bold text-white transition-all"
+                        :class="canConfirm
+                            ? [accentBg, accentShadow]
+                            : 'bg-slate-300 shadow-none cursor-not-allowed opacity-60'"
+                        :disabled="!canConfirm"
                         @click="emit('confirm', { amount, from, repeat }); close();"
                     >
                         Confirmar depósito

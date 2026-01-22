@@ -168,6 +168,23 @@ const amountNumber = computed(() => {
     return moneyInputToNumber(amount.value);
 });
 
+const canSave = computed(() => {
+    // Validações básicas
+    if (amountNumber.value <= 0) return false;
+    if (!description.value.trim()) return false;
+    if (!category.value) return false;
+    if (!account.value) return false;
+
+    // Para transferências
+    if (localKind.value === 'transfer') {
+        if (!transferFrom.value) return false;
+        if (!transferTo.value) return false;
+        if (transferFrom.value === transferTo.value) return false;
+    }
+
+    return true;
+});
+
 const formatBRL2 = (value: number) =>
     new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -1342,9 +1359,12 @@ watch(
 
             <footer class="px-6 pt-4 pb-[calc(24px+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
                     <button
-                        class="h-[52px] w-full rounded-xl text-base font-bold text-white"
-                        :class="localKind === 'transfer' ? 'bg-[#3B82F6] shadow-[0_2px_8px_rgba(59,130,246,0.25)]' : 'bg-[#14B8A6] shadow-[0_2px_8px_rgba(20,184,166,0.25)]'"
+                        class="h-[52px] w-full rounded-xl text-base font-bold text-white transition-all"
+                        :class="canSave
+                            ? (localKind === 'transfer' ? 'bg-[#3B82F6] shadow-[0_2px_8px_rgba(59,130,246,0.25)]' : 'bg-[#14B8A6] shadow-[0_2px_8px_rgba(20,184,166,0.25)]')
+                            : 'bg-slate-300 shadow-none cursor-not-allowed opacity-60'"
                         type="button"
+                        :disabled="!canSave"
                         @click="save"
                     >
                         {{ localKind === 'transfer' ? 'Transferir' : 'Salvar' }}

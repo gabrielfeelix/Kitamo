@@ -295,7 +295,10 @@ watch(
             </button>
             <button
               :disabled="!isFormValid || isSaving"
-              class="flex-1 rounded-xl bg-[#14B8A6] py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/20 transition hover:bg-[#0D9488] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 rounded-xl py-3 text-sm font-semibold transition"
+              :class="(isFormValid && !isSaving)
+                ? 'bg-[#14B8A6] text-white shadow-lg shadow-teal-500/20 hover:bg-[#0D9488]'
+                : 'bg-slate-300 text-white shadow-none cursor-not-allowed opacity-60'"
               type="button"
               @click="save"
             >

@@ -55,6 +55,14 @@ const saldoNumber = computed(() => {
 
 const tipoSelecionado = computed(() => tipos.find((t) => t.id === tipo.value));
 
+const canSave = computed(() => {
+  // Saldo must be greater than 0
+  if (saldoNumber.value <= 0) return false;
+  // Banco must be selected
+  if (!props.banco) return false;
+  return true;
+});
+
 const reset = () => {
   saldo.value = '';
   descricao.value = '';
@@ -242,15 +250,23 @@ watch(
         <footer class="shrink-0 border-t border-slate-100 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div class="flex gap-3">
             <button
-              class="flex-1 rounded-xl border border-[#E5E7EB] py-3 text-sm font-semibold text-[#6B7280] transition hover:bg-slate-50"
+              class="flex-1 rounded-xl border py-3 text-sm font-semibold transition"
+              :class="canSave
+                ? 'border-[#E5E7EB] text-[#6B7280] hover:bg-slate-50'
+                : 'border-slate-200 text-slate-300 cursor-not-allowed'"
               type="button"
+              :disabled="!canSave"
               @click="save(false)"
             >
               Salvar
             </button>
             <button
-              class="flex-1 rounded-xl bg-[#14B8A6] py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/20 transition hover:bg-[#0D9488]"
+              class="flex-1 rounded-xl py-3 text-sm font-semibold transition"
+              :class="canSave
+                ? 'bg-[#14B8A6] text-white shadow-lg shadow-teal-500/20 hover:bg-[#0D9488]'
+                : 'bg-slate-300 text-white shadow-none cursor-not-allowed opacity-60'"
               type="button"
+              :disabled="!canSave"
               @click="save(true)"
             >
               Salvar e Criar Nova

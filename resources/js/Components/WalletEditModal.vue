@@ -45,6 +45,8 @@ const initialBalanceNumber = computed(() => {
     return moneyInputToNumber(initialBalance.value);
 });
 
+const canSave = computed(() => name.value.trim().length > 0);
+
 // Methods
 const onBalanceInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -190,7 +192,11 @@ watch(
             <button
                 type="button"
                 @click="save"
-                class="w-full rounded-xl bg-emerald-500 py-3 font-semibold text-white transition hover:bg-emerald-600 active:bg-emerald-700"
+                :disabled="!canSave"
+                class="w-full rounded-xl py-3 font-semibold transition"
+                :class="canSave
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700'
+                    : 'bg-slate-300 text-white shadow-none cursor-not-allowed opacity-60'"
             >
                 Salvar alterações
             </button>

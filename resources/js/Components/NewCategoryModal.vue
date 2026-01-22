@@ -20,6 +20,7 @@ const type = ref<CategoryType>('expense');
 const icon = ref<IconKey>('food');
 
 const headerIcon = computed(() => icon.value);
+const canSave = computed(() => name.value.trim().length > 0);
 
 const close = () => emit('close');
 const save = () => emit('save', { name: name.value, type: type.value, icon: icon.value });
@@ -179,7 +180,11 @@ watch(
             <div class="mx-auto w-full max-w-md">
                 <button
                     type="button"
-                    class="w-full rounded-2xl bg-teal-500 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/25"
+                    class="w-full rounded-2xl py-4 text-base font-semibold text-white transition-all"
+                    :class="canSave
+                        ? 'bg-teal-500 shadow-lg shadow-teal-500/25'
+                        : 'bg-slate-300 shadow-none cursor-not-allowed opacity-60'"
+                    :disabled="!canSave"
                     @click="save"
                 >
                     Salvar categoria

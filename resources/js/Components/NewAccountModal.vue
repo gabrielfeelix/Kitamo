@@ -70,6 +70,8 @@ const filteredInstitutions = computed(() => {
 
 const displayInstitution = computed(() => selectedInstitution.value || 'Selecione');
 
+const canSave = computed(() => nickname.value.trim().length > 0);
+
 const parseName = (value: string) => {
     const raw = value ?? '';
     const parts = raw.split(' - ').map((p) => p.trim()).filter(Boolean);
@@ -309,8 +311,11 @@ watch(
             <div class="mx-auto w-full max-w-md">
                 <button
                     type="button"
-                    class="w-full rounded-2xl bg-teal-500 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/25 disabled:opacity-60"
-                    :disabled="!nickname.trim()"
+                    class="w-full rounded-2xl py-4 text-base font-semibold text-white transition-all"
+                    :class="canSave
+                        ? 'bg-teal-500 shadow-lg shadow-teal-500/25'
+                        : 'bg-slate-300 shadow-none cursor-not-allowed opacity-60'"
+                    :disabled="!canSave"
                     @click="save"
                 >
                     Salvar alterações
