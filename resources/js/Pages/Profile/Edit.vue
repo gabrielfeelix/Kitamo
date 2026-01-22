@@ -62,7 +62,6 @@ const submitAvatar = () => {
         preserveScroll: true,
         onSuccess: () => {
             form.avatar = null;
-            router.visit(route('settings'));
         },
     });
 };
