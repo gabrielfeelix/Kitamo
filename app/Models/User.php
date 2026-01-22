@@ -26,6 +26,7 @@ class User extends Authenticatable
         'avatar_path',
         'password',
         'is_admin',
+        'auth_provider',
     ];
 
     /**
@@ -40,6 +41,7 @@ class User extends Authenticatable
 
     protected $appends = [
         'avatar_url',
+        'is_google_auth',
     ];
 
     /**
@@ -63,7 +65,18 @@ class User extends Authenticatable
             return null;
         }
 
+        // Se é uma URL externa (Google Avatar), retorna diretamente
+        if (str_starts_with($this->avatar_path, 'http://') || str_starts_with($this->avatar_path, 'https://')) {
+            return $this->avatar_path;
+        }
+
+        // Caso contrário, gera URL de storage local
         return Storage::url($this->avatar_path);
+    }
+
+    public function getIsGoogleAuthAttribute(): bool
+    {
+        return $this->auth_provider === 'google';
     }
 
     public function accounts()

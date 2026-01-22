@@ -39,17 +39,27 @@ class ProfileController extends Controller
             return Redirect::back()->with('status', 'profile-updated');
         }
 
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+
+        // Se autenticado via Google, não permitir alterar nome ou avatar
+        if ($user->auth_provider === 'google') {
+            // Apenas permite atualizar telefone
+            $validated = $request->validated();
+            $user->phone = $validated['phone'] ?? $user->phone;
+            $user->save();
+
+            return Redirect::back()->with('status', 'profile-updated');
+        }
+
+        $user->fill($request->validated());
 
         if ($request->hasFile('avatar')) {
-            $user = $request->user();
             $old = $user->avatar_path;
 
             $path = $request->file('avatar')->storePublicly('avatars', 'public');
             $user->avatar_path = $path;
-            $user->save();
 
-            if ($old) {
+            if ($old && !str_starts_with($old, 'http')) {
                 Storage::disk('public')->delete($old);
             }
         }

@@ -17,6 +17,7 @@ defineProps<{
 const isMobile = useIsMobile();
 
 const page = usePage();
+const isGoogleAuth = computed(() => (page.props.auth?.user as any)?.is_google_auth ?? false);
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
 const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
@@ -102,8 +103,10 @@ const onAvatarChange = (event: Event) => {
                 </div>
                 <button
                     type="button"
-                    class="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full bg-[#14B8A6] text-white shadow-lg shadow-black/10"
-                    aria-label="Alterar foto"
+                    :disabled="isGoogleAuth"
+                    class="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lg shadow-black/10"
+                    :class="isGoogleAuth ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#14B8A6]'"
+                    :aria-label="isGoogleAuth ? 'Foto gerenciada pelo Google' : 'Alterar foto'"
                     @click="openFilePicker"
                 >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -122,10 +125,20 @@ const onAvatarChange = (event: Event) => {
                 <input
                     v-model="form.name"
                     type="text"
-                    class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 focus:border-[#14B8A6] focus:outline-none focus:ring-0"
+                    :disabled="isGoogleAuth"
+                    class="h-12 w-full rounded-2xl border border-slate-200 px-4 text-sm font-semibold focus:outline-none focus:ring-0"
+                    :class="isGoogleAuth ? 'cursor-not-allowed bg-slate-100 text-slate-500' : 'bg-white text-slate-700 focus:border-[#14B8A6]'"
                     aria-label="Nome completo"
                 />
-                <div v-if="form.errors.name" class="mt-1 text-xs font-semibold text-red-500">{{ form.errors.name }}</div>
+                <div v-if="isGoogleAuth" class="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-400">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                    </svg>
+                    Gerenciado pelo Google
+                </div>
+                <div v-else-if="form.errors.name" class="mt-1 text-xs font-semibold text-red-500">{{ form.errors.name }}</div>
             </div>
 
             <div>

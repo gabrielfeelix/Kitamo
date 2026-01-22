@@ -28,6 +28,14 @@ class GoogleController extends Controller
                 'email' => $email,
                 'email_verified_at' => now(),
                 'password' => bcrypt(Str::random(32)),
+                'avatar_path' => $googleUser->getAvatar(),
+                'auth_provider' => 'google',
+            ]);
+        } else {
+            // Atualizar foto e provider se for login via Google
+            $user->update([
+                'avatar_path' => $googleUser->getAvatar(),
+                'auth_provider' => 'google',
             ]);
         }
 
