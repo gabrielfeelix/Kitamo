@@ -433,8 +433,14 @@ const handleCreateCreditCardFlowSave = () => {
                             </div>
                         </div>
 
-                        <!-- Progress Bar and Stats -->
+                        <!-- Stats and Progress Bar -->
                         <div class="mt-3 space-y-2">
+                            <!-- Stats -->
+                            <div class="flex items-center justify-between text-[11px] font-medium text-slate-500">
+                                <span>LIMITE USADO: {{ Math.round(card.percentualUsado) }}%</span>
+                                <span>DISP: {{ formatBRL(card.disponivel) }}</span>
+                            </div>
+
                             <!-- Progress Bar -->
                             <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                                 <div
@@ -444,12 +450,6 @@ const handleCreateCreditCardFlowSave = () => {
                                         backgroundColor: card.cor
                                     }"
                                 ></div>
-                            </div>
-
-                            <!-- Stats -->
-                            <div class="flex items-center justify-between text-[11px] font-medium text-slate-500">
-                                <span>LIMITE USADO: {{ Math.round(card.percentualUsado) }}%</span>
-                                <span>DISP: {{ formatBRL(card.disponivel) }}</span>
                             </div>
                         </div>
                     </div>
