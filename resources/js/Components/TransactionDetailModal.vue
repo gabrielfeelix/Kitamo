@@ -9,7 +9,7 @@ export type TransactionDetail = {
     kind: 'expense' | 'income';
     status: 'paid' | 'pending' | 'received';
     categoryLabel: string;
-    categoryIcon: 'food' | 'home' | 'car' | 'bolt' | 'pill' | 'briefcase' | 'heart' | 'shirt' | 'cart';
+    categoryIcon: 'food' | 'home' | 'car' | 'bolt' | 'pill' | 'briefcase' | 'heart' | 'shirt' | 'cart' | 'game' | 'money' | 'trend';
     accountLabel: string;
     accountIcon: 'wallet' | 'bank' | 'card';
     dateLabel: string;
