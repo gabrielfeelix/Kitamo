@@ -162,6 +162,7 @@ class AccountController extends Controller
             ->get();
 
         $recurringDeltaByAccount = [];
+        $recurringDeltaTotal = 0.0;
         if ($mode === 'future') {
             $rangeStart = CarbonImmutable::parse($now->toDateString());
             $rangeEnd = CarbonImmutable::parse($endOfMonth->toDateString());
@@ -208,11 +209,58 @@ class AccountController extends Controller
                             $delta = $grupo->kind === 'income' ? (float) $grupo->amount : -((float) $grupo->amount);
                             $accountId = (string) $grupo->account_id;
                             $recurringDeltaByAccount[$accountId] = ($recurringDeltaByAccount[$accountId] ?? 0.0) + $delta;
+                            $recurringDeltaTotal += $delta;
                         }
                         $cursor = $scheduler->nextDate($cursor, $grupo);
                     }
                 }
             }
+        }
+
+        $balanco = 0.0;
+        $balancoKind = 'month';
+        if ($mode === 'future') {
+            $balancoKind = 'pending_cumulative';
+            $endDate = $endOfMonth->toDateString();
+            $accountIds = $accounts->pluck('id')->all();
+
+            $pendingIncome = (float) Transaction::query()
+                ->where('user_id', $user->id)
+                ->whereIn('account_id', $accountIds)
+                ->where('status', 'pending')
+                ->where('kind', 'income')
+                ->where('transaction_date', '<=', $endDate)
+                ->sum('amount');
+
+            $pendingExpense = (float) Transaction::query()
+                ->where('user_id', $user->id)
+                ->whereIn('account_id', $accountIds)
+                ->where('status', 'pending')
+                ->where('kind', 'expense')
+                ->where('transaction_date', '<=', $endDate)
+                ->sum('amount');
+
+            $balanco = ($pendingIncome - $pendingExpense) + $recurringDeltaTotal;
+        } else {
+            $startDate = $startOfMonth->toDateString();
+            $endDate = $endOfMonth->toDateString();
+            $accountIds = $accounts->pluck('id')->all();
+
+            $income = (float) Transaction::query()
+                ->where('user_id', $user->id)
+                ->whereIn('account_id', $accountIds)
+                ->where('kind', 'income')
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->sum('amount');
+
+            $expense = (float) Transaction::query()
+                ->where('user_id', $user->id)
+                ->whereIn('account_id', $accountIds)
+                ->where('kind', 'expense')
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->sum('amount');
+
+            $balanco = $income - $expense;
         }
 
         $result = $accounts->map(function (Account $account) use ($startOfMonth, $endOfMonth, $user, $mode, $now, $recurringDeltaByAccount) {
@@ -429,6 +477,8 @@ class AccountController extends Controller
         return response()->json([
             'mode' => $mode,
             'accounts' => $result->values(),
+            'balanco' => round($balanco, 2),
+            'balanco_kind' => $balancoKind,
         ]);
     }
 }

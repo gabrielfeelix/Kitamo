@@ -40,6 +40,7 @@ const selectedMonthKey = ref('');
 const accountsDataByMonth = ref<Map<string, any[]>>(new Map());
 const accountsModeByMonth = ref<Map<string, string>>(new Map());
 const isLoadingMonth = ref<Map<string, boolean>>(new Map());
+const balanceNetByMonth = ref<Map<string, number>>(new Map());
 
 // Initialize selectedMonthKey after monthItems is computed
 onMounted(() => {
@@ -127,6 +128,7 @@ const loadAccountsForMonth = async (monthKey: string) => {
     accountsDataByMonth.value.delete(accountsKey);
     accountsDataByMonth.value.delete(cardsKey);
     accountsModeByMonth.value.delete(accountsKey);
+    balanceNetByMonth.value.delete(accountsKey);
 
     // Mark as loading
     isLoadingMonth.value.set(monthKey, true);
@@ -149,6 +151,8 @@ const loadAccountsForMonth = async (monthKey: string) => {
         accountsDataByMonth.value.set(accountsKey, Array.isArray(accounts) ? accounts : []);
         const mode = String((accountsResponse as any)?.mode ?? '');
         if (mode) accountsModeByMonth.value.set(accountsKey, mode);
+        const balanco = Number((accountsResponse as any)?.balanco ?? NaN);
+        if (Number.isFinite(balanco)) balanceNetByMonth.value.set(accountsKey, balanco);
 
         // Process credit cards
         const cards = (cardsResponse as any)?.cartoes ?? (cardsResponse as any)?.cards ?? [];
@@ -158,6 +162,7 @@ const loadAccountsForMonth = async (monthKey: string) => {
         // Set empty arrays on error to prevent showing bootstrap data
         accountsDataByMonth.value.set(accountsKey, []);
         accountsDataByMonth.value.set(cardsKey, []);
+        balanceNetByMonth.value.set(accountsKey, 0);
     } finally {
         // Mark as loaded
         isLoadingMonth.value.set(monthKey, false);
@@ -259,6 +264,13 @@ const creditCardsDisplay = computed(() => {
 });
 
 const totalBankBalance = computed(() => bankAccounts.value.reduce((sum, a) => sum + a.balance, 0));
+const balancoMensal = computed(() => {
+    const key = selectedMonthKey.value;
+    if (!key) return 0;
+    return balanceNetByMonth.value.get(key) ?? 0;
+});
+
+const saldoTitle = computed(() => (selectedMonthMode.value === 'past' ? 'Final do mês' : selectedMonthMode.value === 'future' ? 'Saldo previsto' : 'Saldo atual'));
 
 const selectedMonthMode = computed(() => {
     const key = selectedMonthKey.value;
@@ -467,11 +479,22 @@ watch(
             <MonthNavigator v-model="selectedMonthKey" :months="monthItems" />
         </div>
 
-        <section class="mt-6 rounded-3xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] p-5 text-white shadow-lg shadow-teal-600/20">
-            <div class="text-[11px] font-bold uppercase tracking-wide text-white/80">Saldo Total</div>
-            <div v-if="isLoading" class="mt-2 h-9 w-48 animate-pulse rounded-lg bg-white/20"></div>
-            <div v-else class="mt-2 text-3xl font-bold tracking-tight">{{ formatBRL(totalBankBalance) }}</div>
-        </section>
+        <div class="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60" :class="isLoading ? 'opacity-70' : ''">
+            <div class="grid grid-cols-2 divide-x divide-slate-100">
+                <div class="px-4 py-4 text-center">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ saldoTitle }}</div>
+                    <div class="mt-2 text-lg font-semibold" :class="totalBankBalance >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                        {{ formatBRL(totalBankBalance) }}
+                    </div>
+                </div>
+                <div class="px-4 py-4 text-center">
+                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Balanço mensal</div>
+                    <div class="mt-2 text-lg font-semibold" :class="balancoMensal >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                        {{ balancoMensal >= 0 ? '+' : '-' }} {{ formatBRL(Math.abs(balancoMensal)) }}
+                    </div>
+                </div>
+            </div>
+        </div>
 
 	        <section class="mt-8 pb-[calc(2rem+env(safe-area-inset-bottom))]">
 	            <div class="flex items-center justify-between">

@@ -404,20 +404,6 @@ const handleCreateCreditCardFlowSave = () => {
                                     >
                                         {{ String(card.bandeira) }}
                                     </span>
-                                    <span
-                                        v-if="card.fechamentoDia"
-                                        class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-blue-700"
-                                        :title="`Fechamento dia ${card.fechamentoDia}`"
-                                    >
-                                        Fech. {{ card.fechamentoDia }}
-                                    </span>
-                                    <span
-                                        v-if="card.vencimentoDia"
-                                        class="inline-flex items-center rounded-md bg-orange-50 px-2 py-0.5 text-orange-700"
-                                        :title="`Vencimento dia ${card.vencimentoDia}`"
-                                    >
-                                        Venc. {{ card.vencimentoDia }}
-                                    </span>
                                 </div>
                             </div>
 
@@ -450,6 +436,31 @@ const handleCreateCreditCardFlowSave = () => {
                                         backgroundColor: card.cor
                                     }"
                                 ></div>
+                            </div>
+
+                            <div class="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <span v-if="card.fechamentoDia" class="inline-flex items-center gap-1" :title="`Fechamento dia ${card.fechamentoDia}`">
+                                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M8 2v4" />
+                                            <path d="M16 2v4" />
+                                            <path d="M3 10h18" />
+                                            <path d="M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                                        </svg>
+                                        FECHA DIA {{ String(card.fechamentoDia).padStart(2, '0') }}
+                                    </span>
+                                    <span v-if="card.vencimentoDia" class="inline-flex items-center gap-1" :title="`Vencimento dia ${card.vencimentoDia}`">
+                                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M8 2v4" />
+                                            <path d="M16 2v4" />
+                                            <path d="M3 10h18" />
+                                            <path d="M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+                                            <path d="M12 14v4" />
+                                            <path d="M12 12h.01" />
+                                        </svg>
+                                        VENCE DIA {{ String(card.vencimentoDia).padStart(2, '0') }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

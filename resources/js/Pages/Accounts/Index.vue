@@ -250,6 +250,7 @@ const formatMoney = (value: number) =>
 const monthSummaryLoading = ref(false);
 const monthMode = ref<MonthMode>('current');
 const monthCashBalance = ref<number | null>(null);
+const monthBalanceNet = ref<number | null>(null);
 
 const fallbackCashBalance = () =>
     (bootstrap.value.accounts ?? [])
@@ -263,7 +264,7 @@ const loadMonthCashBalance = async (key: string) => {
 
     monthSummaryLoading.value = true;
     try {
-        const response = await requestJson<{ mode?: MonthMode; accounts?: Array<{ current_balance?: number | string }> }>(
+        const response = await requestJson<{ mode?: MonthMode; balanco?: number; accounts?: Array<{ current_balance?: number | string }> }>(
             `/api/contas-by-month?year=${year}&month=${month}`,
             { method: 'GET' },
         );
@@ -272,10 +273,13 @@ const loadMonthCashBalance = async (key: string) => {
 
         const accounts = ((response as any)?.accounts ?? []) as Array<{ current_balance?: number | string }>;
         monthCashBalance.value = accounts.reduce((acc, a) => acc + Number(a.current_balance ?? 0), 0);
+        const balanco = Number((response as any)?.balanco ?? NaN);
+        monthBalanceNet.value = Number.isFinite(balanco) ? balanco : null;
     } catch (error) {
         console.error('Failed to load month cash balance', error);
         monthMode.value = 'current';
         monthCashBalance.value = null;
+        monthBalanceNet.value = null;
     } finally {
         monthSummaryLoading.value = false;
     }
@@ -294,19 +298,7 @@ watch(
 const saldoTitle = computed(() => (monthMode.value === 'past' ? 'Final do mês' : monthMode.value === 'future' ? 'Saldo previsto' : 'Saldo atual'));
 const saldoValue = computed(() => monthCashBalance.value ?? fallbackCashBalance());
 
-const scopedMonthEntries = computed(() => {
-    const year = activeMonth.value.getFullYear();
-    const month = activeMonth.value.getMonth();
-    return entries.value.filter((entry) => {
-        if (!entry.transactionDate) return false;
-        const date = new Date(entry.transactionDate);
-        return date.getFullYear() === year && date.getMonth() === month;
-    });
-});
-
-const balancoMensal = computed(() =>
-    scopedMonthEntries.value.reduce((acc, entry) => acc + (entry.kind === 'income' ? entry.amount : -entry.amount), 0),
-);
+const balancoMensal = computed(() => monthBalanceNet.value ?? 0);
 
 const transactionOpen = ref(false);
 const transactionKind = ref<'expense' | 'income'>('expense');
