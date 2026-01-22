@@ -86,39 +86,47 @@ const selectBanco = (banco: typeof bancos[0]) => {
           </div>
 
           <!-- Banks List -->
-          <div class="mt-6 grid grid-cols-3 gap-3">
+          <div class="mt-6 grid grid-cols-2 gap-3">
             <button
               v-for="banco in bancosFiltrados"
               :key="banco.nome"
               type="button"
-              class="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white p-3 transition hover:border-slate-400 hover:bg-slate-50"
-              :style="{ borderColor: banco.svgFile ? banco.cor : undefined }"
+              class="h-28 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
               @click="selectBanco(banco)"
             >
-              <!-- Logo Card -->
-              <div
-                class="flex h-16 w-16 items-center justify-center rounded-xl"
-                :style="{ backgroundColor: banco.svgFile ? `${banco.cor}15` : `${banco.cor}22` }"
-              >
-                <img
-                  v-if="banco.svgFile"
-                  :src="`/Bancos-em-SVG-main/${banco.svgFile}`"
-                  :alt="banco.nome"
-                  class="h-12 w-12 object-contain"
-                  @error="($event.target as HTMLImageElement).style.display = 'none'"
-                />
-                <span
-                  v-else
-                  class="text-2xl"
-                  aria-hidden="true"
-                >
-                  {{ banco.logo }}
-                </span>
-              </div>
+              <div class="flex h-full flex-col">
+                <div class="flex items-start justify-between">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white">
+                    <img
+                      v-if="banco.svgFile"
+                      :src="`/Bancos-em-SVG-main/${banco.svgFile}`"
+                      :alt="banco.nome"
+                      class="h-8 w-8 object-contain"
+                      @error="($event.target as HTMLImageElement).style.display = 'none'"
+                    />
+                    <span
+                      v-else
+                      class="text-lg"
+                      :style="{ color: banco.cor }"
+                      aria-hidden="true"
+                    >
+                      {{ banco.logo }}
+                    </span>
+                  </div>
+                  <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
 
-              <!-- Bank Name -->
-              <div class="text-center text-xs font-semibold text-slate-900 line-clamp-2">
-                {{ banco.nome }}
+                <div class="mt-3 flex-1">
+                  <div class="line-clamp-2 text-sm font-semibold leading-snug text-slate-900">
+                    {{ banco.nome }}
+                  </div>
+                </div>
+
+                <div class="mt-2 h-1 w-full rounded-full bg-slate-100">
+                  <div class="h-1 rounded-full" :style="{ width: '40%', backgroundColor: banco.cor }"></div>
+                </div>
               </div>
             </button>
           </div>

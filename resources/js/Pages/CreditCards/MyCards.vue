@@ -389,25 +389,25 @@ const handleCreateCreditCardFlowSave = () => {
                         <div class="flex items-start gap-3">
                             <!-- Icon -->
                             <div
+                                v-if="card.svgPath"
                                 class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white"
                             >
                                 <img
-                                    v-if="card.svgPath"
                                     :src="`/Bancos-em-SVG-main/${card.svgPath}`"
                                     :alt="card.banco ?? ''"
                                     class="h-10 w-10 object-contain"
                                     @error="($event.target as HTMLImageElement).style.display = 'none'"
                                 />
-                                <div
-                                    v-else
-                                    class="flex h-12 w-12 items-center justify-center rounded-2xl"
-                                    :style="{ backgroundColor: card.cor }"
-                                >
-                                    <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="2" y="5" width="20" height="14" rx="2" />
-                                        <line x1="2" y1="10" x2="22" y2="10" />
-                                    </svg>
-                                </div>
+                            </div>
+                            <div
+                                v-else
+                                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                                :style="{ backgroundColor: card.cor }"
+                            >
+                                <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                                    <line x1="2" y1="10" x2="22" y2="10" />
+                                </svg>
                             </div>
 
                             <!-- Card Info -->

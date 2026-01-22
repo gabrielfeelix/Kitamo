@@ -1161,15 +1161,19 @@ onMounted(() => {
 	                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
 	                >
 	                    <div class="flex items-center gap-3">
-	                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
+	                        <div
+                                v-if="account.svgPath"
+                                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white"
+                            >
 	                            <img
-	                                v-if="account.svgPath"
 	                                :src="`/Bancos-em-SVG-main/${account.svgPath}`"
 	                                :alt="account.institution ?? ''"
 	                                class="h-8 w-8 object-contain"
 	                                @error="($event.target as HTMLImageElement).style.display = 'none'"
 	                            />
-	                            <span
+	                        </div>
+                            <div
+                                v-else
                                 class="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
                                 :style="{ backgroundColor: account.color }"
                             >
@@ -1179,7 +1183,6 @@ onMounted(() => {
 	                                <path d="M6 10v9" />
 	                                <path d="M18 10v9" />
 	                            </svg>
-	                            </span>
 	                        </div>
 	                        <div>
 	                            <div class="text-sm font-semibold text-slate-900">{{ account.label }}</div>
