@@ -70,7 +70,14 @@ const pickerCategories = computed<CategoryOption[]>(() => {
         const kind = c.type === 'income' ? 'income' : c.type === 'expense' ? 'expense' : undefined;
         const current = unique.get(c.name);
         const mergedKind = current?.kind && kind && current.kind !== kind ? undefined : (current?.kind ?? kind);
-        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate', kind: mergedKind });
+        unique.set(c.name, {
+            key: c.name,
+            label: c.name,
+            icon: (c.icon ?? 'other') as any,
+            tone: 'slate',
+            customColor: c.color ?? undefined,
+            kind: mergedKind,
+        });
     }
     return Array.from(unique.values());
 });
