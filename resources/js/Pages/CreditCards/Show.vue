@@ -51,7 +51,8 @@ const svgPath = computed(
 const months = computed(() => {
     const now = new Date();
     const items: Array<{ key: string; label: string; date: Date }> = [];
-    for (let i = 2; i >= -3; i -= 1) {
+    // Ordem cronológica: esquerda = passado, direita = futuro (MonthNavigator assume índice crescente = mês futuro).
+    for (let i = -3; i <= 2; i += 1) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const label = new Intl.DateTimeFormat('pt-BR', { month: 'short' })
             .format(d)
