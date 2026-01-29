@@ -19,13 +19,26 @@ const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
 const entries = computed(() => bootstrap.value.entries ?? []);
+const parseISODateLocal = (iso: string) => {
+    const match = String(iso ?? '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    const [, yyyy, mm, dd] = match;
+    const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    return Number.isFinite(date.getTime()) ? date : null;
+};
+
+const formatMonthShort = (date: Date) =>
+    new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' })
+        .format(date)
+        .replace('.', '')
+        .toUpperCase();
 const pickerCategories = computed<CategoryOption[]>(() => {
     const unique = new Map<string, CategoryOption>();
     for (const c of bootstrap.value.categories ?? []) {
         const kind = c.type === 'income' ? 'income' : c.type === 'expense' ? 'expense' : undefined;
         const current = unique.get(c.name);
         const mergedKind = current?.kind && kind && current.kind !== kind ? undefined : (current?.kind ?? kind);
-        unique.set(c.name, { key: c.name, label: c.name, icon: 'other', tone: 'slate', kind: mergedKind });
+        unique.set(c.name, { key: c.name, label: c.name, icon: (c.icon ?? 'other') as any, tone: 'slate', customColor: c.color ?? undefined, kind: mergedKind });
     }
     return Array.from(unique.values());
 });
@@ -109,7 +122,7 @@ const scopedEntries = computed(() => {
         const key = monthKey(activeMonth.value);
         return entries.value.filter((entry) => {
             if (!entry.transactionDate) return false;
-            const date = new Date(entry.transactionDate);
+            const date = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
             return monthKey(date) === key;
         });
     }
@@ -117,14 +130,14 @@ const scopedEntries = computed(() => {
         const key = yearKey(activeMonth.value);
         return entries.value.filter((entry) => {
             if (!entry.transactionDate) return false;
-            const date = new Date(entry.transactionDate);
+            const date = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
             return yearKey(date) === key;
         });
     }
     // 3 months
     return entries.value.filter((entry) => {
         if (!entry.transactionDate) return false;
-        const date = new Date(entry.transactionDate);
+        const date = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
         const diff = (activeMonth.value.getFullYear() - date.getFullYear()) * 12 + (activeMonth.value.getMonth() - date.getMonth());
         return diff >= 0 && diff < 3;
     });
@@ -151,7 +164,7 @@ const categoryIconByName = computed(() => {
 
 const fallbackCategoryIcon = (entry: (typeof entries.value)[number]) => {
     const key = String(entry.categoryKey ?? '').toLowerCase();
-    if (key === 'food') return 'food';
+    if (key === 'food') return 'cart';
     if (key === 'home') return 'home';
     if (key === 'car') return 'car';
     return 'other';
@@ -219,7 +232,7 @@ const lastMonths = computed(() => {
 
     for (const entry of scopedEntries.value) {
         if (!entry.transactionDate) continue;
-        const date = new Date(entry.transactionDate);
+        const date = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
         const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
         const target = months.find((m) => m.key === key);
         if (!target) continue;
@@ -331,7 +344,7 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                 </span>
                 <div>
                     <div class="text-sm font-semibold text-slate-900">Comparar Períodos</div>
-                    <div class="mt-1 text-xs font-semibold text-slate-500">Jan 2026 vs Dez 2025</div>
+                    <div class="mt-1 text-xs font-semibold text-slate-500">{{ `${formatMonthShort(activeMonth)} vs ${formatMonthShort(new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1))}` }}</div>
                 </div>
             </div>
             <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

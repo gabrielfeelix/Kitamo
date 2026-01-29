@@ -67,11 +67,24 @@ const entryKindFilter = ref<'all' | 'income' | 'expense'>('all');
 const accountFilter = ref<'all' | string>('all');
 
 const entries = ref<Entry[]>(bootstrap.value.entries ?? []);
-const categoriesByKey = computed(() => new Map((bootstrap.value.categories ?? []).map((c) => [`${c.type}|${c.name}`, c] as const)));
+const normalizeCategoryName = (value: string) =>
+    String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+const categoriesByKey = computed(
+    () =>
+        new Map(
+            (bootstrap.value.categories ?? []).map((c) => [`${c.type}|${normalizeCategoryName(c.name)}`, c] as const),
+        ),
+);
 
 const categoryForEntry = (entry: Entry) => {
     const type = entry.kind === 'income' ? 'income' : 'expense';
-    return categoriesByKey.value.get(`${type}|${entry.categoryLabel}`) ?? categoriesByKey.value.get(`expense|${entry.categoryLabel}`) ?? null;
+    const normalized = normalizeCategoryName(entry.categoryLabel ?? '');
+    return categoriesByKey.value.get(`${type}|${normalized}`) ?? categoriesByKey.value.get(`expense|${normalized}`) ?? null;
 };
 const pickerCategories = computed<CategoryOption[]>(() => {
     const unique = new Map<string, CategoryOption>();
@@ -365,7 +378,7 @@ const toAccountIcon = (label: string): TransactionDetail['accountIcon'] => {
 const toCategoryIcon = (entry: Entry): TransactionDetail['categoryIcon'] => {
     const icon = (entry.icon ?? '').toLowerCase();
     // Use icon directly if it's a known value
-    if (['food', 'home', 'car', 'game', 'heart', 'briefcase', 'pill', 'money', 'trend', 'bolt', 'cart', 'shirt'].includes(icon)) {
+    if (['food', 'home', 'car', 'game', 'heart', 'briefcase', 'pill', 'money', 'trend', 'bolt', 'cart', 'shirt', 'gym', 'sparkles'].includes(icon)) {
         return icon as TransactionDetail['categoryIcon'];
     }
     // Fallback: try to match by name
@@ -373,7 +386,7 @@ const toCategoryIcon = (entry: Entry): TransactionDetail['categoryIcon'] => {
     if (label.includes('alimentação') || label.includes('comida')) return 'cart';
     if (label.includes('moradia') || label.includes('home')) return 'home';
     if (label.includes('transporte') || label.includes('carro')) return 'car';
-    if (label.includes('lazer') || label.includes('game')) return 'game';
+    if (label.includes('lazer') || label.includes('game')) return 'sparkles';
     if (label.includes('saúde') || label.includes('health')) return 'heart';
     if (label.includes('salário') || label.includes('renda')) return 'money';
     if (label.includes('trabalho') || label.includes('freelance')) return 'briefcase';

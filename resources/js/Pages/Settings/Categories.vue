@@ -14,7 +14,7 @@ const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Categorias', showSearch: false, showNewAction: false },
 );
 type CategoryType = 'expense' | 'income';
-type IconKey = 'food' | 'cart' | 'home' | 'car' | 'game' | 'pill' | 'briefcase' | 'heart' | 'shirt' | 'bolt' | 'money' | 'trend' | 'gym';
+type IconKey = 'food' | 'cart' | 'home' | 'car' | 'sparkles' | 'game' | 'pill' | 'briefcase' | 'heart' | 'shirt' | 'bolt' | 'money' | 'trend' | 'gym';
 
 interface Category {
     id: string;
@@ -52,7 +52,7 @@ const filteredCategories = computed(() =>
     categories.value.filter((c) => c.type === categoryType.value),
 );
 
-const iconOptions: IconKey[] = ['cart', 'food', 'home', 'car', 'game', 'pill', 'briefcase', 'heart', 'shirt', 'bolt', 'money', 'trend', 'gym'];
+const iconOptions: IconKey[] = ['cart', 'food', 'home', 'car', 'sparkles', 'game', 'pill', 'briefcase', 'heart', 'shirt', 'bolt', 'money', 'trend', 'gym'];
 
 const colorOptions = [
     '#6B7280', // slate
@@ -69,6 +69,7 @@ const renderIcon = (icon: IconKey) => {
         cart: 'M6 6h15l-2 7H7L6 6ZM6 6l-2-2H2M9 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M17 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0',
         home: 'M3 10.5L12 3l9 7.5M5 10v10h14V10',
         car: 'M5 16l1-5 1-3h10l1 3 1 5M7 16h10M8 17a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M16 17a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0',
+        sparkles: 'M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2Z',
         game: 'M6 7h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2ZM8 13h2M9 12v2M15 13h2',
         pill: 'M10 14 8 16a4 4 0 0 1-6-6l2-2a4 4 0 0 1 6 6ZM14 10l2-2a4 4 0 0 1 6 6l-2 2a4 4 0 0 1-6-6ZM8 16l8-8',
         briefcase: 'M3 10h18M5 10V8l7-5 7 5v2M6 10v9M18 10v9',
@@ -271,7 +272,7 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 flex gap-2">
+                    <div class="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1 px-1">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"
@@ -364,7 +365,7 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 flex gap-2">
+                    <div class="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1 px-1">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"

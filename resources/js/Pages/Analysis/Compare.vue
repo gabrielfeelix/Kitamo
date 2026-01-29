@@ -23,6 +23,14 @@ const bootstrap = computed(
 );
 const entries = computed<Entry[]>(() => bootstrap.value.entries ?? []);
 
+const parseISODateLocal = (iso: string) => {
+    const match = String(iso ?? '').trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    const [, yyyy, mm, dd] = match;
+    const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    return Number.isFinite(date.getTime()) ? date : null;
+};
+
 const anchorMonth = ref(new Date());
 const shiftMonth = (delta: number) => {
     const next = new Date(anchorMonth.value);
@@ -47,7 +55,7 @@ const summarizeMonth = (date: Date) => {
     let desp = 0;
     for (const entry of entries.value) {
         if (!entry.transactionDate) continue;
-        const entryDate = new Date(entry.transactionDate);
+        const entryDate = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
         if (monthKey(entryDate) != key) continue;
         if (entry.kind === 'income') rec += entry.amount;
         if (entry.kind === 'expense') desp += entry.amount;
@@ -72,7 +80,7 @@ const categories = computed(() => {
 
     for (const entry of entries.value) {
         if (entry.kind !== 'expense' || !entry.transactionDate) continue;
-        const entryDate = new Date(entry.transactionDate);
+        const entryDate = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
         const key = monthKey(entryDate);
         const label = entry.categoryLabel || 'Outros';
         if (key == leftKey) leftMap.set(label, (leftMap.get(label) ?? 0) + entry.amount);

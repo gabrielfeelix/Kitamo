@@ -158,6 +158,7 @@ class KitamoBootstrap
 
         $categoryName = $transaction->category?->name ?? 'Outros';
         $categoryKey = $this->categoryKey($categoryName);
+        $categoryIcon = $transaction->category?->icon;
 
         $tags = array_values(
             array_unique(
@@ -192,7 +193,7 @@ class KitamoBootstrap
             'status' => $transaction->status,
             'priority' => (bool) $transaction->priority,
             'installment' => $transaction->installment_label,
-            'icon' => $this->entryIcon($transaction->kind, $categoryKey),
+            'icon' => $categoryIcon ?: $this->entryIcon($transaction->kind, $categoryKey),
             'categoryLabel' => $categoryName,
             'categoryKey' => $categoryKey,
             'accountLabel' => $transaction->account?->name ?? 'Conta',

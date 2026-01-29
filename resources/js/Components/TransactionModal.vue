@@ -6,6 +6,7 @@ import { requestJson } from '@/lib/kitamoApi';
 import type { UserTag } from '@/types/kitamo';
 import DatePickerSheet from '@/Components/DatePickerSheet.vue';
 import CategoryPickerSheet, { type CategoryOption } from '@/Components/CategoryPickerSheet.vue';
+import CategoryIcon from '@/Components/CategoryIcon.vue';
 import AccountPickerSheet, { type AccountOption } from '@/Components/AccountPickerSheet.vue';
 import NewCategoryModal from '@/Components/NewCategoryModal.vue';
 
@@ -580,20 +581,45 @@ const createdCategories = ref<CategoryOption[]>([]);
 
 const categories = computed<CategoryOption[]>(() => {
     const fallback: CategoryOption[] = [
-        { key: 'Alimentação', label: 'Alimentação', icon: 'food', tone: 'amber', kind: 'expense' },
+        { key: 'Alimentação', label: 'Alimentação', icon: 'cart', tone: 'amber', kind: 'expense' },
         { key: 'Moradia', label: 'Moradia', icon: 'home', tone: 'blue', kind: 'expense' },
         { key: 'Transporte', label: 'Transporte', icon: 'car', tone: 'slate', kind: 'expense' },
-        { key: 'Lazer', label: 'Lazer', icon: 'other', tone: 'purple', kind: 'expense' },
-        { key: 'Saúde', label: 'Saúde', icon: 'other', tone: 'red', kind: 'expense' },
-        { key: 'Estudos', label: 'Estudos', icon: 'other', tone: 'green', kind: 'expense' },
-        { key: 'Salário', label: 'Salário', icon: 'other', tone: 'green', kind: 'income' },
-        { key: 'Freelance', label: 'Freelance', icon: 'other', tone: 'blue', kind: 'income' },
-        { key: 'Investimentos', label: 'Investimentos', icon: 'other', tone: 'purple', kind: 'income' },
+        { key: 'Lazer', label: 'Lazer', icon: 'sparkles', tone: 'purple', kind: 'expense' },
+        { key: 'Saúde', label: 'Saúde', icon: 'heart', tone: 'red', kind: 'expense' },
+        { key: 'Estudos', label: 'Estudos', icon: 'trend', tone: 'green', kind: 'expense' },
+        { key: 'Salário', label: 'Salário', icon: 'money', tone: 'green', kind: 'income' },
+        { key: 'Freelance', label: 'Freelance', icon: 'briefcase', tone: 'blue', kind: 'income' },
+        { key: 'Investimentos', label: 'Investimentos', icon: 'trend', tone: 'purple', kind: 'income' },
         { key: 'Outros', label: 'Outros', icon: 'other', tone: 'slate' },
     ];
     const base = props.categories?.length ? props.categories : fallback;
     return mergeCategoryOptions([...base, ...createdCategories.value]);
 });
+
+const normalizeCategoryKey = (value: string) =>
+    String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+const selectedCategory = computed(() => {
+    const target = normalizeCategoryKey(category.value);
+    return (
+        categories.value.find((opt) => normalizeCategoryKey(opt.key) === target) ??
+        categories.value.find((opt) => normalizeCategoryKey(opt.label) === target) ??
+        null
+    );
+});
+
+const categoryToneClass = (tone?: CategoryOption['tone']) => {
+    if (tone === 'amber') return 'bg-amber-100 text-amber-600';
+    if (tone === 'blue') return 'bg-blue-100 text-blue-600';
+    if (tone === 'purple') return 'bg-purple-100 text-purple-600';
+    if (tone === 'red') return 'bg-red-100 text-red-600';
+    if (tone === 'green') return 'bg-emerald-100 text-emerald-600';
+    return 'bg-slate-200 text-slate-600';
+};
 
 const categoryKind = computed<CategoryOption['kind']>(() => {
     if (localKind.value === 'expense') return 'expense';
@@ -881,14 +907,12 @@ watch(
                     <div v-if="!isTransfer" class="grid grid-cols-2 gap-3">
                         <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openCategorySheet">
                             <div class="flex items-center gap-3">
-                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 3v7" />
-                                        <path d="M8 3v7" />
-                                        <path d="M6 3v7" />
-                                        <path d="M14 3v7c0 2 1 3 3 3v8" />
-                                        <path d="M20 3v7" />
-                                    </svg>
+                                <span
+                                    class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                                    :class="selectedCategory?.customColor ? '' : categoryToneClass(selectedCategory?.tone)"
+                                    :style="selectedCategory?.customColor ? { backgroundColor: selectedCategory.customColor, color: 'white' } : {}"
+                                >
+                                    <CategoryIcon :icon="selectedCategory?.icon ?? 'other'" class="h-5 w-5" />
                                 </span>
                                 <div class="min-w-0 flex-1">
                                     <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Categoria</div>

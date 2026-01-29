@@ -106,6 +106,11 @@ const normalizedIcon = computed(() => {
         <path d="M17 7h4v4" />
     </svg>
 
+    <!-- Sparkles icon -->
+    <svg v-else-if="normalizedIcon === 'sparkles'" :class="props.class || 'h-6 w-6'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2Z" />
+    </svg>
+
     <!-- Other/default icon -->
     <svg v-else :class="props.class || 'h-6 w-6'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="18" height="18" rx="4" />
