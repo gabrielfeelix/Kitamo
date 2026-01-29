@@ -238,6 +238,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/api/tags/{tag}', [TagController::class, 'destroy'])->name('api.tags.destroy');
     Route::post('/api/transactions/{transaction}/tags', [TransactionTagsController::class, 'sync'])->name('api.transactions.tags.sync');
     Route::get('/api/user/profile', [UserApiController::class, 'profile'])->name('api.user.profile');
+    Route::patch('/api/user/onboarding', [UserApiController::class, 'markOnboardingDone'])->name('api.user.onboarding');
     Route::patch('/api/user/theme', [UserApiController::class, 'updateTheme'])->name('api.user.theme');
     Route::post('/api/backup/create', [BackupController::class, 'create'])->name('api.backup.create');
     Route::get('/api/backup/download/{filename}', [BackupController::class, 'download'])->name('api.backup.download');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class UserApiController extends Controller
 {
@@ -17,6 +18,20 @@ class UserApiController extends Controller
             'email' => $user->email,
             'theme' => $user->theme ?? 'light',
             'created_at' => $user->created_at?->toISOString(),
+        ]);
+    }
+
+    public function markOnboardingDone(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user->onboarding_completed_at) {
+            $user->onboarding_completed_at = Carbon::now();
+            $user->save();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'onboarding_completed_at' => $user->onboarding_completed_at?->toISOString(),
         ]);
     }
 
@@ -36,4 +51,3 @@ class UserApiController extends Controller
         ]);
     }
 }
-

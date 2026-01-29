@@ -57,6 +57,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'last_backup_at' => 'datetime',
+            'onboarding_completed_at' => 'datetime',
         ];
     }
 

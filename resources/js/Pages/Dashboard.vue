@@ -135,7 +135,6 @@ const hideValues = ref(false);
 const homeWidgetsModalOpen = ref(false);
 const accountMenuOpen = ref(false);
 const onboardingOpen = ref(false);
-const ONBOARDING_STORAGE_KEY = 'kitamo:onboarding:v1';
 
 const fixInstitutionModalOpen = ref(false);
 const institutionAlertDismissed = ref(false);
@@ -1003,8 +1002,8 @@ onMounted(() => {
     loadCreditCardsApi();
     loadUnreadNotifications();
     try {
-        const alreadyDone = window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
-        if (!alreadyDone) onboardingOpen.value = true;
+        const completedAt = (page.props as any)?.auth?.user?.onboarding_completed_at ?? null;
+        if (!completedAt) onboardingOpen.value = true;
     } catch {
         // ignore
     }

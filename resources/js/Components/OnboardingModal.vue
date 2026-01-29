@@ -19,8 +19,6 @@ type AccountSeed = {
     isFuture?: boolean;
 };
 
-const STORAGE_KEY = 'kitamo:onboarding:v1';
-
 const props = defineProps<{
     open: boolean;
 }>();
@@ -76,9 +74,9 @@ const toggle = (key: string) => {
 
 const canContinueFromSelect = computed(() => selectedAccounts.value.length > 0);
 
-const saveFlag = () => {
+const markOnboardingDone = async () => {
     try {
-        window.localStorage.setItem(STORAGE_KEY, '1');
+        await requestJson('/api/user/onboarding', { method: 'PATCH' });
     } catch {
         // ignore
     }
@@ -86,7 +84,7 @@ const saveFlag = () => {
 
 const close = () => emit('close');
 const skip = () => {
-    saveFlag();
+    void markOnboardingDone();
     emit('done');
 };
 
@@ -129,7 +127,7 @@ const createAccounts = async () => {
             });
         }
 
-        saveFlag();
+        await markOnboardingDone();
         step.value = 4;
     } catch {
         error.value = 'Não foi possível salvar suas contas. Tente novamente.';
@@ -139,6 +137,7 @@ const createAccounts = async () => {
 };
 
 const finish = () => {
+    void markOnboardingDone();
     emit('done');
     router.reload({ only: ['bootstrap'] });
 };
