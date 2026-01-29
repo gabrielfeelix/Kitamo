@@ -18,7 +18,8 @@ return new class extends Migration
             $table->unsignedSmallInteger('status_code')->nullable();
             $table->string('ip', 45)->nullable();
             $table->text('user_agent')->nullable();
-            $table->json('payload')->nullable();
+            // Use longText instead of JSON for maximum compatibility (Laravel will still cast it to array)
+            $table->longText('payload')->nullable();
             $table->timestamps();
 
             $table->index(['actor_user_id', 'created_at']);

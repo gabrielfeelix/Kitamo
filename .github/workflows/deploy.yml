@@ -47,4 +47,4 @@ jobs:
           SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
           ssh $SSH_OPTS \
             u626119115@147.79.84.203 \
-            'cd ~/domains/kitamo.com.br/public_html && php artisan migrate --force && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache'
+            'set -e; cd ~/domains/kitamo.com.br/public_html; (php -v; php artisan --version; php artisan migrate:status || true; php artisan migrate --force -v; php artisan optimize:clear; php artisan config:cache; php artisan route:cache; php artisan view:cache; echo "OK") || (echo "--- laravel.log (tail) ---"; tail -n 200 storage/logs/laravel.log || true; exit 1)'
