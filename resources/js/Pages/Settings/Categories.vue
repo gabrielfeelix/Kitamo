@@ -272,7 +272,7 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1 px-1">
+                    <div class="mt-3 -mx-4 flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"
@@ -365,7 +365,7 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1 px-1">
+                    <div class="mt-3 -mx-4 flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"

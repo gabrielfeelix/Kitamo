@@ -30,6 +30,32 @@ const items = ref<NotificationItem[]>([]);
 
 const unreadCount = computed(() => items.value.filter((n) => !n.read_at).length);
 
+type PeriodKey = 'today' | 'yesterday' | '7d' | '30d' | 'all';
+const period = ref<PeriodKey>('all');
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+const isSameDay = (a: Date, b: Date) => startOfDay(a).getTime() === startOfDay(b).getTime();
+
+const filteredItems = computed(() => {
+  if (period.value === 'all') return items.value;
+  const now = new Date();
+  const today = startOfDay(now);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const cutoffDays = period.value === '7d' ? 7 : period.value === '30d' ? 30 : 0;
+  const cutoff = cutoffDays ? new Date(today) : null;
+  if (cutoff) cutoff.setDate(cutoff.getDate() - (cutoffDays - 1));
+
+  return items.value.filter((n) => {
+    const created = new Date(n.created_at);
+    if (period.value === 'today') return isSameDay(created, today);
+    if (period.value === 'yesterday') return isSameDay(created, yesterday);
+    if (period.value === '7d' || period.value === '30d') return created >= (cutoff as Date);
+    return true;
+  });
+});
+
 const load = async () => {
   loading.value = true;
   try {
@@ -122,7 +148,52 @@ onMounted(load);
       </div>
     </div>
 
-    <div v-if="!items.length && !loading" class="mt-8 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center md:mx-auto md:max-w-2xl">
+    <div class="mt-4">
+      <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition"
+          :class="period === 'today' ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-600'"
+          @click="period = 'today'"
+        >
+          Hoje
+        </button>
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition"
+          :class="period === 'yesterday' ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-600'"
+          @click="period = 'yesterday'"
+        >
+          Ontem
+        </button>
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition"
+          :class="period === '7d' ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-600'"
+          @click="period = '7d'"
+        >
+          Últimos 7 dias
+        </button>
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition"
+          :class="period === '30d' ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-600'"
+          @click="period = '30d'"
+        >
+          Últimos 30 dias
+        </button>
+        <button
+          type="button"
+          class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition"
+          :class="period === 'all' ? 'bg-[#14B8A6] text-white' : 'bg-slate-100 text-slate-600'"
+          @click="period = 'all'"
+        >
+          Todos
+        </button>
+      </div>
+    </div>
+
+    <div v-if="!filteredItems.length && !loading" class="mt-8 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center md:mx-auto md:max-w-2xl">
       <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14V11a6 6 0 1 0-12 0v3a2 2 0 0 1-.6 1.6L4 17h5" />
@@ -134,7 +205,7 @@ onMounted(load);
     </div>
 
     <div v-else class="mt-6 space-y-3 md:mx-auto md:max-w-2xl">
-      <div v-for="n in items" :key="n.id" class="rounded-3xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200/60">
+      <div v-for="n in filteredItems" :key="n.id" class="rounded-3xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200/60">
         <div class="flex items-start justify-between gap-4">
           <div class="flex min-w-0 gap-3">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 ring-1 ring-slate-200/60">{{ iconForType(n.type) }}</div>
