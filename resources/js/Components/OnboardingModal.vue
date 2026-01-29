@@ -5,14 +5,18 @@ import { formatMoneyInputCentsShift, moneyInputToNumber } from '@/lib/moneyInput
 import { preventNonDigitKeydown } from '@/lib/inputGuards';
 import { requestJson } from '@/lib/kitamoApi';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
+import { bankInstitutions } from '@/lib/bankLogos';
 
 type AccountSeed = {
     key: string;
     label: string;
-    emoji: string;
     type: 'wallet' | 'bank';
     icon: 'wallet' | 'bank';
     color: string;
+    institution?: string | null;
+    svgFile?: string | null;
+    isFuture?: boolean;
 };
 
 const STORAGE_KEY = 'kitamo:onboarding:v1';
@@ -33,27 +37,24 @@ const step = ref<1 | 2 | 3 | 4>(1);
 const busy = ref(false);
 const error = ref('');
 
-const seeds: AccountSeed[] = [
-    { key: 'wallet', label: 'Carteira', emoji: '💵', type: 'wallet', icon: 'wallet', color: '#14B8A6' },
-    { key: 'nubank', label: 'Nubank', emoji: '🟣', type: 'bank', icon: 'bank', color: '#8B5CF6' },
-    { key: 'inter', label: 'Inter', emoji: '🟠', type: 'bank', icon: 'bank', color: '#F59E0B' },
-    { key: 'itau', label: 'Itaú', emoji: '🟧', type: 'bank', icon: 'bank', color: '#F97316' },
-];
+const walletSeed: AccountSeed = { key: 'wallet', label: 'Carteira', type: 'wallet', icon: 'wallet', color: '#14B8A6' };
+const bankSeeds: AccountSeed[] = bankInstitutions.map((b) => ({
+    key: `bank:${b.nome}`,
+    label: b.nome,
+    type: 'bank',
+    icon: 'bank',
+    color: b.color,
+    institution: b.nome,
+    svgFile: b.svgFile,
+    isFuture: b.nome === 'Outro',
+}));
+const seeds: AccountSeed[] = [walletSeed, ...bankSeeds];
 
 const selectedKeys = ref<Set<string>>(new Set(['wallet']));
-const customBanks = ref<Array<{ key: string; label: string }>>([]);
 
 const selectedAccounts = computed(() => {
-    const custom = customBanks.value.map((b) => ({
-        key: b.key,
-        label: b.label,
-        emoji: '🏦',
-        type: 'bank' as const,
-        icon: 'bank' as const,
-        color: '#64748B',
-    }));
-    const options = [...seeds, ...custom];
-    const active = options.filter((o) => selectedKeys.value.has(o.key));
+    const options = seeds;
+    const active = options.filter((o) => selectedKeys.value.has(o.key) && !o.isFuture);
     return active;
 });
 
@@ -70,18 +71,6 @@ const toggle = (key: string) => {
     const next = new Set(selectedKeys.value);
     if (next.has(key)) next.delete(key);
     else next.add(key);
-    selectedKeys.value = next;
-};
-
-const addCustomBank = () => {
-    const name = window.prompt('Qual banco? (ex: Bradesco)');
-    const label = String(name ?? '').trim();
-    if (!label) return;
-
-    const key = `custom:${label.toLowerCase().replace(/\s+/g, '-')}:${Date.now()}`;
-    customBanks.value = [...customBanks.value, { key, label }];
-    const next = new Set(selectedKeys.value);
-    next.add(key);
     selectedKeys.value = next;
 };
 
@@ -132,6 +121,7 @@ const createAccounts = async () => {
                     name: acc.label,
                     type: acc.type,
                     icon: acc.icon,
+                    institution: acc.type === 'bank' ? (acc.institution ?? acc.label) : null,
                     initial_balance: Math.max(0, amount),
                     color: acc.color,
                     incluir_soma: true,
@@ -161,7 +151,6 @@ watch(
         busy.value = false;
         error.value = '';
         selectedKeys.value = new Set(['wallet']);
-        customBanks.value = [];
         balances.value = {};
     },
 );
@@ -215,18 +204,31 @@ onMounted(() => {
                         :key="opt.key"
                         type="button"
                         class="rounded-3xl border bg-white px-4 py-5 text-left transition"
-                        :class="selectedKeys.has(opt.key) ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200 hover:border-slate-300'"
-                        @click="toggle(opt.key)"
+                        :class="[
+                            opt.isFuture ? 'cursor-not-allowed opacity-60' : '',
+                            selectedKeys.has(opt.key) ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200 hover:border-slate-300',
+                        ]"
+                        :disabled="opt.isFuture"
+                        @click="opt.isFuture ? null : toggle(opt.key)"
                     >
-                        <div class="text-2xl">{{ opt.emoji }}</div>
+                        <InstitutionAvatar
+                            :institution="opt.institution ?? null"
+                            :svg-path="opt.svgFile ?? null"
+                            :fallback-icon="opt.type === 'wallet' ? 'wallet' : 'account'"
+                            :is-wallet="opt.type === 'wallet'"
+                            :container-class="'flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200/60'"
+                            :img-class="'h-8 w-8 object-contain'"
+                            :fallback-icon-class="'h-5 w-5 text-slate-600'"
+                        />
                         <div class="mt-2 text-sm font-semibold text-slate-900">{{ opt.label }}</div>
                         <div class="mt-1 text-xs font-semibold" :class="selectedKeys.has(opt.key) ? 'text-teal-600' : 'text-slate-400'">
-                            {{ selectedKeys.has(opt.key) ? 'Selecionado' : 'Toque para selecionar' }}
+                            <template v-if="opt.isFuture">Função futura</template>
+                            <template v-else>{{ selectedKeys.has(opt.key) ? 'Selecionado' : 'Toque para selecionar' }}</template>
                         </div>
                     </button>
                 </div>
 
-                <button type="button" class="mt-4 text-left text-sm font-semibold text-slate-600" @click="addCustomBank">+ Outro banco</button>
+                <button type="button" class="mt-4 text-left text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>+ Outro banco (função futura)</button>
 
                 <div class="mt-auto">
                     <button
@@ -248,7 +250,18 @@ onMounted(() => {
                 <div class="mt-6 space-y-4">
                     <div v-for="acc in selectedAccounts" :key="acc.key">
                         <div class="mb-2 flex items-center justify-between">
-                            <div class="text-sm font-semibold text-slate-900">{{ acc.emoji }} {{ acc.label }}</div>
+                            <div class="flex items-center gap-2">
+                                <InstitutionAvatar
+                                    :institution="acc.institution ?? null"
+                                    :svg-path="acc.svgFile ?? null"
+                                    :fallback-icon="acc.type === 'wallet' ? 'wallet' : 'account'"
+                                    :is-wallet="acc.type === 'wallet'"
+                                    :container-class="'flex h-8 w-8 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200/60'"
+                                    :img-class="'h-6 w-6 object-contain'"
+                                    :fallback-icon-class="'h-4 w-4 text-slate-600'"
+                                />
+                                <div class="text-sm font-semibold text-slate-900">{{ acc.label }}</div>
+                            </div>
                             <div class="text-xs font-semibold text-slate-400">Saldo inicial</div>
                         </div>
                         <div class="flex h-12 items-center gap-2 rounded-2xl bg-slate-50 px-4 ring-1 ring-slate-200/60">
