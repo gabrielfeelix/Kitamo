@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import PickerSheet from '@/Components/PickerSheet.vue';
 import AccountIcon from '@/Components/AccountIcon.vue';
+import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
+import { getBankSvgPath } from '@/lib/bankLogos';
 
 export type AccountOption = {
     key: string;
@@ -34,6 +36,9 @@ const toneClass = (tone?: AccountOption['tone']) => {
     if (tone === 'emerald') return 'bg-emerald-100 text-emerald-600';
     return 'bg-slate-200 text-slate-600';
 };
+
+const isWallet = (opt: AccountOption) => opt.type === 'wallet' || opt.icon === 'wallet';
+const svgPathFor = (opt: AccountOption) => (isWallet(opt) ? null : getBankSvgPath(opt.label));
 
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
@@ -89,7 +94,17 @@ const creditCardOptionsDisplay = computed(() => {
                         class="flex w-full items-center gap-4 rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70"
                         @click="emit('select', opt.key)"
                     >
+                        <InstitutionAvatar
+                            v-if="!isWallet(opt)"
+                            :institution="opt.label"
+                            :svg-path="svgPathFor(opt)"
+                            fallback-icon="account"
+                            container-class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+                            img-class="h-10 w-10 object-contain"
+                            fallback-icon-class="h-5 w-5 text-slate-600"
+                        />
                         <span
+                            v-else
                             class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold"
                             :class="opt.customColor ? '' : toneClass(opt.tone)"
                             :style="opt.customColor ? { backgroundColor: opt.customColor, color: 'white' } : {}"
@@ -121,13 +136,14 @@ const creditCardOptionsDisplay = computed(() => {
                         class="flex w-full items-center gap-4 rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70"
                         @click="emit('select', row.opt.key)"
                     >
-                        <span
-                            class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold"
-                            :class="row.opt.customColor ? '' : toneClass(row.opt.tone)"
-                            :style="row.opt.customColor ? { backgroundColor: row.opt.customColor, color: 'white' } : {}"
-                        >
-                            <AccountIcon :type="row.opt.type" :icon="row.opt.icon" class="h-6 w-6" />
-                        </span>
+                        <InstitutionAvatar
+                            :institution="row.opt.label"
+                            :svg-path="getBankSvgPath(row.opt.label)"
+                            fallback-icon="credit-card"
+                            container-class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+                            img-class="h-10 w-10 object-contain"
+                            fallback-icon-class="h-5 w-5 text-slate-600"
+                        />
                         <div class="min-w-0 flex-1">
                             <div class="truncate text-base font-semibold text-slate-900">{{ row.label }}</div>
                             <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold">

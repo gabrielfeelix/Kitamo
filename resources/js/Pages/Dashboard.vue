@@ -329,6 +329,7 @@ const bankAccounts = computed(() =>
         .map((account) => {
             const institution = account.institution ?? null;
             const svgPath = (account as any).svgPath ?? null;
+            const logoName = institution ?? account.name ?? null;
             return {
                 id: account.id,
                 label: account.name,
@@ -338,7 +339,7 @@ const bankAccounts = computed(() =>
                     account.color ??
                     (account.type === 'wallet' ? '#14B8A6' : '#3B82F6'),
                 institution,
-                svgPath: svgPath ?? (institution ? getBankSvgPath(institution) : null),
+                svgPath: svgPath ?? getBankSvgPath(logoName),
                 type: account.type,
                 icon: account.icon ?? (account.type === 'wallet' ? 'wallet' : 'bank'),
             };

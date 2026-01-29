@@ -199,6 +199,7 @@ const bankAccounts = computed(() => {
             const type = (a.type ?? a.tipo) as string | undefined;
             const institution = a.institution ?? null;
             const svgPath = a.svgPath ?? null;
+            const logoName = institution ?? (a.name ?? a.nome) ?? null;
             return {
                 id: a.id,
                 name: a.name ?? a.nome,
@@ -209,7 +210,7 @@ const bankAccounts = computed(() => {
                 hasData: Boolean(a.has_data ?? true),
                 balanceKind: String(a.balance_kind ?? ''),
                 institution,
-                svgPath: svgPath ?? (institution ? getBankSvgPath(institution) : null),
+                svgPath: svgPath ?? getBankSvgPath(logoName),
             };
         });
 });
