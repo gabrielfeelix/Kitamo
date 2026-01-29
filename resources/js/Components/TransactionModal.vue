@@ -8,6 +8,8 @@ import DatePickerSheet from '@/Components/DatePickerSheet.vue';
 import CategoryPickerSheet, { type CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 import CategoryIcon from '@/Components/CategoryIcon.vue';
 import AccountPickerSheet, { type AccountOption } from '@/Components/AccountPickerSheet.vue';
+import AccountIcon from '@/Components/AccountIcon.vue';
+import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
 import NewCategoryModal from '@/Components/NewCategoryModal.vue';
 
 type TransactionKind = 'expense' | 'income' | 'transfer';
@@ -643,6 +645,34 @@ const accounts = computed<AccountOption[]>(() => {
 
 const transferAccounts = computed(() => accounts.value.filter((a) => a.type !== 'credit_card'));
 
+const accountToneClass = (tone?: AccountOption['tone']) => {
+    if (tone === 'purple') return 'bg-purple-100 text-purple-600';
+    if (tone === 'amber') return 'bg-amber-100 text-amber-600';
+    if (tone === 'emerald') return 'bg-emerald-100 text-emerald-600';
+    return 'bg-slate-200 text-slate-600';
+};
+
+const isWalletAccount = (opt: AccountOption) => opt.type === 'wallet' || opt.icon === 'wallet';
+const isCreditCardAccount = (opt: AccountOption) => opt.type === 'credit_card';
+
+const selectedAccount = computed<AccountOption | null>(() => {
+    return accounts.value.find((a) => a.key === account.value) ?? accounts.value.find((a) => a.label === account.value) ?? null;
+});
+
+const selectedAccountLabel = computed(() => selectedAccount.value?.label ?? account.value);
+
+const transferFromOption = computed<AccountOption | null>(() => {
+    return transferAccounts.value.find((a) => a.key === transferFrom.value) ?? transferAccounts.value.find((a) => a.label === transferFrom.value) ?? null;
+});
+
+const transferFromLabel = computed(() => transferFromOption.value?.label ?? transferFrom.value);
+
+const transferToOption = computed<AccountOption | null>(() => {
+    return transferAccounts.value.find((a) => a.key === transferTo.value) ?? transferAccounts.value.find((a) => a.label === transferTo.value) ?? null;
+});
+
+const transferToLabel = computed(() => transferToOption.value?.label ?? transferTo.value);
+
 const formatBRL = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 
@@ -926,17 +956,33 @@ watch(
 
                         <button type="button" class="rounded-2xl bg-slate-50 px-4 py-4 text-left ring-1 ring-slate-200/70" @click="openAccountSheet">
                             <div class="flex items-center gap-3">
-                                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-100 text-purple-600">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M3 10h18" />
-                                        <path d="M5 10V8l7-5 7 5v2" />
-                                        <path d="M6 10v9" />
-                                        <path d="M18 10v9" />
-                                    </svg>
+                                <InstitutionAvatar
+                                    v-if="selectedAccount && !isWalletAccount(selectedAccount)"
+                                    :institution="selectedAccount.label"
+                                    :fallback-icon="isCreditCardAccount(selectedAccount) ? 'credit-card' : 'account'"
+                                    container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+                                    img-class="h-8 w-8 object-contain"
+                                    fallback-icon-class="h-5 w-5 text-slate-600"
+                                />
+                                <span
+                                    v-else-if="selectedAccount"
+                                    class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                                    :class="selectedAccount.customColor ? '' : accountToneClass(selectedAccount.tone)"
+                                    :style="selectedAccount.customColor ? { backgroundColor: selectedAccount.customColor, color: 'white' } : {}"
+                                >
+                                    <AccountIcon :type="selectedAccount.type" :icon="selectedAccount.icon" class="h-5 w-5" />
                                 </span>
+                                <InstitutionAvatar
+                                    v-else
+                                    :institution="account"
+                                    fallback-icon="account"
+                                    container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+                                    img-class="h-8 w-8 object-contain"
+                                    fallback-icon-class="h-5 w-5 text-slate-600"
+                                />
                                 <div class="min-w-0 flex-1">
                                     <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Conta</div>
-                                    <div class="truncate text-sm font-semibold text-slate-900">{{ account }}</div>
+                                    <div class="truncate text-sm font-semibold text-slate-900">{{ selectedAccountLabel }}</div>
                                 </div>
                                 <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path d="M6 9l6 6 6-6" />
@@ -1322,16 +1368,32 @@ watch(
 		                                @click="openTransferFromSheet"
 		                            >
 		                                <div class="flex items-start gap-3">
-		                                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
-		                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-		                                            <path d="M3 10h18" />
-		                                            <path d="M5 10V8l7-5 7 5v2" />
-		                                            <path d="M6 10v9" />
-		                                            <path d="M18 10v9" />
-		                                        </svg>
+		                                    <InstitutionAvatar
+		                                        v-if="transferFromOption && !isWalletAccount(transferFromOption)"
+		                                        :institution="transferFromOption.label"
+		                                        fallback-icon="account"
+		                                        container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+		                                        img-class="h-8 w-8 object-contain"
+		                                        fallback-icon-class="h-5 w-5 text-slate-600"
+		                                    />
+		                                    <span
+		                                        v-else-if="transferFromOption"
+		                                        class="flex h-10 w-10 items-center justify-center rounded-2xl"
+		                                        :class="transferFromOption.customColor ? '' : accountToneClass(transferFromOption.tone)"
+		                                        :style="transferFromOption.customColor ? { backgroundColor: transferFromOption.customColor, color: 'white' } : {}"
+		                                    >
+		                                        <AccountIcon :type="transferFromOption.type" :icon="transferFromOption.icon" class="h-5 w-5" />
 		                                    </span>
+		                                    <InstitutionAvatar
+		                                        v-else
+		                                        :institution="transferFrom"
+		                                        fallback-icon="account"
+		                                        container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+		                                        img-class="h-8 w-8 object-contain"
+		                                        fallback-icon-class="h-5 w-5 text-slate-600"
+		                                    />
 		                                    <div class="min-w-0">
-		                                        <div class="truncate text-sm font-semibold text-slate-900">{{ transferFrom }}</div>
+		                                        <div class="truncate text-sm font-semibold text-slate-900">{{ transferFromLabel }}</div>
 		                                        <div class="mt-1 text-xs font-semibold text-slate-400">{{ transferFromBalanceLabel || 'Saldo: -' }}</div>
 		                                    </div>
 		                                </div>
@@ -1353,15 +1415,32 @@ watch(
 		                                @click="openTransferToSheet"
 		                            >
 		                                <div class="flex items-start gap-3">
-		                                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-		                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-		                                            <path d="M4 7h16v12H4z" />
-		                                            <path d="M4 7V5h12v2" />
-		                                            <path d="M16 12h4" />
-		                                        </svg>
+		                                    <InstitutionAvatar
+		                                        v-if="transferToOption && !isWalletAccount(transferToOption)"
+		                                        :institution="transferToOption.label"
+		                                        fallback-icon="account"
+		                                        container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+		                                        img-class="h-8 w-8 object-contain"
+		                                        fallback-icon-class="h-5 w-5 text-slate-600"
+		                                    />
+		                                    <span
+		                                        v-else-if="transferToOption"
+		                                        class="flex h-10 w-10 items-center justify-center rounded-2xl"
+		                                        :class="transferToOption.customColor ? '' : accountToneClass(transferToOption.tone)"
+		                                        :style="transferToOption.customColor ? { backgroundColor: transferToOption.customColor, color: 'white' } : {}"
+		                                    >
+		                                        <AccountIcon :type="transferToOption.type" :icon="transferToOption.icon" class="h-5 w-5" />
 		                                    </span>
+		                                    <InstitutionAvatar
+		                                        v-else
+		                                        :institution="transferTo"
+		                                        fallback-icon="account"
+		                                        container-class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70"
+		                                        img-class="h-8 w-8 object-contain"
+		                                        fallback-icon-class="h-5 w-5 text-slate-600"
+		                                    />
 		                                    <div class="min-w-0">
-		                                        <div class="truncate text-sm font-semibold text-slate-900">{{ transferTo }}</div>
+		                                        <div class="truncate text-sm font-semibold text-slate-900">{{ transferToLabel }}</div>
 		                                        <div class="mt-1 text-xs font-semibold text-slate-400">{{ transferToBalanceLabel || 'Saldo: -' }}</div>
 		                                    </div>
 		                                </div>
