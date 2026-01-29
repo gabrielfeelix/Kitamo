@@ -15,7 +15,8 @@ class EnsureAdmin
     {
         $user = $request->user();
 
-        if (! $user || ! $user->is_admin) {
+        // Painel admin: acesso exclusivo para este e-mail.
+        if (! $user || mb_strtolower((string) $user->email) !== 'contato@kitamo.com.br') {
             abort(403);
         }
 

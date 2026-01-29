@@ -266,8 +266,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
-    Route::get('/admin', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin', fn () => redirect()->route('admin.users.index'))->name('admin.index');
+    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
     Route::patch('/admin/users/{user}/password', [UserController::class, 'updatePassword'])->name('admin.users.password');
+
+    Route::get('/admin/roles', fn () => Inertia::render('Admin/Roles'))->name('admin.roles.index');
+    Route::get('/admin/logs', fn () => Inertia::render('Admin/Logs'))->name('admin.logs.index');
+    Route::get('/admin/notifications', fn () => Inertia::render('Admin/Notifications'))->name('admin.notifications.index');
+    Route::get('/admin/emails', fn () => Inertia::render('Admin/Emails'))->name('admin.emails.index');
+    Route::get('/admin/news', fn () => Inertia::render('Admin/News'))->name('admin.news.index');
 });
 
 Route::middleware('auth')->group(function () {

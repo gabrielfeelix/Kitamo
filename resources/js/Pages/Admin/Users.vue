@@ -4,6 +4,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
+import AdminNav from '@/Components/AdminNav.vue';
 
 const props = defineProps<{
     users: Array<{
@@ -54,6 +55,9 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString('pt-BR'
             <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
                 <div class="text-xl font-semibold text-slate-900">Administração</div>
                 <p class="mt-2 text-sm text-slate-500">Gerencie usuários e redefina senhas.</p>
+                <div class="mt-5">
+                    <AdminNav />
+                </div>
             </div>
 
             <div class="space-y-4">

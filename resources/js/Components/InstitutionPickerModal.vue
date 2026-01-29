@@ -47,7 +47,7 @@ const handleSelect = (banco: (typeof bankInstitutions)[number]) => {
 </script>
 
 <template>
-    <div v-if="open" class="fixed inset-0 z-[70]">
+    <div v-if="open" class="fixed inset-0 z-[120]">
         <button
             class="absolute inset-0 bg-black/50 backdrop-blur-sm"
             type="button"
@@ -118,4 +118,3 @@ const handleSelect = (banco: (typeof bankInstitutions)[number]) => {
         </div>
     </div>
 </template>
-

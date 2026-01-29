@@ -180,7 +180,7 @@ onMounted(() => {
             </div>
         </header>
 
-        <main class="mx-auto flex h-[calc(100vh-5rem)] w-full max-w-md flex-col px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+        <main class="mx-auto flex h-[calc(100vh-5rem)] w-full max-w-md min-h-0 flex-col px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
             <!-- Step 1 -->
             <div v-if="step === 1" class="flex flex-1 flex-col justify-center">
                 <div class="flex justify-center">
@@ -196,46 +196,48 @@ onMounted(() => {
             </div>
 
             <!-- Step 2 -->
-            <div v-else-if="step === 2" class="flex flex-1 flex-col">
+            <div v-else-if="step === 2" class="flex flex-1 min-h-0 flex-col">
                 <div class="mt-6 text-xl font-semibold tracking-tight text-slate-900">Por onde seu dinheiro passa?</div>
                 <div class="mt-1 text-sm font-semibold text-slate-500">Selecione as contas que você usa.</div>
 
-                <div class="mt-6 grid grid-cols-2 gap-3">
-                    <button
-                        v-for="opt in seeds"
-                        :key="opt.key"
-                        type="button"
-                        class="rounded-3xl border bg-white px-4 py-5 text-left transition"
-                        :class="[
-                            opt.isFuture ? 'cursor-not-allowed opacity-60' : '',
-                            selectedKeys.has(opt.key) ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200 hover:border-slate-300',
-                        ]"
-                        :disabled="opt.isFuture"
-                        @click="opt.isFuture ? null : toggle(opt.key)"
-                    >
-                        <InstitutionAvatar
-                            :institution="opt.institution ?? null"
-                            :svg-path="opt.svgFile ?? null"
-                            :fallback-icon="opt.type === 'wallet' ? 'wallet' : 'account'"
-                            :is-wallet="opt.type === 'wallet'"
-                            :container-class="'flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200/60'"
-                            :img-class="'h-8 w-8 object-contain'"
-                            :fallback-icon-class="'h-5 w-5 text-slate-600'"
-                        />
-                        <div class="mt-2 text-sm font-semibold text-slate-900">{{ opt.label }}</div>
-                        <div class="mt-1 text-xs font-semibold" :class="selectedKeys.has(opt.key) ? 'text-teal-600' : 'text-slate-400'">
-                            <template v-if="opt.isFuture">Função futura</template>
-                            <template v-else>{{ selectedKeys.has(opt.key) ? 'Selecionado' : 'Toque para selecionar' }}</template>
-                        </div>
-                    </button>
+                <div class="mt-6 flex-1 min-h-0 overflow-y-auto pb-6">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button
+                            v-for="opt in seeds"
+                            :key="opt.key"
+                            type="button"
+                            class="rounded-3xl border bg-white px-4 py-5 text-left transition"
+                            :class="[
+                                opt.isFuture ? 'cursor-not-allowed opacity-60' : '',
+                                selectedKeys.has(opt.key) ? 'border-teal-400 ring-2 ring-teal-200' : 'border-slate-200 hover:border-slate-300',
+                            ]"
+                            :disabled="opt.isFuture"
+                            @click="opt.isFuture ? null : toggle(opt.key)"
+                        >
+                            <InstitutionAvatar
+                                :institution="opt.institution ?? null"
+                                :svg-path="opt.svgFile ?? null"
+                                :fallback-icon="opt.type === 'wallet' ? 'wallet' : 'account'"
+                                :is-wallet="opt.type === 'wallet'"
+                                :container-class="'flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-200/60'"
+                                :img-class="'h-8 w-8 object-contain'"
+                                :fallback-icon-class="'h-5 w-5 text-slate-600'"
+                            />
+                            <div class="mt-2 text-sm font-semibold text-slate-900">{{ opt.label }}</div>
+                            <div class="mt-1 text-xs font-semibold" :class="selectedKeys.has(opt.key) ? 'text-teal-600' : 'text-slate-400'">
+                                <template v-if="opt.isFuture">Função futura</template>
+                                <template v-else>{{ selectedKeys.has(opt.key) ? 'Selecionado' : 'Toque para selecionar' }}</template>
+                            </div>
+                        </button>
+                    </div>
+
+                    <button type="button" class="mt-4 text-left text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>+ Outro banco (função futura)</button>
                 </div>
 
-                <button type="button" class="mt-4 text-left text-sm font-semibold text-slate-400 cursor-not-allowed" disabled>+ Outro banco (função futura)</button>
-
-                <div class="mt-auto">
+                <div class="mt-2">
                     <button
                         type="button"
-                        class="mt-6 w-full rounded-2xl bg-teal-500 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                        class="w-full rounded-2xl bg-teal-500 py-4 text-base font-semibold text-white shadow-lg shadow-teal-500/25 disabled:cursor-not-allowed disabled:opacity-50"
                         :disabled="!canContinueFromSelect"
                         @click="goBalances"
                     >
@@ -245,11 +247,11 @@ onMounted(() => {
             </div>
 
             <!-- Step 3 -->
-            <div v-else-if="step === 3" class="flex flex-1 flex-col">
+            <div v-else-if="step === 3" class="flex flex-1 min-h-0 flex-col">
                 <div class="mt-6 text-xl font-semibold tracking-tight text-slate-900">Quanto você tem hoje?</div>
                 <div class="mt-1 text-sm font-semibold text-slate-500">Não precisa ser exato, você pode ajustar depois.</div>
 
-                <div class="mt-6 space-y-4">
+                <div class="mt-6 flex-1 min-h-0 space-y-4 overflow-y-auto pb-6">
                     <div v-for="acc in selectedAccounts" :key="acc.key">
                         <div class="mb-2 flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -286,7 +288,7 @@ onMounted(() => {
                     {{ error }}
                 </div>
 
-                <div class="mt-auto">
+                <div>
                     <div class="mb-3 text-xs font-semibold text-slate-400">
                         Total selecionado: {{ formatBRL2(selectedAccounts.reduce((sum, a) => sum + moneyInputToNumber(balances[a.key] ?? ''), 0)) }}
                     </div>

@@ -309,6 +309,11 @@ const bankAccounts = computed(() =>
         }),
 );
 
+const accountsCountLabel = computed(() => {
+    const total = bankAccounts.value.length || 0;
+    return `${total} conta${total === 1 ? '' : 's'}`;
+});
+
 const creditCards = computed(() =>
     (bootstrap.value.accounts ?? [])
         .filter((account) => account.type === 'credit_card')
@@ -345,7 +350,8 @@ const loadCreditCardsApi = async () => {
 };
 
 type CreditCardTab = 'open' | 'closed';
-const creditCardsTab = ref<CreditCardTab>('open');
+type CreditCardTabV2 = 'all' | CreditCardTab;
+const creditCardsTab = ref<CreditCardTabV2>('all');
 
 const formatLongDate = (date: Date) =>
     new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
@@ -414,7 +420,21 @@ const creditCardsDisplay = computed(() => {
                 brandLabel: card.brand === 'mastercard' ? 'Mastercard' : card.brand === 'elo' ? 'Elo' : card.brand === 'amex' ? 'Amex' : 'Visa',
             };
         })
-        .filter((card) => (creditCardsTab.value === 'open' ? !card.closed : card.closed));
+        .filter((card) => {
+            if (creditCardsTab.value === 'all') return true;
+            return creditCardsTab.value === 'open' ? !card.closed : card.closed;
+        });
+});
+
+const creditCardsTotalCount = computed(() => {
+    const fromBootstrap = creditCards.value.length > 0 ? creditCards.value.length : 0;
+    const fromApi = creditCardsApi.value.length > 0 ? creditCardsApi.value.length : 0;
+    return fromBootstrap > 0 ? fromBootstrap : fromApi;
+});
+
+const creditCardsCountLabel = computed(() => {
+    const total = creditCardsTotalCount.value || 0;
+    return `${total} cartão${total === 1 ? '' : 's'}`;
 });
 
 const creditCardsTotalUsed = computed(() => creditCardsDisplay.value.reduce((sum, c) => sum + (c.used || 0), 0));
@@ -1239,7 +1259,10 @@ onMounted(() => {
 
 		        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
-		                <div class="text-lg font-semibold text-slate-900">Contas</div>
+		                <div>
+                            <div class="text-lg font-semibold text-slate-900">Contas</div>
+                            <div class="mt-0.5 text-xs font-semibold text-slate-400">{{ accountsCountLabel }}</div>
+                        </div>
                         <Link :href="route('accounts.overview')" class="rounded-2xl px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-slate-50">
                             Ver todas
                         </Link>
@@ -1293,14 +1316,25 @@ onMounted(() => {
 
 		        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
-		                <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
+		                <div>
+                            <div class="text-lg font-semibold text-slate-900">Cartões de crédito</div>
+                            <div class="mt-0.5 text-xs font-semibold text-slate-400">{{ creditCardsCountLabel }}</div>
+                        </div>
 		                <Link :href="route('credit-cards.my-cards')" class="text-sm font-semibold text-emerald-600">Ver todas</Link>
 		            </div>
 
                 <div
-                    v-if="creditCards.length > 0"
+                    v-if="creditCardsTotalCount > 0"
                     class="mt-4 inline-flex w-full rounded-full bg-slate-50 p-1 ring-1 ring-slate-200/70"
                 >
+                    <button
+                        type="button"
+                        class="flex-1 rounded-full px-4 py-2 text-xs font-semibold transition"
+                        :class="creditCardsTab === 'all' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500'"
+                        @click="creditCardsTab = 'all'"
+                    >
+                        Todas
+                    </button>
                     <button
                         type="button"
                         class="flex-1 rounded-full px-4 py-2 text-xs font-semibold transition"
