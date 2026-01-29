@@ -56,10 +56,41 @@ class TransactionController extends Controller
         );
 
         $categoryName = trim($data['category'] ?? 'Outros');
-        $category = Category::firstOrCreate(
-            ['user_id' => $user->id, 'name' => $categoryName, 'type' => $data['kind']],
-            ['is_default' => false]
-        );
+        $category = Category::query()
+            ->where('user_id', $user->id)
+            ->where('name', $categoryName)
+            ->where('type', $data['kind'])
+            ->first();
+
+        $defaultCategory = Category::query()
+            ->whereNull('user_id')
+            ->where('name', $categoryName)
+            ->where('type', $data['kind'])
+            ->first();
+
+        if (!$category && $defaultCategory) {
+            $category = $defaultCategory;
+        }
+
+        if (!$category) {
+            $category = Category::create([
+                'user_id' => $user->id,
+                'name' => $categoryName,
+                'type' => $data['kind'],
+                'is_default' => false,
+            ]);
+        }
+
+        if (
+            $category->user_id === $user->id &&
+            $defaultCategory &&
+            (empty($category->icon) || $category->icon === 'other')
+        ) {
+            $category->update([
+                'icon' => $defaultCategory->icon,
+                'color' => $category->color ?: $defaultCategory->color,
+            ]);
+        }
 
         $date = ($data['dateKind'] ?? 'today') === 'other' && !empty($data['dateOther'])
             ? $data['dateOther']
@@ -298,10 +329,41 @@ class TransactionController extends Controller
         );
 
         $categoryName = trim($data['category'] ?? $transaction->category?->name ?? 'Outros');
-        $category = Category::firstOrCreate(
-            ['user_id' => $user->id, 'name' => $categoryName, 'type' => $data['kind']],
-            ['is_default' => false]
-        );
+        $category = Category::query()
+            ->where('user_id', $user->id)
+            ->where('name', $categoryName)
+            ->where('type', $data['kind'])
+            ->first();
+
+        $defaultCategory = Category::query()
+            ->whereNull('user_id')
+            ->where('name', $categoryName)
+            ->where('type', $data['kind'])
+            ->first();
+
+        if (!$category && $defaultCategory) {
+            $category = $defaultCategory;
+        }
+
+        if (!$category) {
+            $category = Category::create([
+                'user_id' => $user->id,
+                'name' => $categoryName,
+                'type' => $data['kind'],
+                'is_default' => false,
+            ]);
+        }
+
+        if (
+            $category->user_id === $user->id &&
+            $defaultCategory &&
+            (empty($category->icon) || $category->icon === 'other')
+        ) {
+            $category->update([
+                'icon' => $defaultCategory->icon,
+                'color' => $category->color ?: $defaultCategory->color,
+            ]);
+        }
 
         $date = ($data['dateKind'] ?? 'today') === 'other' && !empty($data['dateOther'])
             ? $data['dateOther']

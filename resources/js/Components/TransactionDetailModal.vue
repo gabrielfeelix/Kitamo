@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import CategoryIcon from '@/Components/CategoryIcon.vue';
 import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
+import AccountIcon from '@/Components/AccountIcon.vue';
 
 export type TransactionDetail = {
     id?: string;
@@ -11,12 +12,14 @@ export type TransactionDetail = {
     status: 'paid' | 'pending' | 'received';
     categoryLabel: string;
     categoryIcon: string;
+    categoryColor?: string | null;
     accountLabel: string;
     accountIcon: 'wallet' | 'bank' | 'card';
     accountType?: string | null;
     accountInstitution?: string | null;
     accountSvgPath?: string | null;
     accountColor?: string | null;
+    accountSystemIcon?: string | null;
     dateLabel: string;
     installmentLabel?: string;
     receiptUrl?: string | null;
@@ -61,6 +64,8 @@ const statusPillClass = computed(() => {
 });
 
 const isWallet = computed(() => (props.transaction?.accountType ?? '') === 'wallet' || props.transaction?.accountIcon === 'wallet');
+const categoryColor = computed(() => props.transaction?.categoryColor ?? null);
+const accountColor = computed(() => props.transaction?.accountColor ?? null);
 </script>
 
 <template>
@@ -85,7 +90,11 @@ const isWallet = computed(() => (props.transaction?.accountType ?? '') === 'wall
                 </div>
 
                 <div class="mt-6 flex flex-col items-center">
-                    <div class="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                    <div
+                        class="flex h-16 w-16 items-center justify-center rounded-full"
+                        :style="categoryColor ? { backgroundColor: `${categoryColor}22`, color: categoryColor } : {}"
+                        :class="categoryColor ? '' : 'bg-amber-100 text-amber-600'"
+                    >
                         <CategoryIcon :icon="transaction?.categoryIcon ?? 'bolt'" class="h-7 w-7" />
                     </div>
 
@@ -135,22 +144,39 @@ const isWallet = computed(() => (props.transaction?.accountType ?? '') === 'wall
                     <div class="flex items-center justify-between">
                         <div class="text-slate-400">Categoria</div>
                         <div class="flex items-center gap-2 font-semibold text-slate-700">
-                            <CategoryIcon :icon="transaction?.categoryIcon ?? 'bolt'" class="h-5 w-5" />
+                            <CategoryIcon
+                                :icon="transaction?.categoryIcon ?? 'bolt'"
+                                class="h-5 w-5"
+                                :style="categoryColor ? { color: categoryColor } : undefined"
+                            />
                             {{ transaction?.categoryLabel ?? '' }}
                         </div>
                     </div>
 	                    <div class="flex items-center justify-between">
 	                        <div class="text-slate-400">Conta</div>
 	                        <div class="flex items-center gap-2 font-semibold text-slate-700">
-	                            <InstitutionAvatar
-	                                :institution="transaction?.accountInstitution ?? transaction?.accountLabel ?? null"
-	                                :svg-path="transaction?.accountSvgPath ?? null"
-	                                :is-wallet="isWallet"
-	                                :fallback-icon="isWallet ? 'wallet' : transaction?.accountIcon === 'card' ? 'credit-card' : 'account'"
-	                                container-class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-md bg-white"
-	                                img-class="h-5 w-5 object-contain"
-	                                fallback-icon-class="h-5 w-5 text-slate-500"
-	                            />
+                                <span
+                                    class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-md"
+                                    :style="accountColor ? { backgroundColor: `${accountColor}22`, color: accountColor } : {}"
+                                    :class="accountColor ? '' : 'bg-white text-slate-500'"
+                                >
+                                    <InstitutionAvatar
+                                        v-if="transaction?.accountSvgPath || transaction?.accountInstitution"
+                                        :institution="transaction?.accountInstitution ?? transaction?.accountLabel ?? null"
+                                        :svg-path="transaction?.accountSvgPath ?? null"
+                                        :is-wallet="isWallet"
+                                        :fallback-icon="isWallet ? 'wallet' : transaction?.accountIcon === 'card' ? 'credit-card' : 'account'"
+                                        container-class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-md bg-transparent"
+                                        img-class="h-5 w-5 object-contain"
+                                        fallback-icon-class="h-5 w-5"
+                                    />
+                                    <AccountIcon
+                                        v-else
+                                        :type="(transaction?.accountType as any) ?? (isWallet ? 'wallet' : transaction?.accountIcon === 'card' ? 'credit_card' : 'bank')"
+                                        :icon="transaction?.accountSystemIcon ?? undefined"
+                                        class="h-5 w-5"
+                                    />
+                                </span>
 	                            {{ transaction?.accountLabel ?? '' }}
 	                        </div>
 	                    </div>

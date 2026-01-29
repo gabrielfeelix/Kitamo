@@ -712,6 +712,10 @@ const pickerAccounts = computed<AccountOption[]>(() => {
 const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
     const entry = mobileSelectedEntry.value;
     if (!entry) return null;
+    const categoryMap = new Map((bootstrap.value.categories ?? []).map((c) => [`${(c.type ?? '')}|${String(c.name ?? '').toLowerCase()}`, c] as const));
+    const type = entry.kind === 'income' ? 'income' : 'expense';
+    const cat = categoryMap.get(`${type}|${String(entry.categoryLabel ?? '').toLowerCase()}`) ?? null;
+    const acc = (bootstrap.value.accounts ?? []).find((a) => a.name === entry.accountLabel) ?? null;
     return {
         id: entry.id,
         title: entry.title,
@@ -719,9 +723,15 @@ const mobileTransactionDetail = computed<TransactionDetail | null>(() => {
         kind: entry.kind,
         status: entry.status,
         categoryLabel: entry.categoryLabel,
-        categoryIcon: toCategoryIcon(entry),
+        categoryIcon: (cat as any)?.icon ?? toCategoryIcon(entry),
+        categoryColor: (cat as any)?.color ?? null,
         accountLabel: entry.accountLabel,
         accountIcon: toAccountIcon(entry.accountLabel),
+        accountType: (acc?.type ?? null) as any,
+        accountInstitution: (acc as any)?.institution ?? null,
+        accountSvgPath: (acc as any)?.svgPath ?? null,
+        accountColor: (acc as any)?.color ?? null,
+        accountSystemIcon: (acc as any)?.icon ?? null,
         dateLabel: formatDetailDate(entry.transactionDate) || entry.dateLabel,
         installmentLabel: entry.installment ?? undefined,
         receiptUrl: entry.receiptUrl ?? null,

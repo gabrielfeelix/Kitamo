@@ -45,7 +45,8 @@ class RelatoriosController extends Controller
         $query = Transaction::query()
             ->with(['category', 'account'])
             ->where('user_id', $user->id)
-            ->whereBetween('transaction_date', [$inicio, $fim])
+            ->whereDate('transaction_date', '>=', $inicio)
+            ->whereDate('transaction_date', '<=', $fim)
             ->orderBy('transaction_date')
             ->orderBy('id');
 
