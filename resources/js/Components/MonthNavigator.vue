@@ -150,7 +150,7 @@ watch(
         <button class="absolute inset-0 bg-black/40 backdrop-blur-sm" type="button" aria-label="Fechar" @click="closePicker"></button>
 
         <div class="absolute left-1/2 top-28 w-[min(360px,calc(100vw-2.5rem))] -translate-x-1/2 overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)] ring-1 ring-slate-200/60">
-            <div class="flex items-center justify-between bg-[#6D28D9] px-5 py-4 text-white">
+            <div class="flex items-center justify-between bg-[#14B8A6] px-5 py-4 text-white">
                 <button
                     type="button"
                     class="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 disabled:opacity-50"
@@ -178,15 +178,15 @@ watch(
                 </button>
             </div>
 
-            <div class="grid grid-cols-4 gap-y-6 px-6 py-6">
+            <div class="grid grid-cols-4 gap-y-4 px-6 py-6">
                 <button
                     v-for="idx in 12"
                     :key="idx"
                     type="button"
-                    class="text-center text-xs font-bold tracking-wide"
+                    class="mx-auto w-16 rounded-xl py-2 text-center text-xs font-bold tracking-wide transition"
                     :class="{
-                        'text-[#6D28D9]': monthsByYear.get(pickerYear)?.get(idx - 1)?.key === selected,
-                        'text-slate-900 hover:text-[#6D28D9]': monthsByYear.get(pickerYear)?.has(idx - 1),
+                        'bg-[#E6FFFB] text-[#14B8A6] ring-1 ring-[#99F6E4]': monthsByYear.get(pickerYear)?.get(idx - 1)?.key === selected,
+                        'text-slate-900 hover:bg-slate-50': monthsByYear.get(pickerYear)?.has(idx - 1) && monthsByYear.get(pickerYear)?.get(idx - 1)?.key !== selected,
                         'text-slate-300 cursor-not-allowed': !monthsByYear.get(pickerYear)?.has(idx - 1),
                     }"
                     :disabled="!monthsByYear.get(pickerYear)?.has(idx - 1)"
@@ -197,8 +197,8 @@ watch(
             </div>
 
             <div class="flex items-center justify-between px-6 pb-5">
-                <button type="button" class="text-sm font-semibold text-[#6D28D9]" @click="closePicker">Cancelar</button>
-                <button type="button" class="text-sm font-semibold text-[#6D28D9]" @click="selectCurrentMonth">Mês atual</button>
+                <button type="button" class="text-sm font-semibold text-[#14B8A6]" @click="closePicker">Cancelar</button>
+                <button type="button" class="text-sm font-semibold text-[#14B8A6]" @click="selectCurrentMonth">Mês atual</button>
             </div>
         </div>
     </div>

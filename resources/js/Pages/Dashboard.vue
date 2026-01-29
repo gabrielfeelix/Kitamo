@@ -311,7 +311,7 @@ const bankAccounts = computed(() =>
 
 const accountsCountLabel = computed(() => {
     const total = bankAccounts.value.length || 0;
-    return `${total} conta${total === 1 ? '' : 's'}`;
+    return `${total}\u00A0conta${total === 1 ? '' : 's'}`;
 });
 
 const creditCards = computed(() =>
@@ -434,7 +434,7 @@ const creditCardsTotalCount = computed(() => {
 
 const creditCardsCountLabel = computed(() => {
     const total = creditCardsTotalCount.value || 0;
-    return `${total} cartão${total === 1 ? '' : 's'}`;
+    return `${total}\u00A0cartão${total === 1 ? '' : 's'}`;
 });
 
 const creditCardsTotalUsed = computed(() => creditCardsDisplay.value.reduce((sum, c) => sum + (c.used || 0), 0));
@@ -1565,7 +1565,12 @@ onMounted(() => {
         </Modal>
 
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
-        <OnboardingModal :open="onboardingOpen" @close="onboardingOpen = false" @done="onboardingOpen = false" />
+        <OnboardingModal
+            :open="onboardingOpen"
+            @close="onboardingOpen = false"
+            @done="onboardingOpen = false"
+            @add-first-expense="openTransaction('expense')"
+        />
         <FixInstitutionModal
             :open="fixInstitutionModalOpen"
             :items="itemsWithoutInstitution"
