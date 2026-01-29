@@ -378,18 +378,7 @@ onUnmounted(() => {
                                 <span v-else>{{ initials }}</span>
                             </Link>
 
-                            <button
-                                v-if="props.showNewAction"
-                                type="button"
-                                class="h-11 w-11 items-center justify-center rounded-full bg-[#14B8A6] text-white shadow-xl shadow-emerald-500/30 ring-1 ring-emerald-400/20 md:inline-flex"
-                                aria-label="Nova transação"
-                                @click="handleAddClick"
-                            >
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 5v14" />
-                                    <path d="M5 12h14" />
-                                </svg>
-                            </button>
+                            <!-- Removed desktop header FAB (sidebar already has "Nova movimentação") -->
                         </div>
                     </div>
                 </header>

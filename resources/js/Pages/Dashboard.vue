@@ -470,7 +470,7 @@ const creditCardsTotalCount = computed(() => {
 
 const creditCardsCountLabel = computed(() => {
     const total = creditCardsTotalCount.value || 0;
-    return `${total}\u00A0cartão${total === 1 ? '' : 's'}`;
+    return `${total}\u00A0${total === 1 ? 'cartão' : 'cartões'}`;
 });
 
 const creditCardsTotalUsed = computed(() => creditCardsDisplay.value.reduce((sum, c) => sum + (c.used || 0), 0));

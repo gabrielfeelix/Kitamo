@@ -42,7 +42,7 @@ const accountKind = ref<AccountKind>('checking');
 const accountInstitution = ref<string | null>(null);
 const accountColor = ref<string>('#3B82F6');
 const accountDescription = ref('');
-const accountBalance = ref('0,00');
+const accountBalance = ref('');
 const accountInstitutionPickerOpen = ref(false);
 const accountInstitutionSvgPath = computed(() => (accountInstitution.value ? getBankSvgPath(accountInstitution.value) : null));
 
@@ -53,7 +53,7 @@ const cardInstitutionPickerOpen = ref(false);
 const cardInstitutionSvgPath = computed(() => (cardInstitution.value ? getBankSvgPath(cardInstitution.value) : null));
 const cardName = ref('');
 const cardBrand = ref<CardBrand>('visa');
-const cardLimit = ref('0,00');
+const cardLimit = ref('');
 const cardClosingDay = ref<number>(10);
 const cardDueDay = ref<number>(17);
 const cardColor = ref<string>('#8B5CF6');
@@ -83,7 +83,6 @@ const canContinueStep3 = computed(() => {
     return (
         Boolean(cardInstitution.value) &&
         cardName.value.trim().length > 0 &&
-        cardLimit.value.trim().length > 0 &&
         Number(cardClosingDay.value) >= 1 &&
         Number(cardDueDay.value) >= 1
     );
@@ -127,10 +126,18 @@ const goNext = () => {
 };
 
 const setAccountBalance = (raw: string) => {
+    if (!raw.trim()) {
+        accountBalance.value = '';
+        return;
+    }
     accountBalance.value = formatMoneyInputCentsShiftAllowNegative(raw, true);
 };
 
 const setCardLimit = (raw: string) => {
+    if (!raw.trim()) {
+        cardLimit.value = '';
+        return;
+    }
     cardLimit.value = formatMoneyInputCentsShiftAllowNegative(raw.replace(/^-/, ''), true);
 };
 
@@ -251,14 +258,14 @@ watch(
         accountInstitution.value = null;
         accountColor.value = '#3B82F6';
         accountDescription.value = '';
-        accountBalance.value = '0,00';
+        accountBalance.value = '';
         accountInstitutionPickerOpen.value = false;
         cardUsage.value = 'no';
         cardInstitution.value = null;
         cardInstitutionPickerOpen.value = false;
         cardName.value = '';
         cardBrand.value = 'visa';
-        cardLimit.value = '0,00';
+        cardLimit.value = '';
         cardClosingDay.value = 10;
         cardDueDay.value = 17;
         cardColor.value = '#8B5CF6';
@@ -621,7 +628,7 @@ watch(
                     <div class="my-4 h-px bg-slate-200/70"></div>
 
                     <div class="text-sm font-semibold text-slate-700">
-                        Agora bora lançar seus gastos pra gente te mostrar se vai dar até o fim do mês!
+                        Agora bora lançar seus gastos pra gente te mostrar como fica o seu mês.
                     </div>
                 </div>
 

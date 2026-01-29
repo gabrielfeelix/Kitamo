@@ -115,12 +115,12 @@ watch(
 
                 <div>
                     <div class="mb-2 text-sm font-semibold text-slate-700">Ícone</div>
-                    <div class="-mx-1 flex gap-3 overflow-x-auto pb-2 px-1">
+                    <div class="-mx-1 flex gap-4 overflow-x-auto pb-2 px-1">
                         <button
                             v-for="opt in iconOptions"
                             :key="opt.key"
                             type="button"
-                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-50 ring-1 ring-slate-200"
+                            class="flex h-12 w-[38px] shrink-0 items-center justify-center rounded-2xl bg-slate-50 ring-1 ring-slate-200"
                             :class="icon === opt.key ? 'ring-2 ring-teal-400' : ''"
                             @click="icon = opt.key"
                             :aria-label="opt.label"
@@ -148,4 +148,3 @@ watch(
         </footer>
     </div>
 </template>
-

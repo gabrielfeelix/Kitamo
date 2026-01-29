@@ -48,6 +48,17 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
+const normalizeCategoryName = (value: string) =>
+    String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\u0300-\u036f]/g, '');
+
+const lockedCategoryNames = new Set(['alimentacao', 'lazer', 'moradia', 'saude', 'transporte']);
+const isLockedCategory = (category: Category) => lockedCategoryNames.has(normalizeCategoryName(category.name));
+
 const filteredCategories = computed(() =>
     categories.value.filter((c) => c.type === categoryType.value),
 );
@@ -92,6 +103,10 @@ const openCreateCategory = () => {
 };
 
 const openEditCategory = (category: Category) => {
+    if (isLockedCategory(category)) {
+        showToast('Essa é uma categoria do sistema e não pode ser editada.');
+        return;
+    }
     selectedCategory.value = category;
     editCategoryName.value = category.name;
     editCategoryIcon.value = category.icon;
@@ -272,12 +287,12 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 -mx-4 flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide">
+                    <div class="mt-3 -mx-4 flex gap-4 overflow-x-auto pb-2 px-4 scrollbar-hide">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"
                             type="button"
-                            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-white transition"
+                            class="flex h-12 w-[38px] items-center justify-center rounded-2xl bg-slate-800 text-white transition"
                             :class="editCategoryIcon === icon ? 'ring-2 ring-offset-2 ring-slate-900' : ''"
                             @click="editCategoryIcon = icon"
                         >
@@ -326,7 +341,7 @@ const closeEditModal = () => {
 
         <!-- Edit Category Modal -->
         <PickerSheet :open="editCategoryOpen" title="Editar Categoria" @close="closeEditModal">
-            <div v-if="selectedCategory" class="space-y-4 pb-2">
+                <div v-if="selectedCategory" class="space-y-4 pb-2">
                 <!-- Preview Card -->
                 <div class="flex justify-center pt-2">
                     <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
@@ -365,12 +380,12 @@ const closeEditModal = () => {
                 <!-- Icon Selector -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-slate-300">Ícone</label>
-                    <div class="mt-3 -mx-4 flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide">
+                    <div class="mt-3 -mx-4 flex gap-4 overflow-x-auto pb-2 px-4 scrollbar-hide">
                         <button
                             v-for="icon in iconOptions"
                             :key="icon"
                             type="button"
-                            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-white transition"
+                            class="flex h-12 w-[38px] items-center justify-center rounded-2xl bg-slate-800 text-white transition"
                             :class="editCategoryIcon === icon ? 'ring-2 ring-offset-2 ring-slate-900' : ''"
                             @click="editCategoryIcon = icon"
                         >
@@ -432,6 +447,8 @@ const closeEditModal = () => {
                 :key="category.id"
                 type="button"
                 class="flex flex-col items-center gap-3 rounded-3xl bg-white px-4 py-6 shadow-sm ring-1 ring-slate-200/60 transition hover:shadow-md"
+                :disabled="isLockedCategory(category)"
+                :class="isLockedCategory(category) ? 'cursor-not-allowed opacity-80' : ''"
                 @click="openEditCategory(category)"
             >
                 <div
@@ -443,6 +460,13 @@ const closeEditModal = () => {
                     </svg>
                 </div>
                 <div class="text-sm font-semibold text-slate-900">{{ category.name }}</div>
+                <div v-if="isLockedCategory(category)" class="-mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 11V8a5 5 0 0 1 10 0v3" />
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                    </svg>
+                    Bloqueada
+                </div>
             </button>
 
             <button

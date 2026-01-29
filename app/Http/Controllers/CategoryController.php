@@ -6,9 +6,19 @@ use App\Models\Category;
 use App\Support\KitamoBootstrap;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    /**
+     * System categories that are locked (cannot be edited by users).
+     */
+    private function isLockedSystemCategoryName(string $name): bool
+    {
+        $normalized = (string) Str::of($name)->trim()->lower()->ascii()->replaceMatches('/\s+/', ' ');
+        return in_array($normalized, ['alimentacao', 'lazer', 'moradia', 'saude', 'transporte'], true);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -19,6 +29,10 @@ class CategoryController extends Controller
             'color' => ['required', 'string', 'regex:/^#[0-9A-F]{6}$/i'],
             'icon' => ['required', 'string', 'max:64'],
         ]);
+
+        if ($this->isLockedSystemCategoryName($data['name'])) {
+            return response()->json(['message' => 'Essa categoria é do sistema e não pode ser criada/alterada.'], 422);
+        }
 
         $category = Category::create([
             'user_id' => $user->id,
@@ -40,7 +54,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if ($category->is_default) {
+        if ($category->is_default || $this->isLockedSystemCategoryName($category->name)) {
             return response()->json(['message' => 'Cannot edit default categories'], 403);
         }
 
@@ -67,7 +81,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if ($category->is_default) {
+        if ($category->is_default || $this->isLockedSystemCategoryName($category->name)) {
             return response()->json(['message' => 'Cannot delete default categories'], 403);
         }
 

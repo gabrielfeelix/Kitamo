@@ -29,6 +29,7 @@ const localMatrix = ref<Matrix>(JSON.parse(JSON.stringify(props.matrix)) as Matr
 
 const isAllowed = (role: RoleKey, perm: PermissionKey) => Boolean(localMatrix.value?.[role]?.[perm]);
 const toggle = (role: RoleKey, perm: PermissionKey) => {
+    if (role === 'admin') return;
     localMatrix.value[role][perm] = !isAllowed(role, perm);
 };
 
@@ -78,7 +79,7 @@ const save = async () => {
                         <button
                             type="button"
                             class="inline-flex items-center justify-center rounded-xl bg-[#14B8A6] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-                            :disabled="working"
+                            :disabled="working || selectedRole === 'admin'"
                             @click="save"
                         >
                             {{ working ? 'Salvando…' : 'Salvar' }}
@@ -103,16 +104,20 @@ const save = async () => {
                                 </td>
                                 <td class="py-3 pr-4 text-slate-600">{{ perm.description }}</td>
                                 <td class="py-3 pr-4 text-center">
+                                    <div v-if="selectedRole === 'admin'" class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                                        ✓
+                                    </div>
                                     <button
+                                        v-else
                                         type="button"
-                                        class="inline-flex h-9 w-14 items-center rounded-full px-1 ring-1 transition"
-                                        :class="isAllowed(selectedRole, perm.key) ? 'bg-emerald-50 ring-emerald-200/70' : 'bg-slate-100 ring-slate-200/70'"
+                                        class="inline-flex h-7 w-11 items-center rounded-full px-1 ring-1 transition"
+                                        :class="isAllowed(selectedRole, perm.key) ? 'bg-[#14B8A6] ring-emerald-300/70' : 'bg-slate-100 ring-slate-200/70'"
                                         @click="toggle(selectedRole, perm.key)"
                                         :aria-label="isAllowed(selectedRole, perm.key) ? 'Desativar permissão' : 'Ativar permissão'"
                                     >
                                         <span
-                                            class="h-7 w-7 rounded-full bg-white shadow-sm transition-transform"
-                                            :class="isAllowed(selectedRole, perm.key) ? 'translate-x-5' : 'translate-x-0'"
+                                            class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+                                            :class="isAllowed(selectedRole, perm.key) ? 'translate-x-4' : 'translate-x-0'"
                                         ></span>
                                     </button>
                                 </td>
