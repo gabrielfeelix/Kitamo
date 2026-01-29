@@ -63,14 +63,6 @@ watch(
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60"
-                            :disabled="loading"
-                            @click="load"
-                        >
-                            Atualizar
-                        </button>
                         <Link
                             :href="route('notifications.index')"
                             class="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700"
@@ -113,4 +105,3 @@ watch(
         </div>
     </Teleport>
 </template>
-

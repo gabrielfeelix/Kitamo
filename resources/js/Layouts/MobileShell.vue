@@ -2,6 +2,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import ConfigModal from '@/Components/ConfigModal.vue';
+import NewsSheet from '@/Components/NewsSheet.vue';
 
 const emit = defineEmits<{
     (e: 'add'): void;
@@ -9,6 +10,7 @@ const emit = defineEmits<{
 }>();
 
 const configModalOpen = ref(false);
+const newsOpen = ref(false);
 
 const props = withDefaults(
     defineProps<{
@@ -206,6 +208,11 @@ const handleAddClick = () => {
 
         <slot name="fab" />
 
-        <ConfigModal :open="configModalOpen" @close="configModalOpen = false" />
+        <ConfigModal
+            :open="configModalOpen"
+            @close="configModalOpen = false"
+            @news="() => { configModalOpen = false; newsOpen = true; }"
+        />
+        <NewsSheet :open="newsOpen" @close="newsOpen = false" />
     </div>
 </template>

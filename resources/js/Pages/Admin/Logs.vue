@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
-import AdminHeader from '@/Components/AdminHeader.vue';
+import AdminLayout from '@/Components/AdminLayout.vue';
 
 type Actor = { id: number; name: string; email: string };
 type LogRow = {
@@ -67,10 +67,8 @@ const methodTone = (method: string) => {
     <Head title="Administração · Logs" />
 
     <component :is="Shell" v-bind="shellProps">
-        <div class="space-y-4">
-            <AdminHeader description="Registro de ações (POST/PATCH/DELETE) no sistema." />
-
-            <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+        <AdminLayout title="Logs de Ações" description="Registro de ações (POST/PATCH/DELETE) no sistema.">
+            <div class="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
                 <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Buscar</label>
                 <div class="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200/60">
                     <svg class="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -87,7 +85,7 @@ const methodTone = (method: string) => {
                 </div>
             </div>
 
-            <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+            <div class="mt-4 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
                 <div class="flex items-center justify-between">
                     <div class="text-sm font-semibold text-slate-900">Logs</div>
                     <div class="text-xs font-semibold text-slate-400">{{ props.logs.data.length }} itens</div>
@@ -134,6 +132,6 @@ const methodTone = (method: string) => {
                     />
                 </div>
             </div>
-        </div>
+        </AdminLayout>
     </component>
 </template>

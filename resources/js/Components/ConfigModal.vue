@@ -9,6 +9,7 @@ defineProps<{
 
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'news'): void;
 }>();
 
 const page = usePage();
@@ -17,6 +18,13 @@ const isAdminEmail = computed(() => userEmail.value === 'contato@kitamo.com.br')
 
 const menuItems = computed(() => {
     const items = [
+    {
+        label: 'Novidades',
+        href: '',
+        action: 'news' as const,
+        icon: 'sparkles',
+        tone: 'purple' as const,
+    },
     {
         label: 'Categorias',
         href: route('settings.categories'),
@@ -75,9 +83,13 @@ const toneClass = (tone: 'teal' | 'blue' | 'red' | 'emerald' | 'purple') => {
     return toneMap[tone];
 };
 
-const handleSelect = (href: string) => {
+const handleSelect = (item: { href: string; action?: 'news' }) => {
     emit('close');
-    router.visit(href);
+    if (item.action === 'news') {
+        emit('news');
+        return;
+    }
+    router.visit(item.href);
 };
 </script>
 
@@ -89,11 +101,16 @@ const handleSelect = (href: string) => {
                 :key="item.label"
                 type="button"
                 class="flex w-full items-center gap-4 rounded-2xl px-4 py-4 transition hover:bg-slate-50"
-                @click="handleSelect(item.href)"
+                @click="handleSelect(item)"
             >
                 <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl" :class="toneClass(item.tone)">
+                    <!-- Novidades Icon -->
+                    <svg v-if="item.icon === 'sparkles'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6L12 2Z" />
+                        <path d="M5 14l.9 3.1L9 18l-3.1.9L5 22l-.9-3.1L1 18l3.1-.9L5 14Z" />
+                    </svg>
                     <!-- Categorias Icon -->
-                    <svg v-if="item.icon === 'tag'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg v-else-if="item.icon === 'tag'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
                         <path d="M7 7h.01" />
                     </svg>

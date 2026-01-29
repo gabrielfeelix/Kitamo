@@ -4,7 +4,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
-import AdminHeader from '@/Components/AdminHeader.vue';
+import AdminLayout from '@/Components/AdminLayout.vue';
 
 type UserRow = {
     id: number;
@@ -139,11 +139,10 @@ const confirmDelete = (id: number) => {
     <Head title="Administração · Usuários" />
 
     <component :is="Shell" v-bind="shellProps">
-        <div class="space-y-4">
-            <AdminHeader description="Gerencie usuários, papéis e status da conta." />
+        <AdminLayout title="Usuários" description="Gerencie usuários, papéis e status da conta.">
 
             <!-- Desktop table -->
-            <div v-if="!isMobile" class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+            <div v-if="!isMobile" class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex items-center justify-between">
                     <div class="text-sm font-semibold text-slate-900">Usuários</div>
                     <div class="text-xs font-semibold text-slate-400">{{ props.users.length }} usuários</div>
@@ -500,7 +499,6 @@ const confirmDelete = (id: number) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </AdminLayout>
     </component>
 </template>
-

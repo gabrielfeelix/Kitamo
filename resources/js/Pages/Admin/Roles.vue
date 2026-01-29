@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
-import AdminHeader from '@/Components/AdminHeader.vue';
+import AdminLayout from '@/Components/AdminLayout.vue';
 
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
@@ -52,10 +52,8 @@ const save = async () => {
     <Head title="Administração · Papéis e Permissões" />
 
     <component :is="Shell" v-bind="shellProps">
-        <div class="space-y-4">
-            <AdminHeader description="Mapa atual de papéis e permissões do sistema." />
-
-            <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+        <AdminLayout title="Papéis e Permissões" description="Gerencie permissões por papel (admin sempre pode tudo).">
+            <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="text-sm font-semibold text-slate-900">Papéis</div>
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
                     <div v-for="role in roles" :key="role.key" class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/60">
@@ -65,7 +63,7 @@ const save = async () => {
                 </div>
             </div>
 
-            <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+            <div class="mt-4 rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="text-sm font-semibold text-slate-900">Permissões</div>
                     <div class="flex items-center gap-2">
@@ -129,6 +127,6 @@ const save = async () => {
                     Nota: o acesso real ao admin continua restrito ao e-mail `contato@kitamo.com.br` (isso não muda mesmo que você desmarque `admin.access`).
                 </div>
             </div>
-        </div>
+        </AdminLayout>
     </component>
 </template>

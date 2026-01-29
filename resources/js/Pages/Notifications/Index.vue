@@ -124,11 +124,13 @@ onMounted(load);
         <div class="text-xs font-semibold text-slate-400">{{ unreadCount }} não lidas</div>
       </div>
       <div class="flex items-center gap-2">
-        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60" @click="markAllRead" :disabled="loading || unreadCount === 0">
-          Marcar lidas
-        </button>
-        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60" @click="load" :disabled="loading">
-          Atualizar
+        <button
+          type="button"
+          class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60"
+          @click="clearRead"
+          :disabled="loading || items.every((n) => !n.read_at)"
+        >
+          Limpar
         </button>
       </div>
     </header>
@@ -141,9 +143,6 @@ onMounted(load);
         </button>
         <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60" @click="clearRead" :disabled="loading || items.every((n) => !n.read_at)">
           Limpar lidas
-        </button>
-        <button type="button" class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 disabled:opacity-60" @click="load" :disabled="loading">
-          Atualizar
         </button>
       </div>
     </div>

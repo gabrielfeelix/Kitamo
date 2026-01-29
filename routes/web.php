@@ -3,6 +3,9 @@
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\RolesController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\NotificationRuleController;
+use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\Admin\LeadsController;
 use App\Http\Controllers\Admin\EmailCampaignController;
 use App\Http\Controllers\Admin\NewsItemsController;
@@ -267,6 +270,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/api/notifications/limpar-lidas', [NotificationsController::class, 'limparLidas'])->name('api.notifications.clear-read');
 	    Route::get('/api/notifications/count-unread', [NotificationsController::class, 'countUnread'])->name('api.notifications.count-unread');
 	    Route::get('/api/news', [NewsApiController::class, 'index'])->name('api.news.index');
+	    Route::post('/api/news/{newsItem}/reaction', [NewsApiController::class, 'react'])->name('api.news.react');
 
     Route::patch('/api/user/notification-preferences', [NotificationPreferencesController::class, 'update'])->name('api.user.notification-preferences');
     Route::get('/api/widget/data', [WidgetController::class, 'data'])->name('api.widget.data');
@@ -290,7 +294,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	    Route::get('/admin/roles', [RolesController::class, 'index'])->name('admin.roles.index');
 	    Route::patch('/admin/roles/{role}', [RolesController::class, 'update'])->name('admin.roles.update');
 	    Route::get('/admin/logs', [LogController::class, 'index'])->name('admin.logs.index');
-	    Route::get('/admin/notifications', fn () => Inertia::render('Admin/Notifications'))->name('admin.notifications.index');
+	    Route::get('/admin/plans', [PlanController::class, 'index'])->name('admin.plans.index');
+	    Route::post('/admin/plans', [PlanController::class, 'store'])->name('admin.plans.store');
+	    Route::patch('/admin/plans/{plan}', [PlanController::class, 'update'])->name('admin.plans.update');
+	    Route::delete('/admin/plans/{plan}', [PlanController::class, 'destroy'])->name('admin.plans.destroy');
+
+	    Route::get('/admin/notifications', [NotificationRuleController::class, 'index'])->name('admin.notifications.index');
+	    Route::post('/admin/notifications', [NotificationRuleController::class, 'store'])->name('admin.notifications.store');
+	    Route::patch('/admin/notifications/{rule}', [NotificationRuleController::class, 'update'])->name('admin.notifications.update');
+	    Route::delete('/admin/notifications/{rule}', [NotificationRuleController::class, 'destroy'])->name('admin.notifications.destroy');
+	    Route::post('/admin/notifications/{rule}/test', [NotificationRuleController::class, 'test'])->name('admin.notifications.test');
+
+	    Route::post('/admin/uploads/images', [UploadController::class, 'image'])->name('admin.uploads.images');
 	    Route::get('/admin/emails', [EmailCampaignController::class, 'index'])->name('admin.emails.index');
 	    Route::post('/admin/emails', [EmailCampaignController::class, 'store'])->name('admin.emails.store');
 	    Route::patch('/admin/emails/{campaign}', [EmailCampaignController::class, 'update'])->name('admin.emails.update');

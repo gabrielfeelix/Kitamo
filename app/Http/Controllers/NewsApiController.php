@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\NewsItem;
+use App\Models\NewsReaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NewsApiController extends Controller
 {
@@ -22,10 +24,41 @@ class NewsApiController extends Controller
             $query->where('visibility', 'public');
         }
 
-        $items = $query
+        $news = $query
             ->limit(100)
-            ->get()
-            ->map(fn (NewsItem $n) => [
+            ->get();
+
+        $ids = $news->pluck('id')->filter()->values();
+
+        $counts = [];
+        $mine = [];
+        if ($ids->isNotEmpty()) {
+            $rawCounts = NewsReaction::query()
+                ->select('news_item_id', 'reaction', DB::raw('count(*) as total'))
+                ->whereIn('news_item_id', $ids)
+                ->groupBy('news_item_id', 'reaction')
+                ->get();
+
+            foreach ($rawCounts as $row) {
+                $nid = (int) $row->news_item_id;
+                $reaction = (string) $row->reaction;
+                $counts[$nid] ??= ['fire' => 0, 'happy' => 0, 'sad' => 0];
+                if (array_key_exists($reaction, $counts[$nid])) {
+                    $counts[$nid][$reaction] = (int) $row->total;
+                }
+            }
+
+            if ($user) {
+                $mine = NewsReaction::query()
+                    ->where('user_id', $user->id)
+                    ->whereIn('news_item_id', $ids)
+                    ->pluck('reaction', 'news_item_id')
+                    ->mapWithKeys(fn ($reaction, $newsItemId) => [(int) $newsItemId => (string) $reaction])
+                    ->all();
+            }
+        }
+
+        $items = $news->map(fn (NewsItem $n) => [
                 'id' => (int) $n->id,
                 'title' => (string) $n->title,
                 'category' => $n->category,
@@ -35,11 +68,67 @@ class NewsApiController extends Controller
                 'image_url' => $n->image_url,
                 'cta_text' => $n->cta_text,
                 'cta_url' => $n->cta_url,
+                'reactions' => $counts[(int) $n->id] ?? ['fire' => 0, 'happy' => 0, 'sad' => 0],
+                'my_reaction' => $mine[(int) $n->id] ?? null,
             ]);
 
         return response()->json([
             'items' => $items,
         ]);
     }
-}
 
+    public function react(Request $request, NewsItem $newsItem): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user) {
+            abort(401);
+        }
+
+        $data = $request->validate([
+            'reaction' => ['nullable', 'in:fire,happy,sad'],
+        ]);
+
+        $reaction = $data['reaction'] ?? null;
+
+        if ($reaction === null) {
+            NewsReaction::query()
+                ->where('news_item_id', $newsItem->id)
+                ->where('user_id', $user->id)
+                ->delete();
+        } else {
+            NewsReaction::query()->updateOrCreate(
+                [
+                    'news_item_id' => $newsItem->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'reaction' => $reaction,
+                ],
+            );
+        }
+
+        $rawCounts = NewsReaction::query()
+            ->select('reaction', DB::raw('count(*) as total'))
+            ->where('news_item_id', $newsItem->id)
+            ->groupBy('reaction')
+            ->get();
+
+        $counts = ['fire' => 0, 'happy' => 0, 'sad' => 0];
+        foreach ($rawCounts as $row) {
+            $key = (string) $row->reaction;
+            if (array_key_exists($key, $counts)) {
+                $counts[$key] = (int) $row->total;
+            }
+        }
+
+        $mine = NewsReaction::query()
+            ->where('news_item_id', $newsItem->id)
+            ->where('user_id', $user->id)
+            ->value('reaction');
+
+        return response()->json([
+            'reactions' => $counts,
+            'my_reaction' => $mine ? (string) $mine : null,
+        ]);
+    }
+}

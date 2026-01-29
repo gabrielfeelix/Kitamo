@@ -4,8 +4,8 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
-import AdminHeader from '@/Components/AdminHeader.vue';
 import Modal from '@/Components/Modal.vue';
+import AdminLayout from '@/Components/AdminLayout.vue';
 
 type LeadRow = {
     id: number;
@@ -96,10 +96,8 @@ const confirmDelete = (id: number) => {
     <Head title="Administração · Leads" />
 
     <component :is="Shell" v-bind="shellProps">
-        <div class="space-y-4">
-            <AdminHeader title="Administração" description="Leads capturados pela newsletter (landing page)." />
-
-            <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+        <AdminLayout title="Leads" description="Leads capturados pela newsletter (landing page).">
+            <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div class="text-sm font-semibold text-slate-900">Leads</div>
@@ -182,7 +180,7 @@ const confirmDelete = (id: number) => {
                     </table>
                 </div>
             </div>
-        </div>
+        </AdminLayout>
     </component>
 
     <Modal :show="modalOpen" maxWidth="lg" @close="modalOpen = false">
@@ -251,4 +249,3 @@ const confirmDelete = (id: number) => {
         </div>
     </Modal>
 </template>
-

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import MobileShell from '@/Layouts/MobileShell.vue';
-import DesktopShell from '@/Layouts/DesktopShell.vue';
-import { useIsMobile } from '@/composables/useIsMobile';
-import AdminHeader from '@/Components/AdminHeader.vue';
-import Modal from '@/Components/Modal.vue';
+	import { computed, onUnmounted, ref, watch } from 'vue';
+	import { Head, router, useForm } from '@inertiajs/vue3';
+	import MobileShell from '@/Layouts/MobileShell.vue';
+	import DesktopShell from '@/Layouts/DesktopShell.vue';
+	import { useIsMobile } from '@/composables/useIsMobile';
+	import Modal from '@/Components/Modal.vue';
+	import AdminLayout from '@/Components/AdminLayout.vue';
+	import RichTextEditor from '@/Components/RichTextEditor.vue';
+	import { requestFormData } from '@/lib/kitamoApi';
 
 type CampaignType = 'announcement' | 'newsletter';
 type CampaignStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
@@ -53,45 +55,173 @@ const badgeForStatus = (status: string) => {
     return { label: 'Rascunho', cls: 'bg-slate-100 text-slate-700' };
 };
 
-const modalOpen = ref(false);
-const editingId = ref<number | null>(null);
+	const modalOpen = ref(false);
+	const editingId = ref<number | null>(null);
+	const previewOpen = ref(false);
+	const variableMenuOpen = ref(false);
+	const imageModalOpen = ref(false);
+	const imageUrl = ref('');
+	const imageFile = ref<File | null>(null);
+	const uploadingImage = ref(false);
+	const autosaveToast = ref(false);
+	let autosaveTimer: number | null = null;
+	let lastAutosaveHash = '';
 
-const form = useForm<{
-    type: CampaignType;
-    title: string;
-    subject: string;
+	const form = useForm<{
+	    type: CampaignType;
+	    title: string;
+	    subject: string;
     content: string;
     status: 'draft' | 'scheduled';
     scheduled_at: string;
-}>({
-    type: 'announcement',
-    title: '',
-    subject: '',
-    content: '',
-    status: 'draft',
-    scheduled_at: '',
-});
+	}>({
+	    type: 'announcement',
+	    title: '',
+	    subject: '',
+	    content: '',
+	    status: 'draft',
+	    scheduled_at: '',
+	});
 
-const openCreate = (type: CampaignType) => {
-    editingId.value = null;
-    form.reset();
-    form.clearErrors();
-    form.type = type;
-    modalOpen.value = true;
-};
+	const editorRef = ref<InstanceType<typeof RichTextEditor> | null>(null);
 
-const openEdit = (c: CampaignRow) => {
-    editingId.value = c.id;
-    form.reset();
-    form.clearErrors();
+	const variables = [
+	    { key: '{nome_usuario}', label: 'Nome do usuário' },
+	    { key: '{email}', label: 'Email' },
+	    { key: '{plano}', label: 'Plano' },
+	    { key: '{saldo}', label: 'Saldo' },
+	    { key: '{data_atual}', label: 'Data de hoje' },
+	] as const;
+
+	const insertVariable = (token: string) => {
+	    editorRef.value?.insertText?.(token);
+	};
+
+	const sampleData = {
+	    nome_usuario: 'Gabriel',
+	    email: 'gabriel@kitamo.com.br',
+	    plano: 'Free',
+	    saldo: 'R$ 1.234,56',
+	    data_atual: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date()),
+	};
+
+	const previewHtml = computed(() => {
+	    const html = String(form.content ?? '');
+	    return html
+	        .replaceAll('{nome_usuario}', sampleData.nome_usuario)
+	        .replaceAll('{email}', sampleData.email)
+	        .replaceAll('{plano}', sampleData.plano)
+	        .replaceAll('{saldo}', sampleData.saldo)
+	        .replaceAll('{data_atual}', sampleData.data_atual);
+	});
+
+	const openImageModal = () => {
+	    imageUrl.value = '';
+	    imageFile.value = null;
+	    imageModalOpen.value = true;
+	};
+
+	const insertImageFromUrl = () => {
+	    const url = imageUrl.value.trim();
+	    if (!url) return;
+	    editorRef.value?.insertImage?.(url);
+	    imageModalOpen.value = false;
+	};
+
+	const uploadAndInsertImage = async () => {
+	    if (!imageFile.value) return;
+	    uploadingImage.value = true;
+	    try {
+	        const fd = new FormData();
+	        fd.append('image', imageFile.value);
+	        const res = await requestFormData<{ url: string }>(route('admin.uploads.images'), {
+	            method: 'POST',
+	            body: fd,
+	        });
+	        if (res?.url) {
+	            editorRef.value?.insertImage?.(res.url);
+	            imageModalOpen.value = false;
+	        }
+	    } catch {
+	        // ignore (errors appear in network console)
+	    } finally {
+	        uploadingImage.value = false;
+	    }
+	};
+
+	const handleImageFileChange = (e: Event) => {
+	    const file = (e.target as HTMLInputElement).files?.[0] ?? null;
+	    imageFile.value = file;
+	};
+
+	const openCreate = (type: CampaignType) => {
+	    editingId.value = null;
+	    form.reset();
+	    form.clearErrors();
+	    form.type = type;
+	    modalOpen.value = true;
+	};
+
+	const openEdit = (c: CampaignRow) => {
+	    editingId.value = c.id;
+	    form.reset();
+	    form.clearErrors();
     form.type = (c.type === 'newsletter' ? 'newsletter' : 'announcement') as CampaignType;
     form.title = c.title;
     form.subject = c.subject ?? '';
     form.content = c.content ?? '';
     form.status = (c.status === 'scheduled' ? 'scheduled' : 'draft') as any;
     form.scheduled_at = c.scheduled_at ? c.scheduled_at.slice(0, 16) : '';
-    modalOpen.value = true;
-};
+	    modalOpen.value = true;
+	};
+
+	const currentPayload = () => ({
+	    type: form.type,
+	    title: form.title,
+	    subject: form.subject || null,
+	    content: form.content || null,
+	    status: 'draft' as const,
+	    scheduled_at: form.scheduled_at || null,
+	});
+
+	const autosave = () => {
+	    if (!modalOpen.value) return;
+	    if (!editingId.value) return;
+	    if (form.processing) return;
+	    if (form.status !== 'draft') return;
+
+	    const payload = currentPayload();
+	    const nextHash = JSON.stringify(payload);
+	    if (nextHash === lastAutosaveHash) return;
+	    lastAutosaveHash = nextHash;
+
+	    router.patch(route('admin.emails.update', editingId.value), payload, {
+	        preserveScroll: true,
+	        preserveState: true,
+	        onSuccess: () => {
+	            autosaveToast.value = true;
+	            window.setTimeout(() => (autosaveToast.value = false), 1500);
+	            router.reload({ only: ['campaigns'] });
+	        },
+	    });
+	};
+
+	watch(
+	    () => modalOpen.value,
+	    (isOpen) => {
+	        if (autosaveTimer) window.clearInterval(autosaveTimer);
+	        autosaveTimer = null;
+	        lastAutosaveHash = '';
+	        if (!isOpen) return;
+	        if (!editingId.value) return;
+	        lastAutosaveHash = JSON.stringify(currentPayload());
+	        autosaveTimer = window.setInterval(autosave, 30_000);
+	    },
+	);
+
+	onUnmounted(() => {
+	    if (autosaveTimer) window.clearInterval(autosaveTimer);
+	});
 
 const save = () => {
     form.transform((data) => ({
@@ -153,10 +283,8 @@ const sendNow = (id: number) => {
     <Head title="Administração · E-mails e Comunicados" />
 
     <component :is="Shell" v-bind="shellProps">
-        <div class="space-y-4">
-            <AdminHeader description="Crie comunicados (todos os usuários) e newsletters (leads da landing page)." />
-
-            <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+        <AdminLayout title="E-mails e Comunicados" description="Crie comunicados (todos os usuários) e newsletters (leads da landing page).">
+            <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <div class="text-sm font-semibold text-slate-900">Comunicados e Newsletter</div>
@@ -268,7 +396,7 @@ const sendNow = (id: number) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </AdminLayout>
     </component>
 
     <Modal :show="modalOpen" maxWidth="2xl" @close="modalOpen = false">
@@ -331,12 +459,47 @@ const sendNow = (id: number) => {
 
                 <label class="block md:col-span-2">
                     <div class="text-xs font-semibold text-slate-500">Conteúdo</div>
-                    <textarea
-                        v-model="form.content"
-                        rows="8"
-                        class="mt-2 w-full resize-none appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 placeholder:text-slate-400"
-                        placeholder="Escreva aqui..."
-                    ></textarea>
+                    <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-50"
+                            @click="previewOpen = true"
+                        >
+                            👁 Ver preview
+                        </button>
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-50"
+                                @click="variableMenuOpen = !variableMenuOpen"
+                            >
+                                ➕ Variável
+                                <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </button>
+                            <div
+                                v-if="variableMenuOpen"
+                                class="absolute right-0 top-[calc(100%+8px)] z-10 w-[240px] rounded-2xl bg-white p-2 shadow-lg ring-1 ring-slate-200/60"
+                            >
+                                <button
+                                    v-for="v in variables"
+                                    :key="v.key"
+                                    type="button"
+                                    class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    @click="() => { insertVariable(v.key); variableMenuOpen = false; }"
+                                >
+                                    <span class="truncate">{{ v.label }}</span>
+                                    <span class="ml-3 text-slate-400">{{ v.key }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <RichTextEditor ref="editorRef" v-model="form.content" placeholder="Escreva aqui o conteúdo do e-mail..." @request-image="openImageModal" />
+                    </div>
+                    <div v-if="autosaveToast" class="mt-2 text-xs font-semibold text-emerald-600">💾 Rascunho salvo</div>
                 </label>
             </div>
 
@@ -354,6 +517,88 @@ const sendNow = (id: number) => {
                 >
                     {{ form.processing ? 'Salvando…' : 'Salvar' }}
                 </button>
+            </div>
+        </div>
+    </Modal>
+
+    <Modal :show="previewOpen" maxWidth="full" @close="previewOpen = false">
+        <div class="p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-lg font-semibold text-slate-900">Preview do e-mail</div>
+                    <div class="mt-1 text-sm text-slate-500">Variáveis substituídas com dados de exemplo.</div>
+                </div>
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 ring-1 ring-slate-200/60"
+                    aria-label="Fechar"
+                    @click="previewOpen = false"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 6l12 12" />
+                        <path d="M18 6 6 18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mt-6 rounded-2xl bg-white p-6 ring-1 ring-slate-200/60">
+                <div class="text-sm font-semibold text-slate-900">{{ form.subject || form.title || 'Sem assunto' }}</div>
+                <div class="mt-4 prose max-w-none prose-slate" v-html="previewHtml"></div>
+            </div>
+        </div>
+    </Modal>
+
+    <Modal :show="imageModalOpen" maxWidth="lg" @close="imageModalOpen = false">
+        <div class="p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-lg font-semibold text-slate-900">Adicionar imagem</div>
+                    <div class="mt-1 text-sm text-slate-500">JPG, PNG, GIF, WEBP (até 2MB).</div>
+                </div>
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 ring-1 ring-slate-200/60"
+                    aria-label="Fechar"
+                    @click="imageModalOpen = false"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 6l12 12" />
+                        <path d="M18 6 6 18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/60">
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400">Upload</div>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        class="mt-3 block w-full text-sm font-semibold text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700 file:ring-1 file:ring-slate-200/60"
+                        @change="handleImageFileChange"
+                    />
+                    <button
+                        type="button"
+                        class="mt-3 inline-flex items-center justify-center rounded-xl bg-[#14B8A6] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 disabled:opacity-60"
+                        :disabled="uploadingImage || !imageFile"
+                        @click="uploadAndInsertImage"
+                    >
+                        {{ uploadingImage ? 'Enviando…' : 'Enviar e inserir' }}
+                    </button>
+                </div>
+
+                <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/60">
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400">URL</div>
+                    <input v-model="imageUrl" type="url" class="mt-3 h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800" placeholder="https://..." />
+                    <button
+                        type="button"
+                        class="mt-3 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200/60 disabled:opacity-60"
+                        :disabled="!imageUrl.trim()"
+                        @click="insertImageFromUrl"
+                    >
+                        Inserir
+                    </button>
+                </div>
             </div>
         </div>
     </Modal>

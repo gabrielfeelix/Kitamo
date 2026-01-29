@@ -130,7 +130,11 @@ const setAccountBalance = (raw: string) => {
         accountBalance.value = '';
         return;
     }
-    accountBalance.value = formatMoneyInputCentsShiftAllowNegative(raw, true);
+    if (raw.trim() === '-') {
+        accountBalance.value = '-';
+        return;
+    }
+    accountBalance.value = formatMoneyInputCentsShiftAllowNegative(raw, false);
 };
 
 const setCardLimit = (raw: string) => {
@@ -627,10 +631,10 @@ watch(
 
                     <div class="my-4 h-px bg-slate-200/70"></div>
 
-                    <div class="text-sm font-semibold text-slate-700">
-                        Agora bora lançar seus gastos pra gente te mostrar como fica o seu mês.
-                    </div>
-                </div>
+	                    <div class="text-sm font-semibold text-slate-700">
+	                        Agora bora registrar seus gastos pra gente te ajudar a chegar no fim do mês com tranquilidade.
+	                    </div>
+	                </div>
 
                 <div v-if="error" class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
                     {{ error }}
