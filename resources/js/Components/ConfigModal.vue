@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import PickerSheet from '@/Components/PickerSheet.vue';
 
 defineProps<{
@@ -11,7 +11,12 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const menuItems = computed(() => [
+const page = usePage();
+const userEmail = computed(() => String((page.props as any)?.auth?.user?.email ?? '').toLowerCase());
+const isAdminEmail = computed(() => userEmail.value === 'contato@kitamo.com.br');
+
+const menuItems = computed(() => {
+    const items = [
     {
         label: 'Categorias',
         href: route('settings.categories'),
@@ -42,7 +47,22 @@ const menuItems = computed(() => [
         icon: 'card',
         tone: 'purple' as const,
     },
-]);
+    ] as const;
+
+    return [
+        ...(isAdminEmail.value
+            ? [
+                  {
+                      label: 'Administração',
+                      href: route('admin.index'),
+                      icon: 'gear',
+                      tone: 'teal' as const,
+                  },
+              ]
+            : []),
+        ...items,
+    ];
+});
 
 const toneClass = (tone: 'teal' | 'blue' | 'red' | 'emerald' | 'purple') => {
     const toneMap = {
@@ -99,6 +119,13 @@ const handleSelect = (href: string) => {
                     <svg v-else-if="item.icon === 'card'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="5" width="20" height="14" rx="2" />
                         <line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
+                    <!-- Admin Icon (Gear) -->
+                    <svg v-else-if="item.icon === 'gear'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                        <path
+                            d="M19.4 15a7.9 7.9 0 0 0 .1-1 7.9 7.9 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6H9.1L8.7 8a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.9 7.9 0 0 0-.1 1 7.9 7.9 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h5.8l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
+                        />
                     </svg>
                 </span>
                 <span class="flex-1 text-left text-sm font-semibold text-slate-900">{{ item.label }}</span>

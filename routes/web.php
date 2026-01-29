@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
@@ -42,6 +43,9 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+// Fallback to refresh XSRF-TOKEN cookie (works even without Sanctum route).
+Route::get('/csrf-cookie', fn () => response()->noContent())->name('csrf-cookie');
 
 Route::redirect('/landingpage', '/');
 
@@ -274,7 +278,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     Route::get('/admin/roles', fn () => Inertia::render('Admin/Roles'))->name('admin.roles.index');
-    Route::get('/admin/logs', fn () => Inertia::render('Admin/Logs'))->name('admin.logs.index');
+    Route::get('/admin/logs', [LogController::class, 'index'])->name('admin.logs.index');
     Route::get('/admin/notifications', fn () => Inertia::render('Admin/Notifications'))->name('admin.notifications.index');
     Route::get('/admin/emails', fn () => Inertia::render('Admin/Emails'))->name('admin.emails.index');
     Route::get('/admin/news', fn () => Inertia::render('Admin/News'))->name('admin.news.index');

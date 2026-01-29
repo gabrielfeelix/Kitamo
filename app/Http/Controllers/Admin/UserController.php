@@ -45,6 +45,10 @@ class UserController extends Controller
             'status' => ['sometimes', 'required', 'in:active,disabled'],
         ]);
 
+        if (mb_strtolower((string) $user->email) === 'contato@kitamo.com.br' && array_key_exists('status', $data) && $data['status'] === 'disabled') {
+            return back()->withErrors(['default' => 'Não é possível desativar o usuário administrador principal.']);
+        }
+
         if (array_key_exists('name', $data)) {
             $user->name = $data['name'];
         }

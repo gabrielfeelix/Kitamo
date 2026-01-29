@@ -65,6 +65,30 @@
     select:focus-visible,
     textarea:focus-visible {
         outline: none;
+        box-shadow: none;
+    }
+
+    /* Chrome/Safari focus ring */
+    :where(input, textarea, select, button, a):focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Defensive: remove any remaining focus outlines */
+    :where(*):focus {
+        outline: none;
+    }
+    :where(*):focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove iOS/Chrome default appearance that can draw inner borders */
+    input,
+    select,
+    textarea {
+        -webkit-appearance: none;
+        appearance: none;
     }
 }
 

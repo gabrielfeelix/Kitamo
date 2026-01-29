@@ -35,6 +35,22 @@ const avatarUrl = computed(() => (page.props as any)?.auth?.user?.avatar_url ?? 
 const userEmail = computed(() => String((page.props as any)?.auth?.user?.email ?? ''));
 const isAdminEmail = computed(() => userEmail.value.toLowerCase() === 'contato@kitamo.com.br');
 
+const SIDEBAR_COLLAPSED_KEY = 'kitamo:sidebar_collapsed:v1';
+const sidebarCollapsed = ref(false);
+try {
+    sidebarCollapsed.value = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+} catch {
+    // ignore
+}
+const toggleSidebar = () => {
+    sidebarCollapsed.value = !sidebarCollapsed.value;
+    try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.value ? '1' : '0');
+    } catch {
+        // ignore
+    }
+};
+
 const initials = computed(() => {
     const parts = userName.value.trim().split(/\s+/).filter(Boolean);
     const first = parts[0]?.[0] ?? 'K';
@@ -110,26 +126,61 @@ onUnmounted(() => {
 <template>
     <div class="min-h-screen bg-slate-50">
         <div class="flex min-h-screen">
-            <aside class="hidden w-[280px] flex-col border-r border-slate-200/70 bg-white md:flex">
-                <div class="px-7 pt-7">
+            <aside
+                class="hidden flex-col border-r border-slate-200/70 bg-white md:flex"
+                :class="sidebarCollapsed ? 'w-[92px]' : 'w-[280px]'"
+            >
+                <div class="px-5 pt-7">
                     <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 ring-1 ring-slate-200/60 hover:bg-slate-100"
+                            aria-label="Recolher/Expandir menu"
+                            @click="toggleSidebar"
+                        >
+                            <svg v-if="sidebarCollapsed" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                            <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
                         <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#14B8A6] text-xl font-bold text-white">
                             K
                         </div>
-                        <div class="text-xl font-semibold tracking-tight text-slate-900">Kitamo</div>
+                        <div v-if="!sidebarCollapsed" class="text-xl font-semibold tracking-tight text-slate-900">Kitamo</div>
                     </div>
                 </div>
 
-                <nav class="mt-8 flex-1 space-y-2 px-5" aria-label="Menu principal">
+                <div class="mt-5 px-5">
+                    <button
+                        type="button"
+                        class="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#14B8A6] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-600"
+                        :class="sidebarCollapsed ? 'px-0' : ''"
+                        aria-label="Nova movimentação"
+                        @click="emit('add')"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        <span v-if="!sidebarCollapsed">Nova movimentação</span>
+                    </button>
+                </div>
+
+                <nav class="mt-6 flex-1 space-y-2 px-5" aria-label="Menu principal">
                     <Link
                         v-for="item in navItems"
                         :key="item.label"
                         :href="item.href"
                         class="group flex items-center gap-4 rounded-2xl px-4 py-3.5 ring-1 ring-transparent transition"
                         :class="
-                            item.active
-                                ? 'bg-emerald-50 text-slate-900 ring-emerald-100'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                            [
+                                sidebarCollapsed ? 'justify-center px-0' : '',
+                                item.active
+                                    ? 'bg-emerald-50 text-slate-900 ring-emerald-100'
+                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700',
+                            ]
                         "
                     >
                         <span
@@ -170,9 +221,9 @@ onUnmounted(() => {
                                 <path d="M22 19V7" />
                             </svg>
                         </span>
-                        <span class="text-sm font-semibold">{{ item.label }}</span>
+                        <span v-if="!sidebarCollapsed" class="text-sm font-semibold">{{ item.label }}</span>
 
-                        <span v-if="item.active" class="ml-auto h-9 w-1.5 rounded-full bg-[#14B8A6]"></span>
+                        <span v-if="item.active && !sidebarCollapsed" class="ml-auto h-9 w-1.5 rounded-full bg-[#14B8A6]"></span>
                     </Link>
 
                     <button
@@ -188,7 +239,7 @@ onUnmounted(() => {
                                 <path d="M4 18h16" />
                             </svg>
                         </span>
-                        <span class="text-sm font-semibold">Menu</span>
+                        <span v-if="!sidebarCollapsed" class="text-sm font-semibold">Menu</span>
                     </button>
                 </nav>
 
@@ -199,7 +250,7 @@ onUnmounted(() => {
                                 <img v-if="avatarUrl" :src="avatarUrl" alt="" class="h-full w-full object-cover" />
                                 <span v-else>{{ initials }}</span>
                             </div>
-                            <div class="leading-tight">
+                            <div v-if="!sidebarCollapsed" class="leading-tight">
                                 <div class="text-sm font-semibold text-slate-900">{{ firstName || 'Usuário' }}</div>
                                 <div class="text-xs font-medium text-slate-400">Plano UI/UX</div>
                             </div>
@@ -239,7 +290,7 @@ onUnmounted(() => {
                                 <input
                                     type="text"
                                     :placeholder="props.searchPlaceholder"
-                                    class="w-[260px] bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                                    class="w-[260px] bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-400 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
                                 />
                             </div>
 

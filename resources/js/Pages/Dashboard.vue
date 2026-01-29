@@ -36,6 +36,8 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
 const firstName = computed(() => String(userName.value).trim().split(/\s+/)[0] ?? userName.value);
 const avatarUrl = computed(() => (page.props as any)?.auth?.user?.avatar_url ?? (page.props as any)?.auth?.user?.profile_photo_url ?? null);
+const userEmail = computed(() => String((page.props as any)?.auth?.user?.email ?? '').toLowerCase());
+const isAdminEmail = computed(() => userEmail.value === 'contato@kitamo.com.br');
 const bootstrap = computed(
     () => (page.props.bootstrap ?? { entries: [], goals: [], accounts: [], categories: [], tags: [] }) as BootstrapData,
 );
@@ -1084,6 +1086,19 @@ onMounted(() => {
                         <path d="M10 21a2 2 0 0 0 4 0" />
 	                    </svg>
 	                </Link>
+                    <Link
+                        v-if="isAdminEmail"
+                        :href="route('admin.index')"
+                        class="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60 hover:bg-slate-50"
+                        aria-label="Administração"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                            <path
+                                d="M19.4 15a7.9 7.9 0 0 0 .1-1 7.9 7.9 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6H9.1L8.7 8a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.9 7.9 0 0 0-.1 1 7.9 7.9 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h5.8l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
+                            />
+                        </svg>
+                    </Link>
 	            </div>
 	        </header>
 

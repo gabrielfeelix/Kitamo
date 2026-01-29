@@ -24,13 +24,11 @@ const xsrfToken = () => {
  * Fetch a fresh CSRF token from the server
  */
 const refreshCsrfToken = async (): Promise<{ csrf: string; xsrf: string }> => {
-    const response = await fetch('/sanctum/csrf-cookie', {
-        credentials: 'include',
-    });
-
+    let response = await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
     if (!response.ok) {
-        throw new Error('Failed to refresh CSRF token');
+        response = await fetch('/csrf-cookie', { credentials: 'include' });
     }
+    if (!response.ok) throw new Error('Failed to refresh CSRF token');
 
     // /sanctum/csrf-cookie refreshes the XSRF-TOKEN cookie; meta token may stay the same.
     return { csrf: csrfToken(), xsrf: xsrfToken() };
