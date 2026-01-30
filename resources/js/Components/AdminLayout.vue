@@ -16,9 +16,11 @@ const props = withDefaults(
     defineProps<{
         title: string;
         description?: string;
+        meta?: string;
     }>(),
     {
         description: '',
+        meta: '',
     },
 );
 
@@ -103,6 +105,8 @@ const selectNav = (href: string) => {
 };
 
 const activeItem = computed(() => items.value.find((i) => i.active) ?? items.value[0]);
+
+const breadcrumbLabel = computed(() => activeItem.value?.label ?? props.title);
 </script>
 
 <template>
@@ -172,12 +176,24 @@ const activeItem = computed(() => items.value.find((i) => i.active) ?? items.val
 
         <!-- Content -->
         <section class="min-w-0 flex-1">
-            <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 md:p-8">
-                <header class="mb-8">
-                    <h1 class="text-2xl font-bold text-slate-900">{{ title }}</h1>
-                    <p v-if="description" class="mt-2 text-sm font-medium text-slate-500">{{ description }}</p>
-                </header>
-                <slot />
+            <div class="mx-auto w-full max-w-[1200px]">
+                <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 md:p-8">
+                    <header class="mb-8">
+                        <div class="mb-2 text-xs text-slate-500">
+                            <Link :href="route('admin.index')" class="hover:text-slate-700">Administração</Link>
+                            <span class="mx-1">›</span>
+                            <span>{{ breadcrumbLabel }}</span>
+                        </div>
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0">
+                                <h1 class="text-2xl font-bold text-slate-900">{{ title }}</h1>
+                                <p v-if="description" class="mt-2 text-sm font-medium text-slate-500">{{ description }}</p>
+                            </div>
+                            <div v-if="meta" class="shrink-0 text-sm font-medium text-slate-500">{{ meta }}</div>
+                        </div>
+                    </header>
+                    <slot />
+                </div>
             </div>
         </section>
 

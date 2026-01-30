@@ -5,6 +5,7 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import AdminLayout from '@/Components/AdminLayout.vue';
+import Tooltip from '@/Components/Tooltip.vue';
 
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
@@ -97,7 +98,10 @@ const save = async () => {
                         <tbody class="divide-y divide-slate-100">
                             <tr v-for="perm in props.permissions" :key="perm.key">
                                 <td class="py-3 pr-4">
-                                    <div class="font-semibold text-slate-900">{{ perm.label }}</div>
+                                    <div class="flex items-center gap-2 font-semibold text-slate-900">
+                                        <span>{{ perm.label }}</span>
+                                        <Tooltip :text="perm.description" />
+                                    </div>
                                     <div class="mt-1 text-xs font-semibold text-slate-400">{{ perm.key }}</div>
                                 </td>
                                 <td class="py-3 pr-4 text-slate-600">{{ perm.description }}</td>

@@ -4,7 +4,9 @@ import { Head, router } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
+import { useInertiaGetLoading } from '@/composables/useInertiaGetLoading';
 import AdminLayout from '@/Components/AdminLayout.vue';
+import TableSkeleton from '@/Components/TableSkeleton.vue';
 
 type Actor = { id: number; name: string; email: string };
 type LogRow = {
@@ -41,6 +43,8 @@ const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Administração', showSearch: false, showNewAction: false },
 );
+
+const { loading: listLoading } = useInertiaGetLoading();
 
 const query = ref(props.filters?.q ?? props.q ?? '');
 const actorId = ref<string>(props.filters?.actor_id ? String(props.filters.actor_id) : '');
@@ -158,13 +162,8 @@ const copyPayload = async (row: LogRow) => {
     <Head title="Administração · Logs" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Logs de Ações" description="Registro de ações (POST/PATCH/DELETE) no sistema.">
+        <AdminLayout title="Logs de Ações" description="Registro de ações (POST/PATCH/DELETE) no sistema." :meta="resultLabel">
             <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm font-semibold text-slate-900">Logs de Ações</div>
-                    <div class="text-xs font-semibold text-slate-400">{{ resultLabel }}</div>
-                </div>
-
                 <div class="mt-4">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex w-full items-center gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200/60 md:w-[60%]">
@@ -249,7 +248,8 @@ const copyPayload = async (row: LogRow) => {
             </div>
 
             <div class="mt-4 rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
-                <div class="mt-4 space-y-3">
+                <TableSkeleton v-if="listLoading" :rows="8" :cols="5" />
+                <div v-else class="mt-4 space-y-3">
                     <div
                         v-for="row in props.logs.data"
                         :key="row.id"
@@ -286,7 +286,7 @@ const copyPayload = async (row: LogRow) => {
                     </div>
                 </div>
 
-                <div v-if="props.logs.links?.length" class="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <div v-if="!listLoading && props.logs.links?.length" class="mt-6 flex flex-wrap items-center justify-center gap-2">
                     <button
                         v-for="link in props.logs.links"
                         :key="link.label"

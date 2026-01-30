@@ -30,6 +30,8 @@ const props = defineProps<{
     rules: RuleRow[];
 }>();
 
+const rulesMeta = computed(() => `${props.rules.length} regras`);
+
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() => (isMobile.value ? { showNav: false } : { title: 'Administração', showSearch: false, showNewAction: false }));
@@ -201,7 +203,7 @@ const previewText = computed(() => {
     <Head title="Administração · Notificações" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Notificações" description="Configure lembretes automáticos e alertas do sistema.">
+        <AdminLayout title="Notificações" description="Configure lembretes automáticos e alertas do sistema." :meta="rulesMeta">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <button
                     type="button"

@@ -7,6 +7,7 @@ import { useIsMobile } from '@/composables/useIsMobile';
 import Modal from '@/Components/Modal.vue';
 import AdminLayout from '@/Components/AdminLayout.vue';
 import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
+import EmptyState from '@/Components/EmptyState.vue';
 
 type LeadRow = {
     id: number;
@@ -33,6 +34,8 @@ const formatDate = (iso: string | null) => {
         ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : String(iso);
 };
+
+const leadsMeta = computed(() => `${props.leads.length} leads`);
 
 const modalOpen = ref(false);
 const editingId = ref<number | null>(null);
@@ -98,12 +101,12 @@ const confirmDelete = () => {
     <Head title="Administração · Leads" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Leads" description="Leads capturados pela newsletter (landing page).">
+        <AdminLayout title="Leads" description="Leads capturados pela newsletter (landing page)." :meta="leadsMeta">
             <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div class="text-sm font-semibold text-slate-900">Leads</div>
-                        <div class="mt-1 text-xs font-semibold text-slate-400">{{ props.leads.length }} no total</div>
+                        <div class="mt-1 text-xs font-semibold text-slate-400">{{ leadsMeta }}</div>
                     </div>
                     <button
                         type="button"
@@ -114,10 +117,15 @@ const confirmDelete = () => {
                     </button>
                 </div>
 
-                <div v-if="props.leads.length === 0" class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <div class="text-sm font-semibold text-slate-900">Nenhum lead ainda</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-500">Quando alguém se inscrever na newsletter, aparece aqui.</div>
-                </div>
+                <EmptyState
+                    v-if="props.leads.length === 0"
+                    class="mt-6"
+                    icon="🎯"
+                    title="Nenhum lead ainda"
+                    description="Quando alguém se inscrever na newsletter da landing page, os dados aparecerão aqui para você gerenciar."
+                    cta-label="Aguardando inscrições"
+                    :cta-disabled="true"
+                />
 
                 <div v-else class="mt-6 overflow-hidden rounded-2xl ring-1 ring-slate-200/60">
                     <table class="min-w-full text-left text-sm">

@@ -6,6 +6,7 @@ import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import Modal from '@/Components/Modal.vue';
 import AdminLayout from '@/Components/AdminLayout.vue';
+import EmptyState from '@/Components/EmptyState.vue';
 
 type NewsStatus = 'draft' | 'scheduled' | 'published';
 type NewsType = 'new' | 'improvement' | 'fix' | 'announcement';
@@ -58,6 +59,8 @@ const filtered = computed(() => {
         return `${item.title} ${item.content || ''} ${item.category || ''}`.toLowerCase().includes(q);
     });
 });
+
+const newsMeta = computed(() => `${filtered.value.length} item(ns)`);
 
 const formatDate = (iso: string | null) => {
     if (!iso) return '';
@@ -181,7 +184,7 @@ const confirmDelete = (id: number) => {
     <Head title="Administração · Novidades" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Changelog" description="Crie e publique novidades do sistema (modal de novidades para usuários).">
+        <AdminLayout title="Changelog" description="Crie e publique novidades do sistema (modal de novidades para usuários)." :meta="newsMeta">
             <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -242,10 +245,15 @@ const confirmDelete = (id: number) => {
                     </label>
                 </div>
 
-                <div v-if="filtered.length === 0" class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <div class="text-sm font-semibold text-slate-900">Nenhuma novidade encontrada</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-500">Ajuste os filtros ou crie uma novidade.</div>
-                </div>
+                <EmptyState
+                    v-if="filtered.length === 0"
+                    class="mt-6"
+                    icon="📢"
+                    title="Nenhuma novidade encontrada"
+                    description="Ajuste os filtros ou crie sua primeira novidade para aparecer aqui."
+                    cta-label="+ Criar novidade"
+                    @cta="openCreate"
+                />
 
                 <div v-else class="mt-6 space-y-3">
                     <div v-for="item in filtered" :key="item.id" class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/60">

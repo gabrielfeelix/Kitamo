@@ -7,6 +7,7 @@
 	import Modal from '@/Components/Modal.vue';
 	import AdminLayout from '@/Components/AdminLayout.vue';
 	import RichTextEditor from '@/Components/RichTextEditor.vue';
+	import EmptyState from '@/Components/EmptyState.vue';
 	import { requestFormData } from '@/lib/kitamoApi';
 
 type CampaignType = 'announcement' | 'newsletter';
@@ -40,6 +41,7 @@ const campaignsByType = computed(() => props.campaigns.filter((c) => (c.type ===
 
 const countAnnouncement = computed(() => props.campaigns.filter((c) => c.type !== 'newsletter').length);
 const countNewsletter = computed(() => props.campaigns.filter((c) => c.type === 'newsletter').length);
+const campaignsMeta = computed(() => `${campaignsByType.value.length} itens`);
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return '';
@@ -391,7 +393,7 @@ const sendNow = (id: number) => {
     <Head title="Administração · E-mails e Comunicados" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="E-mails e Comunicados" description="Crie comunicados (todos os usuários) e newsletters (leads da landing page).">
+        <AdminLayout title="E-mails e Comunicados" description="Crie comunicados (todos os usuários) e newsletters (leads da landing page)." :meta="campaignsMeta">
             <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -462,10 +464,15 @@ const sendNow = (id: number) => {
                     </div>
                 </div>
 
-                <div v-if="campaignsByType.length === 0" class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
-                    <div class="text-sm font-semibold text-slate-900">Nenhum item ainda</div>
-                    <div class="mt-2 text-xs font-semibold text-slate-500">Crie seu primeiro envio para aparecer aqui.</div>
-                </div>
+                <EmptyState
+                    v-if="campaignsByType.length === 0"
+                    class="mt-6"
+                    icon="📧"
+                    title="Nenhum comunicado criado"
+                    description="Crie seu primeiro envio para todos os usuários ativos ou uma newsletter para leads inscritos."
+                    cta-label="+ Novo comunicado"
+                    @cta="openCreate('announcement')"
+                />
 
                 <div v-else class="mt-6 space-y-3">
                     <div

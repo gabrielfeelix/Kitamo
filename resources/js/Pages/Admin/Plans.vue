@@ -8,6 +8,7 @@ import AdminLayout from '@/Components/AdminLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
+import Tooltip from '@/Components/Tooltip.vue';
 import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 import { preventNonDigitKeydown } from '@/lib/inputGuards';
 
@@ -45,6 +46,9 @@ const intervalLabel = (interval: string) => {
     if (interval === 'lifetime') return 'vitalício';
     return '/mês';
 };
+
+const activeCount = computed(() => props.plans.filter((p) => p.is_active).length);
+const plansMeta = computed(() => `${activeCount.value} planos ativos`);
 
 const modalOpen = ref(false);
 const editingId = ref<number | null>(null);
@@ -252,7 +256,7 @@ const confirmDeactivate = () => {
     <Head title="Administração · Planos" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Planos e Monetização" description="Configure recursos, preços e limites de cada plano.">
+        <AdminLayout title="Planos e Monetização" description="Configure recursos, preços e limites de cada plano." :meta="plansMeta">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <button
                     type="button"
@@ -286,9 +290,18 @@ const confirmDeactivate = () => {
                         <div>✅ Contas: {{ p.accounts_limit == null ? 'Ilimitado' : p.accounts_limit }}</div>
                         <div>✅ Cartões: {{ p.cards_limit == null ? 'Ilimitado' : p.cards_limit }}</div>
                         <div>✅ Projeção: {{ p.projection_days }} dias</div>
-                        <div>{{ p.backup_enabled ? '✅' : '❌' }} Backup automático</div>
-                        <div>{{ p.recurring_enabled ? '✅' : '❌' }} Despesas recorrentes</div>
-                        <div>{{ p.priority_support ? '✅' : '⚠️' }} Suporte prioritário</div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span>{{ p.backup_enabled ? '✅' : '❌' }} Backup automático</span>
+                            <Tooltip text="Salva cópia dos dados diariamente para recuperação em caso de perda." />
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span>{{ p.recurring_enabled ? '✅' : '❌' }} Despesas recorrentes</span>
+                            <Tooltip text="Permite criar lançamentos recorrentes automaticamente (mensais, etc.)." />
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span>{{ p.priority_support ? '✅' : '⚠️' }} Suporte prioritário</span>
+                            <Tooltip text="Atendimento com prioridade para solicitações e incidentes." />
+                        </div>
                     </div>
 
                     <div class="mt-6 flex flex-wrap items-center gap-2">

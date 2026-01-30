@@ -4,10 +4,12 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
+import { useInertiaGetLoading } from '@/composables/useInertiaGetLoading';
 import AdminLayout from '@/Components/AdminLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
+import TableSkeleton from '@/Components/TableSkeleton.vue';
 
 type UserRow = {
     id: number;
@@ -45,6 +47,8 @@ const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Administração', showSearch: false, showNewAction: false },
 );
+
+const { loading: tableLoading } = useInertiaGetLoading();
 
 const totalUsersLabel = computed(() => {
     const total = props.users.meta?.total ?? props.users.data.length;
@@ -251,13 +255,8 @@ const saveCreate = () => {
     <Head title="Administração · Usuários" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Usuários" description="Gerencie usuários, papéis e status da conta.">
+        <AdminLayout title="Usuários" description="Gerencie usuários, papéis e status da conta." :meta="totalUsersLabel">
             <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
-                <div class="flex items-center justify-between gap-4">
-                    <div class="text-sm font-semibold text-slate-900">Usuários</div>
-                    <div class="text-xs font-semibold text-slate-400">{{ totalUsersLabel }}</div>
-                </div>
-
                 <div class="mt-4">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex w-full items-center gap-2 rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200/60 md:w-[60%]">
@@ -330,7 +329,8 @@ const saveCreate = () => {
             </div>
 
             <div class="mt-4 rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
-                <div class="overflow-x-auto">
+                <TableSkeleton v-if="tableLoading" :rows="7" :cols="7" />
+                <div v-else class="overflow-x-auto">
                     <table class="min-w-full text-left text-sm">
                         <thead class="text-xs font-bold uppercase tracking-wide text-slate-400">
                             <tr>
@@ -447,7 +447,7 @@ const saveCreate = () => {
                     </table>
                 </div>
 
-                <div v-if="props.users.links?.length" class="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <div v-if="!tableLoading && props.users.links?.length" class="mt-6 flex flex-wrap items-center justify-center gap-2">
                     <button
                         v-for="link in props.users.links"
                         :key="link.label"
@@ -541,4 +541,3 @@ const saveCreate = () => {
         </AdminLayout>
     </component>
 </template>
-

@@ -4,6 +4,8 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import DesktopNotificationsPopover from '@/Components/DesktopNotificationsPopover.vue';
 import NewsPanel, { type NewsItemRow } from '@/Components/NewsPanel.vue';
 import ConfigModal from '@/Components/ConfigModal.vue';
+import ToastStack from '@/Components/ToastStack.vue';
+import BackToTopButton from '@/Components/BackToTopButton.vue';
 import { requestJson } from '@/lib/kitamoApi';
 
 const emit = defineEmits<{
@@ -401,4 +403,7 @@ onUnmounted(() => {
     <ConfigModal :open="configModalOpen" @close="configModalOpen = false" />
 
     <NewsPanel :open="newsOpen" :loading="newsLoading" :items="newsItems" @close="newsOpen = false" />
+
+    <ToastStack />
+    <BackToTopButton />
 </template>

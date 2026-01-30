@@ -5,6 +5,7 @@ import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { requestJson } from '@/lib/kitamoApi';
 import { useIsMobile } from '@/composables/useIsMobile';
+import EmptyState from '@/Components/EmptyState.vue';
 
 type NotificationItem = {
   id: string;
@@ -192,16 +193,15 @@ onMounted(load);
       </div>
     </div>
 
-    <div v-if="!filteredItems.length && !loading" class="mt-8 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center md:mx-auto md:max-w-2xl">
-      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
-        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14V11a6 6 0 1 0-12 0v3a2 2 0 0 1-.6 1.6L4 17h5" />
-          <path d="M9 17a3 3 0 0 0 6 0" />
-        </svg>
-      </div>
-      <div class="mt-3 text-sm font-semibold text-slate-900">Sem notificações</div>
-      <div class="mt-1 text-xs text-slate-500">Quando algo importante acontecer, avisamos por aqui.</div>
-    </div>
+    <EmptyState
+      v-if="!filteredItems.length && !loading"
+      class="mt-8 md:mx-auto md:max-w-2xl"
+      icon="🔔"
+      title="Notificações em breve"
+      description="Aqui você poderá configurar lembretes de vencimentos, alertas de gastos e avisos sobre atualizações do Kitamo."
+      cta-label="Em desenvolvimento"
+      :cta-disabled="true"
+    />
 
     <div v-else class="mt-6 space-y-3 md:mx-auto md:max-w-2xl">
       <div v-for="n in filteredItems" :key="n.id" class="rounded-3xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200/60">
