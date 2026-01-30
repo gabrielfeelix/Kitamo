@@ -59,6 +59,7 @@ const badgeForStatus = (status: string) => {
 	const editingId = ref<number | null>(null);
 	const previewOpen = ref(false);
 	const variableMenuOpen = ref(false);
+	const templateMenuOpen = ref(false);
 	const imageModalOpen = ref(false);
 	const imageUrl = ref('');
 	const imageFile = ref<File | null>(null);
@@ -93,8 +94,115 @@ const badgeForStatus = (status: string) => {
 	    { key: '{data_atual}', label: 'Data de hoje' },
 	] as const;
 
+	const templates = [
+	    {
+	        key: 'welcome',
+	        label: '📧 Boas-vindas',
+	        title: 'Bem-vindo ao Kitamo!',
+	        subject: '{nome_usuario}, sua conta foi criada ✅',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Que bom ter você aqui no Kitamo! 🎉</p>
+<p>Seu plano <strong>{plano}</strong> já está ativo e você pode começar a usar agora mesmo.</p>
+<p><strong>Próximos passos:</strong></p>
+<ol>
+  <li>Adicione sua primeira conta bancária</li>
+  <li>Cadastre uma despesa ou receita</li>
+  <li>Veja sua projeção futura de saldo</li>
+</ol>
+<p>Qualquer dúvida, estamos aqui para ajudar!</p>
+<p><a href="#" target="_blank" rel="noopener">Começar agora</a></p>
+<p>Abraços,<br/>Equipe Kitamo</p>
+`.trim(),
+	    },
+	    {
+	        key: 'feature',
+	        label: '🎉 Lançamento de feature',
+	        title: 'Novidade no Kitamo 🎉',
+	        subject: 'Novidade: uma nova funcionalidade chegou ✅',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Temos uma novidade no Kitamo: <strong>[NOME DA FEATURE]</strong> 🎉</p>
+<p>Com ela, você consegue:</p>
+<ul>
+  <li>[benefício 1]</li>
+  <li>[benefício 2]</li>
+  <li>[benefício 3]</li>
+</ul>
+<p>Atualize e aproveite!</p>
+<p>Equipe Kitamo</p>
+`.trim(),
+	    },
+	    {
+	        key: 'billing',
+	        label: '💳 Lembrete de pagamento',
+	        title: 'Lembrete de pagamento',
+	        subject: 'Lembrete: sua fatura vence em breve 💳',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Passando para lembrar que há uma fatura com vencimento próximo.</p>
+<p>Saldo atual: <strong>{saldo}</strong></p>
+<p>Se precisar de ajuda, conte com a gente.</p>
+<p>Equipe Kitamo</p>
+`.trim(),
+	    },
+	    {
+	        key: 'monthly',
+	        label: '📊 Relatório mensal',
+	        title: 'Seu resumo do mês no Kitamo 📊',
+	        subject: 'Resumo mensal ({data_atual}) 📊',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Aqui vai um resumo do seu mês no Kitamo.</p>
+<ul>
+  <li>Saldo atual: <strong>{saldo}</strong></li>
+  <li>Plano: <strong>{plano}</strong></li>
+</ul>
+<p>Quer ver mais detalhes? Abra o app e confira seus relatórios.</p>
+<p>Equipe Kitamo</p>
+`.trim(),
+	    },
+	    {
+	        key: 'maintenance',
+	        label: '⚠️ Manutenção programada',
+	        title: 'Manutenção programada ⚠️',
+	        subject: 'Aviso: manutenção programada no Kitamo ⚠️',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Vamos realizar uma manutenção programada para melhorar a estabilidade do Kitamo.</p>
+<p><strong>Quando:</strong> {data_atual} (horário a confirmar)</p>
+<p>Durante o período, o sistema pode ficar instável por alguns minutos.</p>
+<p>Agradecemos a compreensão.</p>
+<p>Equipe Kitamo</p>
+`.trim(),
+	    },
+	    {
+	        key: 'promo',
+	        label: '🎁 Promoção/desconto',
+	        title: 'Oferta especial 🎁',
+	        subject: 'Oferta por tempo limitado 🎁',
+	        content: `
+<p>Olá {nome_usuario}!</p>
+<p>Temos uma oferta especial por tempo limitado para você!</p>
+<p><strong>[DESCREVER OFERTA]</strong></p>
+<p><a href="#" target="_blank" rel="noopener">Aproveitar agora</a></p>
+<p>Equipe Kitamo</p>
+`.trim(),
+	    },
+	] as const;
+
 	const insertVariable = (token: string) => {
 	    editorRef.value?.insertText?.(token);
+	};
+
+	const applyTemplate = (key: (typeof templates)[number]['key']) => {
+	    const tpl = templates.find((t) => t.key === key);
+	    if (!tpl) return;
+	    openCreate(activeTab.value);
+	    form.title = tpl.title;
+	    form.subject = tpl.subject;
+	    form.content = tpl.content;
+	    templateMenuOpen.value = false;
 	};
 
 	const sampleData = {
@@ -314,13 +422,41 @@ const sendNow = (id: number) => {
                 </div>
 
                 <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
-                    <button
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-2xl bg-[#14B8A6] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
-                        @click="openCreate(activeTab)"
-                    >
-                        + {{ activeTab === 'newsletter' ? 'Nova newsletter' : 'Novo comunicado' }}
-                    </button>
+                    <div class="relative flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-2xl bg-[#14B8A6] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20"
+                            @click="openCreate(activeTab)"
+                        >
+                            + {{ activeTab === 'newsletter' ? 'Nova newsletter' : 'Novo comunicado' }}
+                        </button>
+
+                        <button
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            @click="templateMenuOpen = !templateMenuOpen"
+                        >
+                            📋 Usar template
+                            <svg class="ml-2 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+
+                        <div
+                            v-if="templateMenuOpen"
+                            class="absolute left-0 top-[calc(100%+8px)] z-10 w-[280px] rounded-2xl bg-white p-2 shadow-lg ring-1 ring-slate-200/60"
+                        >
+                            <button
+                                v-for="t in templates"
+                                :key="t.key"
+                                type="button"
+                                class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                @click="applyTemplate(t.key)"
+                            >
+                                <span class="truncate">{{ t.label }}</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="text-xs font-semibold text-slate-400">
                         {{ activeTab === 'newsletter' ? 'Newsletter vai para leads inscritos.' : 'Comunicados vão para todos os usuários ativos.' }}
                     </div>

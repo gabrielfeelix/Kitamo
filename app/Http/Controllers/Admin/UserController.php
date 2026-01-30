@@ -13,13 +13,47 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $users = User::query()
-            ->select('id', 'name', 'email', 'phone', 'avatar_path', 'is_admin', 'disabled_at', 'created_at')
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(fn (User $user) => [
+        $q = trim((string) $request->query('q', ''));
+        $role = trim((string) $request->query('role', ''));
+        $status = trim((string) $request->query('status', ''));
+        $plan = trim((string) $request->query('plan', ''));
+
+        $query = User::query()
+            ->select('id', 'name', 'email', 'phone', 'avatar_path', 'is_admin', 'disabled_at', 'email_verified_at', 'created_at')
+            ->orderByDesc('created_at');
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if (in_array($role, ['admin', 'user'], true)) {
+            $query->where('is_admin', $role === 'admin');
+        }
+
+        if (in_array($status, ['active', 'inactive', 'pending'], true)) {
+            if ($status === 'inactive') {
+                $query->whereNotNull('disabled_at');
+            } elseif ($status === 'pending') {
+                $query->whereNull('disabled_at')->whereNull('email_verified_at');
+            } else {
+                $query->whereNull('disabled_at')->whereNotNull('email_verified_at');
+            }
+        }
+
+        if ($plan !== '' && in_array($plan, ['Free', 'Pro', 'Premium', 'Família'], true) && $plan !== 'Free') {
+            // Ainda não existe vínculo de plano no usuário. Enquanto isso, apenas "Free" tem usuários.
+            $query->whereRaw('0 = 1');
+        }
+
+        $users = $query
+            ->paginate(50)
+            ->withQueryString()
+            ->through(fn (User $user) => [
                 'id' => (int) $user->id,
                 'name' => (string) $user->name,
                 'email' => (string) $user->email,
@@ -27,13 +61,44 @@ class UserController extends Controller
                 'avatar_url' => $user->avatar_url,
                 'created_at' => $user->created_at?->toISOString(),
                 'role' => $user->is_admin ? 'admin' : 'user',
-                'status' => $user->disabled_at ? 'disabled' : 'active',
+                'is_disabled' => (bool) $user->disabled_at,
+                'email_verified_at' => $user->email_verified_at?->toISOString(),
                 'plan' => 'Free',
             ]);
 
         return Inertia::render('Admin/Users', [
+            'q' => $q,
+            'filters' => [
+                'q' => $q,
+                'plan' => $plan ?: null,
+                'status' => $status ?: null,
+                'role' => $role ?: null,
+            ],
             'users' => $users,
         ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'role' => ['nullable', 'in:admin,user'],
+            'status' => ['nullable', 'in:active,disabled'],
+        ]);
+
+        $user = new User();
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->phone = $data['phone'] ?? null;
+        $user->password = $data['password'];
+        $user->is_admin = ($data['role'] ?? 'user') === 'admin';
+        $user->disabled_at = ($data['status'] ?? 'active') === 'disabled' ? Carbon::now() : null;
+        $user->save();
+
+        return back()->with('success', 'Usuário criado.');
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -69,6 +134,9 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        if (mb_strtolower((string) $user->email) === 'contato@kitamo.com.br') {
+            return back()->withErrors(['default' => 'Não é possível excluir o usuário administrador principal.']);
+        }
         $user->delete();
         return back()->with('success', 'Usuário excluído.');
     }

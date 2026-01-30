@@ -6,6 +6,8 @@ import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import AdminLayout from '@/Components/AdminLayout.vue';
 import Modal from '@/Components/Modal.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
+import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
 
 type Scope = 'user' | 'admin';
 type Channel = 'in_app' | 'email' | 'sms' | 'whatsapp';
@@ -135,10 +137,21 @@ const save = () => {
     });
 };
 
-const destroyRule = (id: number) => {
-    router.delete(route('admin.notifications.destroy', id), {
+const deleteTarget = ref<RuleRow | null>(null);
+const deleteForm = useForm({});
+
+const requestDelete = (rule: RuleRow) => {
+    deleteTarget.value = rule;
+};
+
+const confirmDelete = () => {
+    if (!deleteTarget.value) return;
+    deleteForm.delete(route('admin.notifications.destroy', deleteTarget.value.id), {
         preserveScroll: true,
-        onSuccess: () => router.reload({ only: ['rules'] }),
+        onSuccess: () => {
+            deleteTarget.value = null;
+            router.reload({ only: ['rules'] });
+        },
     });
 };
 
@@ -217,12 +230,7 @@ const previewText = computed(() => {
                                     <div class="flex items-center gap-2">
                                         <span class="text-lg">{{ r.icon || '🔔' }}</span>
                                         <div class="truncate text-base font-semibold text-slate-900">{{ r.title }}</div>
-                                        <span
-                                            class="rounded-full px-3 py-1 text-xs font-semibold"
-                                            :class="r.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
-                                        >
-                                            {{ r.enabled ? 'Ativa' : 'Pausada' }}
-                                        </span>
+                                        <StatusBadge :variant="r.enabled ? 'active' : 'inactive'" :label="r.enabled ? 'Ativa' : 'Pausada'" />
                                     </div>
                                     <div v-if="r.description" class="mt-1 text-sm text-slate-600">{{ r.description }}</div>
                                     <div class="mt-2 text-xs font-semibold text-slate-500">Canal: {{ channelsLabel(r.channels) }}</div>
@@ -235,7 +243,7 @@ const previewText = computed(() => {
                                     <button type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-50" @click="sendTest(r.id)">
                                         Testar
                                     </button>
-                                    <button type="button" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100 hover:bg-red-100" @click="destroyRule(r.id)">
+                                    <button type="button" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100 hover:bg-red-100" @click="requestDelete(r)">
                                         Excluir
                                     </button>
                                 </div>
@@ -260,12 +268,7 @@ const previewText = computed(() => {
                                     <div class="flex items-center gap-2">
                                         <span class="text-lg">{{ r.icon || '🚨' }}</span>
                                         <div class="truncate text-base font-semibold text-slate-900">{{ r.title }}</div>
-                                        <span
-                                            class="rounded-full px-3 py-1 text-xs font-semibold"
-                                            :class="r.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
-                                        >
-                                            {{ r.enabled ? 'Ativa' : 'Pausada' }}
-                                        </span>
+                                        <StatusBadge :variant="r.enabled ? 'active' : 'inactive'" :label="r.enabled ? 'Ativa' : 'Pausada'" />
                                     </div>
                                     <div v-if="r.description" class="mt-1 text-sm text-slate-600">{{ r.description }}</div>
                                     <div class="mt-2 text-xs font-semibold text-slate-500">Canal: {{ channelsLabel(r.channels) }}</div>
@@ -278,7 +281,7 @@ const previewText = computed(() => {
                                     <button type="button" class="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-50" @click="sendTest(r.id)">
                                         Testar
                                     </button>
-                                    <button type="button" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100 hover:bg-red-100" @click="destroyRule(r.id)">
+                                    <button type="button" class="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100 hover:bg-red-100" @click="requestDelete(r)">
                                         Excluir
                                     </button>
                                 </div>
@@ -287,6 +290,17 @@ const previewText = computed(() => {
                     </div>
                 </section>
             </div>
+
+            <DestructiveConfirmModal
+                :show="Boolean(deleteTarget)"
+                title="Excluir notificação?"
+                :item-title="deleteTarget?.title ?? ''"
+                :item-subtitle="deleteTarget?.trigger_key ?? ''"
+                confirm-word="EXCLUIR"
+                :busy="deleteForm.processing"
+                @close="deleteTarget = null"
+                @confirm="confirmDelete"
+            />
 
             <Modal :show="modalOpen" maxWidth="2xl" @close="modalOpen = false">
                 <div class="p-6">

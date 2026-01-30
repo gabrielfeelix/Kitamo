@@ -287,6 +287,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 	    Route::get('/admin', fn () => redirect()->route('admin.users.index'))->name('admin.index');
 	    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
+	    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
 	    Route::patch('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
 	    Route::patch('/admin/users/{user}/password', [UserController::class, 'updatePassword'])->name('admin.users.password');
 	    Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
@@ -294,6 +295,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	    Route::get('/admin/roles', [RolesController::class, 'index'])->name('admin.roles.index');
 	    Route::patch('/admin/roles/{role}', [RolesController::class, 'update'])->name('admin.roles.update');
 	    Route::get('/admin/logs', [LogController::class, 'index'])->name('admin.logs.index');
+	    Route::get('/admin/logs/export', [LogController::class, 'export'])->name('admin.logs.export');
 	    Route::get('/admin/plans', [PlanController::class, 'index'])->name('admin.plans.index');
 	    Route::post('/admin/plans', [PlanController::class, 'store'])->name('admin.plans.store');
 	    Route::patch('/admin/plans/{plan}', [PlanController::class, 'update'])->name('admin.plans.update');

@@ -6,6 +6,7 @@ import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import Modal from '@/Components/Modal.vue';
 import AdminLayout from '@/Components/AdminLayout.vue';
+import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
 
 type LeadRow = {
     id: number;
@@ -79,13 +80,14 @@ const save = () => {
     });
 };
 
-const deletingId = ref<number | null>(null);
+const deleteTarget = ref<LeadRow | null>(null);
 const deleteForm = useForm({});
-const confirmDelete = (id: number) => {
-    deleteForm.delete(route('admin.leads.destroy', id), {
+const confirmDelete = () => {
+    if (!deleteTarget.value) return;
+    deleteForm.delete(route('admin.leads.destroy', deleteTarget.value.id), {
         preserveScroll: true,
         onSuccess: () => {
-            deletingId.value = null;
+            deleteTarget.value = null;
             router.reload({ only: ['leads'] });
         },
     });
@@ -155,24 +157,10 @@ const confirmDelete = (id: number) => {
                                         <button
                                             type="button"
                                             class="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100 hover:bg-red-100"
-                                            @click="deletingId = deletingId === lead.id ? null : lead.id"
+                                            @click="deleteTarget = lead"
                                         >
                                             Excluir
                                         </button>
-                                    </div>
-                                    <div v-if="deletingId === lead.id" class="mt-2 rounded-xl bg-red-50 p-3 text-left ring-1 ring-red-100">
-                                        <div class="text-xs font-semibold text-red-700">Tem certeza?</div>
-                                        <div class="mt-2 flex justify-end gap-2">
-                                            <button type="button" class="px-3 py-2 text-xs font-semibold text-slate-600" @click="deletingId = null">Cancelar</button>
-                                            <button
-                                                type="button"
-                                                class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                                                :disabled="deleteForm.processing"
-                                                @click="confirmDelete(lead.id)"
-                                            >
-                                                Excluir agora
-                                            </button>
-                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -180,6 +168,17 @@ const confirmDelete = (id: number) => {
                     </table>
                 </div>
             </div>
+
+            <DestructiveConfirmModal
+                :show="Boolean(deleteTarget)"
+                title="Excluir lead?"
+                :item-title="deleteTarget?.name || 'Lead'"
+                :item-subtitle="deleteTarget?.email ?? ''"
+                confirm-word="EXCLUIR"
+                :busy="deleteForm.processing"
+                @close="deleteTarget = null"
+                @confirm="confirmDelete"
+            />
         </AdminLayout>
     </component>
 

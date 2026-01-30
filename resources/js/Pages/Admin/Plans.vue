@@ -6,6 +6,8 @@ import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import AdminLayout from '@/Components/AdminLayout.vue';
 import Modal from '@/Components/Modal.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
+import DestructiveConfirmModal from '@/Components/DestructiveConfirmModal.vue';
 import { formatMoneyInputCentsShift, moneyInputToNumber, numberToMoneyInput } from '@/lib/moneyInput';
 import { preventNonDigitKeydown } from '@/lib/inputGuards';
 
@@ -196,6 +198,54 @@ const toggleActive = (p: PlanRow) => {
         { preserveScroll: true, onSuccess: () => router.reload({ only: ['plans'] }) },
     );
 };
+
+const deactivateTarget = ref<PlanRow | null>(null);
+const deactivateBusy = ref(false);
+
+const requestToggleActive = (p: PlanRow) => {
+    if (p.is_active) {
+        deactivateTarget.value = p;
+        return;
+    }
+    toggleActive(p);
+};
+
+const confirmDeactivate = () => {
+    if (!deactivateTarget.value) return;
+    const p = deactivateTarget.value;
+    deactivateBusy.value = true;
+    router.patch(
+        route('admin.plans.update', p.id),
+        {
+            name: p.name,
+            description: p.description,
+            price_cents: p.price_cents,
+            currency: p.currency,
+            interval: p.interval,
+            accounts_limit: p.accounts_limit,
+            cards_limit: p.cards_limit,
+            projection_days: p.projection_days,
+            backup_enabled: p.backup_enabled,
+            recurring_enabled: p.recurring_enabled,
+            priority_support: p.priority_support,
+            trial_days: p.trial_days,
+            requires_card: p.requires_card,
+            is_popular: p.is_popular,
+            is_active: false,
+            sort_order: 0,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                deactivateTarget.value = null;
+                router.reload({ only: ['plans'] });
+            },
+            onFinish: () => {
+                deactivateBusy.value = false;
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -252,14 +302,28 @@ const toggleActive = (p: PlanRow) => {
                         <button
                             type="button"
                             class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
-                            @click="toggleActive(p)"
+                            @click="requestToggleActive(p)"
                         >
                             {{ p.is_active ? 'Desativar' : 'Ativar' }}
                         </button>
-                        <span v-if="!p.is_active" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Desativado</span>
+                        <StatusBadge :variant="p.is_active ? 'active' : 'inactive'" :label="p.is_active ? 'Ativo' : 'Inativo'" />
                     </div>
                 </div>
             </div>
+
+            <DestructiveConfirmModal
+                :show="Boolean(deactivateTarget)"
+                title="Desativar plano?"
+                action-label="desativar"
+                :item-title="deactivateTarget?.name ?? ''"
+                :item-subtitle="deactivateTarget?.slug ?? ''"
+                :consequences="[]"
+                confirm-word="EXCLUIR"
+                confirm-label="Desativar"
+                :busy="deactivateBusy"
+                @close="deactivateTarget = null"
+                @confirm="confirmDeactivate"
+            />
 
             <Modal :show="modalOpen" maxWidth="2xl" @close="modalOpen = false">
                 <div class="p-6">
@@ -425,4 +489,3 @@ const toggleActive = (p: PlanRow) => {
         </AdminLayout>
     </component>
 </template>
-

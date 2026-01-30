@@ -108,15 +108,17 @@ const save = async () => {
                                     <button
                                         v-else
                                         type="button"
-                                        class="inline-flex h-7 w-11 items-center rounded-full px-1 ring-1 transition"
-                                        :class="isAllowed(selectedRole, perm.key) ? 'bg-[#14B8A6] ring-emerald-300/70' : 'bg-slate-100 ring-slate-200/70'"
+                                        class="inline-flex h-6 w-11 items-center rounded-full px-0.5 transition duration-200 ring-1 ring-slate-200 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:ring-offset-2"
+                                        :class="isAllowed(selectedRole, perm.key) ? 'bg-emerald-500' : 'bg-slate-200'"
                                         @click="toggle(selectedRole, perm.key)"
-                                        :aria-label="isAllowed(selectedRole, perm.key) ? 'Desativar permissão' : 'Ativar permissão'"
+                                        :aria-label="isAllowed(selectedRole, perm.key) ? `Desativar ${perm.label}` : `Ativar ${perm.label}`"
                                     >
                                         <span
-                                            class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
-                                            :class="isAllowed(selectedRole, perm.key) ? 'translate-x-4' : 'translate-x-0'"
-                                        ></span>
+                                            class="relative inline-flex h-5 w-5 items-center justify-center rounded-full shadow-sm transition-transform duration-200"
+                                            :class="isAllowed(selectedRole, perm.key) ? 'translate-x-5 bg-white' : 'translate-x-0.5 bg-slate-500'"
+                                        >
+                                            <span v-if="isAllowed(selectedRole, perm.key)" class="text-[11px] font-bold leading-none text-emerald-600" aria-hidden="true">✓</span>
+                                        </span>
                                     </button>
                                 </td>
                             </tr>
