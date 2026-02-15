@@ -133,7 +133,7 @@ const closeEditModal = () => {
     <Head title="Tags" />
 
     <component :is="Shell" v-bind="shellProps">
-        <header class="flex items-center justify-between pt-2">
+        <header v-if="isMobile" class="relative flex items-center justify-center pt-2">
             <Link
                 :href="route('dashboard')"
                 class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"

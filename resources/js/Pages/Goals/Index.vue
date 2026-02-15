@@ -101,6 +101,13 @@ const statusPill = {
 
 const statusFor = (status: string) => statusPill[status as keyof typeof statusPill] ?? statusPill.on_track;
 
+const totalSaved = computed(() => goals.value.reduce((acc, g) => acc + g.current, 0));
+const totalTarget = computed(() => goals.value.reduce((acc, g) => acc + g.target, 0));
+const totalPct = computed(() => {
+    if (totalTarget.value === 0) return 0;
+    return Math.min(100, Math.round((totalSaved.value / totalTarget.value) * 100));
+});
+
 type GoalFilter = 'all' | 'short' | 'long';
 const goalFilter = ref<GoalFilter>('all');
 const filteredGoals = computed(() => {
@@ -204,10 +211,14 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
     <Head title="Metas" />
 
     <component :is="Shell" v-bind="shellProps" @add="openNewTransaction">
-        <header class="flex items-center justify-between pt-2">
-            <div v-if="isMobile" class="text-2xl font-semibold tracking-tight text-slate-900">Metas</div>
-            <div v-else class="text-lg font-semibold text-slate-900">Metas</div>
+        <header v-if="isMobile" class="flex items-center justify-between pt-2">
+            <div class="text-2xl font-semibold tracking-tight text-slate-900">Metas</div>
         </header>
+
+        <div :class="[isMobile ? 'contents' : 'mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start']">
+            
+            <!-- Left Column -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-8']">
 
         <div v-if="goals.length === 0" class="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center shadow-sm">
             <Link
@@ -292,6 +303,62 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                     </div>
                 </div>
             </Link>
+        </div>
+            </div>
+
+            <!-- Right Column (Desktop Only) -->
+            <div v-if="!isMobile" class="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+                <!-- Resumo Geral -->
+                <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 6v6l4 2" />
+                            </svg>
+                        </div>
+                        <div>
+                             <h3 class="text-base font-bold text-slate-900">Resumo Geral</h3>
+                             <p class="text-xs font-medium text-slate-500">{{ goals.length }} metas ativas</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-end mb-1">
+                                <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Total Guardado</span>
+                                <span class="text-lg font-bold text-emerald-600">{{ formatMoney(totalSaved) }}</span>
+                            </div>
+                            <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                                <div class="h-full rounded-full bg-emerald-500 transition-all duration-1000" :style="{ width: `${totalPct}%` }"></div>
+                            </div>
+                            <div class="text-right mt-1 text-[10px] font-bold text-slate-400">{{ totalPct }}% da meta global</div>
+                        </div>
+
+                         <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-xs font-semibold text-slate-600">Faltam para atingir tudo</span>
+                            <span class="text-sm font-bold text-slate-900">{{ formatMoney(totalTarget - totalSaved) }}</span>
+                        </div>
+                    </div>
+
+                    <Link :href="route('goals.create')" class="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3 text-sm font-bold text-white hover:bg-slate-800 transition-colors">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Criar nova meta
+                    </Link>
+                </div>
+
+                <!-- Dica / Motivacional -->
+                <div class="rounded-3xl bg-emerald-50 p-6 border border-emerald-100">
+                    <h4 class="text-sm font-bold text-emerald-900 mb-2">Dica Financeira</h4>
+                    <p class="text-xs text-emerald-700 leading-relaxed">
+                        Manter depósitos regulares, mesmo que pequenos, é o segredo para atingir suas metas. Tente automatizar suas economias.
+                    </p>
+                </div>
+            </div>
+
         </div>
 
         <TransactionModal

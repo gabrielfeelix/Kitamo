@@ -1287,6 +1287,49 @@ onMounted(() => {
                 <div class="mt-1 text-xs text-slate-500">Adicione seus primeiros lançamentos para ver o fluxo.</div>
             </div>
 	        </section>
+
+            <section v-if="hasEntries" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                            </svg>
+                        </span>
+                        <div class="text-base font-semibold text-slate-900">Últimas movimentações</div>
+                    </div>
+                    <Link :href="route('accounts.index')" class="text-sm font-semibold text-emerald-600 hover:text-emerald-700">Ver todas</Link>
+                </div>
+
+                <div class="space-y-1">
+                    <button
+                        v-for="entry in recentEntries"
+                        :key="entry.id"
+                        @click="openEntryDetail(entry)"
+                        class="group flex w-full items-center justify-between rounded-2xl p-2 hover:bg-slate-50 ring-1 ring-transparent hover:ring-slate-100 transition-all text-left"
+                    >
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-colors"
+                                :class="entry.kind === 'income' ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100' : 'bg-red-50 text-red-500 group-hover:bg-red-100'"
+                            >
+                                <svg v-if="entry.kind === 'income'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+                                <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="truncate text-sm font-semibold text-slate-900 group-hover:text-slate-700">{{ entry.title }}</div>
+                                <div class="truncate text-xs font-medium text-slate-400">
+                                    {{ entry.categoryLabel }} • {{ formatEntryDate(entry.transactionDate) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-bold shrink-0 tabular-nums" :class="entry.kind === 'income' ? 'text-emerald-600' : 'text-slate-900'">
+                            {{ entry.kind === 'income' ? '+' : '-' }} {{ hideValues ? '••••' : formatBRL(entry.amount).replace('R$', '') }}
+                        </div>
+                    </button>
+                </div>
+            </section>
                 </div>
                 <div :class="[isMobile ? 'contents' : 'lg:col-span-4 flex flex-col']">
 

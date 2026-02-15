@@ -17,7 +17,7 @@ const shellProps = computed(() =>
     <Head title="Tela inicial" />
 
     <component :is="Shell" v-bind="shellProps">
-        <header class="relative flex items-center justify-center pt-2">
+        <header v-if="isMobile" class="relative flex items-center justify-center pt-2">
             <Link
                 :href="route('settings')"
                 class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/60"
