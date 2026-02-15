@@ -6,6 +6,8 @@ export type HomeWidgetsState = {
     creditCards: boolean;
     projection: boolean;
     upcomingBills: boolean;
+    recentTransactions: boolean;
+    expenseCategories: boolean;
 };
 
 const props = withDefaults(
@@ -22,6 +24,8 @@ const state = ref<HomeWidgetsState>({
     creditCards: true,
     projection: true,
     upcomingBills: true,
+    recentTransactions: true,
+    expenseCategories: true,
 });
 
 onMounted(() => {
@@ -39,9 +43,14 @@ const save = () => {
     localStorage.setItem(props.storageKey, JSON.stringify(state.value));
 };
 
+const emit = defineEmits<{
+    (e: 'change', value: HomeWidgetsState): void;
+}>();
+
 const toggle = (key: keyof HomeWidgetsState) => {
     state.value[key] = !state.value[key];
     save();
+    emit('change', state.value);
 };
 
 const items = computed(() => [
@@ -68,6 +77,18 @@ const items = computed(() => [
         title: 'A Vencer',
         description: 'Lista de gastos a pagar',
         icon: 'calendar' as const,
+    },
+    {
+        key: 'recentTransactions' as const,
+        title: 'Últimas movimentações',
+        description: 'Lista de entradas e saídas recentes',
+        icon: 'list' as const,
+    },
+    {
+        key: 'expenseCategories' as const,
+        title: 'Gastos por categoria',
+        description: 'Onde você mais gastou no mês',
+        icon: 'pie' as const,
     },
 ]);
 </script>
@@ -102,6 +123,18 @@ const items = computed(() => [
                             <path d="M8 2v4" />
                             <path d="M16 2v4" />
                             <path d="M3 10h18" />
+                        </svg>
+                        <svg v-else-if="item.icon === 'list'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 6h13" />
+                            <path d="M8 12h13" />
+                            <path d="M8 18h13" />
+                            <path d="M3 6h.01" />
+                            <path d="M3 12h.01" />
+                            <path d="M3 18h.01" />
+                        </svg>
+                        <svg v-else-if="item.icon === 'pie'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                            <path d="M22 12A10 10 0 0 0 12 2v10z" />
                         </svg>
                         <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 19V5" />

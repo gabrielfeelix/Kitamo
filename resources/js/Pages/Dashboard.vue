@@ -23,6 +23,7 @@ import FixInstitutionModal, { type PendingItem } from '@/Components/FixInstituti
 import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
 import CountUp from '@/Components/CountUp.vue';
+import CategoryIcon from '@/Components/CategoryIcon.vue';
 
 type ProjecaoResponse = {
     projecao_diaria: Array<{
@@ -50,6 +51,8 @@ type HomeWidgetsState = {
     creditCards: boolean;
     projection: boolean;
     upcomingBills: boolean;
+    recentTransactions: boolean;
+    expenseCategories: boolean;
 };
 const HOME_WIDGETS_KEY = 'kitamo:home_widgets';
 const homeWidgets = ref<HomeWidgetsState>({
@@ -57,6 +60,8 @@ const homeWidgets = ref<HomeWidgetsState>({
     creditCards: true,
     projection: true,
     upcomingBills: true,
+    recentTransactions: true,
+    expenseCategories: true,
 });
 
 const loadHomeWidgets = () => {
@@ -84,6 +89,8 @@ const showAccountsSection = computed(() => homeWidgets.value.accounts);
 const showCreditCardsSection = computed(() => homeWidgets.value.creditCards);
 const showProjectionSection = computed(() => homeWidgets.value.projection);
 const showUpcomingBillsSection = computed(() => homeWidgets.value.upcomingBills);
+const showRecentTransactionsSection = computed(() => homeWidgets.value.recentTransactions);
+const showExpenseCategoriesSection = computed(() => homeWidgets.value.expenseCategories);
 
 const initials = computed(() => {
     const parts = String(userName.value).trim().split(/\s+/).filter(Boolean);
@@ -314,6 +321,12 @@ const topExpenseCategories = computed(() => {
                 amount,
                 percent: totalTracked > 0 ? (amount / totalTracked) * 100 : 0,
                 icon: meta?.icon || 'other',
+                color: meta?.customColor || (meta?.tone === 'amber' ? '#f59e0b' : 
+                       meta?.tone === 'blue' ? '#3b82f6' :
+                       meta?.tone === 'purple' ? '#a855f7' :
+                       meta?.tone === 'red' ? '#ef4444' :
+                       meta?.tone === 'green' ? '#10b981' :
+                       '#64748b'),
             };
         })
         .sort((a, b) => b.amount - a.amount)
@@ -1317,7 +1330,7 @@ onMounted(() => {
             </div>
 	        </section>
 
-            <section v-if="hasEntries" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+            <section v-if="hasEntries && showRecentTransactionsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
@@ -1360,7 +1373,7 @@ onMounted(() => {
                 </div>
             </section>
 
-            <section v-if="topExpenseCategories.length > 0" class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+            <section v-if="topExpenseCategories.length > 0 && showExpenseCategoriesSection" class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
                 <div class="flex items-center gap-3 mb-4">
                      <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1371,25 +1384,28 @@ onMounted(() => {
                     <div class="text-base font-semibold text-slate-900">Onde você mais gastou</div>
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-5">
                     <div v-for="cat in topExpenseCategories" :key="cat.label" class="group">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <div class="flex items-center gap-2">
-                                <div class="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-100 text-slate-500 text-xs">
-                                    <!-- Simple icon fallback based on label or generic -->
-                                     <svg v-if="cat.icon === 'cart'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-2 7H7L6 6ZM6 6l-2-2H2M9 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M17 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/></svg>
-                                    <svg v-else-if="cat.icon === 'food'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3v7M8 3v7M6 3v7M14 3v7c0 2 1 3 3 3v8M20 3v7"/></svg>
-                                    <svg v-else class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <div 
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md"
+                                    :style="{ backgroundColor: cat.color }"
+                                >
+                                    <CategoryIcon :icon="cat.icon" class="h-5 w-5" />
                                 </div>
                                 <span class="text-sm font-semibold text-slate-700">{{ cat.label }}</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-900">{{ hideValues ? '••••' : formatBRL(cat.amount).replace('R$', '') }}</div>
+                            <div class="text-sm font-bold text-slate-900 tabular-nums">{{ hideValues ? '••••' : formatBRL(cat.amount).replace('R$', '') }}</div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="h-2 w-full rounded-full bg-slate-50 overflow-hidden">
-                                <div class="h-full rounded-full bg-rose-500/80 transition-all duration-1000" :style="{ width: `${cat.percent}%` }"></div>
+                        <div class="flex items-center gap-3 pl-1">
+                            <div class="h-2.5 w-full rounded-full bg-slate-100/80 overflow-hidden ring-1 ring-slate-200/50">
+                                <div 
+                                    class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm" 
+                                    :style="{ width: `${cat.percent}%`, backgroundColor: cat.color }"
+                                ></div>
                             </div>
-                            <div class="text-[10px] font-bold text-slate-400 w-8 text-right">{{ Math.round(cat.percent) }}%</div>
+                            <div class="text-[11px] font-bold text-slate-400 w-9 text-right tabular-nums">{{ Math.round(cat.percent) }}%</div>
                         </div>
                     </div>
                 </div>
@@ -1701,7 +1717,7 @@ onMounted(() => {
                     </button>
                 </div>
                 <div class="mt-4">
-                    <HomeWidgetsManager />
+                    <HomeWidgetsManager @change="homeWidgets = $event" />
                 </div>
             </div>
         </Modal>
