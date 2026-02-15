@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NewsItem;
 use App\Models\NewsReaction;
+use App\Models\NewsFeedback;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -131,4 +132,28 @@ class NewsApiController extends Controller
             'my_reaction' => $mine ? (string) $mine : null,
         ]);
     }
+
+    public function sendFeedback(Request $request, NewsItem $newsItem): JsonResponse
+    {
+        $user = $request->user();
+        if (! $user) {
+            abort(401);
+        }
+
+        $data = $request->validate([
+            'feedback' => ['required', 'string', 'max:1000'],
+        ]);
+
+        NewsFeedback::create([
+            'news_item_id' => $newsItem->id,
+            'user_id' => $user->id,
+            'feedback_text' => $data['feedback'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Feedback enviado com sucesso!',
+        ]);
+    }
 }
+

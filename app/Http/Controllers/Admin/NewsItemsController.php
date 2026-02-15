@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewsItem;
+use App\Models\NewsFeedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,8 +36,35 @@ class NewsItemsController extends Controller
                 'created_at' => $n->created_at?->toISOString(),
             ]);
 
+        // Buscar feedbacks com informações do usuário e da novidade
+        $feedbacks = NewsFeedback::query()
+            ->join('users', 'news_feedbacks.user_id', '=', 'users.id')
+            ->join('news_items', 'news_feedbacks.news_item_id', '=', 'news_items.id')
+            ->select(
+                'news_feedbacks.id',
+                'news_feedbacks.news_item_id',
+                'news_items.title as news_title',
+                'users.name as user_name',
+                'users.email as user_email',
+                'news_feedbacks.feedback_text',
+                'news_feedbacks.created_at'
+            )
+            ->orderByDesc('news_feedbacks.created_at')
+            ->limit(100)
+            ->get()
+            ->map(fn ($f) => [
+                'id' => (int) $f->id,
+                'news_item_id' => (int) $f->news_item_id,
+                'news_title' => (string) $f->news_title,
+                'user_name' => (string) $f->user_name,
+                'user_email' => (string) $f->user_email,
+                'feedback_text' => (string) $f->feedback_text,
+                'created_at' => Carbon::parse($f->created_at)->toISOString(),
+            ]);
+
         return Inertia::render('Admin/News', [
             'items' => $items,
+            'feedbacks' => $feedbacks,
         ]);
     }
 

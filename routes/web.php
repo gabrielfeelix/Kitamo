@@ -271,6 +271,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	    Route::get('/api/notifications/count-unread', [NotificationsController::class, 'countUnread'])->name('api.notifications.count-unread');
 	    Route::get('/api/news', [NewsApiController::class, 'index'])->name('api.news.index');
 	    Route::post('/api/news/{newsItem}/reaction', [NewsApiController::class, 'react'])->name('api.news.react');
+    Route::post('/api/news/{newsItem}/feedback', [NewsApiController::class, 'sendFeedback'])->name('api.news.feedback');
 
     Route::patch('/api/user/notification-preferences', [NotificationPreferencesController::class, 'update'])->name('api.user.notification-preferences');
     Route::get('/api/widget/data', [WidgetController::class, 'data'])->name('api.widget.data');

@@ -17,6 +17,15 @@ const reactions = ref([
 ]);
 
 const toggleReaction = (index: number) => {
+    // Desativa todas as outras reações
+    reactions.value.forEach((r, i) => {
+        if (i !== index && r.active) {
+            r.active = false;
+            r.count = Math.max(0, r.count - 1);
+        }
+    });
+    
+    // Toggle da reação clicada
     const reaction = reactions.value[index];
     if (reaction.active) {
         reaction.count--;
@@ -28,6 +37,31 @@ const toggleReaction = (index: number) => {
 };
 
 const expanded = ref(false);
+const showFeedbackInput = ref(false);
+const feedbackText = ref('');
+const sendingFeedback = ref(false);
+
+const sendFeedback = async () => {
+    if (!feedbackText.value.trim() || sendingFeedback.value) return;
+    
+    sendingFeedback.value = true;
+    try {
+        const newsItemId = 1; // TODO: passar como prop
+        
+        await window.axios.post(`/api/news/${newsItemId}/feedback`, {
+            feedback: feedbackText.value
+        });
+        
+        feedbackText.value = '';
+        showFeedbackInput.value = false;
+        alert('Feedback enviado com sucesso!');
+    } catch (error) {
+        console.error('Erro ao enviar feedback:', error);
+        alert('Erro ao enviar feedback. Tente novamente.');
+    } finally {
+        sendingFeedback.value = false;
+    }
+};
 </script>
 
 <template>
@@ -57,7 +91,7 @@ const expanded = ref(false);
                             leave-from="translate-x-0"
                             leave-to="translate-x-full"
                         >
-                            <DialogPanel class="pointer-events-auto w-screen max-w-md">
+                            <DialogPanel class="pointer-events-auto w-screen max-w-lg">
                                 <div class="flex h-full flex-col overflow-y-scroll bg-[#F5F7FA] shadow-xl">
                                     <!-- Header -->
                                     <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200/60 bg-[#F5F7FA]/90 px-6 py-4 backdrop-blur-md">
@@ -144,7 +178,11 @@ const expanded = ref(false);
                                                 </div>
 
                                                 <div class="flex items-center gap-4">
-                                                    <button class="hidden items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 sm:flex">
+                                                    <button 
+                                                        @click="showFeedbackInput = !showFeedbackInput"
+                                                        class="flex items-center gap-2 text-xs font-bold transition"
+                                                        :class="showFeedbackInput ? 'text-teal-600' : 'text-slate-500 hover:text-slate-900'"
+                                                    >
                                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                                                         </svg>
@@ -153,6 +191,36 @@ const expanded = ref(false);
                                                     <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900">
                                                         Saiba mais
                                                         <span class="ml-1 text-slate-400">↗</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Feedback Input -->
+                                            <div v-if="showFeedbackInput" class="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <label class="block">
+                                                    <span class="text-xs font-semibold text-slate-700">Seu feedback</span>
+                                                    <textarea 
+                                                        v-model="feedbackText"
+                                                        rows="3"
+                                                        placeholder="Conte-nos o que você achou desta novidade..."
+                                                        class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                                    ></textarea>
+                                                </label>
+                                                <div class="flex justify-end gap-2">
+                                                    <button 
+                                                        @click="showFeedbackInput = false; feedbackText = ''"
+                                                        type="button"
+                                                        class="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                    <button 
+                                                        @click="sendFeedback"
+                                                        :disabled="!feedbackText.trim() || sendingFeedback"
+                                                        type="button"
+                                                        class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {{ sendingFeedback ? 'Enviando...' : 'Enviar Feedback' }}
                                                     </button>
                                                 </div>
                                             </div>

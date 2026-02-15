@@ -28,18 +28,32 @@ type NewsRow = {
     created_at: string | null;
 };
 
+type FeedbackRow = {
+    id: number;
+    news_item_id: number;
+    news_title: string;
+    user_name: string;
+    user_email: string;
+    feedback_text: string;
+    created_at: string;
+};
+
 const props = defineProps<{
     items: NewsRow[];
+    feedbacks?: FeedbackRow[];
 }>();
 
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() => (isMobile.value ? { showNav: false } : { title: 'Administração', showSearch: false, showNewAction: false }));
 
+const feedbacks = computed(() => props.feedbacks || []);
+
 const filterCategory = ref<string>('Todas');
 const filterStatus = ref<string>('Todos');
 const filterType = ref<string>('Todos');
 const search = ref('');
+const activeTab = ref<'news' | 'feedbacks'>('news');
 
 const categories = computed(() => {
     const set = new Set<string>();
@@ -60,7 +74,12 @@ const filtered = computed(() => {
     });
 });
 
-const newsMeta = computed(() => `${filtered.value.length} item(ns)`);
+const newsMeta = computed(() => {
+    if (activeTab.value === 'feedbacks') {
+        return `${feedbacks.value.length || 0} feedback(s)`;
+    }
+    return `${filtered.value.length} item(ns)`;
+});
 
 const formatDate = (iso: string | null) => {
     if (!iso) return '';
@@ -184,8 +203,38 @@ const confirmDelete = (id: number) => {
     <Head title="Administração · Novidades" />
 
     <component :is="Shell" v-bind="shellProps">
-        <AdminLayout title="Changelog" description="Crie e publique novidades do sistema (modal de novidades para usuários)." :meta="newsMeta">
-            <div class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
+        <AdminLayout title="Changelog & Feedbacks" description="Crie e publique novidades do sistema e visualize feedbacks dos usuários." :meta="newsMeta">
+            <!-- Tabs -->
+            <div class="mb-6 flex gap-2 rounded-2xl bg-slate-50 p-1 ring-1 ring-slate-200/60">
+                <button
+                    @click="activeTab = 'news'"
+                    :class="[
+                        'flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition',
+                        activeTab === 'news'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                    ]"
+                >
+                    Novidades
+                </button>
+                <button
+                    @click="activeTab = 'feedbacks'"
+                    :class="[
+                        'flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition',
+                        activeTab === 'feedbacks'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                    ]"
+                >
+                    Feedbacks
+                    <span v-if="feedbacks && feedbacks.length > 0" class="ml-2 rounded-full bg-teal-100 px-2 py-0.5 text-xs text-teal-700">
+                        {{ feedbacks.length }}
+                    </span>
+                </button>
+            </div>
+
+            <!-- News Tab -->
+            <div v-show="activeTab === 'news'" class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <div class="text-sm font-semibold text-slate-900">Changelog</div>
@@ -305,6 +354,47 @@ const confirmDelete = (id: number) => {
                                 >
                                     Excluir agora
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedbacks Tab -->
+            <div v-show="activeTab === 'feedbacks'" class="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200/60">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-900">Feedbacks Recebidos</div>
+                        <div class="mt-1 text-xs font-semibold text-slate-400">{{ feedbacks?.length || 0 }} feedback(s)</div>
+                    </div>
+                </div>
+
+                <EmptyState
+                    v-if="!feedbacks || feedbacks.length === 0"
+                    class="mt-6"
+                    icon="💬"
+                    title="Nenhum feedback recebido"
+                    description="Os feedbacks dos usuários sobre as novidades aparecerão aqui."
+                />
+
+                <div v-else class="mt-6 space-y-3">
+                    <div v-for="feedback in feedbacks" :key="feedback.id" class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/60">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <div class="text-sm font-semibold text-slate-900">{{ feedback.user_name }}</div>
+                                    <span class="text-xs text-slate-400">•</span>
+                                    <div class="text-xs text-slate-500">{{ feedback.user_email }}</div>
+                                </div>
+                                <div class="mt-1 text-xs font-semibold text-teal-600">
+                                    Sobre: {{ feedback.news_title }}
+                                </div>
+                                <div class="mt-3 text-sm text-slate-700 leading-relaxed">
+                                    {{ feedback.feedback_text }}
+                                </div>
+                            </div>
+                            <div class="text-xs text-slate-400 whitespace-nowrap">
+                                {{ formatDate(feedback.created_at) }}
                             </div>
                         </div>
                     </div>
