@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue';
 
 const props = defineProps<{
@@ -10,62 +10,73 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const billing = ref<'monthly' | 'yearly'>('yearly'); // Default to yearly for "savings" appeal
+type Plan = {
+    id: number;
+    name: string;
+    description: string | null;
+    price_cents: number;
+    interval: string;
+    accounts_limit: number | null;
+    cards_limit: number | null;
+    projection_days: number;
+    backup_enabled: boolean;
+    recurring_enabled: boolean;
+    priority_support: boolean;
+    is_popular: boolean;
+    is_active: boolean;
+};
 
-const plans = computed(() => [
-    {
-        name: 'Gratuito',
-        description: 'Ideal para experimentar',
-        price: 0,
-        features: [
-            '3 contas de banco',
-            'Relatórios básicos',
-            '1 usuário',
-            'Suporte por email',
-        ],
-        cta: 'Plano Atual',
-        isCurrent: true,
-        recommended: false,
-    },
-    {
-        name: 'Standard',
-        description: 'Para profissionais e pequenas equipes',
-        price: billing.value === 'monthly' ? 29 : 24, // 29/mo or 24/mo billed yearly
-        annualTotal: 288,
-        features: [
-            '10 contas de banco',
-            'Sem marca d\'água nos relatórios',
-            '5 usuários',
-            'Modelos de documentos',
-            'Relatórios intermediários',
-            'Suporte prioritário',
-        ],
-        cta: 'Fazer upgrade',
-        isCurrent: false,
-        recommended: true,
-    },
-    {
-        name: 'Premium',
-        description: 'Para empresas em crescimento',
-        price: billing.value === 'monthly' ? 59 : 49,
-        annualTotal: 588,
-        features: [
-            'Contas ilimitadas',
-            'Sem marca d\'água',
-            'Usuários ilimitados',
-            'Tudo do Standard +',
-            'Prioridade no suporte',
-            'Gerente de conta dedicado',
-            'API e Webhooks',
-        ],
-        cta: 'Contratar',
-        isCurrent: false,
-        recommended: false,
-    },
-]);
+const allPlans = ref<Plan[]>([]);
+const loading = ref(true);
+const billing = ref<'monthly' | 'annual'>('monthly');
 
-const formatMoney = (val: number) => 
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+const fetchPlans = async () => {
+    loading.value = true;
+    try {
+        const response = await window.axios.get('/api/plans-list');
+        allPlans.value = response.data;
+    } catch (error) {
+        console.error('Failed to load plans', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchPlans();
+});
+
+const filteredPlans = computed(() => {
+    // Filter plans based on selected interval
+    let plans = allPlans.value.filter(p => p.interval === billing.value);
+    
+    // If no annual plans exist, maybe show monthly ones or empty state? 
+    // For now, let's just show what matches.
+    return plans;
+});
+
+const formatMoney = (cents: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+};
+
+// Helper to generate features list from plan properties
+const getFeatures = (plan: Plan) => {
+    const features = [];
+    
+    if (plan.accounts_limit === null) features.push('Contas bancárias ilimitadas');
+    else features.push(`Até ${plan.accounts_limit} conta(s) bancária(s)`);
+
+    if (plan.cards_limit === null) features.push('Cartões de crédito ilimitados');
+    else features.push(`Até ${plan.cards_limit} cartão(ões) de crédito`);
+
+    features.push(`Projeção de saldo de ${plan.projection_days} dias`);
+
+    if (plan.recurring_enabled) features.push('Lançamentos recorrentes');
+    if (plan.backup_enabled) features.push('Backup automático diário');
+    if (plan.priority_support) features.push('Suporte prioritário');
+
+    return features;
+};
 </script>
 
 <template>
@@ -123,33 +134,38 @@ const formatMoney = (val: number) =>
                                     <div class="mt-8 flex items-center justify-center gap-4">
                                         <span class="text-sm font-bold" :class="billing === 'monthly' ? 'text-slate-900' : 'text-slate-500'">Mensal</span>
                                         <button 
-                                            @click="billing = billing === 'monthly' ? 'yearly' : 'monthly'"
+                                            @click="billing = billing === 'monthly' ? 'annual' : 'monthly'"
                                             class="relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                                            :class="billing === 'yearly' ? 'bg-[#8B5CF6]' : 'bg-slate-200'"
+                                            :class="billing === 'annual' ? 'bg-teal-500' : 'bg-slate-200'"
                                         >
                                             <span 
                                                 aria-hidden="true" 
                                                 class="pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                                                :class="billing === 'yearly' ? 'translate-x-6' : 'translate-x-0'"
+                                                :class="billing === 'annual' ? 'translate-x-6' : 'translate-x-0'"
                                             />
                                         </button>
                                         <span class="flex items-center gap-2">
-                                            <span class="text-sm font-bold" :class="billing === 'yearly' ? 'text-slate-900' : 'text-slate-500'">Anual</span>
-                                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Poupe até 44%</span>
+                                            <span class="text-sm font-bold" :class="billing === 'annual' ? 'text-slate-900' : 'text-slate-500'">Anual</span>
+                                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Economia</span>
                                         </span>
                                     </div>
                                 </div>
 
+                                <!-- Loading State -->
+                                <div v-if="loading" class="flex justify-center py-20">
+                                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-teal-500"></div>
+                                </div>
+
                                 <!-- Plans Grid -->
-                                <div class="isolate mx-auto grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+                                <div v-else class="isolate mx-auto grid max-w-md grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
                                     <div 
-                                        v-for="plan in plans" 
-                                        :key="plan.name"
+                                        v-for="plan in filteredPlans" 
+                                        :key="plan.id"
                                         class="relative flex flex-col justify-between rounded-[2rem] p-8 ring-1 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl xl:p-10"
-                                        :class="plan.recommended ? 'bg-white shadow-xl ring-[#8B5CF6] z-10 scale-105' : 'bg-white ring-slate-200 hover:ring-slate-300'"
+                                        :class="plan.is_popular ? 'bg-white shadow-xl ring-teal-500 z-10 scale-105' : 'bg-white ring-slate-200 hover:ring-slate-300'"
                                     >
                                         <!-- Recommended Badge -->
-                                        <div v-if="plan.recommended" class="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-[#8B5CF6] px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-violet-500/30">
+                                        <div v-if="plan.is_popular" class="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-teal-500/30">
                                             Recomendado
                                         </div>
 
@@ -157,20 +173,16 @@ const formatMoney = (val: number) =>
                                             <div class="flex items-center justify-between gap-x-4">
                                                 <h3 class="text-lg font-bold leading-8 text-slate-900">{{ plan.name }}</h3>
                                             </div>
-                                            <p class="mt-1 text-xs leading-6 text-slate-500">{{ plan.description }}</p>
+                                            <p class="mt-1 text-xs leading-6 text-slate-500 min-h-[1.5rem]">{{ plan.description }}</p>
                                             
                                             <div class="mt-6 flex items-baseline gap-x-1">
-                                                <span class="text-4xl font-bold tracking-tight text-slate-900">{{ formatMoney(plan.price) }}</span>
-                                                <span class="text-sm font-semibold leading-6 text-slate-500">/mês</span>
+                                                <span class="text-4xl font-bold tracking-tight text-slate-900">{{ formatMoney(plan.price_cents) }}</span>
+                                                <span class="text-sm font-semibold leading-6 text-slate-500">/{{ plan.interval === 'monthly' ? 'mês' : (plan.interval === 'annual' ? 'ano' : 'un') }}</span>
                                             </div>
-                                            <p v-if="billing === 'yearly' && plan.price > 0" class="mt-1 text-xs text-slate-400">
-                                                {{ formatMoney(plan.annualTotal!) }} / ano
-                                            </p>
-                                            <p v-else class="mt-1 text-xs text-transparent select-none">placeholder</p>
 
                                             <ul role="list" class="mt-8 space-y-3 text-sm leading-6 text-slate-600">
-                                                <li v-for="feature in plan.features" :key="feature" class="flex gap-x-3">
-                                                    <svg class="h-6 w-5 flex-none text-[#8B5CF6]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <li v-for="feature in getFeatures(plan)" :key="feature" class="flex gap-x-3">
+                                                    <svg class="h-6 w-5 flex-none text-teal-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                         <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
                                                     </svg>
                                                     {{ feature }}
@@ -180,35 +192,32 @@ const formatMoney = (val: number) =>
                                         
                                         <div class="mt-8">
                                             <button 
-                                                v-if="plan.recommended"
+                                                v-if="plan.is_popular"
                                                 type="button"
-                                                class="w-full rounded-2xl bg-[#8B5CF6] px-3 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-[#7C3AED] hover:shadow-violet-500/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
+                                                class="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-teal-500/25 transition-all hover:to-teal-500 hover:shadow-teal-500/40"
                                             >
-                                                {{ plan.cta }}
-                                            </button>
-                                            <button 
-                                                v-else-if="plan.isCurrent"
-                                                type="button"
-                                                disabled
-                                                class="w-full rounded-2xl bg-slate-100 px-3 py-3.5 text-center text-sm font-bold text-slate-500 cursor-not-allowed"
-                                            >
-                                                {{ plan.cta }}
+                                                Assinar {{ plan.name }}
                                             </button>
                                             <button
                                                 v-else
                                                 type="button"
-                                                class="w-full rounded-2xl bg-white px-3 py-3.5 text-center text-sm font-bold text-[#8B5CF6] ring-1 ring-inset ring-[#8B5CF6] transition-all hover:bg-violet-50"
+                                                class="w-full rounded-2xl bg-white px-3 py-3.5 text-center text-sm font-bold text-teal-600 ring-1 ring-inset ring-teal-500 transition-all hover:bg-teal-50"
                                             >
-                                                {{ plan.cta }}
+                                                Assinar {{ plan.name }}
                                             </button>
                                         </div>
+                                    </div>
+                                    
+                                    <!-- Empty State if no plans found -->
+                                    <div v-if="!loading && filteredPlans.length === 0" class="col-span-full py-12 text-center text-slate-500">
+                                        Nenhum plano disponível para o ciclo selecionado.
                                     </div>
                                 </div>
                                 
                                 <div class="mt-12 text-center">
-                                    <button class="inline-flex items-center gap-2 text-sm font-semibold text-[#8B5CF6] hover:text-[#7C3AED]">
+                                    <button class="inline-flex items-center gap-2 text-sm font-semibold text-teal-600 hover:text-teal-700">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" /></svg>
-                                        Ver comparação completa
+                                        Ver tabela comparativa completa
                                     </button>
                                 </div>
                             </div>

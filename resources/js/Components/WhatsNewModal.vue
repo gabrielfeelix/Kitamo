@@ -35,151 +35,155 @@ const expanded = ref(false);
         <Dialog as="div" class="relative z-50" @close="emit('close')">
             <TransitionChild
                 as="template"
-                enter="ease-out duration-300"
+                enter="ease-in-out duration-500"
                 enter-from="opacity-0"
                 enter-to="opacity-100"
-                leave="ease-in duration-200"
+                leave="ease-in-out duration-500"
                 leave-from="opacity-100"
                 leave-to="opacity-0"
             >
-                <div class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity" />
+                <div class="fixed inset-0 bg-slate-900/50 transition-opacity" />
             </TransitionChild>
 
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <TransitionChild
-                        as="template"
-                        enter="ease-out duration-300"
-                        enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        enter-to="opacity-100 translate-y-0 sm:scale-100"
-                        leave="ease-in duration-200"
-                        leave-from="opacity-100 translate-y-0 sm:scale-100"
-                        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    >
-                        <DialogPanel class="relative w-full max-w-lg transform overflow-hidden rounded-[2rem] bg-[#F5F7FA] text-left shadow-2xl transition-all sm:my-8">
-                            
-                            <!-- Header -->
-                            <div class="flex items-center justify-between border-b border-slate-200/60 bg-[#F5F7FA] px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <button @click="emit('close')" type="button" class="-ml-2 rounded-xl p-2 text-slate-400 hover:bg-slate-200/50 hover:text-slate-600">
-                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M4 6h16M4 12h16M4 18h16" />
-                                        </svg>
-                                    </button>
-                                    <h3 class="text-lg font-bold text-slate-800">Novidades do Kitamo</h3>
-                                </div>
-                                <button @click="emit('close')" type="button" class="-mr-2 rounded-xl p-2 text-slate-400 hover:bg-slate-200/50 hover:text-slate-600">
-                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- Content -->
-                            <div class="p-2">
-                                <div class="rounded-[1.5rem] bg-white p-6 shadow-sm ring-1 ring-slate-100">
-                                    <div class="aspect-video w-full overflow-hidden rounded-2xl bg-slate-100 relative mb-6 group">
-                                         <img 
-                                            src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop" 
-                                            alt="New Feature" 
-                                            class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                                        />
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                        <div class="absolute bottom-4 left-4">
-                                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 backdrop-blur shadow-lg">
-                                                <svg class="h-6 w-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <div class="fixed inset-0 overflow-hidden">
+                <div class="absolute inset-0 overflow-hidden">
+                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                        <TransitionChild
+                            as="template"
+                            enter="transform transition ease-in-out duration-500 sm:duration-700"
+                            enter-from="translate-x-full"
+                            enter-to="translate-x-0"
+                            leave="transform transition ease-in-out duration-500 sm:duration-700"
+                            leave-from="translate-x-0"
+                            leave-to="translate-x-full"
+                        >
+                            <DialogPanel class="pointer-events-auto w-screen max-w-md">
+                                <div class="flex h-full flex-col overflow-y-scroll bg-[#F5F7FA] shadow-xl">
+                                    <!-- Header -->
+                                    <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200/60 bg-[#F5F7FA]/90 px-6 py-4 backdrop-blur-md">
+                                        <div class="flex items-center gap-3">
+                                            <button @click="emit('close')" type="button" class="-ml-2 rounded-xl p-2 text-slate-400 hover:bg-slate-200/50 hover:text-slate-600 transition-colors">
+                                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M4 6h16M4 12h16M4 18h16" />
                                                 </svg>
-                                            </div>
+                                            </button>
+                                            <h3 class="text-lg font-bold text-slate-800">Novidades do Kitamo</h3>
                                         </div>
-                                    </div>
-                                    
-                                    <h2 class="text-xl font-bold leading-tight text-slate-900 tracking-tight">
-                                        Seu Kitamo móvel: elegante, confortável e envolvente
-                                    </h2>
-
-                                    <div class="mt-3 flex items-center gap-3">
-                                        <span class="rounded-lg bg-cyan-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-cyan-700">
-                                            COLABORAÇÃO
-                                        </span>
-                                        <span class="text-xs font-medium text-slate-400">14 horas atrás</span>
-                                    </div>
-
-                                    <div class="mt-4 text-sm leading-relaxed text-slate-600">
-                                        <p>
-                                            Projete seu espaço de trabalho com estilo e conforto! 
-                                            Escolha seu tema e plano de fundo preferidos, personalize o menu inferior com apenas as seções que você precisa e ajuste a frequência das notificações.
-                                            <span v-if="!expanded">A nova atualização traz...</span>
-                                            <span v-else>
-                                                A nova atualização traz uma experiência totalmente renovada para o app mobile, focada em usabilidade e beleza. 
-                                                Agora você pode ver seus gastos por categoria com gráficos interativos e muito mais.
-                                            </span>
-                                        </p>
-                                        <button 
-                                            v-if="!expanded"
-                                            @click="expanded = true" 
-                                            class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
-                                        >
-                                            Mais
-                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M19 9l-7 7-7-7" />
+                                        <button @click="emit('close')" type="button" class="-mr-2 rounded-xl p-2 text-slate-400 hover:bg-slate-200/50 hover:text-slate-600 transition-colors">
+                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     </div>
 
-                                    <hr class="my-6 border-slate-100" />
+                                    <!-- Content -->
+                                    <div class="flex-1 p-6">
+                                        <div class="rounded-[1.5rem] bg-white p-6 shadow-sm ring-1 ring-slate-100">
+                                            <div class="aspect-video w-full overflow-hidden rounded-2xl bg-slate-100 relative mb-6 group">
+                                                 <img 
+                                                    src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop" 
+                                                    alt="New Feature" 
+                                                    class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                                                />
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                                <div class="absolute bottom-4 left-4">
+                                                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 backdrop-blur shadow-lg">
+                                                        <svg class="h-6 w-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <h2 class="text-xl font-bold leading-tight text-slate-900 tracking-tight">
+                                                Seu Kitamo móvel: elegante, confortável e envolvente
+                                            </h2>
 
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <button 
-                                                v-for="(reaction, idx) in reactions" 
-                                                :key="idx" 
-                                                @click="toggleReaction(idx)"
-                                                class="flex items-center gap-1.5 transition hover:scale-110 active:scale-95"
-                                            >
-                                                <span class="text-lg shadow-sm" :class="reaction.active ? 'scale-125' : 'grayscale opacity-70 hover:grayscale-0 hover:opacity-100'">{{ reaction.emoji }}</span>
-                                                <span class="text-xs font-bold" :class="reaction.active ? 'text-slate-900' : 'text-slate-400'">{{ reaction.count }}</span>
-                                            </button>
-                                        </div>
+                                            <div class="mt-3 flex items-center gap-3">
+                                                <span class="rounded-lg bg-cyan-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-cyan-700">
+                                                    COLABORAÇÃO
+                                                </span>
+                                                <span class="text-xs font-medium text-slate-400">14 horas atrás</span>
+                                            </div>
 
-                                        <div class="flex items-center gap-4">
-                                            <button class="hidden items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 sm:flex">
-                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                </svg>
-                                                Feedback
-                                            </button>
-                                            <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900">
-                                                Saiba mais
-                                                <span class="ml-1 text-slate-400">↗</span>
-                                            </button>
+                                            <div class="mt-4 text-sm leading-relaxed text-slate-600">
+                                                <p>
+                                                    Projete seu espaço de trabalho com estilo e conforto! 
+                                                    Escolha seu tema e plano de fundo preferidos, personalize o menu inferior com apenas as seções que você precisa e ajuste a frequência das notificações.
+                                                    <span v-if="!expanded">A nova atualização traz...</span>
+                                                    <span v-else>
+                                                        A nova atualização traz uma experiência totalmente renovada para o app mobile, focada em usabilidade e beleza. 
+                                                        Agora você pode ver seus gastos por categoria com gráficos interativos e muito mais.
+                                                    </span>
+                                                </p>
+                                                <button 
+                                                    v-if="!expanded"
+                                                    @click="expanded = true" 
+                                                    class="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                                                >
+                                                    Mais
+                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <hr class="my-6 border-slate-100" />
+
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-4">
+                                                    <button 
+                                                        v-for="(reaction, idx) in reactions" 
+                                                        :key="idx" 
+                                                        @click="toggleReaction(idx)"
+                                                        class="flex items-center gap-1.5 transition hover:scale-110 active:scale-95"
+                                                    >
+                                                        <span class="text-lg shadow-sm" :class="reaction.active ? 'scale-125' : 'grayscale opacity-70 hover:grayscale-0 hover:opacity-100'">{{ reaction.emoji }}</span>
+                                                        <span class="text-xs font-bold" :class="reaction.active ? 'text-slate-900' : 'text-slate-400'">{{ reaction.count }}</span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="flex items-center gap-4">
+                                                    <button class="hidden items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 sm:flex">
+                                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                        Feedback
+                                                    </button>
+                                                    <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-900">
+                                                        Saiba mais
+                                                        <span class="ml-1 text-slate-400">↗</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Footer / Pagination -->
-                             <div class="px-6 py-6 flex flex-col items-center justify-center gap-4 bg-[#F5F7FA]">
-                                <button class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-500 shadow-xl shadow-emerald-500/10 ring-4 ring-white transition hover:-translate-y-1 hover:shadow-2xl hover:text-emerald-600">
-                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                    </svg>
-                                </button>
-                                <div class="text-center">
-                                    <h3 class="text-sm font-bold text-slate-900">Isso é tudo que temos para hoje.</h3>
-                                    <p class="mt-1 text-xs text-slate-500 max-w-xs mx-auto">
-                                        Dê uma olhada nos recursos que lançamos anteriormente. Com certeza, você vai encontrar algo interessante.
-                                    </p>
-                                </div>
-                                <button class="text-slate-400 hover:text-slate-600 transition">
-                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 9l6 6 6-6" />
-                                    </svg>
-                                </button>
-                             </div>
+                                    
+                                    <!-- Footer / Pagination -->
+                                     <div class="border-t border-slate-200/60 bg-[#F5F7FA] px-6 py-8 flex flex-col items-center justify-center gap-4">
+                                        <button class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-500 shadow-xl shadow-emerald-500/10 ring-4 ring-white transition hover:-translate-y-1 hover:shadow-2xl hover:text-emerald-600">
+                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                            </svg>
+                                        </button>
+                                        <div class="text-center">
+                                            <h3 class="text-sm font-bold text-slate-900">Isso é tudo que temos para hoje.</h3>
+                                            <p class="mt-1 text-xs text-slate-500 max-w-xs mx-auto">
+                                                Dê uma olhada nos recursos que lançamos anteriormente. Com certeza, você vai encontrar algo interessante.
+                                            </p>
+                                        </div>
+                                        <button class="text-slate-400 hover:text-slate-600 transition">
+                                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 9l12 12" /> <!-- Seta 'V' -->
+                                                <path d="M6 9l6 6 6-6" />
+                                            </svg>
+                                        </button>
+                                     </div>
 
-                        </DialogPanel>
-                    </TransitionChild>
+                                </div>
+                            </DialogPanel>
+                        </TransitionChild>
+                    </div>
                 </div>
             </div>
         </Dialog>

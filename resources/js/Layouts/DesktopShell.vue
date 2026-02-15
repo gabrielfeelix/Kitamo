@@ -337,10 +337,16 @@ onUnmounted(() => {
 
                                 <button
                                     type="button"
-                                    class="hidden h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/25 ring-1 ring-violet-500 hover:to-indigo-500 md:flex"
+                                    class="hidden h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 text-sm font-bold text-white shadow-lg shadow-teal-500/25 ring-1 ring-teal-500 transition-all hover:to-teal-500 md:flex"
                                     @click="pricingModalOpen = true"
                                 >
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg
+                                        class="h-5 w-5 text-emerald-100"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                     Ver Planos

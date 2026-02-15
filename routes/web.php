@@ -277,6 +277,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/moedas', [MoedasController::class, 'index'])->name('api.moedas.index');
     Route::post('/api/moedas/converter', [MoedasController::class, 'converter'])->name('api.moedas.converter');
     Route::post('/api/relatorios/exportar', [RelatoriosController::class, 'exportar'])->name('api.relatorios.exportar');
+    
+    Route::get('/api/plans-list', function () {
+        return \App\Models\Plan::query()
+            ->where('is_active', true)
+            ->orderBy('price_cents')
+            ->get();
+    })->name('api.plans.list');
 
     Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
     Route::patch('/goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
