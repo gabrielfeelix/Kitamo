@@ -2,7 +2,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import ConfigModal from '@/Components/ConfigModal.vue';
-import NewsSheet from '@/Components/NewsSheet.vue';
+import WhatsNewModal from '@/Components/WhatsNewModal.vue';
 import ToastStack from '@/Components/ToastStack.vue';
 import BackToTopButton from '@/Components/BackToTopButton.vue';
 
@@ -215,7 +215,7 @@ const handleAddClick = () => {
             @close="configModalOpen = false"
             @news="() => { configModalOpen = false; newsOpen = true; }"
         />
-        <NewsSheet :open="newsOpen" @close="newsOpen = false" />
+        <WhatsNewModal :open="newsOpen" @close="newsOpen = false" />
 
         <ToastStack />
         <BackToTopButton />

@@ -2,8 +2,9 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import DesktopNotificationsPopover from '@/Components/DesktopNotificationsPopover.vue';
-import NewsPanel, { type NewsItemRow } from '@/Components/NewsPanel.vue';
 import ConfigModal from '@/Components/ConfigModal.vue';
+import PricingModal from '@/Components/PricingModal.vue';
+import WhatsNewModal from '@/Components/WhatsNewModal.vue';
 import ToastStack from '@/Components/ToastStack.vue';
 import BackToTopButton from '@/Components/BackToTopButton.vue';
 import { requestJson } from '@/lib/kitamoApi';
@@ -119,20 +120,11 @@ const setUnreadCount = (count: number) => {
     unreadCount.value = count;
 };
 const configModalOpen = ref(false);
+const pricingModalOpen = ref(false);
+const whatsNewOpen = ref(false);
 
-const newsOpen = ref(false);
-const newsLoading = ref(false);
-const newsItems = ref<NewsItemRow[]>([]);
-const loadNews = async () => {
-    newsLoading.value = true;
-    try {
-        const res = await requestJson<{ items: NewsItemRow[] }>(route('api.news.index'));
-        newsItems.value = (res.items ?? []) as NewsItemRow[];
-    } catch {
-        // ignore
-    } finally {
-        newsLoading.value = false;
-    }
+const openWhatsNew = () => {
+    whatsNewOpen.value = true;
 };
 
 const loadUnreadCount = async () => {
@@ -343,33 +335,43 @@ onUnmounted(() => {
                                 <span v-if="unreadCount > 0" class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500"></span>
                             </button>
 
-                            <button
-                                type="button"
-                                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 ring-1 ring-slate-200/60"
-                                aria-label="Novidades"
-                                :aria-expanded="newsOpen ? 'true' : 'false'"
-                                @click="() => { newsOpen = !newsOpen; if (newsOpen && newsItems.length === 0) loadNews(); }"
-                            >
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6L12 2Z" />
-                                    <path d="M5 14l.9 3.1L9 18l-3.1.9L5 22l-.9-3.1L1 18l3.1-.9L5 14Z" />
-                                </svg>
-                            </button>
+                                <button
+                                    type="button"
+                                    class="hidden h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/25 ring-1 ring-violet-500 hover:to-indigo-500 md:flex"
+                                    @click="pricingModalOpen = true"
+                                >
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                    Ver Planos
+                                </button>
 
-                            <Link
-                                v-if="isAdminEmail"
-                                :href="route('admin.index')"
-                                class="hidden items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200/60 transition hover:bg-slate-50 md:inline-flex"
-                                aria-label="Administração"
-                            >
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
-                                    <path
-                                        d="M19.4 15a7.9 7.9 0 0 0 .1-1 7.9 7.9 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6H9.1L8.7 8a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.9 7.9 0 0 0-.1 1 7.9 7.9 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h5.8l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
-                                    />
-                                </svg>
-                                Administração
-                            </Link>
+                                <button
+                                    type="button"
+                                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 ring-1 ring-slate-200/60"
+                                    aria-label="Novidades"
+                                    @click="openWhatsNew"
+                                >
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6L12 2Z" />
+                                        <path d="M5 14l.9 3.1L9 18l-3.1.9L5 22l-.9-3.1L1 18l3.1-.9L5 14Z" />
+                                    </svg>
+                                </button>
+
+                                <a
+                                    v-if="isAdminEmail"
+                                    :href="route('admin.index')"
+                                    class="hidden items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200/60 transition hover:bg-slate-50 md:inline-flex"
+                                    aria-label="Administração"
+                                >
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                                        <path
+                                            d="M19.4 15a7.9 7.9 0 0 0 .1-1 7.9 7.9 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6H9.1L8.7 8a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.9 7.9 0 0 0-.1 1 7.9 7.9 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h5.8l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"
+                                        />
+                                    </svg>
+                                    Administração
+                                </a>
 
                             <Link
                                 :href="route('settings')"
@@ -401,8 +403,9 @@ onUnmounted(() => {
     />
 
     <ConfigModal :open="configModalOpen" @close="configModalOpen = false" />
-
-    <NewsPanel :open="newsOpen" :loading="newsLoading" :items="newsItems" @close="newsOpen = false" />
+    
+    <PricingModal :open="pricingModalOpen" @close="pricingModalOpen = false" />
+    <WhatsNewModal :open="whatsNewOpen" @close="whatsNewOpen = false" />
 
     <ToastStack />
     <BackToTopButton />
