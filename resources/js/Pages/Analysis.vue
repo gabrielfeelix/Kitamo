@@ -331,188 +331,220 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             </button>
         </header>
 
-        <Link
-            :href="route('analysis.compare')"
-            class="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-[#E6FFFB] px-4 py-4 shadow-sm ring-1 ring-emerald-100"
-        >
-            <div class="flex items-center gap-4">
-                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#14B8A6] text-white">
-                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M7 7h10" />
-                        <path d="M7 17h10" />
-                        <path d="M10 10l-3-3 3-3" />
-                        <path d="M14 14l3 3-3 3" />
-                    </svg>
-                </span>
-                <div>
-                    <div class="text-sm font-semibold text-slate-900">Comparar Períodos</div>
-                    <div class="mt-1 text-xs font-semibold text-slate-500">{{ `${formatMonthShort(activeMonth)} vs ${formatMonthShort(new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1))}` }}</div>
-                </div>
-            </div>
-            <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6" />
-            </svg>
-        </Link>
-
-    <div class="mt-5 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
-        <div class="flex items-center justify-between">
-            <button
-                type="button"
-                class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
-                aria-label="Mês anterior"
-                @click="shiftMonth(-1)"
-            >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6" />
-                </svg>
-            </button>
-            <div class="text-sm font-semibold tracking-wide text-slate-900">{{ monthLabel }}</div>
-            <button
-                type="button"
-                class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50"
-                aria-label="Próximo mês"
-                @click="shiftMonth(1)"
-            >
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6" />
-                </svg>
-            </button>
-        </div>
-        </div>
-
-        <div class="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60">
-            <div class="grid grid-cols-3 divide-x divide-slate-100">
-                <div class="px-4 py-4 text-center">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Receitas</div>
-                    <div class="mt-2 text-sm font-semibold text-emerald-600">{{ formatBRL(receitas) }}</div>
-                </div>
-                <div class="px-4 py-4 text-center">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Despesas</div>
-                    <div class="mt-2 text-sm font-semibold text-red-500">{{ formatBRL(despesas) }}</div>
-                </div>
-                <div class="px-4 py-4 text-center">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Balanço</div>
-                    <div class="mt-2 text-sm font-semibold text-emerald-600">+{{ formatBRL(balanco) }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <div class="text-base font-semibold text-slate-900">Despesas por categoria</div>
-
-            <div v-if="hasCategoryData">
-                <div class="mt-6 flex items-center justify-center">
-                    <div class="relative h-52 w-52">
-                        <svg class="h-full w-full -rotate-90" viewBox="0 0 160 160">
-                            <circle cx="80" cy="80" r="64" stroke="#E2E8F0" stroke-width="18" fill="none" />
-                            <circle
-                                v-for="segment in donutSegments"
-                                :key="segment.key"
-                                cx="80"
-                                cy="80"
-                                :r="segment.radius"
-                                :stroke="segment.color"
-                                stroke-width="18"
-                                fill="none"
-                                stroke-linecap="butt"
-                                :stroke-dasharray="segment.dasharray"
-                                :stroke-dashoffset="segment.dashoffset"
-                            />
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <div class="text-3xl font-semibold text-slate-900">{{ formatBRL(despesas) }}</div>
-                            <div class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Total de despesas</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-5 space-y-3">
-                    <div v-for="item in categoriesWithPct" :key="item.key" class="flex items-center gap-3">
-                        <span class="h-3 w-3 rounded-full" :style="{ backgroundColor: item.color }"></span>
-                        <div class="flex-1 text-sm font-semibold text-slate-600">{{ item.label }}</div>
-                        <div class="text-sm font-semibold text-slate-900">{{ formatBRL(item.value) }}</div>
-                        <div class="w-12 text-right text-xs font-semibold text-slate-400">({{ item.pct }}%)</div>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
-                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v8" />
-                        <path d="M8 12h8" />
-                        <circle cx="12" cy="12" r="9" />
-                    </svg>
-                </div>
-                <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui despesas este mês.</div>
-                <div class="mt-1 text-xs text-slate-500">Adicione seus gastos para ver o gráfico.</div>
-            </div>
-        </div>
-
-        <div class="mt-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <div class="text-base font-semibold text-slate-900">Últimos 3 meses</div>
-
-            <div v-if="hasTrendData">
-                <div class="mt-5 grid grid-cols-3 items-end gap-4">
-                    <div v-for="m in lastMonths" :key="m.key" class="text-center">
-                        <div class="text-xs font-semibold text-slate-400">{{ formatBRL(m.value) }}</div>
-                        <div
-                            class="mx-auto mt-3 w-20 rounded-2xl"
-                            :class="m.highlight ? 'bg-teal-500' : 'bg-slate-200'"
-                            :style="{ height: `${Math.max(28, Math.round((m.value / maxMonthValue) * 96))}px` }"
-                        ></div>
-                        <div class="mt-2 text-xs font-semibold" :class="m.highlight ? 'text-teal-600' : 'text-slate-400'">{{ m.label }}</div>
-                    </div>
-                </div>
-
-                <div class="mt-4 text-sm font-semibold text-slate-400">
-                    Aumento de <span class="text-red-500">{{ increasePct }}%</span> em relação ao mês anterior
-                </div>
-            </div>
-            <div v-else class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
-                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 19V5" />
-                        <path d="M10 19V9" />
-                        <path d="M16 19v-4" />
-                        <path d="M22 19V7" />
-                    </svg>
-                </div>
-                <div class="mt-3 text-sm font-semibold text-slate-900">Sem histórico ainda</div>
-                <div class="mt-1 text-xs text-slate-500">Seu gráfico aparece quando houver lançamentos.</div>
-            </div>
-        </div>
-
-        <div class="mt-5 pb-4">
-            <div class="text-lg font-semibold text-slate-900">Top 5 gastos</div>
-
-            <div v-if="hasTopExpenses" class="mt-4 space-y-4">
-                <div v-for="item in topExpenses" :key="item.key">
-                    <div class="flex items-center justify-between text-sm font-semibold">
-                        <div class="flex min-w-0 items-center gap-2 text-slate-900">
-                            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                                <CategoryIcon :icon="item.categoryIcon" class="h-4 w-4" />
+        <div :class="[isMobile ? 'space-y-4' : 'mt-6 grid grid-cols-1 gap-8 lg:grid-cols-12 items-start']">
+            
+            <!-- Left Column (Desktop) -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-8 space-y-6']">
+                
+                <!-- Nav & Compare Group -->
+                <div :class="[isMobile ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 gap-6']">
+                     <Link
+                        :href="route('analysis.compare')"
+                        class="flex items-center justify-between gap-4 rounded-2xl bg-[#E6FFFB] px-4 py-4 shadow-sm ring-1 ring-emerald-100 transition hover:bg-[#CCFBF6]"
+                        :class="[isMobile ? 'mt-6' : '']"
+                    >
+                        <div class="flex items-center gap-4">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#14B8A6] text-white">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M7 7h10" />
+                                    <path d="M7 17h10" />
+                                    <path d="M10 10l-3-3 3-3" />
+                                    <path d="M14 14l3 3-3 3" />
+                                </svg>
                             </span>
-                            <span class="truncate">{{ item.label }}</span>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">Comparar Períodos</div>
+                                <div class="mt-1 text-xs font-semibold text-slate-500">{{ `${formatMonthShort(activeMonth)} vs ${formatMonthShort(new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1))}` }}</div>
+                            </div>
                         </div>
-                        <div class="text-slate-900">{{ formatBRL(item.value) }}</div>
-                    </div>
-                    <div class="mt-2 h-2 w-full rounded-full bg-slate-100">
-                        <div
-                            class="h-2 rounded-full"
-                            :style="{ width: `${Math.round((item.value / maxTopExpense) * 100)}%`, backgroundColor: item.color }"
-                        ></div>
+                        <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </Link>
+
+                    <div class="rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60" :class="[isMobile ? 'mt-5' : 'flex items-center']">
+                        <div class="flex w-full items-center justify-between">
+                            <button
+                                type="button"
+                                class="flex h-12 w-12 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 active:scale-95"
+                                aria-label="Mês anterior"
+                                @click="shiftMonth(-1)"
+                            >
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 18l-6-6 6-6" />
+                                </svg>
+                            </button>
+                            <div class="text-sm font-bold tracking-wide text-slate-900">{{ monthLabel }}</div>
+                            <button
+                                type="button"
+                                class="flex h-12 w-12 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 active:scale-95"
+                                aria-label="Próximo mês"
+                                @click="shiftMonth(1)"
+                            >
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 18l6-6-6-6" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Summary Cards -->
+                <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60" :class="[isMobile ? 'mt-4' : '']">
+                    <div class="grid grid-cols-3 divide-x divide-slate-100">
+                        <div class="px-4 py-6 text-center transition hover:bg-slate-50/50">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Receitas</div>
+                            <div class="mt-2 text-sm font-bold text-emerald-600">{{ formatBRL(receitas) }}</div>
+                        </div>
+                        <div class="px-4 py-6 text-center transition hover:bg-slate-50/50">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Despesas</div>
+                            <div class="mt-2 text-sm font-bold text-red-500">{{ formatBRL(despesas) }}</div>
+                        </div>
+                        <div class="px-4 py-6 text-center transition hover:bg-slate-50/50">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Balanço</div>
+                            <div class="mt-2 text-sm font-bold" :class="balanco >= 0 ? 'text-emerald-600' : 'text-red-500'">{{ balanco >= 0 ? '+' : '' }}{{ formatBRL(balanco) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- History (Bar Chart) moved to main column for better visibility -->
+                 <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60" :class="[isMobile ? 'mt-4' : '']">
+                    <div class="flex items-center justify-between">
+                         <div class="text-base font-bold text-slate-900">Últimos 3 meses</div>
+                         <div v-if="hasTrendData" class="text-xs font-semibold px-2 py-1 rounded-lg bg-slate-50 text-slate-500 border border-slate-100">
+                            Tendência
+                         </div>
+                    </div>
+
+                    <div v-if="hasTrendData">
+                        <div class="mt-8 grid grid-cols-3 items-end gap-4 px-2">
+                            <div v-for="m in lastMonths" :key="m.key" class="group relative text-center">
+                                <div class="mb-2 text-xs font-bold text-slate-500 opacity-0 transition group-hover:opacity-100">{{ formatBRL(m.value) }}</div>
+                                <div
+                                    class="mx-auto w-full max-w-[60px] rounded-t-xl transition-all duration-500 group-hover:brightness-95"
+                                    :class="m.highlight ? 'bg-gradient-to-t from-teal-500 to-teal-400' : 'bg-slate-100'"
+                                    :style="{ height: `${Math.max(4, Math.round((m.value / maxMonthValue) * 120))}px` }"
+                                ></div>
+                                <div class="mt-3 border-t border-slate-100 pt-2 text-xs font-bold uppercase tracking-wide" :class="m.highlight ? 'text-teal-600' : 'text-slate-400'">{{ m.label }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex items-center justify-center gap-2 text-sm font-medium text-slate-500">
+                            <span :class="increasePct > 0 ? 'text-red-500 font-bold' : 'text-emerald-500 font-bold'">
+                                {{ increasePct > 0 ? '+' : '' }}{{ increasePct }}%
+                            </span>
+                            <span>vs mês anterior</span>
+                        </div>
+                    </div>
+                    <div v-else class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19V5" />
+                                <path d="M10 19V9" />
+                                <path d="M16 19v-4" />
+                                <path d="M22 19V7" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-bold text-slate-900">Sem histórico</div>
+                        <div class="mt-1 text-xs font-medium text-slate-500">Adicione transações para gerar o gráfico.</div>
+                    </div>
+                </div>
+
             </div>
-            <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
-                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="5" width="18" height="14" rx="3" />
-                        <path d="M3 10h18" />
-                    </svg>
+            
+            <!-- Right Column (Desktop) -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-4 space-y-6']">
+                
+                <!-- Category Chart (Donut) -->
+                <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60" :class="[isMobile ? 'mt-4' : '']">
+                    <div class="text-base font-bold text-slate-900">Despesas por categoria</div>
+
+                    <div v-if="hasCategoryData">
+                        <div class="mt-8 flex items-center justify-center">
+                            <div class="relative h-64 w-64">
+                                <svg class="h-full w-full -rotate-90" viewBox="0 0 160 160">
+                                    <circle cx="80" cy="80" r="64" stroke="#F1F5F9" stroke-width="12" fill="none" />
+                                    <circle
+                                        v-for="segment in donutSegments"
+                                        :key="segment.key"
+                                        cx="80"
+                                        cy="80"
+                                        :r="segment.radius"
+                                        :stroke="segment.color"
+                                        stroke-width="12"
+                                        fill="none"
+                                        stroke-linecap="round"
+                                        :stroke-dasharray="segment.dasharray"
+                                        :stroke-dashoffset="segment.dashoffset"
+                                        class="transition-all duration-1000 ease-out"
+                                    />
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                    <div class="text-3xl font-bold tracking-tight text-slate-900">{{ formatBRL(despesas) }}</div>
+                                    <div class="mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">Total</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-3">
+                            <div v-for="item in categoriesWithPct.slice(0, 4)" :key="item.key" class="group flex items-center gap-3 rounded-xl p-2 transition hover:bg-slate-50">
+                                <span class="h-3 w-3 rounded-full ring-2 ring-white" :style="{ backgroundColor: item.color }"></span>
+                                <div class="flex-1 text-sm font-bold text-slate-600 group-hover:text-slate-900">{{ item.label }}</div>
+                                <div class="text-sm font-bold text-slate-900">{{ formatBRL(item.value) }}</div>
+                                <div class="w-12 text-right text-xs font-bold text-slate-400">({{ item.pct }}%)</div>
+                            </div>
+                            <div v-if="categoriesWithPct.length > 4" class="pt-2 text-center">
+                                 <span class="text-xs font-bold text-slate-400">+ e outros {{ categoriesWithPct.length - 4 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 8v8" />
+                                <path d="M8 12h8" />
+                                <circle cx="12" cy="12" r="9" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-bold text-slate-900">Sem dados</div>
+                        <div class="mt-1 text-xs font-medium text-slate-500">Adicione despesas para visualizar.</div>
+                    </div>
                 </div>
-                <div class="mt-3 text-sm font-semibold text-slate-900">Sem gastos registrados</div>
-                <div class="mt-1 text-xs text-slate-500">Adicione lançamentos para preencher este ranking.</div>
+
+                <!-- Top Expenses -->
+                <div class="" :class="[isMobile ? 'mt-5 pb-4' : 'rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60']">
+                    <div class="text-lg font-bold text-slate-900">Top 5 gastos</div>
+
+                    <div v-if="hasTopExpenses" class="mt-4 space-y-4">
+                        <div v-for="item in topExpenses" :key="item.key">
+                            <div class="flex items-center justify-between text-sm font-bold">
+                                <div class="flex min-w-0 items-center gap-2 text-slate-900">
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-600 ring-1 ring-slate-100">
+                                        <CategoryIcon :icon="item.categoryIcon" class="h-4 w-4" />
+                                    </span>
+                                    <span class="truncate">{{ item.label }}</span>
+                                </div>
+                                <div class="text-slate-900">{{ formatBRL(item.value) }}</div>
+                            </div>
+                            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    class="h-2 rounded-full"
+                                    :style="{ width: `${Math.round((item.value / maxTopExpense) * 100)}%`, backgroundColor: item.color }"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="5" width="18" height="14" rx="3" />
+                                <path d="M3 10h18" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-sm font-bold text-slate-900">Sem registros</div>
+                        <div class="mt-1 text-xs font-medium text-slate-500">O ranking aparecerá aqui.</div>
+                    </div>
+                </div>
             </div>
         </div>
 

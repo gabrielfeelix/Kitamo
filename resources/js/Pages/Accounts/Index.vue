@@ -1,21 +1,21 @@
 <script setup lang="ts">
-	import { computed, onMounted, ref, watch } from 'vue';
-	import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, ref, watch } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { requestFormData, requestJson } from '@/lib/kitamoApi';
 import { buildTransactionFormData, buildTransactionRequest, executeTransfer, hasTransactionReceipt } from '@/lib/transactions';
-	import type { BootstrapData, Entry } from '@/types/kitamo';
-	import MobileShell from '@/Layouts/MobileShell.vue';
-	import DesktopShell from '@/Layouts/DesktopShell.vue';
-	import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
-	import MobileToast from '@/Components/MobileToast.vue';
-	import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
-	import TransactionFilterModal, { type TransactionFilterState } from '@/Components/TransactionFilterModal.vue';
-	import ImportInvoiceModal from '@/Components/ImportInvoiceModal.vue';
-	    import ExportReportModal from '@/Components/ExportReportModal.vue';
-	import MonthNavigator from '@/Components/MonthNavigator.vue';
-	import CategoryIcon from '@/Components/CategoryIcon.vue';
-	import { useIsMobile } from '@/composables/useIsMobile';
-	
+import type { BootstrapData, Entry } from '@/types/kitamo';
+import MobileShell from '@/Layouts/MobileShell.vue';
+import DesktopShell from '@/Layouts/DesktopShell.vue';
+import TransactionModal, { type TransactionModalPayload } from '@/Components/TransactionModal.vue';
+import MobileToast from '@/Components/MobileToast.vue';
+import TransactionDetailModal, { type TransactionDetail } from '@/Components/TransactionDetailModal.vue';
+import TransactionFilterModal, { type TransactionFilterState } from '@/Components/TransactionFilterModal.vue';
+import ImportInvoiceModal from '@/Components/ImportInvoiceModal.vue';
+import ExportReportModal from '@/Components/ExportReportModal.vue';
+import MonthNavigator from '@/Components/MonthNavigator.vue';
+import CategoryIcon from '@/Components/CategoryIcon.vue';
+import { useIsMobile } from '@/composables/useIsMobile';
+
 import type { AccountOption } from '@/Components/AccountPickerSheet.vue';
 import type { CategoryOption } from '@/Components/CategoryPickerSheet.vue';
 
@@ -26,16 +26,16 @@ const bootstrap = computed(
 );
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
-	const shellProps = computed(() =>
-	    isMobile.value
-	        ? { showNav: true }
-	        : {
-	              title: 'Transações',
-	              subtitle: monthLabel.value,
-	              searchPlaceholder: 'Buscar transação…',
-	              newActionLabel: 'Nova Transação',
-	          },
-	);
+const shellProps = computed(() =>
+    isMobile.value
+        ? { showNav: true }
+        : {
+              title: 'Transações',
+              subtitle: monthLabel.value,
+              searchPlaceholder: 'Buscar transação…',
+              newActionLabel: 'Nova Transação',
+          },
+);
 
 type FilterKind = 'all' | 'paid' | 'to_pay';
 
@@ -158,11 +158,11 @@ const accountOptions = computed(() => {
 });
 
 const toastOpen = ref(false);
-	const toastMessage = ref('');
-	const showToast = (message: string) => {
-	    toastMessage.value = message;
-	    toastOpen.value = true;
-	};
+const toastMessage = ref('');
+const showToast = (message: string) => {
+    toastMessage.value = message;
+    toastOpen.value = true;
+};
 
 const isRecurringEntry = (entry: Entry) => Boolean(entry.isRecurring) && !Boolean(entry.installment);
 
@@ -377,11 +377,9 @@ const toAccountIcon = (label: string): TransactionDetail['accountIcon'] => {
 
 const toCategoryIcon = (entry: Entry): TransactionDetail['categoryIcon'] => {
     const icon = (entry.icon ?? '').toLowerCase();
-    // Use icon directly if it's a known value
     if (['food', 'home', 'car', 'game', 'heart', 'briefcase', 'pill', 'money', 'trend', 'bolt', 'cart', 'shirt', 'gym', 'sparkles'].includes(icon)) {
         return icon as TransactionDetail['categoryIcon'];
     }
-    // Fallback: try to match by name
     const label = (entry.categoryLabel ?? '').toLowerCase();
     if (label.includes('alimentação') || label.includes('comida')) return 'cart';
     if (label.includes('moradia') || label.includes('home')) return 'home';
@@ -609,11 +607,11 @@ const toggleDesktopAccountMenu = () => {
     desktopCategoryOpen.value = false;
 };
 
-	const desktopTypeLabel = computed(() => {
-	    if (entryKindFilter.value === 'income') return 'Receitas';
-	    if (entryKindFilter.value === 'expense') return 'Despesas';
-	    return 'Todos os tipos';
-	});
+const desktopTypeLabel = computed(() => {
+    if (entryKindFilter.value === 'income') return 'Receitas';
+    if (entryKindFilter.value === 'expense') return 'Despesas';
+    return 'Todos os tipos';
+});
 const desktopCategoryLabel = computed(() => (filterState.value.categories.length ? `Categorias (${filterState.value.categories.length})` : 'Categorias'));
 
 const desktopAccountLabel = computed(() => (accountFilter.value === 'all' ? 'Contas' : accountFilter.value));
@@ -706,8 +704,6 @@ const toISODate = (date: Date) => {
     const dd = String(date.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
 };
-
-// Export de relatório agora usa ExportReportModal (PDF/Excel/CSV).
 
 const desktopImportChooserOpen = ref(false);
 const desktopDrawerOpen = ref(false);
@@ -837,15 +833,16 @@ onMounted(() => {
 
 <template>
     <component :is="Shell" v-bind="shellProps" @add="openCreate">
-		        <header class="flex items-center justify-between pt-2">
-		            <div v-if="isMobile">
-		                <div class="text-2xl font-semibold tracking-tight text-slate-900">Transações</div>
-		            </div>
-		            <div class="flex items-center gap-2">
-		                <button
-		                    type="button"
-	                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
-	                    aria-label="Filtrar"
+        <!-- Header -->
+        <header class="flex items-center justify-between pt-2">
+            <div v-if="isMobile">
+                <div class="text-2xl font-semibold tracking-tight text-slate-900">Transações</div>
+            </div>
+            <div class="flex items-center gap-2 ml-auto">
+                <button
+                    type="button"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
+                    aria-label="Filtrar"
                     @click="filterOpen = true"
                 >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -855,7 +852,7 @@ onMounted(() => {
 
                 <Link
                     :href="route('accounts.search')"
-                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
                     aria-label="Buscar"
                 >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -867,7 +864,7 @@ onMounted(() => {
                 <div class="relative">
                     <button
                         type="button"
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60"
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-slate-50"
                         aria-label="Mais opções"
                         @click="moreMenuOpen = !moreMenuOpen"
                     >
@@ -903,175 +900,209 @@ onMounted(() => {
             </div>
         </header>
 
-        <div class="mt-5">
-            <MonthNavigator v-model="selectedMonthKey" :months="months" />
-        </div>
-
-        <div class="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60" :class="monthSummaryLoading ? 'opacity-70' : ''">
-            <div class="grid grid-cols-2 divide-x divide-slate-100">
-                <div class="px-4 py-4 text-center">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ saldoTitle }}</div>
-                    <div class="mt-2 text-lg font-semibold" :class="saldoValue >= 0 ? 'text-emerald-600' : 'text-red-500'">
-                        {{ formatMoney(saldoValue) }}
-                    </div>
-                </div>
-                <div class="px-4 py-4 text-center">
-                    <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Balanço mensal</div>
-                    <div class="mt-2 text-lg font-semibold" :class="balancoMensal >= 0 ? 'text-emerald-600' : 'text-red-500'">
-                        {{ balancoMensal >= 0 ? '+' : '-' }} {{ formatMoney(Math.abs(balancoMensal)) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-	        <div class="mt-3 flex flex-wrap items-center gap-2">
-	            <button
-	                type="button"
-	                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="entryKindFilter === 'all' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="setEntryKindFilter('all')"
-            >
-                Todos tipos
-            </button>
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="entryKindFilter === 'income' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="setEntryKindFilter('income')"
-            >
-                Receitas
-            </button>
-            <button
-                type="button"
-                class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                :class="entryKindFilter === 'expense' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200/60'"
-                @click="setEntryKindFilter('expense')"
-            >
-                Despesas
-            </button>
-        </div>
-
-        <div class="mt-4 space-y-4">
-            <div v-for="group in grouped" :key="group.dateLabel + group.dayLabel">
-                <div class="flex items-center justify-between px-1 py-2">
-                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ group.dateLabel }}</div>
-                    <div class="text-xs font-semibold" :class="group.total >= 0 ? 'text-emerald-600' : 'text-red-500'">
-                        {{ group.total >= 0 ? '+' : '-' }} {{ formatMoney(Math.abs(group.total)).replace('R$', 'R$') }}
+        <!-- Main Layout -->
+         <div :class="[isMobile ? 'contents' : 'mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start']">
+            
+            <!-- Left Column: Transactions -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-8']">
+                 
+                 <!-- Navigation & Quick Filters Desktop -->
+                 <div class="mt-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <MonthNavigator v-model="selectedMonthKey" :months="months" class="flex-1" />
+                    
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+                         <button
+                            type="button"
+                            class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition"
+                            :class="entryKindFilter === 'all' ? 'bg-[#14B8A6] text-white shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 ring-1 ring-slate-200/60 hover:bg-slate-50'"
+                            @click="setEntryKindFilter('all')"
+                        >
+                            Todos
+                        </button>
+                        <button
+                            type="button"
+                            class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition"
+                            :class="entryKindFilter === 'income' ? 'bg-[#14B8A6] text-white shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 ring-1 ring-slate-200/60 hover:bg-slate-50'"
+                            @click="setEntryKindFilter('income')"
+                        >
+                            Receitas
+                        </button>
+                        <button
+                            type="button"
+                            class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition"
+                            :class="entryKindFilter === 'expense' ? 'bg-[#14B8A6] text-white shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 ring-1 ring-slate-200/60 hover:bg-slate-50'"
+                            @click="setEntryKindFilter('expense')"
+                        >
+                            Despesas
+                        </button>
                     </div>
                 </div>
 
-                <div class="space-y-3">
-                    <div
-                        v-for="entry in group.list"
-                        :key="entry.id"
-                        class="relative overflow-hidden rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
-                        role="button"
-                        tabindex="0"
-                        @click="openDetail(entry)"
-                    >
-                        <div
-                            class="absolute left-0 top-0 h-full w-1.5"
-                            :class="entry.kind === 'income' ? 'bg-emerald-500' : entry.priority ? 'bg-red-500' : 'bg-transparent'"
-                        ></div>
-
-                        <div class="flex items-center gap-4">
-	                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 ring-1 ring-slate-200/60">
-	                                <CategoryIcon :icon="listCategoryIcon(entry)" class="h-6 w-6" :style="listCategoryStyle(entry)" />
-	                            </div>
-
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <div class="truncate text-sm font-semibold text-slate-900">{{ entry.title }}</div>
-                                    <span
-                                        v-if="entry.priority"
-                                        class="rounded-md bg-red-500 px-2 py-1 text-[10px] font-semibold text-white"
-                                    >
-                                        Prioridade
-                                    </span>
-                                </div>
-                                <div class="truncate text-xs text-slate-400">{{ entry.installment ?? entry.subtitle }}</div>
-                                <div v-if="entry.tags.length || isRecurringEntry(entry)" class="mt-2 flex flex-wrap gap-2">
-                                    <span
-                                        v-if="isRecurringEntry(entry)"
-                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-[#E6FFFB] text-[#0D9488]"
-                                    >
-                                        {{ entry.isFixed ? '📌 Fixa' : '🔁 Repetir' }}
-                                    </span>
-                                    <span
-                                        v-for="tag in entry.tags"
-                                        :key="tag"
-                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                                        :class="
-                                            tag === 'Essencial'
-                                                ? 'bg-emerald-50 text-emerald-600'
-                                            : tag === 'Urgente'
-                                                  ? 'bg-red-50 text-red-500'
-                                                  : 'bg-slate-100 text-slate-600'
-                                        "
-                                    >
-                                        {{ tag }}
-                                    </span>
-                                </div>
+                <!-- Lista -->
+                <div class="mt-6 space-y-6">
+                    <div v-for="group in grouped" :key="group.dateLabel + group.dayLabel">
+                        <div class="flex items-center justify-between px-1 py-2">
+                            <div class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ group.dateLabel }}</div>
+                            <div class="text-xs font-bold" :class="group.total >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                                {{ group.total >= 0 ? '+' : '' }}{{ formatMoney(group.total) }}
                             </div>
+                        </div>
 
-                            <div class="text-right">
+                        <div class="space-y-3">
+                            <div
+                                v-for="entry in group.list"
+                                :key="entry.id"
+                                class="group relative overflow-hidden rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:ring-slate-300/80 cursor-pointer"
+                                role="button"
+                                tabindex="0"
+                                @click="openDetail(entry)"
+                            >
                                 <div
-                                    class="text-sm font-semibold"
-                                    :class="
-                                        entry.kind === 'income'
-                                            ? 'text-emerald-600'
-                                            : entry.status === 'paid'
-                                              ? 'text-emerald-600 line-through'
-                                              : 'text-red-500'
-                                    "
-                                >
-                                    {{ entry.kind === 'income' ? '+' : '-' }} {{ formatMoney(entry.amount).replace('R$', 'R$') }}
-                                </div>
+                                    class="absolute left-0 top-0 h-full w-1.5"
+                                    :class="entry.kind === 'income' ? 'bg-emerald-500' : entry.priority ? 'bg-red-500' : 'bg-transparent'"
+                                ></div>
 
-                                <div class="mt-2 flex items-center justify-end gap-2">
-                                    <button
-                                        v-if="entry.kind === 'expense'"
-                                        type="button"
-                                        class="flex h-6 w-6 items-center justify-center rounded-full border-2"
-                                        :class="entry.status === 'paid' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 bg-white'"
-                                        :aria-label="entry.status === 'paid' ? 'Marcar como não paga' : 'Marcar como paga'"
-                                        @click.stop="toggleEntryPaid(entry.id)"
-                                    >
-                                        <svg v-if="entry.status === 'paid'" class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                            <path d="M20 6 9 17l-5-5" />
-                                        </svg>
-                                    </button>
-                                    <span
-                                        v-else
-                                        class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-600"
-                                    >
-                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M20 6 9 17l-5-5" />
-                                        </svg>
-                                        Recebido
-                                    </span>
+                                <div class="flex items-center gap-4">
+                                     <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 ring-1 ring-slate-200/60 transition group-hover:scale-110 group-hover:bg-white group-hover:shadow-sm">
+                                        <CategoryIcon :icon="listCategoryIcon(entry)" class="h-6 w-6" :style="listCategoryStyle(entry)" />
+                                    </div>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <div class="truncate text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{{ entry.title }}</div>
+                                            <span
+                                                v-if="entry.priority"
+                                                class="rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 ring-1 ring-red-100"
+                                            >
+                                                Prioridade
+                                            </span>
+                                        </div>
+                                        <div class="truncate text-xs font-medium text-slate-400">{{ entry.installment ?? entry.subtitle }}</div>
+                                        <div v-if="entry.tags.length || isRecurringEntry(entry)" class="mt-2 flex flex-wrap gap-2">
+                                            <span
+                                                v-if="isRecurringEntry(entry)"
+                                                class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-100"
+                                            >
+                                                {{ entry.isFixed ? 'Fixa' : 'Repetir' }}
+                                            </span>
+                                            <span
+                                                v-for="tag in entry.tags"
+                                                :key="tag"
+                                                class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset"
+                                                :class="
+                                                    tag === 'Essencial'
+                                                        ? 'bg-emerald-50 text-emerald-600 ring-emerald-100'
+                                                    : tag === 'Urgente'
+                                                          ? 'bg-red-50 text-red-500 ring-red-100'
+                                                          : 'bg-slate-50 text-slate-500 ring-slate-200'
+                                                "
+                                            >
+                                                {{ tag }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-right">
+                                        <div
+                                            class="text-sm font-bold"
+                                            :class="
+                                                entry.kind === 'income'
+                                                    ? 'text-emerald-600'
+                                                    : entry.status === 'paid'
+                                                      ? 'text-emerald-600/60 line-through decoration-2'
+                                                      : 'text-red-500'
+                                            "
+                                        >
+                                            {{ entry.kind === 'income' ? '+' : '-' }} {{ formatMoney(entry.amount) }}
+                                        </div>
+
+                                        <div class="mt-2 flex items-center justify-end gap-2">
+                                            <button
+                                                v-if="entry.kind === 'expense'"
+                                                type="button"
+                                                class="group/check flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all active:scale-95"
+                                                :class="entry.status === 'paid' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'"
+                                                :title="entry.status === 'paid' ? 'Marcar como não paga' : 'Marcar como paga'"
+                                                @click.stop="toggleEntryPaid(entry.id)"
+                                            >
+                                                <svg v-if="entry.status === 'paid'" class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <path d="M20 6 9 17l-5-5" />
+                                                </svg>
+                                                 <svg v-else class="h-4 w-4 text-emerald-300 opacity-0 transition group-hover/check:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <path d="M20 6 9 17l-5-5" />
+                                                </svg>
+                                            </button>
+                                            <span
+                                                v-else
+                                                class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-100"
+                                            >
+                                                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M20 6 9 17l-5-5" />
+                                                </svg>
+                                                Recebido
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Right Column: Summary -->
+            <div :class="[isMobile ? 'order-first' : 'lg:col-span-4 lg:sticky lg:top-24']">
+                 <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/70" :class="monthSummaryLoading ? 'opacity-70 grayscale' : ''">
+                    <div :class="[isMobile ? 'grid grid-cols-2 divide-x divide-slate-100' : 'flex flex-col divide-y divide-slate-100']">
+                        <div class="px-6 py-6 text-center lg:py-8">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{{ saldoTitle }}</div>
+                            <div class="text-2xl font-bold tracking-tight" :class="saldoValue >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                                {{ formatMoney(saldoValue) }}
+                            </div>
+                        </div>
+                        <div class="px-6 py-6 text-center lg:py-8">
+                            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Balanço do mês</div>
+                            <div class="text-2xl font-bold tracking-tight" :class="balancoMensal >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                                {{ balancoMensal >= 0 ? '+' : '' }}{{ formatMoney(Math.abs(balancoMensal)) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!isMobile" class="bg-slate-50 px-6 py-4 text-center text-xs font-medium text-slate-500">
+                        Os valores são atualizados automaticamente com base nos filtros e transações.
+                    </div>
+                </div>
+
+                 <div v-if="!isMobile" class="mt-6 rounded-3xl bg-[#F0FDF4] p-6 ring-1 ring-emerald-100">
+                     <div class="flex items-start gap-4">
+                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v20" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                             </svg>
+                         </div>
+                         <div>
+                             <h4 class="text-sm font-bold text-emerald-900">Dica Financeira</h4>
+                             <p class="mt-1 text-xs leading-relaxed text-emerald-700">Mantenha suas despesas categorizadas para entender melhor seus hábitos de consumo no relatório de análise.</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
         </div>
 
-	        <TransactionModal
-                :open="transactionOpen"
-                :kind="transactionKind"
-                :initial="transactionInitial"
-                :categories="pickerCategories"
-                :accounts="pickerAccounts"
-                :tags="bootstrap.tags"
-                @close="transactionOpen = false"
-                @save="onTransactionSave"
-            />
-	        <TransactionDetailModal
-	            :open="detailOpen"
-	            :transaction="detailTransaction"
-	            @close="detailOpen = false"
+        <TransactionModal
+            :open="transactionOpen"
+            :kind="transactionKind"
+            :initial="transactionInitial"
+            :categories="pickerCategories"
+            :accounts="pickerAccounts"
+            :tags="bootstrap.tags"
+            @close="transactionOpen = false"
+            @save="onTransactionSave"
+        />
+        <TransactionDetailModal
+            :open="detailOpen"
+            :transaction="detailTransaction"
+            @close="detailOpen = false"
             @edit="onDetailEdit"
             @duplicate="onDetailDuplicate"
             @delete="onDetailDelete"
@@ -1095,5 +1126,4 @@ onMounted(() => {
         />
         <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
     </component>
-
 </template>

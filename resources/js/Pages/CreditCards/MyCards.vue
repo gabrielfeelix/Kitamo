@@ -209,7 +209,7 @@ const handleCreateCreditCardFlowSave = () => {
         <template v-if="!isMobile" #headerActions>
             <button
                 type="button"
-                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 ring-1 ring-slate-200/60"
+                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50"
                 aria-label="Adicionar cartão"
                 @click="createCreditCardFlowOpen = true"
             >
@@ -220,7 +220,7 @@ const handleCreateCreditCardFlowSave = () => {
             </button>
         </template>
 
-        <!-- Header -->
+        <!-- Header (Mobile) -->
         <header v-if="isMobile" class="flex items-center justify-between px-6 pt-4 pb-8">
             <Link
                 :href="route('dashboard')"
@@ -232,9 +232,9 @@ const handleCreateCreditCardFlowSave = () => {
                 </svg>
             </Link>
 
-                <div class="text-center">
-                    <div class="text-lg font-semibold text-slate-900">Meus Cartões</div>
-                </div>
+            <div class="text-center">
+                <div class="text-lg font-semibold text-slate-900">Meus Cartões</div>
+            </div>
 
             <button
                 type="button"
@@ -250,234 +250,152 @@ const handleCreateCreditCardFlowSave = () => {
         </header>
 
         <!-- Month Selector -->
-        <div :class="isMobile ? 'px-6 pb-6' : 'pb-6'">
+         <div :class="isMobile ? 'px-6 pb-6' : 'pb-6 pt-4'">
             <MonthNavigator v-model="selectedMonthKey" :months="monthItems" />
         </div>
 
-        <!-- Dívida Consolidada Card -->
-        <div :class="isMobile ? 'px-6' : ''">
-            <div class="rounded-3xl bg-[#1E293B] p-6 shadow-xl">
-                <!-- Header -->
-                <div class="flex items-start justify-between">
-                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
-                        Dívida Consolidada
+        <!-- Main Layout -->
+         <div :class="[isMobile ? 'px-6 space-y-8' : 'grid grid-cols-1 lg:grid-cols-12 gap-8 items-start']">
+            
+             <!-- Left Column: Cards Grid (Desktop) -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-8 lg:order-1']">
+                 <div class="flex items-center justify-between mb-4">
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-900">
+                        Cartões
                     </div>
-                    <div class="flex h-6 w-6 items-center justify-center">
-                        <svg class="h-4 w-4 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <line x1="3" y1="12" x2="21" y2="12" />
-                            <line x1="3" y1="18" x2="21" y2="18" />
-                        </svg>
+                    <div class="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        {{ creditCards.length }} UNIDADES
                     </div>
                 </div>
 
-                <!-- Valor principal -->
-                <div v-if="isLoading" class="mt-3 h-10 w-48 animate-pulse rounded-lg bg-white/10"></div>
-                <div v-else class="mt-3 text-[32px] font-bold leading-none text-white">
-                    {{ formatBRL(devedaConsolidada) }}
-                </div>
-
-                <!-- Grid de 2 colunas -->
-                <div v-if="isLoading" class="mt-6 grid grid-cols-2 gap-6">
-                    <!-- Coluna esquerda: Uso de crédito -->
-                    <div>
-                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                            Uso de Crédito
-                        </div>
-                        <div class="mt-1 flex items-center gap-2">
-                            <div class="h-7 w-16 animate-pulse rounded bg-white/10"></div>
-                            <div class="h-1.5 flex-1 animate-pulse rounded-full bg-[#334155]"></div>
-                        </div>
-                    </div>
-
-                    <!-- Coluna direita: Disponível consolidado -->
-                    <div>
-                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                            Disp. Consolidado
-                        </div>
-                        <div class="mt-1 h-7 w-32 animate-pulse rounded bg-white/10"></div>
-                    </div>
-                </div>
-
-                <div v-else class="mt-6 grid grid-cols-2 gap-6">
-                    <!-- Coluna esquerda: Uso de crédito -->
-                    <div>
-                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                            Uso de Crédito
-                        </div>
-                        <!-- Percentual e barra na mesma linha -->
-                        <div class="mt-1 flex items-center gap-2">
-                            <div class="text-xl font-bold text-[#14B8A6] whitespace-nowrap">
-                                {{ formatPercentage(percentualUsoConsolidado) }}
-                            </div>
-                            <!-- Barra horizontal (pequena, ao lado) -->
-                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-[#334155]">
-                                <div
-                                    class="h-full bg-[#14B8A6] transition-all"
-                                    :style="{ width: `${Math.min(100, percentualUsoConsolidado)}%` }"
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Coluna direita: Disponível consolidado -->
-                    <div>
-                        <div class="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
-                            Disp. Consolidado
-                        </div>
-                        <div class="mt-1 text-xl font-bold text-white">
-                            {{ formatBRL(disponivelConsolidado) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cartões List -->
-        <div :class="isMobile ? 'mt-8 px-6' : 'mt-10'">
-            <div class="flex items-center justify-between">
-                <div class="text-xs font-bold uppercase tracking-wide text-slate-900">
-                    Cartões
-                </div>
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    {{ creditCards.length }} UNIDADES
-                </div>
-            </div>
-
-            <!-- Loading Skeletons -->
-            <div
-                v-if="isLoading"
-                :class="isMobile ? 'mt-4 space-y-3 pb-8' : 'mt-5 grid grid-cols-2 gap-4 pb-10 xl:grid-cols-3'"
-            >
-                <div v-for="i in 3" :key="i" class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
-                    <div class="p-4">
+                <!-- Loading Skeletons -->
+                <div v-if="isLoading" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                     <div v-for="i in 2" :key="i" class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60 p-4">
                         <div class="flex items-start gap-3">
                             <div class="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-slate-200"></div>
-                            <div class="flex-1 min-w-0">
+                            <div class="flex-1 min-w-0 space-y-2">
                                 <div class="h-5 w-32 animate-pulse rounded bg-slate-200"></div>
-                                <div class="mt-2 flex gap-1">
-                                    <div class="h-5 w-12 animate-pulse rounded-md bg-slate-100"></div>
-                                    <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
-                                    <div class="h-5 w-8 animate-pulse rounded-md bg-slate-100"></div>
-                                </div>
+                                <div class="h-4 w-20 animate-pulse rounded bg-slate-100"></div>
                             </div>
-                            <div class="text-right">
-                                <div class="h-5 w-20 animate-pulse rounded bg-slate-200"></div>
-                                <div class="mt-1 h-5 w-16 animate-pulse rounded-md bg-slate-100"></div>
-                            </div>
-                        </div>
-                        <div class="mt-3 flex items-center justify-between">
-                            <div class="h-4 w-32 animate-pulse rounded bg-slate-100"></div>
-                            <div class="h-4 w-24 animate-pulse rounded bg-slate-100"></div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Cards -->
-            <div
-                v-else-if="creditCards.length"
-                :class="isMobile ? 'mt-4 space-y-3 pb-8' : 'mt-5 grid grid-cols-2 gap-4 pb-10 xl:grid-cols-3'"
-            >
-                <Link
-                    v-for="card in creditCardsDisplay"
-                    :key="card.id"
-                    :href="route('credit-cards.show', { account: card.id })"
-                    class="block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60"
-                >
-                    <!-- Card Content -->
-                    <div class="p-4">
-                        <div class="flex items-start gap-3">
-                            <!-- Icon -->
-	                            <InstitutionAvatar
-	                                :institution="card.banco ?? card.displayName"
-	                                :svg-path="card.svgPath"
-	                                fallback-icon="credit-card"
-	                                container-class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white"
-	                                img-class="h-10 w-10 object-contain"
-	                                fallback-icon-class="h-6 w-6 text-white"
-	                                :style="card.svgPath ? undefined : { backgroundColor: card.cor }"
-	                            />
+                 <!-- Cards Grid -->
+                 <div v-else-if="creditCards.length" class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                     <Link
+                        v-for="card in creditCardsDisplay"
+                        :key="card.id"
+                        :href="route('credit-cards.show', { account: card.id })"
+                        class="group block overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/60 transition-all hover:-translate-y-1 hover:shadow-md hover:ring-slate-300/80"
+                    >
+                        <div class="p-5">
+                            <div class="flex items-start gap-4">
+                                <InstitutionAvatar
+                                    :institution="card.banco ?? card.displayName"
+                                    :svg-path="card.svgPath"
+                                    fallback-icon="credit-card"
+                                    container-class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100"
+                                    img-class="h-10 w-10 object-contain"
+                                    fallback-icon-class="h-6 w-6 text-white"
+                                    :style="card.svgPath ? undefined : { backgroundColor: card.cor }"
+                                />
 
-                            <!-- Card Info -->
-                            <div class="flex-1 min-w-0">
-                                <div class="text-base font-bold text-slate-900">{{ card.displayName }}</div>
-                                <div class="mt-1 flex flex-wrap items-center gap-1 text-[11px] font-semibold text-slate-500">
-                                    <span
-                                        v-if="card.bandeira"
-                                        class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 uppercase tracking-wide text-slate-500"
-                                    >
-                                        {{ String(card.bandeira) }}
-                                    </span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{{ card.displayName }}</div>
+                                    <div class="mt-1 flex flex-wrap items-center gap-2">
+                                        <span v-if="card.bandeira" class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                            {{ String(card.bandeira) }}
+                                        </span>
+                                        <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" :class="getStatusBadgeClasses(card.status)">
+                                            {{ card.status }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Amount and Status -->
-                            <div class="text-right">
-                                <div class="text-base font-bold text-slate-900">{{ formatBRL(card.usado) }}</div>
-                                <div
-                                    class="mt-1 inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-                                    :class="getStatusBadgeClasses(card.status)"
-                                >
-                                    {{ card.status }}
+                            <div class="mt-6">
+                                <div class="flex items-end justify-between">
+                                    <div>
+                                         <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Fatura Atual</div>
+                                         <div class="text-xl font-bold text-slate-900">{{ formatBRL(card.usado) }}</div>
+                                    </div>
+                                     <div class="text-right">
+                                         <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Limite Disp.</div>
+                                         <div class="text-sm font-bold text-emerald-600">{{ formatBRL(card.disponivel) }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div
+                                        class="h-full rounded-full transition-all duration-500"
+                                        :style="{ width: `${Math.min(card.percentualUsado, 100)}%`, backgroundColor: card.cor }"
+                                    ></div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Stats and Progress Bar -->
-                        <div class="mt-3 space-y-2">
-                            <!-- Stats -->
-                            <div class="flex items-center justify-between text-[11px] font-medium text-slate-500">
-                                <span>LIMITE USADO: {{ Math.round(card.percentualUsado) }}%</span>
-                                <span>DISP: {{ formatBRL(card.disponivel) }}</span>
+                         <div class="bg-slate-50 px-5 py-3 border-t border-slate-100">
+                             <div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                                <span v-if="card.fechamentoDia">FECHA DIA {{ String(card.fechamentoDia).padStart(2, '0') }}</span>
+                                <span v-if="card.vencimentoDia">VENCE DIA {{ String(card.vencimentoDia).padStart(2, '0') }}</span>
                             </div>
+                         </div>
+                    </Link>
+                 </div>
 
-                            <!-- Progress Bar -->
-                            <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div
-                                    class="h-full rounded-full transition-all duration-300"
-                                    :style="{
-                                        width: `${Math.min(card.percentualUsado, 100)}%`,
-                                        backgroundColor: card.cor
-                                    }"
-                                ></div>
-                            </div>
+                 <div v-else class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-10 text-center">
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                        <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                             <rect x="2" y="5" width="20" height="14" rx="2" />
+                             <line x1="2" y1="10" x2="22" y2="10" />
+                        </svg>
+                    </div>
+                    <div class="mt-4 text-base font-bold text-slate-900">Nenhum cartão encontrado</div>
+                    <div class="mt-1 text-sm text-slate-500">Adicione um cartão de crédito para acompanhar seus gastos.</div>
+                    <button class="mt-6 inline-flex items-center justify-center rounded-xl bg-[#14B8A6] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20" @click="createCreditCardFlowOpen = true">
+                        Adicionar Cartão
+                    </button>
+                </div>
+            </div>
 
-                            <div class="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                                <div class="flex flex-wrap items-center gap-4">
-                                    <span v-if="card.fechamentoDia" class="inline-flex items-center gap-1" :title="`Fechamento dia ${card.fechamentoDia}`">
-                                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M8 2v4" />
-                                            <path d="M16 2v4" />
-                                            <path d="M3 10h18" />
-                                            <path d="M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
-                                        </svg>
-                                        FECHA DIA {{ String(card.fechamentoDia).padStart(2, '0') }}
-                                    </span>
-                                    <span v-if="card.vencimentoDia" class="inline-flex items-center gap-1" :title="`Vencimento dia ${card.vencimentoDia}`">
-                                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M8 2v4" />
-                                            <path d="M16 2v4" />
-                                            <path d="M3 10h18" />
-                                            <path d="M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
-                                            <path d="M12 14v4" />
-                                            <path d="M12 12h.01" />
-                                        </svg>
-                                        VENCE DIA {{ String(card.vencimentoDia).padStart(2, '0') }}
-                                    </span>
-                                </div>
-                            </div>
+            <!-- Right Column: Consolidated Debt (Desktop) -->
+            <div :class="[isMobile ? 'contents' : 'lg:col-span-4 lg:order-2 lg:sticky lg:top-24']">
+                 <div class="rounded-3xl bg-[#1E293B] p-6 shadow-xl text-white">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Dívida Consolidada</div>
+                        <svg class="h-5 w-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+
+                    <div v-if="isLoading" class="h-10 w-32 animate-pulse rounded bg-slate-700"></div>
+                    <div v-else class="text-3xl font-bold tracking-tight">{{ formatBRL(devedaConsolidada) }}</div>
+
+                    <div class="mt-8 space-y-6">
+                        <div>
+                             <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">
+                                 <span>Uso de Crédito</span>
+                                 <span class="text-[#14B8A6]">{{ formatPercentage(percentualUsoConsolidado) }}</span>
+                             </div>
+                             <div class="h-2 w-full overflow-hidden rounded-full bg-slate-700">
+                                <div class="h-full bg-[#14B8A6] transition-all duration-500" :style="{ width: `${Math.min(100, percentualUsoConsolidado)}%` }"></div>
+                             </div>
+                        </div>
+
+                        <div class="pt-6 border-t border-slate-700">
+                             <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Disponível Total</div>
+                             <div class="text-xl font-bold">{{ formatBRL(disponivelConsolidado) }}</div>
                         </div>
                     </div>
-                </Link>
-            </div>
+                </div>
 
-            <div
-                v-else
-                class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center"
-            >
-                <div class="text-sm font-semibold text-slate-900">Nenhum cartão cadastrado</div>
-                <div class="mt-1 text-xs text-slate-500">Adicione um cartão para começar</div>
+                <div v-if="!isMobile" class="mt-6 rounded-3xl bg-slate-50 p-6 border border-slate-100">
+                    <h3 class="font-bold text-slate-900">Sobre Faturas</h3>
+                    <p class="mt-2 text-sm text-slate-500 leading-relaxed">
+                        Os valores apresentados referem-se às faturas com vencimento no mês selecionado.
+                    </p>
+                </div>
             </div>
         </div>
 
