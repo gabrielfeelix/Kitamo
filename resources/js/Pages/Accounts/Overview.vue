@@ -557,7 +557,7 @@ watch(
 	                <div v-else class="text-xs font-bold text-emerald-600">{{ formatBRL(totalBankBalance) }}</div>
 	            </div>
 
-            <div v-if="isLoading" class="mt-4 space-y-3">
+            <div v-if="isLoading" class="mt-4" :class="[isMobile ? 'space-y-3' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3']">
                 <div v-for="i in 3" :key="i" class="flex items-center justify-between rounded-3xl bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60">
                     <div class="flex items-center gap-3">
                         <div class="h-12 w-12 animate-pulse rounded-2xl bg-slate-200"></div>
@@ -570,7 +570,7 @@ watch(
                 </div>
             </div>
 
-            <div v-else class="mt-4 space-y-3">
+            <div v-else class="mt-4" :class="[isMobile ? 'space-y-3' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3']">
                 <Link
                     v-for="account in bankAccounts"
                     :key="account.id"

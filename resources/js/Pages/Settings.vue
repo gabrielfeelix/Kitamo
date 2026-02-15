@@ -55,9 +55,9 @@ const initials = computed(() => {
 
 <template>
     <component :is="Shell" v-bind="shellProps">
-        <div class="fixed inset-0 flex flex-col bg-[#14B8A6]">
-            <!-- Header com perfil -->
-            <div class="px-5 pb-6 pt-[calc(0.5rem+env(safe-area-inset-top))]">
+        <div :class="[isMobile ? 'fixed inset-0 flex flex-col bg-[#14B8A6]' : '']">
+            <!-- Header com perfil (Mobile) -->
+            <div v-if="isMobile" class="px-5 pb-6 pt-[calc(0.5rem+env(safe-area-inset-top))]">
                 <Link :href="route('dashboard')" class="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-white">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 18l-6-6 6-6" />
@@ -80,13 +80,39 @@ const initials = computed(() => {
                 </div>
             </div>
 
-            <!-- Card branco -->
-            <div class="flex-1 rounded-t-[28px] bg-slate-50 px-5 pt-5">
+            <!-- Header com perfil (Desktop) -->
+            <div v-else class="mb-8 flex items-center gap-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+                <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-2xl font-bold text-slate-500">
+                    <img v-if="avatarUrl" :src="avatarUrl" alt="Foto do perfil" class="h-full w-full object-cover" />
+                    <span v-else>{{ initials }}</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">{{ userName }}</h2>
+                    <p class="text-sm font-medium text-slate-500">{{ userEmail }}</p>
+                    <div class="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                        </svg>
+                        Membro PRO
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card branco / Grid PC -->
+            <div :class="[
+                isMobile 
+                    ? 'flex-1 rounded-t-[28px] bg-slate-50 px-5 pt-5' 
+                    : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'
+            ]">
+                <!-- Desktop: Section Title "Conta" -->
+                <div v-if="!isMobile" class="col-span-full mb-1 text-sm font-bold text-slate-900">Sua Conta</div>
+
                 <Link
                     :href="route('profile.edit')"
-                    class="mb-5 flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60"
+                    class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50"
+                    :class="{'mb-5': isMobile}"
                 >
-                    <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50">
+                    <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-teal-50 group-hover:bg-teal-100 transition">
                         <svg class="h-5 w-5 text-[#14B8A6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                             <circle cx="12" cy="7" r="4" />
@@ -102,11 +128,12 @@ const initials = computed(() => {
                 </Link>
 
                 <!-- Seção CONFIGURAÇÕES -->
-                <div class="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Configurações</div>
+                <div v-if="isMobile" class="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Configurações</div>
+                <div v-else class="col-span-full mt-4 mb-1 text-sm font-bold text-slate-900">Preferências</div>
 
-                <div class="space-y-2.5 pb-6">
-                    <Link :href="route('settings.notifications')" class="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50">
+                <div :class="[isMobile ? 'space-y-2.5 pb-6' : 'contents']">
+                    <Link :href="route('settings.notifications')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50 group-hover:bg-amber-100 transition">
                             <svg class="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5" />
                                 <path d="M9 17a3 3 0 0 0 6 0" />
@@ -118,8 +145,8 @@ const initials = computed(() => {
                         </svg>
                     </Link>
 
-                    <Link :href="route('settings.security')" class="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-50">
+                    <Link :href="route('settings.security')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-50 group-hover:bg-purple-100 transition">
                             <svg class="h-5 w-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 22s8-4 8-10V6l-8-4-8 4v6c0 6 8 10 8 10Z" />
                             </svg>
@@ -130,8 +157,8 @@ const initials = computed(() => {
                         </svg>
                     </Link>
 
-                    <Link :href="route('settings.support')" class="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-50">
+                    <Link :href="route('settings.support')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-cyan-50 group-hover:bg-cyan-100 transition">
                             <svg class="h-5 w-5 text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" />
                             </svg>
@@ -142,8 +169,8 @@ const initials = computed(() => {
                         </svg>
                     </Link>
 
-                    <Link :href="route('settings.about')" class="flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60">
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100">
+                    <Link :href="route('settings.about')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 group-hover:bg-slate-200 transition">
                             <svg class="h-5 w-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="9" />
                                 <path d="M12 16v-4" />
@@ -158,23 +185,22 @@ const initials = computed(() => {
                 </div>
 
                 <!-- Sair da conta -->
-                <div class="pb-5 text-center">
+                <div class="pb-5 text-center col-span-full mt-4">
                     <Link
                         :href="route('logout')"
                         method="post"
                         as="button"
-                        class="text-sm font-bold text-red-500"
+                        class="text-sm font-bold text-red-500 hover:text-red-600"
                     >
                         Sair da Conta
                     </Link>
                 </div>
 
                 <!-- Versão -->
-                <div class="pb-8 text-center text-[11px] font-semibold text-slate-300">
+                <div class="pb-8 text-center text-[11px] font-semibold text-slate-300 col-span-full">
                     v1.0.2 (Build 8402)
                 </div>
             </div>
         </div>
     </component>
-
 </template>

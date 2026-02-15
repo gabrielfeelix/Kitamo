@@ -1099,8 +1099,8 @@ onMounted(() => {
 	                </Link>
 		            </div>
 		        </header>
-
-            <section class="mt-6 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 shadow-lg ring-1 ring-slate-900/10">
+            <div :class="[isMobile ? 'contents' : 'mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start']">
+                <div :class="[isMobile ? 'contents' : 'lg:col-span-8 flex flex-col']">            <section class="mt-6 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 shadow-lg ring-1 ring-slate-900/10">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-300">Saldo Total</div>
@@ -1287,6 +1287,8 @@ onMounted(() => {
                 <div class="mt-1 text-xs text-slate-500">Adicione seus primeiros lançamentos para ver o fluxo.</div>
             </div>
 	        </section>
+                </div>
+                <div :class="[isMobile ? 'contents' : 'lg:col-span-4 flex flex-col']">
 
 		        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
@@ -1549,6 +1551,8 @@ onMounted(() => {
                     </svg>
                 </button>
             </section>
+                </div>
+            </div>
 
 	        <TransactionModal
                 :open="transactionOpen"
