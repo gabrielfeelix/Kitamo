@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { siteNavigation } from '@/types/site';
+import { headerNavigation } from '@/types/site';
 
 const props = defineProps<{
     canLogin?: boolean;
@@ -21,9 +21,9 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
                 kitamo
             </Link>
 
-            <nav class="hidden items-center gap-5 lg:flex">
+            <nav class="hidden items-center gap-7 lg:flex">
                 <Link
-                    v-for="item in siteNavigation"
+                    v-for="item in headerNavigation"
                     :key="item.routeName"
                     :href="route(item.routeName)"
                     class="site-nav-link"
@@ -37,13 +37,13 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
                 <Link
                     v-if="canLogin"
                     href="/login"
-                    class="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-800 transition hover:bg-slate-900 hover:text-white"
+                    class="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 px-5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-800 transition hover:bg-slate-900 hover:text-white"
                 >
                     Entrar
                 </Link>
                 <Link
                     :href="primaryHref"
-                    class="inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-5 text-[11px] font-bold uppercase tracking-[0.15em] text-white transition hover:bg-emerald-500 hover:text-slate-950"
+                    class="inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-6 text-[11px] font-bold uppercase tracking-[0.15em] text-white transition hover:bg-emerald-500 hover:text-slate-950"
                 >
                     {{ primaryLabel }}
                 </Link>
@@ -62,32 +62,33 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
             </button>
         </div>
 
-        <div v-if="mobileOpen" class="border-t border-slate-200 bg-[#f7f8f4] px-5 py-4 lg:hidden">
+        <!-- Mobile Menu Overlay -->
+        <div v-if="mobileOpen" class="fixed inset-x-0 top-20 bottom-0 bg-[#f7f8f4] z-40 p-6 flex flex-col justify-between overflow-y-auto lg:hidden">
             <div class="grid gap-2">
                 <Link
-                    v-for="item in siteNavigation"
+                    v-for="item in headerNavigation"
                     :key="`mobile-${item.routeName}`"
                     :href="route(item.routeName)"
-                    class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                    :class="{ 'bg-emerald-50 text-emerald-700': route().current(item.routeName) }"
+                    class="text-2xl font-medium tracking-tight text-slate-800 p-4 border-b border-slate-200"
+                    :class="{ 'text-emerald-500': route().current(item.routeName) }"
                     @click="mobileOpen = false"
                 >
                     {{ item.label }}
                 </Link>
             </div>
 
-            <div class="mt-4 grid gap-2">
+            <div class="mt-8 grid gap-4">
                 <Link
                     v-if="canLogin"
                     href="/login"
-                    class="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 text-xs font-bold uppercase tracking-[0.16em] text-slate-700"
+                    class="inline-flex h-14 items-center justify-center rounded-full border border-slate-300 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-700 w-full"
                     @click="mobileOpen = false"
                 >
-                    Entrar
+                    Entrar na minha conta
                 </Link>
                 <Link
                     :href="primaryHref"
-                    class="inline-flex h-10 items-center justify-center rounded-full bg-slate-900 text-xs font-bold uppercase tracking-[0.15em] text-white"
+                    class="inline-flex h-14 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-400 w-full"
                     @click="mobileOpen = false"
                 >
                     {{ primaryLabel }}
@@ -105,10 +106,13 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
     letter-spacing: 0.14em;
     font-weight: 700;
     transition: color 180ms ease;
+    padding: 8px 12px;
 }
 
 .site-nav-link:hover,
 .site-nav-link.is-active {
     color: #0f172a;
+    background: rgba(0,0,0,0.03);
+    border-radius: 99px;
 }
 </style>

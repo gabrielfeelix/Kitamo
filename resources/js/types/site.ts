@@ -17,15 +17,26 @@ export type SitePricingPlan = {
     highlighted?: boolean;
 };
 
-export const siteNavigation: SiteNavItem[] = [
-    { label: 'Home', routeName: 'site.home' },
+export const headerNavigation: SiteNavItem[] = [
     { label: 'Produto', routeName: 'site.product' },
-    { label: 'Funcionalidades', routeName: 'site.features' },
-    { label: 'Segurança', routeName: 'site.security' },
     { label: 'Preços', routeName: 'site.pricing' },
-    { label: 'Recursos', routeName: 'site.resources' },
     { label: 'Empresa', routeName: 'site.company' },
+];
+
+export const footerProduct: SiteNavItem[] = [
+    { label: 'Tour', routeName: 'site.product' },
+    { label: 'Preços', routeName: 'site.pricing' },
+    { label: 'Segurança', routeName: 'site.security' },
+];
+
+export const footerCompany: SiteNavItem[] = [
+    { label: 'Nossa Missão', routeName: 'site.company' },
     { label: 'Contato', routeName: 'site.contact' },
+];
+
+export const footerLegal: SiteNavItem[] = [
+    { label: 'Privacidade', routeName: 'site.privacy' },
+    { label: 'Termos de Uso', routeName: 'site.terms' },
 ];
 
 export const homeTrustSignals: string[] = [

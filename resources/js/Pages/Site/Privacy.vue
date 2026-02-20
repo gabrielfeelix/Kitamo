@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import MotionSection from '@/Components/site/MotionSection.vue';
-import SectionShell from '@/Components/site/SectionShell.vue';
+import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 
 defineProps<{
@@ -16,37 +14,38 @@ defineProps<{
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[980px] px-5 pb-8 pt-8 md:px-6 md:pt-10">
-            <SectionShell
-                kicker="Privacidade"
-                title="Compromisso com uso responsável de dados"
-                description="Este resumo institucional apresenta os princípios de coleta, uso e proteção de dados na Kitamo."
-            />
+        
+        <section class="max-w-[900px] mx-auto px-6 py-24 md:py-32">
+            
+            <div class="mb-20">
+                <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors mb-6 inline-block">← Voltar</Link>
+                <h1 class="text-5xl md:text-[6rem] leading-[0.9] font-medium tracking-tight mb-8">Nossa lei de <span class="bg-slate-950 text-white px-2 italic font-serif">Privacidade.</span></h1>
+                <p class="text-xl text-slate-500">Documento base de como lidamos com a sua vida financeira.</p>
+                <div class="mt-8 flex gap-4 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-widest text-slate-400">
+                    <span>Última atualização: Julho, 2026</span>
+                    <span>•</span>
+                    <span>Versão 2.1</span>
+                </div>
+            </div>
+
+            <div class="prose prose-lg prose-slate max-w-none font-medium leading-relaxed prose-h2:text-3xl prose-h2:tracking-tight prose-h2:font-medium prose-h2:mb-6 prose-p:text-slate-600 prose-p:mb-8 font-sans">
+                <h2>1. Minimizar, não acumular</h2>
+                <p>O Kitamo coleciona o mínimo de dados viável para o serviço existir. Nós não vendemos hábitos de consumo para publicitários, nem alimentamos perfis obscuros de score de crédito a terceiros.</p>
+
+                <h2>2. Open Finance Criptografado</h2>
+                <p>Nossas conexões com seus bancos seguem protocolos oficiais do Banco Central. Temos apenas acesso de Leitura aos seus extratos, mascarado de ponta-a-ponta, 256 bits AES. O Kitamo <strong>não tem</strong> a capacidade técnica de mover centavos em suas contas correntes.</p>
+
+                <h2>3. Com quem compartilhamos</h2>
+                <p>Nós rodamos nossa infraestrutura técnica em parceiros como AWS (Amazon) e ferramentas de análise interna anonimizada. Se não for por auditoria de segurança ou infra, nenhum 3º põe as mãos no seu ID.</p>
+
+                <h2>4. O seu botão vermelho</h2>
+                <p>Se você assinar, se arrepender, ou simplesmente decidir que não quer mais o sistema: mande um e-mail. Nós ativamos a "destruição nuclear". Todos os seus gráficos, conexões de banco e histórico viram poeira digital em nossos bancos de dados em 24h.</p>
+                
+                <h2 class="mt-16 text-slate-900 border-t border-slate-200 pt-10">Ficou com dúvidas legais?</h2>
+                <p>Acesse o nosso <Link :href="route('site.contact')" class="text-emerald-600 underline underline-offset-4 font-bold hover:text-emerald-700">Canal de Contato</Link> para debater qualquer trecho deste manifesto diretamente com a nossa diretoria.</p>
+            </div>
+
         </section>
 
-        <MotionSection class="mx-auto w-full max-w-[980px] px-5 pb-20 md:px-6 md:pb-24">
-            <div class="space-y-4 rounded-3xl border border-slate-200 bg-white/85 p-7 text-sm leading-relaxed text-slate-700 md:p-8">
-                <section>
-                    <h2 class="text-lg font-semibold text-slate-950">1. Dados coletados</h2>
-                    <p class="mt-2">Coletamos dados necessários para operação da plataforma, autenticação e comunicação solicitada pelo usuário.</p>
-                </section>
-                <section>
-                    <h2 class="text-lg font-semibold text-slate-950">2. Finalidade</h2>
-                    <p class="mt-2">Os dados são utilizados para entregar funcionalidades, suporte, segurança operacional e melhoria contínua do serviço.</p>
-                </section>
-                <section>
-                    <h2 class="text-lg font-semibold text-slate-950">3. Compartilhamento</h2>
-                    <p class="mt-2">Não compartilhamos dados pessoais fora das hipóteses legais e operacionais estritamente necessárias.</p>
-                </section>
-                <section>
-                    <h2 class="text-lg font-semibold text-slate-950">4. Direitos do titular</h2>
-                    <p class="mt-2">Solicitações de revisão, atualização e exclusão podem ser feitas pelo canal institucional de contato.</p>
-                </section>
-                <section>
-                    <h2 class="text-lg font-semibold text-slate-950">5. Atualizações</h2>
-                    <p class="mt-2">Este conteúdo pode ser atualizado para refletir evolução regulatória e operacional da plataforma.</p>
-                </section>
-            </div>
-        </MotionSection>
     </SiteLayout>
 </template>

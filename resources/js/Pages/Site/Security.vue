@@ -1,99 +1,63 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import FaqBlock from '@/Components/site/FaqBlock.vue';
-import MotionSection from '@/Components/site/MotionSection.vue';
-import SectionShell from '@/Components/site/SectionShell.vue';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
-import type { SiteFaqItem } from '@/types/site';
 
 defineProps<{
     canLogin?: boolean;
     canRegister?: boolean;
 }>();
 
-const trustPoints = [
-    {
-        title: 'Princípio de mínimo necessário',
-        text: 'Coletamos apenas os dados necessários para operação do produto e melhoria da experiência.',
-    },
-    {
-        title: 'Controle de acesso',
-        text: 'Sessões autenticadas e camadas de autorização para proteger recursos administrativos.',
-    },
-    {
-        title: 'Rastreabilidade operacional',
-        text: 'Ações críticas contam com trilha de registro para auditoria interna.',
-    },
-    {
-        title: 'Transparência legal',
-        text: 'Políticas públicas com linguagem clara para privacidade e termos de uso.',
-    },
-];
-
-const securityFaq: SiteFaqItem[] = [
-    {
-        question: 'Como a Kitamo trata meus dados de contato?',
-        answer: 'Dados de contato são usados para atendimento e comunicação solicitada, seguindo políticas de privacidade da plataforma.',
-    },
-    {
-        question: 'Posso solicitar revisão ou remoção de dados?',
-        answer: 'Sim. O canal de contato institucional atende solicitações de revisão, atualização e exclusão conforme política vigente.',
-    },
-    {
-        question: 'A segurança é revisada continuamente?',
-        answer: 'A plataforma opera com revisão contínua de práticas operacionais, controle de acesso e monitoramento do ambiente.',
-    },
+const checks = [
+    { title: "Comunicação Segura (SSL/TLS)", desc: "100% da plataforma transporta dados em túneis blindados. De ponta a ponta." },
+    { title: "Arquitetura Isolada", desc: "Seu ID tem um namespace único no banco de dados. Nunca rola mixagem." },
+    { OpenFinance: "Sincronização Read-Only", desc: "A API oficial dos bancos é usada sem privilégios de transação via Open Finance regulamentado." },
+    { title: "Hospedagem Corporativa", desc: "Infraestrutura escalável via cloud computing robusta, a mesma que os grandes SaaS B2B usam." }
 ];
 </script>
 
 <template>
     <Head title="Segurança | Kitamo">
-        <meta
-            name="description"
-            content="Práticas de segurança, privacidade e governança de dados da Kitamo para uso financeiro pessoal com confiança."
-        />
+        <meta name="description" content="Práticas de segurança, privacidade e governança de dados da Kitamo." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1240px] px-5 pb-8 pt-8 md:px-6 md:pt-10">
-            <SectionShell
-                kicker="Segurança e privacidade"
-                title="Confiança operacional para decisões financeiras sensíveis"
-                description="Proteção de dados e transparência institucional fazem parte da base do produto, não de um bloco secundário."
-            />
+        
+        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-2 gap-20 items-start">
+            
+            <div class="sticky top-40">
+                <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-4 py-2 rounded-full inline-flex items-center gap-2 mb-10 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Auditoria On</Link>
+                <h1 class="text-5xl md:text-[6rem] leading-[0.8] font-medium tracking-tight mb-8">O Cofre.</h1>
+                <p class="text-xl text-slate-500 leading-relaxed font-medium">As fundações de código do Kitamo foram desenhadas como se fôssemos nós mesmos usar (e nós usamos). Zero atalho de segurança.</p>
+                <Link :href="route('site.contact')" class="inline-block mt-12 underline underline-offset-8 decoration-emerald-500 decoration-2 font-bold text-slate-900 hover:text-emerald-700 transition-colors uppercase text-sm tracking-widest">Tem dúvidas de T.I.? Fale conosco</Link>
+            </div>
+
+            <!-- Big Brute Security Grid -->
+            <div>
+                 <div class="space-y-6">
+                     <div v-for="(check, idx) in checks" :key="idx" class="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200 shadow-[0_20px_40px_rgba(2,6,23,0.02)] relative overflow-hidden group">
+                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-slate-100 rounded-full blur-[40px] group-hover:bg-emerald-100 transition-colors duration-700"></div>
+                         <h3 class="text-3xl font-medium tracking-tight text-slate-900 mb-4">{{ check.title || check.OpenFinance }}</h3>
+                         <p class="text-slate-500 leading-relaxed font-medium">{{ check.desc }}</p>
+                     </div>
+                 </div>
+
+                 <!-- Documentos Legais Integrados -->
+                 <div class="bg-slate-950 text-white mt-8 p-10 rounded-[2.5rem] grid gap-8">
+                     <h3 class="text-2xl font-medium tracking-tight">O combo de Leis do jogo.</h3>
+                     <div class="flex gap-4 border-t border-slate-800 pt-8 mt-2">
+                        <Link :href="route('site.privacy')" class="flex-1 bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-emerald-500 hover:border-emerald-400 group transition-colors">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-emerald-950 block mb-3">Lei & Regra</span>
+                            <span class="text-lg font-medium tracking-tight text-white group-hover:text-slate-950">Privacidade</span>
+                        </Link>
+                        <Link :href="route('site.terms')" class="flex-1 bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-amber-400 hover:border-amber-300 group transition-colors">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-amber-950 block mb-3">Contrato</span>
+                            <span class="text-lg font-medium tracking-tight text-white group-hover:text-slate-950">Seus Termos</span>
+                        </Link>
+                     </div>
+                 </div>
+            </div>
+
         </section>
 
-        <MotionSection class="mx-auto w-full max-w-[1240px] px-5 pb-8 md:px-6">
-            <div class="grid gap-4 md:grid-cols-2">
-                <article
-                    v-for="point in trustPoints"
-                    :key="point.title"
-                    class="rounded-2xl border border-slate-200 bg-white/80 p-6"
-                >
-                    <h2 class="text-2xl leading-[1] tracking-[-0.02em] text-slate-950">{{ point.title }}</h2>
-                    <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ point.text }}</p>
-                </article>
-            </div>
-        </MotionSection>
-
-        <MotionSection class="mx-auto w-full max-w-[980px] px-5 py-14 md:px-6 md:py-16">
-            <SectionShell kicker="FAQ de confiança" title="Perguntas frequentes sobre segurança" compact />
-            <FaqBlock :items="securityFaq" />
-        </MotionSection>
-
-        <section class="mx-auto w-full max-w-[1240px] px-5 pb-20 md:px-6 md:pb-24">
-            <div class="rounded-3xl border border-slate-200 bg-white/80 p-7 md:p-8">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Documentos legais</p>
-                <h2 class="mt-3 text-3xl leading-[0.97] tracking-[-0.03em] text-slate-950">Políticas públicas para leitura rápida e sem ambiguidade</h2>
-                <div class="mt-6 flex flex-wrap gap-3">
-                    <Link :href="route('site.privacy')" class="inline-flex h-11 items-center justify-center rounded-full border border-slate-300 px-6 text-xs font-bold uppercase tracking-[0.14em] text-slate-700 hover:bg-slate-900 hover:text-white">
-                        Política de privacidade
-                    </Link>
-                    <Link :href="route('site.terms')" class="inline-flex h-11 items-center justify-center rounded-full border border-slate-300 px-6 text-xs font-bold uppercase tracking-[0.14em] text-slate-700 hover:bg-slate-900 hover:text-white">
-                        Termos de uso
-                    </Link>
-                </div>
-            </div>
-        </section>
     </SiteLayout>
 </template>
