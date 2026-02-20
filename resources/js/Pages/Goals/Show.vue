@@ -247,7 +247,7 @@ const onDepositConfirmWithFrom = async (payload: { amount: string; from: string;
             </div>
         </div>
 
-        <div class="fixed inset-x-0 bottom-0 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_-32px_rgba(15,23,42,0.45)] md:static md:bg-transparent md:px-0 md:pb-0 md:pt-6 md:shadow-none">
+        <div v-if="isMobile" class="fixed inset-x-0 bottom-0 bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_40px_-32px_rgba(15,23,42,0.45)]">
             <div class="mx-auto w-full max-w-md">
                 <button
                     type="button"

@@ -219,10 +219,10 @@ const closeEditModal = () => {
         </header>
 
         <!-- Type Tabs -->
-        <div class="mt-6 flex gap-3 rounded-2xl bg-slate-100 p-1">
+        <div class="mt-6 flex gap-3 rounded-2xl bg-slate-100 p-1 md:w-max">
             <button
                 type="button"
-                class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition"
+                class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition md:px-6"
                 :class="
                     categoryType === 'expense'
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -234,7 +234,7 @@ const closeEditModal = () => {
             </button>
             <button
                 type="button"
-                class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition"
+                class="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition md:px-6"
                 :class="
                     categoryType === 'income'
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -441,7 +441,7 @@ const closeEditModal = () => {
         </PickerSheet>
 
         <!-- Categories Grid -->
-        <div v-if="filteredCategories.length > 0" class="mt-6 grid grid-cols-2 gap-3 pb-8">
+        <div v-if="filteredCategories.length > 0" class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 pb-8">
             <button
                 v-for="category in filteredCategories"
                 :key="category.id"
