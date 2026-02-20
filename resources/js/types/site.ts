@@ -3,6 +3,12 @@ export type SiteNavItem = {
     routeName: string;
 };
 
+export type SiteExternalLink = {
+    label: string;
+    href: string;
+    note?: string;
+};
+
 export type SiteFaqItem = {
     question: string;
     answer: string;
@@ -34,9 +40,21 @@ export const footerCompany: SiteNavItem[] = [
     { label: 'Contato', routeName: 'site.contact' },
 ];
 
+export const footerResources: SiteNavItem[] = [
+    { label: 'Recursos', routeName: 'site.resources' },
+    { label: 'Guias', routeName: 'site.resources' },
+    { label: 'Newsletter', routeName: 'site.resources' },
+];
+
 export const footerLegal: SiteNavItem[] = [
     { label: 'Privacidade', routeName: 'site.privacy' },
     { label: 'Termos de Uso', routeName: 'site.terms' },
+];
+
+export const footerSocials: SiteExternalLink[] = [
+    { label: 'Instagram', href: '#', note: 'TODO: @kitamo' },
+    { label: 'LinkedIn', href: '#', note: 'TODO: /company/kitamo' },
+    { label: 'X', href: '#', note: 'TODO: @kitamo' },
 ];
 
 export const homeTrustSignals: string[] = [

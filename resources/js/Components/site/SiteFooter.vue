@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { footerProduct, footerCompany, footerLegal } from '@/types/site';
+import { footerProduct, footerCompany, footerResources, footerLegal, footerSocials } from '@/types/site';
 
 defineProps<{
     canLogin?: boolean;
@@ -22,30 +22,39 @@ defineProps<{
                     </p>
                 </div>
 
-                <div class="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-10 lg:gap-8">
+                <div class="lg:col-span-8 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
                     
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">A Plataforma</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-6">A Plataforma</p>
                         <div class="flex flex-col gap-4">
-                            <Link v-for="item in footerProduct" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
+                            <Link v-for="item in footerProduct" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef1ea] rounded-md">
                                 {{ item.label }}
                             </Link>
                         </div>
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">A Companhia</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-6">A Companhia</p>
                         <div class="flex flex-col gap-4">
-                            <Link v-for="item in footerCompany" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
+                            <Link v-for="item in footerCompany" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef1ea] rounded-md">
                                 {{ item.label }}
                             </Link>
                         </div>
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">Transparência</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-6">Recursos</p>
                         <div class="flex flex-col gap-4">
-                            <Link v-for="item in footerLegal" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
+                            <Link v-for="item in footerResources" :key="item.label" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef1ea] rounded-md">
+                                {{ item.label }}
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 mb-6">Transparência</p>
+                        <div class="flex flex-col gap-4">
+                            <Link v-for="item in footerLegal" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef1ea] rounded-md">
                                 {{ item.label }}
                             </Link>
                         </div>
@@ -55,14 +64,27 @@ defineProps<{
             </div>
 
             <!-- Pre-Footer Badges & Copy -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div class="flex items-center gap-4">
                     <div class="px-4 py-2 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-widest text-slate-600 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Servidores Online
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-6">
+                <div class="flex flex-col items-start gap-3 md:items-end">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <a
+                            v-for="item in footerSocials"
+                            :key="item.label"
+                            :href="item.href"
+                            class="inline-flex h-9 items-center justify-center rounded-full border border-slate-300 bg-white px-4 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-700 transition hover:border-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#eef1ea]"
+                        >
+                            {{ item.label }}
+                        </a>
+                    </div>
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        TODO: definir links oficiais de redes sociais
+                    </p>
                     <div class="text-[11px] font-semibold text-slate-600 uppercase tracking-widest">© {{ new Date().getFullYear() }} Kitamo Tech</div>
                 </div>
             </div>
