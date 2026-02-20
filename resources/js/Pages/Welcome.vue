@@ -33,16 +33,14 @@ const navSections = [
     { id: 'cta', label: 'Final' }
 ];
 
-const tickerItems = [
+const trustSignals = [
     'Projeção diária',
     'Alerta pré-vencimento',
-    'Visão de assinatura',
-    'Análise por categoria',
-    'Cenário otimista e conservador',
-    'Resumo mensal em segundos'
+    'Assinaturas e recorrências',
+    'Prioridade de decisão',
+    'Resumo claro da semana',
+    'Fluxo orientado por cenário'
 ];
-
-const tickerLoop = [...tickerItems, ...tickerItems];
 
 const processSteps = [
     {
@@ -385,21 +383,35 @@ onUnmounted(() => {
                                         <div class="h-2.5 w-2.5 rounded-full bg-white/60"></div>
                                     </div>
                                     <div class="hero-device-content">
-                                        <div class="hero-spark"></div>
-                                        <div class="space-y-3 relative z-10">
-                                            <div class="h-3 w-32 rounded-full bg-white/50"></div>
-                                            <div class="h-10 w-full rounded-xl bg-white/40"></div>
-                                            <div class="h-10 w-11/12 rounded-xl bg-white/30"></div>
+                                        <div class="hero-status-chip">Saldo projetado no fim do mês</div>
+                                        <div class="hero-balance-row">
+                                            <strong>R$ 2.430</strong>
+                                            <span>+12% vs. mês anterior</span>
                                         </div>
-                                        <div class="grid grid-cols-4 gap-2 mt-8 relative z-10">
-                                            <div class="h-16 rounded-xl bg-white/35"></div>
-                                            <div class="h-24 rounded-xl bg-white/50"></div>
-                                            <div class="h-12 rounded-xl bg-white/25"></div>
-                                            <div class="h-20 rounded-xl bg-white/40"></div>
+                                        <div class="hero-mini-chart">
+                                            <span class="h-[35%]"></span>
+                                            <span class="h-[58%]"></span>
+                                            <span class="h-[76%]"></span>
+                                            <span class="h-[54%]"></span>
+                                            <span class="h-[68%]"></span>
+                                        </div>
+                                        <div class="hero-category-list">
+                                            <div class="hero-category-item">
+                                                <p>Assinaturas</p>
+                                                <strong>R$ 238</strong>
+                                            </div>
+                                            <div class="hero-category-item">
+                                                <p>Cartão</p>
+                                                <strong>R$ 1.420</strong>
+                                            </div>
+                                            <div class="hero-category-item">
+                                                <p>Reserva</p>
+                                                <strong>R$ 600</strong>
+                                            </div>
                                         </div>
                                         <div class="hero-device-footer relative z-10">
-                                            <div class="h-2.5 w-20 rounded-full bg-white/50"></div>
-                                            <div class="h-2.5 w-12 rounded-full bg-white/40"></div>
+                                            <div class="hero-device-pill">3 alertas hoje</div>
+                                            <div class="hero-device-pill">Plano semanal</div>
                                         </div>
                                     </div>
                                 </div>
@@ -417,12 +429,8 @@ onUnmounted(() => {
                     </div>
 
                     <div class="mt-14 rounded-2xl border border-slate-200/80 bg-white/70 overflow-hidden">
-                        <div class="ticker-track">
-                            <div class="ticker-group">
-                                <span v-for="(item, index) in tickerLoop" :key="`ticker-${index}`" class="ticker-pill">
-                                    {{ item }}
-                                </span>
-                            </div>
+                        <div class="signal-strip">
+                            <span v-for="item in trustSignals" :key="item" class="signal-pill">{{ item }}</span>
                         </div>
                     </div>
                 </div>
@@ -476,44 +484,44 @@ onUnmounted(() => {
                 <div class="max-w-[1320px] mx-auto px-6">
                     <div class="flex flex-wrap justify-between items-end gap-6 mb-10">
                         <div>
-                            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500 mb-4">Componentes de impacto</p>
-                            <h2 class="text-4xl md:text-5xl tracking-[-0.03em] leading-[1.06]">Estrutura visual para guiar decisão</h2>
+                            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500 mb-4">O que você ganha no dia a dia</p>
+                            <h2 class="text-4xl md:text-5xl tracking-[-0.03em] leading-[1.06]">Menos ansiedade, mais clareza de ação</h2>
                         </div>
                         <p class="max-w-md text-slate-600 leading-relaxed">
-                            A seção combina blocos “editorial + produto” com microinterações para manter ritmo sem perder clareza.
+                            Em vez de sobrecarga de informação, cada bloco responde uma pergunta prática: o que cortar, o que priorizar e o que esperar no fim do mês.
                         </p>
                     </div>
 
                     <div class="bento-grid stagger-grid">
                         <article class="bento-card bento-card-xl">
-                            <p class="bento-tag">Hero Motion</p>
-                            <h3>Headline cinemático com leitura em camadas</h3>
-                            <p>Tipografia grande, acento visual e movimento sutil de profundidade no mockup principal.</p>
+                            <p class="bento-tag">Visão do mês</p>
+                            <h3>Em segundos você entende a direção do seu saldo</h3>
+                            <p>Resumo inicial direto para saber se o mês está estável, apertado ou pedindo ajuste imediato.</p>
                         </article>
                         <article class="bento-card">
-                            <p class="bento-tag">Data Pulse</p>
-                            <h3>Cards que respiram dados</h3>
-                            <p>Componentes com hierarquia de informação para contexto rápido.</p>
+                            <p class="bento-tag">Prioridade</p>
+                            <h3>Alertas realmente importantes</h3>
+                            <p>Você recebe o que exige ação agora, sem ruído de notificação desnecessária.</p>
                         </article>
                         <article class="bento-card">
-                            <p class="bento-tag">Flow Guard</p>
-                            <h3>Transições que contam história</h3>
-                            <p>Entradas por seção com reveal progressivo e ritmo de scroll consistente.</p>
+                            <p class="bento-tag">Controle</p>
+                            <h3>Recorrências sob vigilância</h3>
+                            <p>Assinaturas e débitos periódicos ficam visíveis para cortar vazamentos com rapidez.</p>
                         </article>
                         <article class="bento-card bento-card-wide">
-                            <p class="bento-tag">Narrative Blocks</p>
-                            <h3>Bento editorial + funcional</h3>
-                            <p>Conteúdo dividido entre dor, solução e prova social para segurar atenção até o final.</p>
+                            <p class="bento-tag">Decisão</p>
+                            <h3>Simulação antes de comprometer o orçamento</h3>
+                            <p>Você testa cenários e entende impacto mensal antes de parcelar, assinar ou investir.</p>
                         </article>
                         <article class="bento-card">
-                            <p class="bento-tag">Signal UI</p>
-                            <h3>Alertas com prioridade visual</h3>
-                            <p>Elementos de status em contraste alto para risco e oportunidade.</p>
+                            <p class="bento-tag">Objetivo</p>
+                            <h3>Plano semanal de ajuste</h3>
+                            <p>Uma próxima ação clara para sair do “depois eu vejo” e avançar toda semana.</p>
                         </article>
                         <article class="bento-card">
-                            <p class="bento-tag">CTA Engine</p>
-                            <h3>Conversão sem ruído</h3>
-                            <p>Chamadas repetidas em pontos-chave com copy orientada à ação.</p>
+                            <p class="bento-tag">Constância</p>
+                            <h3>Menos fricção para manter hábito</h3>
+                            <p>Fluxo simples para consultar, ajustar e seguir sem transformar finanças em tarefa pesada.</p>
                         </article>
                     </div>
                 </div>
@@ -630,7 +638,7 @@ onUnmounted(() => {
                                     type="button"
                                     class="scenario-tab"
                                     :class="{ 'is-active': activeScenarioIndex === index }"
-                                    @mouseenter="setActiveScenario(index)"
+                                    :aria-pressed="activeScenarioIndex === index"
                                     @focus="setActiveScenario(index)"
                                     @click="setActiveScenario(index)"
                                 >
@@ -642,28 +650,30 @@ onUnmounted(() => {
 
                         <div class="lg:col-span-8">
                             <article class="scenario-panel">
-                                <p class="scenario-kicker">{{ activeScenario.label }}</p>
-                                <h3>{{ activeScenario.title }}</h3>
-                                <p class="scenario-subtitle">{{ activeScenario.subtitle }}</p>
-                                <div class="scenario-impact">
-                                    <span>Impacto mensal estimado</span>
-                                    <strong>{{ activeScenario.impact }}</strong>
-                                </div>
-                                <ul class="scenario-notes">
-                                    <li v-for="note in activeScenario.notes" :key="note">
-                                        <span class="scenario-note-dot"></span>
-                                        {{ note }}
-                                    </li>
-                                </ul>
+                                <Transition name="scenario-swap" mode="out-in">
+                                    <div :key="activeScenario.label">
+                                        <p class="scenario-kicker">{{ activeScenario.label }}</p>
+                                        <h3>{{ activeScenario.title }}</h3>
+                                        <p class="scenario-subtitle">{{ activeScenario.subtitle }}</p>
+                                        <div class="scenario-impact">
+                                            <span>Impacto mensal estimado</span>
+                                            <strong>{{ activeScenario.impact }}</strong>
+                                        </div>
+                                        <ul class="scenario-notes">
+                                            <li v-for="note in activeScenario.notes" :key="note">
+                                                <span class="scenario-note-dot"></span>
+                                                {{ note }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </Transition>
                             </article>
                         </div>
                     </div>
 
                     <div class="quick-convert-strip">
                         <p>Entrada grátis • Configuração em minutos • Fluxo orientado por prioridade</p>
-                        <Link :href="primaryCtaHref" class="quick-convert-cta">
-                            {{ primaryCtaLabel }}
-                        </Link>
+                        <span>Sem cartão para começar</span>
                     </div>
                 </div>
             </section>
@@ -686,19 +696,19 @@ onUnmounted(() => {
                         </div>
                         <div class="lg:col-span-8 grid sm:grid-cols-3 gap-4">
                             <div class="metric-card">
-                                <p>Leitura de fluxo</p>
-                                <strong>+3x</strong>
-                                <span>Mais rapidez para entender o mês</span>
+                                <p>Clareza imediata</p>
+                                <strong>Resumo útil</strong>
+                                <span>Você abre e entende o que precisa de ação no mesmo momento.</span>
                             </div>
                             <div class="metric-card">
-                                <p>Antecipação de risco</p>
-                                <strong>-41%</strong>
-                                <span>Menos surpresas em vencimentos críticos</span>
+                                <p>Risco antecipado</p>
+                                <strong>Alertas críticos</strong>
+                                <span>Cobranças e vencimentos aparecem antes de virarem problema.</span>
                             </div>
                             <div class="metric-card">
-                                <p>Decisão segura</p>
-                                <strong>+62%</strong>
-                                <span>Mais ações preventivas antes do fechamento</span>
+                                <p>Decisão guiada</p>
+                                <strong>Próximo passo</strong>
+                                <span>Você sai da análise com uma ação definida para melhorar o mês.</span>
                             </div>
                         </div>
                     </div>
@@ -778,12 +788,6 @@ onUnmounted(() => {
             </section>
         </main>
 
-        <div class="mobile-cta-dock sm:hidden">
-            <div class="mobile-cta-shell">
-                <p>Ative seu fluxo financeiro</p>
-                <Link :href="primaryCtaHref" class="mobile-cta-link">{{ primaryCtaLabel }}</Link>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -811,12 +815,12 @@ onUnmounted(() => {
 
 .landing-grid {
     z-index: 1;
-    opacity: 0.32;
+    opacity: 0.18;
     background-image:
         linear-gradient(to right, rgba(15, 23, 42, 0.08) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
-    background-size: 70px 70px;
-    mask-image: radial-gradient(circle at center, black, transparent 78%);
+    background-size: 84px 84px;
+    mask-image: radial-gradient(circle at center, black, transparent 82%);
 }
 
 .lp-reveal {
@@ -975,11 +979,94 @@ onUnmounted(() => {
     overflow: hidden;
 }
 
-.hero-spark {
-    position: absolute;
-    inset: -120%;
-    background: linear-gradient(130deg, transparent 48%, rgba(255, 255, 255, 0.45), transparent 52%);
-    animation: lpSweep 6.3s linear infinite;
+.hero-status-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(236, 253, 245, 0.36);
+    color: rgba(236, 253, 245, 0.92);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 6px 10px;
+}
+
+.hero-balance-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: 14px;
+}
+
+.hero-balance-row strong {
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #f0fdfa;
+}
+
+.hero-balance-row span {
+    font-size: 11px;
+    color: rgba(236, 253, 245, 0.72);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero-mini-chart {
+    width: 100%;
+    height: 124px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    align-items: end;
+    margin-top: 18px;
+}
+
+.hero-mini-chart span {
+    display: block;
+    border-radius: 10px 10px 6px 6px;
+    background: linear-gradient(180deg, rgba(94, 234, 212, 0.95), rgba(20, 184, 166, 0.6));
+}
+
+.hero-category-list {
+    margin-top: 16px;
+    display: grid;
+    gap: 8px;
+}
+
+.hero-category-item {
+    border-radius: 12px;
+    border: 1px solid rgba(236, 253, 245, 0.18);
+    background: rgba(15, 23, 42, 0.34);
+    padding: 9px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hero-category-item p {
+    font-size: 11px;
+    color: rgba(226, 232, 240, 0.88);
+}
+
+.hero-category-item strong {
+    font-size: 13px;
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+.hero-device-pill {
+    border-radius: 9999px;
+    padding: 6px 10px;
+    border: 1px solid rgba(236, 253, 245, 0.22);
+    background: rgba(15, 23, 42, 0.36);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: rgba(236, 253, 245, 0.88);
+    font-weight: 700;
 }
 
 .hero-device-footer {
@@ -996,7 +1083,6 @@ onUnmounted(() => {
     border-radius: 18px;
     padding: 12px 14px;
     min-width: 160px;
-    animation: lpFloat 4.8s ease-in-out infinite;
 }
 
 .hero-float-1 {
@@ -1010,30 +1096,27 @@ onUnmounted(() => {
     animation-delay: -2.2s;
 }
 
-.ticker-track {
-    overflow: hidden;
-    position: relative;
-}
-
-.ticker-group {
+.signal-strip {
     display: flex;
-    align-items: center;
-    width: max-content;
-    animation: lpTicker 24s linear infinite;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px;
 }
 
-.ticker-pill {
+.signal-pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 56px;
-    padding: 0 26px;
-    border-right: 1px solid rgba(148, 163, 184, 0.3);
-    font-size: 12px;
+    height: 36px;
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.66);
+    padding: 0 14px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #475569;
+    letter-spacing: 0.1em;
+    color: #334155;
 }
 
 .comparison-shell {
@@ -1382,6 +1465,19 @@ onUnmounted(() => {
     box-shadow: 0 25px 40px -34px rgba(15, 23, 42, 0.45);
 }
 
+.scenario-swap-enter-active,
+.scenario-swap-leave-active {
+    transition:
+        opacity 220ms ease,
+        transform 220ms ease;
+}
+
+.scenario-swap-enter-from,
+.scenario-swap-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
 .scenario-kicker {
     font-size: 11px;
     font-weight: 800;
@@ -1473,7 +1569,7 @@ onUnmounted(() => {
     line-height: 1.5;
 }
 
-.quick-convert-cta {
+.quick-convert-strip span {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1486,14 +1582,6 @@ onUnmounted(() => {
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    transition:
-        transform 220ms ease,
-        background-color 220ms ease;
-}
-
-.quick-convert-cta:hover {
-    transform: translateY(-1px);
-    background: #99f6e4;
 }
 
 .metric-card {
@@ -1614,77 +1702,12 @@ onUnmounted(() => {
     animation: lpSweep 7.5s linear infinite;
 }
 
-.mobile-cta-dock {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 10px;
-    z-index: 60;
-    pointer-events: none;
-    padding: 0 12px;
-}
-
-.mobile-cta-shell {
-    pointer-events: auto;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 16px;
-    backdrop-filter: blur(14px);
-    background: rgba(15, 23, 42, 0.9);
-    color: rgba(236, 253, 245, 0.88);
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.mobile-cta-shell p {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-weight: 700;
-}
-
-.mobile-cta-link {
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    background: #5eead4;
-    color: #052e2c;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-weight: 800;
-    padding: 0 14px;
-}
-
 @keyframes lpSweep {
     from {
         transform: translateX(-120%);
     }
     to {
         transform: translateX(120%);
-    }
-}
-
-@keyframes lpFloat {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-7px);
-    }
-}
-
-@keyframes lpTicker {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(-50%);
     }
 }
 
@@ -1787,11 +1810,11 @@ onUnmounted(() => {
 
     .hero-device,
     .hero-float-card,
-    .hero-spark,
-    .ticker-group,
     .final-cta-shell::after,
     .visual-grid-bars span,
-    .stagger-grid > * {
+    .stagger-grid > *,
+    .scenario-swap-enter-active,
+    .scenario-swap-leave-active {
         animation: none !important;
         transition: none !important;
         transform: none !important;
