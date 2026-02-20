@@ -63,7 +63,8 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
         </div>
 
         <!-- Mobile Menu Overlay -->
-        <div v-if="mobileOpen" class="fixed inset-x-0 top-20 bottom-0 bg-[#f7f8f4] z-40 p-6 flex flex-col justify-between overflow-y-auto lg:hidden">
+        <Teleport to="body">
+            <div v-if="mobileOpen" class="fixed inset-x-0 top-20 bottom-0 bg-[#f7f8f4] z-[60] p-6 flex flex-col justify-between overflow-y-auto lg:hidden pt-10 border-t border-slate-200">
             <div class="grid gap-2">
                 <Link
                     v-for="item in headerNavigation"
@@ -94,7 +95,8 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
                     {{ primaryLabel }}
                 </Link>
             </div>
-        </div>
+            </div>
+        </Teleport>
     </header>
 </template>
 

@@ -152,16 +152,16 @@ const submitContact = async () => {
                         <!-- Honeypot anti-bot -->
                         <input v-model="contactForm.company" type="text" autocomplete="off" tabindex="-1" class="hidden" aria-hidden="true" />
 
-                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <div class="pt-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
-                                <p v-if="contactErrors.form" class="text-sm font-bold text-red-500 bg-red-50 py-2 px-4 rounded-lg">{{ contactErrors.form[0] }}</p>
-                                <p v-if="contactSuccess" class="text-sm font-bold text-emerald-600 bg-emerald-50 py-2 px-4 rounded-lg flex items-center gap-2"><span class="text-lg">✓</span> {{ contactSuccess }}</p>
+                                <p v-if="contactErrors.form" class="text-sm font-bold text-red-500 bg-red-50 py-3 px-4 rounded-xl shadow-sm">{{ contactErrors.form[0] }}</p>
+                                <p v-if="contactSuccess" class="text-sm font-bold text-emerald-600 bg-emerald-50 py-3 px-4 rounded-xl shadow-sm flex items-center gap-2"><span class="text-lg">✓</span> {{ contactSuccess }}</p>
                             </div>
 
                             <button
                                 type="submit"
                                 :disabled="contactSending"
-                                class="inline-flex h-16 items-center justify-center rounded-full bg-slate-950 px-10 text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-emerald-500 hover:text-slate-950 transition-all shadow-[0_20px_40px_rgba(2,6,23,0.1)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                                class="w-full md:w-auto inline-flex h-16 items-center justify-center rounded-full bg-slate-950 px-10 text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-emerald-500 hover:text-slate-950 transition-all shadow-[0_20px_40px_rgba(2,6,23,0.1)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                             >
                                 {{ contactSending ? 'Criptografando...' : 'Assinar & Enviar' }}
                             </button>

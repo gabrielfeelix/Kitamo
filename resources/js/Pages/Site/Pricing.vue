@@ -49,38 +49,99 @@ const featureComparisons = [
                 <p class="text-xl text-slate-600 font-medium">Você escolhe seu nível de antecipação. Sem surpresas ou taxas escondidas no meio do caminho.</p>
             </div>
 
-            <!-- Massive Pricing Table Comparison Instead of Cards -->
-            <div class="bg-white rounded-[2rem] md:rounded-[3rem] py-8 md:p-12 shadow-[0_40px_100px_rgba(2,6,23,0.05)] border border-slate-200 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#fbbf24]/5 blur-[80px] md:blur-[120px] rounded-full"></div>
+            <!-- Mobile View: Stacked Cards (Hidden on md and up) -->
+            <div class="grid gap-8 md:hidden">
+                <!-- Essencial Card -->
+                <div class="bg-white rounded-[2rem] p-8 border border-slate-200">
+                     <h3 class="text-3xl font-medium text-slate-900">Essencial</h3>
+                     <p class="text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-xs font-normal">/mês</span></p>
+                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">Controle mensal básico e visão pura. Sem pegadinhas.</p>
+                     
+                     <div class="mt-8 space-y-4">
+                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
+                             <span class="text-slate-600">{{ feature.name }}</span>
+                             <span class="font-bold text-slate-900">
+                                 <span v-if="feature.status[0] === 'Sim'" class="text-emerald-500">✓</span>
+                                 <span v-else-if="feature.status[0] === 'Não'" class="text-slate-300">—</span>
+                                 <span v-else>{{ feature.status[0] }}</span>
+                             </span>
+                         </div>
+                     </div>
+                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
+                </div>
 
-                <!-- Scroll Wrapper INSIDE the styled container -->
-                <div class="w-full overflow-x-auto px-6 md:px-0 scrollbar-hide">
-                    <table class="w-full min-w-[700px] md:min-w-[900px] relative z-10">
+                <!-- Pro Card -->
+                <div class="bg-slate-950 text-white rounded-[2rem] p-8 border border-slate-800 relative shadow-2xl">
+                     <span class="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-950 bg-emerald-400 px-3 py-1 rounded-full">Recomendado</span>
+                     <h3 class="text-4xl font-medium">Pro</h3>
+                     <p class="text-sm font-bold mt-2 text-emerald-400">R$ 19 <span class="text-xs font-normal text-emerald-400/70">/mês</span></p>
+                     <p class="text-sm text-slate-400 mt-4 leading-relaxed font-medium">Automatize sua vida e enxergue o seu trimestre de forma brutal.</p>
+                     
+                     <div class="mt-8 space-y-4">
+                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-white/5 pb-3">
+                             <span class="text-slate-300">{{ feature.name }}</span>
+                             <span class="font-bold text-white">
+                                 <span v-if="feature.status[1] === 'Sim'" class="text-emerald-400">✓</span>
+                                 <span v-else-if="feature.status[1] === 'Não'" class="text-slate-600">—</span>
+                                 <span v-else>{{ feature.status[1] }}</span>
+                             </span>
+                         </div>
+                     </div>
+                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full bg-emerald-500 text-emerald-950 text-xs font-bold uppercase tracking-widest hover:bg-emerald-400 transition-colors">Assinar</Link>
+                </div>
+
+                <!-- Visionario Card -->
+                <div class="bg-white rounded-[2rem] p-8 border border-amber-200 relative overflow-hidden">
+                     <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 blur-3xl rounded-full"></div>
+                     <h3 class="text-3xl font-medium text-slate-900">Visionário</h3>
+                     <p class="text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-xs font-normal opacity-70">/mês</span></p>
+                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">Antecipação extrema de 5 anos com acompanhamento VIP no WhatsApp.</p>
+                     
+                     <div class="mt-8 space-y-4 relative z-10">
+                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
+                             <span class="text-slate-600">{{ feature.name }}</span>
+                             <span class="font-bold text-amber-700">
+                                 <span v-if="feature.status[2] === 'Sim'">✓</span>
+                                 <span v-else-if="feature.status[2] === 'Não'" class="text-slate-300">—</span>
+                                 <span v-else>{{ feature.status[2] }}</span>
+                             </span>
+                         </div>
+                     </div>
+                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full border border-amber-200 text-xs font-bold uppercase tracking-widest text-amber-700 hover:border-amber-400 hover:text-amber-800 transition-colors bg-amber-50 relative z-10">Assinar Elite</Link>
+                </div>
+            </div>
+
+            <!-- Desktop View: Massive Pricing Table Comparison Instead of Cards (Hidden on mobile) -->
+            <div class="hidden md:block bg-white rounded-[3rem] p-12 shadow-[0_40px_100px_rgba(2,6,23,0.05)] border border-slate-200 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#fbbf24]/5 blur-[120px] rounded-full"></div>
+
+                <div class="w-full">
+                    <table class="w-full relative z-10">
                         <thead>
                             <tr class="border-b-2 border-slate-100">
-                                <th class="text-left w-1/3 pb-8 pr-4 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Funcionalidade Central</th>
-                                <th class="w-[22%] pb-8 px-2 md:px-4 text-center">
-                                    <h3 class="text-2xl md:text-3xl font-medium text-slate-900">Essencial</h3>
-                                    <p class="text-[10px] md:text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-[10px] md:text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-3 md:py-4 mt-4 md:mt-6 rounded-full border border-slate-200 text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
+                                <th class="text-left w-1/3 pb-8 pr-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Funcionalidade Central</th>
+                                <th class="w-[22%] pb-8 px-4 text-center">
+                                    <h3 class="text-3xl font-medium text-slate-900">Essencial</h3>
+                                    <p class="text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
                                 </th>
-                                <th class="w-[22%] pb-8 px-2 md:px-4 text-center relative">
-                                    <span class="absolute -top-4 md:-top-6 left-1/2 -translate-x-1/2 text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-2 flex items-center h-4 md:h-6 whitespace-nowrap md:py-1 rounded-full">Recomendado</span>
-                                    <h3 class="text-3xl md:text-4xl font-medium text-slate-900">Pro</h3>
-                                    <p class="text-[10px] md:text-sm font-bold mt-2 text-emerald-600">R$ 19 <span class="text-[10px] md:text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-3 md:py-4 mt-4 md:mt-6 rounded-full bg-slate-950 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-emerald-500 hover:text-slate-950 transition-colors">Assinar</Link>
+                                <th class="w-[22%] pb-8 px-4 text-center relative">
+                                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Recomendado</span>
+                                    <h3 class="text-4xl font-medium text-slate-900">Pro</h3>
+                                    <p class="text-sm font-bold mt-2 text-emerald-600">R$ 19 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full bg-slate-950 text-white text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-emerald-500 hover:text-slate-950 transition-colors">Assinar</Link>
                                 </th>
-                                <th class="w-[22%] pb-8 px-2 md:px-4 text-center">
-                                    <h3 class="text-2xl md:text-3xl font-medium text-slate-900">Visionário</h3>
-                                    <p class="text-[10px] md:text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-[10px] md:text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-3 md:py-4 mt-4 md:mt-6 rounded-full border border-slate-200 text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors">Assinar Elite</Link>
+                                <th class="w-[22%] pb-8 px-4 text-center">
+                                    <h3 class="text-3xl font-medium text-slate-900">Visionário</h3>
+                                    <p class="text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors">Assinar Elite</Link>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(feature, idx) in featureComparisons" :key="idx" class="border-b border-slate-100/50 hover:bg-slate-50 transition-colors">
-                                <td class="py-4 md:py-6 pr-4 text-slate-900 font-medium text-xs md:text-base">{{ feature.name }}</td>
-                                <td class="py-4 md:py-6 px-2 md:px-4 text-center text-slate-500 font-bold text-xs md:text-base" v-for="(status, statusIdx) in feature.status" :key="statusIdx" :class="{'text-emerald-500': status === 'Sim', 'text-slate-300': status === 'Não'}">
+                                <td class="py-6 pr-4 text-slate-900 font-medium text-base">{{ feature.name }}</td>
+                                <td class="py-6 px-4 text-center text-slate-500 font-bold text-base" v-for="(status, statusIdx) in feature.status" :key="statusIdx" :class="{'text-emerald-500': status === 'Sim', 'text-slate-300': status === 'Não'}">
                                     <span v-if="status === 'Sim'">✓</span>
                                     <span v-else-if="status === 'Não'">—</span>
                                     <span v-else>{{ status }}</span>
