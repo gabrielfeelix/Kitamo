@@ -96,6 +96,14 @@ const faq = [
         answer: 'Sim. A plataforma permite exportar dados em Excel e PDF.',
     },
 ];
+
+const featureVisuals = [
+    'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1000',
+    'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=1000',
+    'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1000',
+    'https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=1000',
+    'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1000',
+];
 </script>
 
 <template>
@@ -171,11 +179,12 @@ const faq = [
                                 </ul>
                             </div>
                             <div class="md:col-span-5">
-                                <div class="mock-stage flex min-h-[220px] items-center justify-center p-6 text-center text-sm text-slate-500">
-                                    Preview visual do modulo
-                                    <br />
-                                    <!-- TODO: substituir por screenshot/gif real -->
-                                </div>
+                                <img
+                                    :src="featureVisuals[index % featureVisuals.length]"
+                                    :alt="item.title"
+                                    class="h-[220px] w-full rounded-[1.4rem] object-cover"
+                                    loading="lazy"
+                                />
                             </div>
                         </div>
                     </article>
@@ -233,11 +242,4 @@ const faq = [
     border-top: 0;
 }
 
-.mock-stage {
-    border: 1px dashed rgba(148, 163, 184, 0.8);
-    border-radius: 1.5rem;
-    background:
-        radial-gradient(16rem 16rem at 20% 10%, rgba(16, 185, 129, 0.14), transparent 70%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.92));
-}
 </style>
