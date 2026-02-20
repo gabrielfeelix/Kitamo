@@ -10,8 +10,8 @@ defineProps<{
 const checks = [
     { title: "Comunicação Segura (SSL/TLS)", desc: "100% da plataforma transporta dados em túneis blindados. De ponta a ponta." },
     { title: "Arquitetura Isolada", desc: "Seu ID tem um namespace único no banco de dados. Nunca rola mixagem." },
-    { OpenFinance: "Sincronização Read-Only", desc: "A API oficial dos bancos é usada sem privilégios de transação via Open Finance regulamentado." },
-    { title: "Hospedagem Corporativa", desc: "Infraestrutura escalável via cloud computing robusta, a mesma que os grandes SaaS B2B usam." }
+    { title: "Sincronização Read-Only", desc: "A API oficial dos bancos é usada sem privilégios de transação via Open Finance regulamentado." },
+    { title: "Hospedagem Corporativa", desc: "Infraestrutura escalável na AWS, a mesma cloud que os grandes bancos digitais usam." }
 ];
 </script>
 
@@ -36,7 +36,7 @@ const checks = [
                  <div class="space-y-6">
                      <div v-for="(check, idx) in checks" :key="idx" class="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200 shadow-[0_20px_40px_rgba(2,6,23,0.02)] relative overflow-hidden group">
                          <div class="absolute -top-10 -right-10 w-40 h-40 bg-slate-100 rounded-full blur-[40px] group-hover:bg-emerald-100 transition-colors duration-700"></div>
-                         <h3 class="text-3xl font-medium tracking-tight text-slate-900 mb-4">{{ check.title || check.OpenFinance }}</h3>
+                         <h3 class="text-3xl font-medium tracking-tight text-slate-900 mb-4">{{ check.title }}</h3>
                          <p class="text-slate-500 leading-relaxed font-medium">{{ check.desc }}</p>
                      </div>
                  </div>

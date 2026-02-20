@@ -32,7 +32,7 @@ const submitContact = async () => {
             source: 'website-contact',
         });
 
-        contactSuccess.value = 'Recebemos. Check-in na sua caixa de entrada em até 24h.';
+        contactSuccess.value = 'Mensagem no cofre! Enquanto aguarda nosso retorno (SLA 24h), explore nossos artigos na página inicial.';
         contactForm.name = '';
         contactForm.email = '';
         contactForm.objective = '';
@@ -42,7 +42,8 @@ const submitContact = async () => {
         if (error?.response?.status === 422) {
             contactErrors.value = error.response.data.errors ?? {};
         } else if (error?.response?.status === 429) {
-            contactErrors.value = { form: ['Segundos. Segure um pouco antes de tentar de novo.'] };
+            const retryAfter = error.response.headers['retry-after'] || '60';
+            contactErrors.value = { form: [`Muitos disparos. Respire fundo e tente novamente em ${retryAfter} segundos.`] };
         } else {
             contactErrors.value = { form: ['Tivemos um problema de rede. Poderia tentar novamente?'] };
         }

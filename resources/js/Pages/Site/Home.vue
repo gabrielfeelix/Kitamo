@@ -180,7 +180,7 @@ onUnmounted(() => {
                         <div class="absolute inset-0 transition-opacity duration-700 flex items-center justify-center" :class="activeFeatureIndex === 1 ? 'opacity-100' : 'opacity-0 scale-105'">
                             <!-- UI abstract 02 -->
                             <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl w-[85%] border-2 border-red-500/20 transform rotate-2">
-                                <div class="text-red-400 font-bold uppercase tracking-widest text-xs mb-4">Aleta de vazamento</div>
+                                <div class="text-red-400 font-bold uppercase tracking-widest text-xs mb-4">Alerta de vazamento</div>
                                 <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
                                     <div class="w-12 h-12 bg-white/10 rounded-full"></div>
                                     <div>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
-import { pricingPlans, type SiteFaqItem } from '@/types/site';
+import { pricingPlans, pricingFeatureComparisons, type SiteFaqItem } from '@/types/site';
 
 defineProps<{
     canLogin?: boolean;
@@ -23,15 +24,7 @@ const billingFaq: SiteFaqItem[] = [
     }
 ];
 
-// Flat feature matrix
-const featureComparisons = [
-    { name: "Controle de Saldo ao Vivo", status: ["Sim", "Sim", "Sim"] },
-    { name: "Lembrete de Vencimentos", status: ["Sim", "Sim", "Sim"] },
-    { name: "Sincronização Bancária Open Finance", status: ["Apenas 2", "Ilimitado", "Ilimitado"] },
-    { name: "Dias de Projeção Futura", status: ["Até dia 30.", "Trimestre", "Até 5 anos."] },
-    { name: "Alerta de vazamento de assinaturas", status: ["Não", "Sim", "Sim"] },
-    { name: "Gestor Dedicado no WhatsApp", status: ["Não", "Não", "Sim"] }
-];
+const openFaqIndex = ref<number | null>(null);
 
 </script>
 
@@ -53,12 +46,12 @@ const featureComparisons = [
             <div class="grid gap-8 md:hidden">
                 <!-- Essencial Card -->
                 <div class="bg-white rounded-[2rem] p-8 border border-slate-200">
-                     <h3 class="text-3xl font-medium text-slate-900">Essencial</h3>
-                     <p class="text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-xs font-normal">/mês</span></p>
-                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">Controle mensal básico e visão pura. Sem pegadinhas.</p>
+                     <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[0].name }}</h3>
+                     <p class="text-sm font-bold mt-2 text-slate-500">R$ {{ pricingPlans[0].monthly }} <span class="text-xs font-normal">/mês</span></p>
+                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">{{ pricingPlans[0].subtitle }}</p>
                      
                      <div class="mt-8 space-y-4">
-                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
+                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
                              <span class="text-slate-600">{{ feature.name }}</span>
                              <span class="font-bold text-slate-900">
                                  <span v-if="feature.status[0] === 'Sim'" class="text-emerald-500">✓</span>
@@ -73,12 +66,12 @@ const featureComparisons = [
                 <!-- Pro Card -->
                 <div class="bg-slate-950 text-white rounded-[2rem] p-8 border border-slate-800 relative shadow-2xl">
                      <span class="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-950 bg-emerald-400 px-3 py-1 rounded-full">Recomendado</span>
-                     <h3 class="text-4xl font-medium">Pro</h3>
-                     <p class="text-sm font-bold mt-2 text-emerald-400">R$ 19 <span class="text-xs font-normal text-emerald-400/70">/mês</span></p>
-                     <p class="text-sm text-slate-400 mt-4 leading-relaxed font-medium">Automatize sua vida e enxergue o seu trimestre de forma brutal.</p>
+                     <h3 class="text-4xl font-medium">{{ pricingPlans[1].name }}</h3>
+                     <p class="text-sm font-bold mt-2 text-emerald-400">R$ {{ pricingPlans[1].monthly }} <span class="text-xs font-normal text-emerald-400/70">/mês</span></p>
+                     <p class="text-sm text-slate-400 mt-4 leading-relaxed font-medium">{{ pricingPlans[1].subtitle }}</p>
                      
                      <div class="mt-8 space-y-4">
-                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-white/5 pb-3">
+                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-white/5 pb-3">
                              <span class="text-slate-300">{{ feature.name }}</span>
                              <span class="font-bold text-white">
                                  <span v-if="feature.status[1] === 'Sim'" class="text-emerald-400">✓</span>
@@ -93,12 +86,12 @@ const featureComparisons = [
                 <!-- Visionario Card -->
                 <div class="bg-white rounded-[2rem] p-8 border border-amber-200 relative overflow-hidden">
                      <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 blur-3xl rounded-full"></div>
-                     <h3 class="text-3xl font-medium text-slate-900">Visionário</h3>
-                     <p class="text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-xs font-normal opacity-70">/mês</span></p>
-                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">Antecipação extrema de 5 anos com acompanhamento VIP no WhatsApp.</p>
+                     <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[2].name }}</h3>
+                     <p class="text-sm font-bold mt-2 text-amber-600">R$ {{ pricingPlans[2].monthly }} <span class="text-xs font-normal opacity-70">/mês</span></p>
+                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">{{ pricingPlans[2].subtitle }}</p>
                      
                      <div class="mt-8 space-y-4 relative z-10">
-                         <div v-for="(feature, idx) in featureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
+                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
                              <span class="text-slate-600">{{ feature.name }}</span>
                              <span class="font-bold text-amber-700">
                                  <span v-if="feature.status[2] === 'Sim'">✓</span>
@@ -121,25 +114,25 @@ const featureComparisons = [
                             <tr class="border-b-2 border-slate-100">
                                 <th class="text-left w-1/3 pb-8 pr-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Funcionalidade Central</th>
                                 <th class="w-[22%] pb-8 px-4 text-center">
-                                    <h3 class="text-3xl font-medium text-slate-900">Essencial</h3>
-                                    <p class="text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-xs font-normal">/mês</span></p>
+                                    <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[0].name }}</h3>
+                                    <p class="text-sm font-bold mt-2 text-slate-500">R$ {{ pricingPlans[0].monthly }} <span class="text-xs font-normal">/mês</span></p>
                                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
                                 </th>
                                 <th class="w-[22%] pb-8 px-4 text-center relative">
                                     <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Recomendado</span>
-                                    <h3 class="text-4xl font-medium text-slate-900">Pro</h3>
-                                    <p class="text-sm font-bold mt-2 text-emerald-600">R$ 19 <span class="text-xs font-normal">/mês</span></p>
+                                    <h3 class="text-4xl font-medium text-slate-900">{{ pricingPlans[1].name }}</h3>
+                                    <p class="text-sm font-bold mt-2 text-emerald-600">R$ {{ pricingPlans[1].monthly }} <span class="text-xs font-normal">/mês</span></p>
                                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full bg-slate-950 text-white text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-emerald-500 hover:text-slate-950 transition-colors">Assinar</Link>
                                 </th>
                                 <th class="w-[22%] pb-8 px-4 text-center">
-                                    <h3 class="text-3xl font-medium text-slate-900">Visionário</h3>
-                                    <p class="text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-xs font-normal">/mês</span></p>
+                                    <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[2].name }}</h3>
+                                    <p class="text-sm font-bold mt-2 text-amber-600">R$ {{ pricingPlans[2].monthly }} <span class="text-xs font-normal">/mês</span></p>
                                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors">Assinar Elite</Link>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(feature, idx) in featureComparisons" :key="idx" class="border-b border-slate-100/50 hover:bg-slate-50 transition-colors">
+                            <tr v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="border-b border-slate-100/50 hover:bg-slate-50 transition-colors">
                                 <td class="py-6 pr-4 text-slate-900 font-medium text-base">{{ feature.name }}</td>
                                 <td class="py-6 px-4 text-center text-slate-500 font-bold text-base" v-for="(status, statusIdx) in feature.status" :key="statusIdx" :class="{'text-emerald-500': status === 'Sim', 'text-slate-300': status === 'Não'}">
                                     <span v-if="status === 'Sim'">✓</span>
@@ -161,11 +154,16 @@ const featureComparisons = [
                      <h2 class="text-5xl font-medium tracking-tight mb-8">Últimas objeções,<br/> <span class="text-slate-500">dúvidas rápidas.</span></h2>
                      <p class="text-xl text-slate-400">Todo sistema de qualidade exige transparência. Saiba exatamente onde você está entrando.</p>
                 </div>
-                <!-- Mini FAQ accordion manual to respect dark theme nicely -->
-                <div class="space-y-6 pt-10 border-t border-slate-800 md:border-0 md:pt-0">
-                     <div v-for="faq in billingFaq" :key="faq.question" class="pb-6 border-b border-slate-800">
-                         <h3 class="text-xl font-medium mb-4 text-white hover:text-emerald-400 transition-colors cursor-pointer">{{ faq.question }}</h3>
-                         <p class="text-slate-500 leading-relaxed">{{ faq.answer }}</p>
+                <!-- FAQ accordion -->
+                <div class="space-y-4 pt-10 border-t border-slate-800 md:border-0 md:pt-0">
+                     <div v-for="(faq, index) in billingFaq" :key="faq.question" class="border-b border-slate-800">
+                         <button @click="openFaqIndex = openFaqIndex === index ? null : index" class="w-full text-left py-6 flex justify-between items-center group">
+                             <h3 class="text-xl font-medium text-white group-hover:text-emerald-400 transition-colors pr-8">{{ faq.question }}</h3>
+                             <span class="text-slate-600 text-2xl transition-transform duration-300" :class="{'rotate-45 text-emerald-400': openFaqIndex === index}">+</span>
+                         </button>
+                         <div v-show="openFaqIndex === index" class="pb-6 pr-8">
+                             <p class="text-slate-500 leading-relaxed">{{ faq.answer }}</p>
+                         </div>
                      </div>
                 </div>
             </div>

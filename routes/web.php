@@ -55,7 +55,6 @@ Route::get('/produto', fn () => Inertia::render('Site/Product', $sitePageProps()
 Route::get('/funcionalidades', fn () => Inertia::render('Site/Features', $sitePageProps()))->name('site.features');
 Route::get('/seguranca', fn () => Inertia::render('Site/Security', $sitePageProps()))->name('site.security');
 Route::get('/precos', fn () => Inertia::render('Site/Pricing', $sitePageProps()))->name('site.pricing');
-Route::get('/recursos', fn () => Inertia::render('Site/Resources', $sitePageProps()))->name('site.resources');
 Route::get('/empresa', fn () => Inertia::render('Site/Company', $sitePageProps()))->name('site.company');
 Route::get('/contato', fn () => Inertia::render('Site/Contact', $sitePageProps()))->name('site.contact');
 Route::get('/privacidade', fn () => Inertia::render('Site/Privacy', $sitePageProps()))->name('site.privacy');

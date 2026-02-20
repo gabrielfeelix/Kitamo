@@ -66,26 +66,35 @@ export const institutionalFaq: SiteFaqItem[] = [
 export const pricingPlans: SitePricingPlan[] = [
     {
         name: 'Essencial',
-        subtitle: 'Controle diário com visão clara do mês',
-        monthly: 'R$ 0',
-        features: ['Painel de visão mensal', 'Alertas básicos', 'Resumo por categorias'],
-        ctaLabel: 'Começar grátis',
-    },
-    {
-        name: 'Controle',
-        subtitle: 'Para quem quer antecipar risco e agir cedo',
-        monthly: 'R$ 29',
-        features: ['Projeção avançada', 'Alertas inteligentes', 'Fluxo de decisão semanal'],
-        ctaLabel: 'Testar plano Controle',
-        highlighted: true,
+        subtitle: 'Controle mensal básico e visão pura. Sem pegadinhas.',
+        monthly: '0',
+        features: [],
+        ctaLabel: 'Testar',
     },
     {
         name: 'Pro',
-        subtitle: 'Planejamento mais profundo para metas',
-        monthly: 'R$ 59',
-        features: ['Cenários completos', 'Priorização por objetivos', 'Suporte prioritário'],
-        ctaLabel: 'Falar com time',
+        subtitle: 'Automatize sua vida e enxergue o seu trimestre de forma brutal.',
+        monthly: '19',
+        features: [],
+        ctaLabel: 'Assinar',
+        highlighted: true,
     },
+    {
+        name: 'Visionário',
+        subtitle: 'Antecipação extrema de 5 anos com acompanhamento VIP no WhatsApp.',
+        monthly: '49',
+        features: [],
+        ctaLabel: 'Assinar Elite',
+    },
+];
+
+export const pricingFeatureComparisons = [
+    { name: "Controle de Saldo ao Vivo", status: ["Sim", "Sim", "Sim"] },
+    { name: "Lembrete de Vencimentos", status: ["Sim", "Sim", "Sim"] },
+    { name: "Sincronização Bancária Open Finance", status: ["Apenas 2", "Ilimitado", "Ilimitado"] },
+    { name: "Dias de Projeção Futura", status: ["Até dia 30.", "Trimestre", "Até 5 anos."] },
+    { name: "Alerta de vazamento de assinaturas", status: ["Não", "Sim", "Sim"] },
+    { name: "Gestor Dedicado no WhatsApp", status: ["Não", "Não", "Sim"] }
 ];
 
 export const resourceCards = [
