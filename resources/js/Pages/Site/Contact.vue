@@ -62,7 +62,7 @@ const submitContact = async () => {
         <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-12 gap-16 md:gap-24 items-start">
             
             <!-- Left Header -->
-            <div class="lg:col-span-5 sticky top-32">
+            <div class="lg:col-span-5 lg:sticky lg:top-32 mb-10 lg:mb-0">
                 <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500 mb-6 flex items-center gap-3">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Canal Aberto
                 </p>

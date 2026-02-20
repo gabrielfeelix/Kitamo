@@ -24,7 +24,7 @@ const checks = [
         
         <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-2 gap-20 items-start">
             
-            <div class="sticky top-40">
+            <div class="lg:sticky lg:top-40 mb-10 lg:mb-0">
                 <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-4 py-2 rounded-full inline-flex items-center gap-2 mb-10 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Auditoria On</Link>
                 <h1 class="text-5xl md:text-[6rem] leading-[0.8] font-medium tracking-tight mb-8">O Cofre.</h1>
                 <p class="text-xl text-slate-500 leading-relaxed font-medium">As fundações de código do Kitamo foram desenhadas como se fôssemos nós mesmos usar (e nós usamos). Zero atalho de segurança.</p>
