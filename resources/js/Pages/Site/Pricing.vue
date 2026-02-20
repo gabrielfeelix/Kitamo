@@ -1,9 +1,5 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import FaqBlock from '@/Components/site/FaqBlock.vue';
-import MotionSection from '@/Components/site/MotionSection.vue';
-import PricingBlock from '@/Components/site/PricingBlock.vue';
-import SectionShell from '@/Components/site/SectionShell.vue';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 import { pricingPlans, type SiteFaqItem } from '@/types/site';
 
@@ -15,60 +11,103 @@ defineProps<{
 const billingFaq: SiteFaqItem[] = [
     {
         question: 'Existe plano gratuito?',
-        answer: 'Sim. O plano Essencial permite iniciar com visão mensal e estrutura de controle sem custo inicial.',
+        answer: 'Sim. O Essencial nunca cobra e entrega visão mensal pura.',
     },
     {
-        question: 'Posso mudar de plano depois?',
-        answer: 'Sim. A evolução de plano pode ser ajustada conforme maturidade de uso e necessidade de profundidade.',
+        question: 'Como faço upgrade para o Visionário?',
+        answer: 'Você pode subir a qualquer momento se achou que precisa projetar mais os seus próximos 12 meses.',
     },
     {
-        question: 'Preciso cadastrar cartão para começar?',
-        answer: 'Não no plano gratuito. Para planos pagos, a cobrança segue fluxo informado na contratação.',
-    },
+        question: 'E se o aplicativo quebrar minhas contas bancárias?',
+        answer: 'Kitamo utiliza Open Finance no modo de "Só Leitura". Impossível movimentar 1 centavo da sua conta através daqui.',
+    }
 ];
+
+// Flat feature matrix
+const featureComparisons = [
+    { name: "Controle de Saldo ao Vivo", status: ["Sim", "Sim", "Sim"] },
+    { name: "Lembrete de Vencimentos", status: ["Sim", "Sim", "Sim"] },
+    { name: "Sincronização Bancária Open Finance", status: ["Apenas 2", "Ilimitado", "Ilimitado"] },
+    { name: "Dias de Projeção Futura", status: ["Até dia 30.", "Trimestre", "Até 5 anos."] },
+    { name: "Alerta de vazamento de assinaturas", status: ["Não", "Sim", "Sim"] },
+    { name: "Gestor Dedicado no WhatsApp", status: ["Não", "Não", "Sim"] }
+];
+
 </script>
 
 <template>
     <Head title="Preços | Kitamo">
-        <meta
-            name="description"
-            content="Planos da Kitamo com estrutura clara por necessidade de controle, projeção e previsibilidade financeira."
-        />
+        <meta name="description" content="Planos da Kitamo com estrutura clara por necessidade de controle." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1240px] px-5 pb-6 pt-8 md:px-6 md:pt-10">
-            <SectionShell
-                kicker="Preços"
-                title="Transparência de planos para cada estágio de controle"
-                description="Escolha o nível de profundidade ideal para seu momento, sem sobrecarga de recursos desnecessários."
-            />
+        
+        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500 mb-6">Investimento de longo prazo</p>
+                <h1 class="text-5xl md:text-[5.5rem] leading-[0.9] font-medium tracking-tight mb-8">O plano se paga em <span class="text-emerald-500 italic font-serif">uma assinatura</span> descoberta.</h1>
+                <p class="text-xl text-slate-600 font-medium">Você escolhe seu nível de antecipação. Sem surpresas ou taxas escondidas no meio do caminho.</p>
+            </div>
+
+            <!-- Massive Pricing Table Comparison Instead of Cards -->
+            <div class="w-full overflow-x-auto pb-10">
+                <div class="min-w-[900px] bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_40px_100px_rgba(2,6,23,0.05)] border border-slate-200 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#fbbf24]/5 blur-[120px] rounded-full"></div>
+
+                    <table class="w-full relative z-10">
+                        <thead>
+                            <tr class="border-b-2 border-slate-100">
+                                <th class="text-left w-1/3 pb-8 px-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Funcionalidade Central</th>
+                                <th class="w-[22%] pb-8 px-4 text-center">
+                                    <h3 class="text-3xl font-medium text-slate-900">Essencial</h3>
+                                    <p class="text-sm font-bold mt-2 text-slate-500">R$ 0 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
+                                </th>
+                                <th class="w-[22%] pb-8 px-4 text-center relative">
+                                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Recomendado</span>
+                                    <h3 class="text-4xl font-medium text-slate-900">Pro</h3>
+                                    <p class="text-sm font-bold mt-2 text-emerald-600">R$ 19 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full bg-slate-950 text-white text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-emerald-500 hover:text-slate-950 transition-colors">Assinar</Link>
+                                </th>
+                                <th class="w-[22%] pb-8 px-4 text-center">
+                                    <h3 class="text-3xl font-medium text-slate-900">Visionário</h3>
+                                    <p class="text-sm font-bold mt-2 text-amber-600">R$ 49 <span class="text-xs font-normal">/mês</span></p>
+                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors">Assinar Elite</Link>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(feature, idx) in featureComparisons" :key="idx" class="border-b border-slate-100/50 hover:bg-slate-50 transition-colors">
+                                <td class="py-6 px-4 text-slate-900 font-medium text-sm md:text-base">{{ feature.name }}</td>
+                                <td class="py-6 px-4 text-center text-slate-500 font-bold" v-for="(status, statusIdx) in feature.status" :key="statusIdx" :class="{'text-emerald-500': status === 'Sim', 'text-slate-300': status === 'Não'}">
+                                    <span v-if="status === 'Sim'">✓</span>
+                                    <span v-else-if="status === 'Não'">—</span>
+                                    <span v-else>{{ status }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </section>
 
-        <MotionSection class="mx-auto w-full max-w-[1240px] px-5 pb-10 md:px-6">
-            <PricingBlock :plans="pricingPlans" :can-register="canRegister" />
-        </MotionSection>
-
-        <MotionSection class="mx-auto w-full max-w-[980px] px-5 py-10 md:px-6 md:py-14">
-            <SectionShell kicker="Cobrança e planos" title="Perguntas frequentes sobre contratação" compact />
-            <FaqBlock :items="billingFaq" />
-        </MotionSection>
-
-        <section class="mx-auto w-full max-w-[1240px] px-5 pb-20 md:px-6 md:pb-24">
-            <div class="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white md:p-10">
-                <h2 class="text-4xl leading-[0.95] tracking-[-0.03em]">Valor real está na consistência da decisão.</h2>
-                <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-200">
-                    Se quiser ajuda para escolher o melhor plano para seu cenário, a equipe pode orientar sem compromisso.
-                </p>
-                <div class="mt-7 flex flex-wrap gap-3">
-                    <Link :href="route('site.contact')" class="inline-flex h-11 items-center justify-center rounded-full bg-emerald-300 px-6 text-xs font-bold uppercase tracking-[0.14em] text-slate-900">
-                        Falar com equipe
-                    </Link>
-                    <Link :href="canRegister ? '/register' : '/login'" class="inline-flex h-11 items-center justify-center rounded-full border border-white/35 px-6 text-xs font-bold uppercase tracking-[0.14em] text-white">
-                        Começar grátis
-                    </Link>
+        <!-- FAQs (Asymmetric Block) -->
+        <section class="bg-black py-24 text-white">
+            <div class="max-w-[1200px] mx-auto px-6 grid md:grid-cols-2 gap-16">
+                <div>
+                     <h2 class="text-5xl font-medium tracking-tight mb-8">Últimas objeções,<br/> <span class="text-slate-500">dúvidas rápidas.</span></h2>
+                     <p class="text-xl text-slate-400">Todo sistema de qualidade exige transparência. Saiba exatamente onde você está entrando.</p>
+                </div>
+                <!-- Mini FAQ accordion manual to respect dark theme nicely -->
+                <div class="space-y-6 pt-10 border-t border-slate-800 md:border-0 md:pt-0">
+                     <div v-for="faq in billingFaq" :key="faq.question" class="pb-6 border-b border-slate-800">
+                         <h3 class="text-xl font-medium mb-4 text-white hover:text-emerald-400 transition-colors cursor-pointer">{{ faq.question }}</h3>
+                         <p class="text-slate-500 leading-relaxed">{{ faq.answer }}</p>
+                     </div>
                 </div>
             </div>
         </section>
+
     </SiteLayout>
 </template>
