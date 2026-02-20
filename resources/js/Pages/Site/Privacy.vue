@@ -45,7 +45,7 @@ defineProps<{
                 <p>De acordo com a Lei Geral de Proteção de Dados, você tem o direito garantido de confirmar, acessar, corrigir, anonimizar, bloquear ou eliminar os seus dados da nossa base a qualquer instante. Nós respondemos essas requisições como prioridade máxima de SLA.</p>
                 
                 <h2 class="mt-16 text-slate-900 border-t border-slate-200 pt-10">DPO & Dúvidas Legais</h2>
-                <p>Acesse o nosso <Link :href="route('site.contact')" class="text-emerald-600 underline underline-offset-4 font-bold hover:text-emerald-700">Canal de Contato</Link> para debater qualquer trecho deste manifesto ou acionar o nosso Data Protection Officer (DPO) através da opção "Revisão de Dados e Open Finance".</p>
+                <p>Acesse o nosso <Link :href="route('site.contact')" class="text-emerald-700 underline underline-offset-4 font-bold hover:text-emerald-800">Canal de Contato</Link> para debater qualquer trecho deste manifesto ou acionar o nosso Data Protection Officer (DPO) através da opção "Revisão de Dados e Open Finance".</p>
             </div>
 
         </section>

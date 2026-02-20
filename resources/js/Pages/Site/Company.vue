@@ -67,7 +67,7 @@ defineProps<{
               <h2 class="text-4xl md:text-[4.5rem] leading-[0.85] font-medium tracking-tight mb-10 max-w-4xl mx-auto">Quer bater um papo no WhatsApp com o C-Level?</h2>
               <p class="text-xl text-slate-500 max-w-2xl mx-auto mb-12">Sem robôs e burocracia, acesse nossa comunicação corporativa oficial.</p>
               
-              <Link :href="route('site.contact')" class="inline-flex h-20 items-center justify-center rounded-full bg-[#25D366] px-12 text-sm font-bold uppercase tracking-[0.14em] text-white hover:bg-[#128C7E] transition-all shadow-[0_20px_40px_rgba(37,211,102,0.3)] hover:-translate-y-2">
+              <Link :href="route('site.contact')" class="inline-flex h-20 items-center justify-center rounded-full bg-[#25D366] px-12 text-sm font-bold uppercase tracking-[0.14em] text-slate-900 hover:bg-[#20bd5a] transition-all shadow-[0_20px_40px_rgba(37,211,102,0.3)] hover:-translate-y-2">
                   Chamar no Contato Oficial
               </Link>
          </section>

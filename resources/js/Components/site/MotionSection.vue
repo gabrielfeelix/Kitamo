@@ -20,8 +20,10 @@ let observer: IntersectionObserver | null = null;
 
 onMounted(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isBotOrTest = typeof window !== 'undefined' && 
+        (window.navigator.webdriver || /bot|googlebot|crawler|spider|robot|crawling|percy|cypress/i.test(navigator.userAgent) || '__cypress' in window || '__playwright' in window);
 
-    if (props.immediate || reducedMotion) {
+    if (props.immediate || reducedMotion || isBotOrTest) {
         visible.value = true;
         return;
     }
@@ -73,11 +75,11 @@ onUnmounted(() => {
     transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), print {
     .site-motion {
-        opacity: 1;
-        transform: none;
-        transition: none;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
 </style>

@@ -60,7 +60,7 @@ const submitContact = async () => {
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         
-        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-12 gap-16 md:gap-24 items-start">
+        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-12 gap-16 lg:gap-8 xl:gap-24 items-start">
             
             <!-- Left Header -->
             <div class="lg:col-span-5 lg:sticky lg:top-32 mb-10 lg:mb-0">
@@ -83,7 +83,7 @@ const submitContact = async () => {
                         </li>
                         <li class="flex items-center justify-between">
                             <span class="text-slate-600">Exclusão de Dados (LGPD)</span>
-                            <span class="text-red-500 font-medium">Prioridade Máxima</span>
+                            <span class="text-red-700 font-bold">Prioridade Máxima</span>
                         </li>
                     </ul>
                 </div>

@@ -25,7 +25,7 @@ defineProps<{
                 <div class="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-10 lg:gap-8">
                     
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">A Plataforma</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">A Plataforma</p>
                         <div class="flex flex-col gap-4">
                             <Link v-for="item in footerProduct" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
                                 {{ item.label }}
@@ -34,7 +34,7 @@ defineProps<{
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">A Companhia</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">A Companhia</p>
                         <div class="flex flex-col gap-4">
                             <Link v-for="item in footerCompany" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
                                 {{ item.label }}
@@ -43,7 +43,7 @@ defineProps<{
                     </div>
 
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Transparência</p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">Transparência</p>
                         <div class="flex flex-col gap-4">
                             <Link v-for="item in footerLegal" :key="item.routeName" :href="route(item.routeName)" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
                                 {{ item.label }}
@@ -57,13 +57,13 @@ defineProps<{
             <!-- Pre-Footer Badges & Copy -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-4">
-                    <div class="px-4 py-2 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <div class="px-4 py-2 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-widest text-slate-600 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Servidores Online
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-6">
-                    <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">© {{ new Date().getFullYear() }} Kitamo Tech</div>
+                    <div class="text-[11px] font-semibold text-slate-600 uppercase tracking-widest">© {{ new Date().getFullYear() }} Kitamo Tech</div>
                 </div>
             </div>
 
