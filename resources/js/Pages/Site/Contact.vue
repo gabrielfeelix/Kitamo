@@ -32,7 +32,7 @@ const submitContact = async () => {
             source: 'website-contact',
         });
 
-        contactSuccess.value = 'Mensagem no cofre! Enquanto aguarda nosso retorno (SLA 24h), explore nossos artigos na página inicial.';
+        contactSuccess.value = 'Mensagem enviada com sucesso. Retornaremos em ate 24 horas uteis.';
         contactForm.name = '';
         contactForm.email = '';
         contactForm.objective = '';
@@ -43,7 +43,7 @@ const submitContact = async () => {
             contactErrors.value = error.response.data.errors ?? {};
         } else if (error?.response?.status === 429) {
             const retryAfter = error.response.headers['retry-after'] || '60';
-            contactErrors.value = { form: [`Muitos disparos. Respire fundo e tente novamente em ${retryAfter} segundos.`] };
+            contactErrors.value = { form: [`Muitas tentativas. Tente novamente em ${retryAfter} segundos.`] };
         } else {
             contactErrors.value = { form: ['Tivemos um problema de rede. Poderia tentar novamente?'] };
         }
@@ -55,124 +55,159 @@ const submitContact = async () => {
 
 <template>
     <Head title="Contato | Kitamo">
-        <meta name="description" content="Precisa de ajuda ou parceria? Acesse o canal direto com a equipe Kitamo." />
+        <meta
+            name="description"
+            content="Entre em contato com a equipe Kitamo para duvidas de produto, planos, privacidade e parcerias."
+        />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        
-        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-12 gap-16 lg:gap-8 xl:gap-24 items-start">
-            
-            <!-- Left Header -->
-            <div class="lg:col-span-5 lg:sticky lg:top-32 mb-10 lg:mb-0">
-                <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Canal Aberto
+        <section class="mx-auto grid w-full max-w-[1240px] gap-10 px-5 pb-16 pt-10 md:grid-cols-12 md:px-6 md:pb-20 md:pt-16">
+            <div class="md:col-span-5 md:sticky md:top-32 md:h-fit">
+                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Canal aberto</p>
+                <h1 class="mt-5 text-5xl leading-[0.92] tracking-[-0.03em] text-slate-950 md:text-6xl">
+                    Fale direto com a equipe
+                </h1>
+                <p class="mt-6 text-lg leading-relaxed text-slate-600 md:text-xl">
+                    Suporte humano para produto, planos, privacidade e parceria. Sem fila automatica para assuntos criticos.
                 </p>
-                <h1 class="text-5xl md:text-[5rem] leading-[0.9] font-medium tracking-tight mb-8">Nenhum chatbot em <span class="text-emerald-500 italic font-serif">nosso caminho.</span></h1>
-                <p class="text-xl text-slate-600 leading-relaxed mb-12">Quando envolve o seu dinheiro, nós não delegamos o atendimento. Fale direto com a equipe fundadora e de produto.</p>
-                
-                <div class="bg-slate-50 border border-slate-200 rounded-[2rem] p-8">
-                    <h3 class="font-bold text-slate-900 mb-2 uppercase text-xs tracking-widest">Tempos de Resposta (SLA)</h3>
-                    <ul class="space-y-4 mt-6">
-                        <li class="flex items-center justify-between border-b border-slate-200 pb-4">
-                            <span class="text-slate-600">Dúvidas Técnicas</span>
-                            <span class="text-slate-900 font-medium">~ 4 horas</span>
+
+                <div class="mt-8 rounded-3xl border border-slate-200 bg-white/80 p-6">
+                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Canais de contato</h2>
+                    <ul class="mt-4 space-y-3 text-sm text-slate-700">
+                        <li class="rounded-2xl bg-slate-50 p-4">
+                            <p class="font-semibold text-slate-900">Email</p>
+                            <p>contato@kitamo.com.br</p>
                         </li>
-                        <li class="flex items-center justify-between border-b border-slate-200 pb-4">
-                            <span class="text-slate-600">Parcerias / B2B</span>
-                            <span class="text-slate-900 font-medium">1 dia útil</span>
+                        <li class="rounded-2xl bg-slate-50 p-4">
+                            <p class="font-semibold text-slate-900">WhatsApp</p>
+                            <p>(XX) XXXXX-XXXX</p>
+                            <!-- TODO: substituir pelo numero oficial -->
+                        </li>
+                        <li class="rounded-2xl bg-slate-50 p-4">
+                            <p class="font-semibold text-slate-900">Horario de atendimento</p>
+                            <p>Segunda a sexta, 9h as 18h (horario de Brasilia)</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 rounded-3xl border border-slate-200 bg-white/80 p-6">
+                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Localizacao</h2>
+                    <p class="mt-3 text-sm leading-relaxed text-slate-700">
+                        Somos uma empresa 100% remota, baseada no Brasil.
+                    </p>
+                </div>
+
+                <div class="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Tempos de resposta (SLA)</h2>
+                    <ul class="mt-4 space-y-3 text-sm text-slate-700">
+                        <li class="flex items-center justify-between border-b border-slate-200 pb-3">
+                            <span>Duvidas tecnicas</span>
+                            <span class="font-semibold text-slate-900">~ 4 horas</span>
+                        </li>
+                        <li class="flex items-center justify-between border-b border-slate-200 pb-3">
+                            <span>Parcerias / B2B</span>
+                            <span class="font-semibold text-slate-900">1 dia util</span>
                         </li>
                         <li class="flex items-center justify-between">
-                            <span class="text-slate-600">Exclusão de Dados (LGPD)</span>
-                            <span class="text-red-700 font-bold">Prioridade Máxima</span>
+                            <span>Revisao de dados (LGPD)</span>
+                            <span class="font-bold text-red-700">Prioridade maxima</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Right Interactive Form Block -->
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_40px_100px_rgba(2,6,23,0.05)] border border-slate-200 relative overflow-hidden">
-                    <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full"></div>
-                    
-                    <form @submit.prevent="submitContact" class="relative z-10 w-full space-y-8">
-                        
-                        <div class="grid md:grid-cols-2 gap-8">
-                            <div class="space-y-2">
-                                <label for="name" class="block text-xs font-bold uppercase tracking-widest text-slate-500 ml-2">Como te chamamos?</label>
+            <div class="md:col-span-7">
+                <div class="rounded-3xl border border-slate-200 bg-white p-7 md:p-10">
+                    <form class="space-y-6" @submit.prevent="submitContact">
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label for="name" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                    Como te chamamos?
+                                </label>
                                 <input
                                     id="name"
                                     v-model="contactForm.name"
                                     type="text"
                                     placeholder="Jane Doe"
-                                    class="w-full h-14 bg-slate-50 border-0 border-b-2 border-slate-200 px-4 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-0 transition-colors rounded-none font-medium text-slate-900"
+                                    class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                                 />
-                                <p v-if="contactErrors.name" class="text-xs font-medium text-red-500 mt-2">{{ contactErrors.name[0] }}</p>
+                                <p v-if="contactErrors.name" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.name[0] }}</p>
                             </div>
-                            
-                            <div class="space-y-2">
-                                <label for="email" class="block text-xs font-bold uppercase tracking-widest text-slate-500 ml-2">Melhor E-mail</label>
+                            <div>
+                                <label for="email" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                    Melhor e-mail
+                                </label>
                                 <input
                                     id="email"
                                     v-model="contactForm.email"
                                     type="email"
                                     placeholder="jane@empresa.com"
-                                    class="w-full h-14 bg-slate-50 border-0 border-b-2 border-slate-200 px-4 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-0 transition-colors rounded-none font-medium text-slate-900"
+                                    class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                                 />
-                                <p v-if="contactErrors.email" class="text-xs font-medium text-red-500 mt-2">{{ contactErrors.email[0] }}</p>
+                                <p v-if="contactErrors.email" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.email[0] }}</p>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <label for="objective" class="block text-xs font-bold uppercase tracking-widest text-slate-500 ml-2">O que traz você aqui?</label>
+                        <div>
+                            <label for="objective" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                O que traz voce aqui?
+                            </label>
                             <select
                                 id="objective"
                                 v-model="contactForm.objective"
-                                class="w-full h-14 bg-slate-50 border-0 border-b-2 border-slate-200 px-4 text-slate-900 font-medium focus:border-emerald-500 focus:ring-0 transition-colors rounded-none"
+                                class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                             >
-                                <option value="" disabled>Selecione um tópico...</option>
-                                <option value="duvida-produto">Como o produto funciona</option>
-                                <option value="duvida-planos">Custo, Planos ou Setup</option>
-                                <option value="privacidade-dados">Revisão de Dados (LGPD)</option>
-                                <option value="parceria">Parceria Comercial (Influenciadores)</option>
+                                <option value="" disabled>Selecione um topico...</option>
+                                <option value="duvida-produto">Duvida sobre o produto</option>
+                                <option value="duvida-planos">Duvida sobre planos e cobranca</option>
+                                <option value="privacidade-dados">Solicitacao LGPD</option>
+                                <option value="parceria">Parceria comercial</option>
                             </select>
-                            <p v-if="contactErrors.objective" class="text-xs font-medium text-red-500 mt-2">{{ contactErrors.objective[0] }}</p>
+                            <p v-if="contactErrors.objective" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.objective[0] }}</p>
                         </div>
 
-                        <div class="space-y-2">
-                            <label for="message" class="block text-xs font-bold uppercase tracking-widest text-slate-500 ml-2">Descreva a situação</label>
+                        <div>
+                            <label for="message" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                Mensagem
+                            </label>
                             <textarea
                                 id="message"
                                 v-model="contactForm.message"
                                 rows="6"
-                                placeholder="Olá equipe Kitamo! Eu estava avaliando o sistema de metas e..."
-                                class="w-full bg-slate-50 border-0 border-b-2 border-slate-200 px-4 py-4 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-0 transition-colors rounded-none font-medium text-slate-900 resize-none"
+                                placeholder="Explique seu contexto para acelerarmos a resposta..."
+                                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                             ></textarea>
-                            <p v-if="contactErrors.message" class="text-xs font-medium text-red-500 mt-2">{{ contactErrors.message[0] }}</p>
+                            <p v-if="contactErrors.message" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.message[0] }}</p>
                         </div>
-                        
-                        <!-- Honeypot anti-bot -->
-                        <input v-model="contactForm.company" type="text" autocomplete="off" tabindex="-1" class="hidden" aria-hidden="true" />
 
-                        <div class="pt-6 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div>
-                                <p v-if="contactErrors.form" class="text-sm font-bold text-red-500 bg-red-50 py-3 px-4 rounded-xl shadow-sm">{{ contactErrors.form[0] }}</p>
-                                <p v-if="contactSuccess" class="text-sm font-bold text-emerald-600 bg-emerald-50 py-3 px-4 rounded-xl shadow-sm flex items-center gap-2"><span class="text-lg">✓</span> {{ contactSuccess }}</p>
-                            </div>
+                        <input
+                            v-model="contactForm.company"
+                            type="text"
+                            autocomplete="off"
+                            tabindex="-1"
+                            class="hidden"
+                            aria-hidden="true"
+                        />
 
+                        <div class="flex flex-col gap-4 border-t border-slate-100 pt-5">
+                            <p v-if="contactErrors.form" class="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                                {{ contactErrors.form[0] }}
+                            </p>
+                            <p v-if="contactSuccess" class="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                                {{ contactSuccess }}
+                            </p>
                             <button
                                 type="submit"
                                 :disabled="contactSending"
-                                class="w-full md:w-auto inline-flex h-16 items-center justify-center rounded-full bg-slate-950 px-10 text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-emerald-500 hover:text-slate-950 transition-all shadow-[0_20px_40px_rgba(2,6,23,0.1)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                                class="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-8 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-emerald-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                {{ contactSending ? 'Criptografando...' : 'Assinar & Enviar' }}
+                                {{ contactSending ? 'Enviando...' : 'Enviar mensagem' }}
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>
-
         </section>
-
     </SiteLayout>
 </template>

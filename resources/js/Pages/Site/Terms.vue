@@ -2,6 +2,14 @@
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 
+const sections = [
+    { id: 'acesso', label: 'Acesso e licenca' },
+    { id: 'responsabilidade', label: 'Responsabilidade de uso' },
+    { id: 'assinaturas', label: 'Assinaturas e reembolso' },
+    { id: 'encerramento', label: 'Suspensao e encerramento' },
+    { id: 'foro', label: 'Foro e legislacao' },
+];
+
 defineProps<{
     canLogin?: boolean;
     canRegister?: boolean;
@@ -10,46 +18,96 @@ defineProps<{
 
 <template>
     <Head title="Termos de Uso | Kitamo">
-        <meta name="description" content="Termos de uso institucionais da plataforma Kitamo." />
+        <meta name="description" content="Termos de uso da plataforma Kitamo com regras claras de acesso e assinatura." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        
-        <section class="max-w-[900px] mx-auto px-6 py-24 md:py-32">
-            
-            <div class="mb-20">
-                <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-emerald-500 transition-colors mb-6 inline-block">← Voltar</Link>
-                <h1 class="text-5xl md:text-[6rem] leading-[0.9] font-medium tracking-tight mb-8">Nossas regras <span class="text-emerald-500 italic font-serif">de Campo.</span></h1>
-                <p class="text-xl text-slate-500">Termos curtos e justos. Sem letras miúdas debaixo do tapete.</p>
-                <div class="mt-8 flex gap-4 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-widest text-slate-500">
-                    <span>Última atualização: Fevereiro, 2025</span>
-                    <span>•</span>
-                    <span>Versão 1.0</span>
+        <section class="mx-auto w-full max-w-[980px] px-5 pb-20 pt-10 md:px-6 md:pb-24 md:pt-16">
+            <div class="mb-8">
+                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Termos de uso</p>
+                <h1 class="mt-4 text-5xl leading-[0.92] tracking-[-0.03em] text-slate-950 md:text-6xl">
+                    Termos de uso da plataforma
+                </h1>
+                <p class="mt-5 max-w-3xl text-lg leading-relaxed text-slate-600 md:text-xl">
+                    Regras objetivas para uso do Kitamo, cobrancas, limites de responsabilidade e base legal do contrato.
+                </p>
+                <div class="mt-6 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <span>Ultima atualizacao: 20 de fevereiro de 2026</span>
+                    <span>Versao 1.1</span>
                 </div>
             </div>
 
-            <div class="prose prose-lg prose-slate max-w-none font-medium leading-relaxed prose-h2:text-3xl prose-h2:tracking-tight prose-h2:font-medium prose-h2:mb-6 prose-p:text-slate-600 prose-p:mb-8 font-sans">
-                <h2>1. Seu Acesso</h2>
-                <p>Nós fornecemos uma licença individual, revogável, não-exclusiva e instransferível para usar o Kitamo via nossa aplicação Web Criptografada. Você não pode copiar, embutir, fazer engenharia reversa ou sublicenciar sua conta para uma tia chata.</p>
-
-                <h2>2. Conselhos Fiscais</h2>
-                <p>A Kitamo é um <strong>software, não o seu contador mágico nem consultor financeiro</strong> registrado. Ações tomadas com base nas nossas projeções ou gráficos vermelhos piscando são de sua exclusiva responsabilidade no fim do dia.</p>
-
-                <h2>3. Pagamentos, Assinaturas e Reembolso</h2>
-                <p>Não há pegadinhas. Você seleciona o plano, insere um método de faturamento e a cobrança ocorre no ciclo acordado. Se houver falha de pagamento, o sistema rebaixa automaticamente para o Essencial (nível grátis), limitando recursos premium até a regularização.</p>
-                <p><strong>Garantia incondicional de 7 dias (CDC Art. 49):</strong> Caso se arrependa da assinatura de qualquer plano premium dentro de 7 dias após a data da compra, basta acionar nosso suporte. Devolveremos 100% do seu dinheiro, sem formulários ou retenção forçada.</p>
-
-                <h2>4. O quebrar das regras</h2>
-                <p>Nós não banimos usuários a não ser que exista abuso grave da plataforma, como tentativas de fraude, automação não autorizada ou ataques aos nossos sistemas. Em caso de rompimento flagrante desta regra, cortamos a assinatura e encerramos a conta. Valores pagos não são reembolsáveis nessas exceções (salvo o prazo legal de 7 dias mencionado).</p>
-                
-                <h2>5. Foro Legal e Versões</h2>
-                <p>Este termo é regido pelas leis da República Federativa do Brasil. Quaisquer conflitos ou ações que não puderem ser resolvidas de forma amigável serão decididos no Foro da Comarca de São Paulo/SP, com exclusão de qualquer outro por mais privilegiado que seja.</p>
-                
-                <h2 class="mt-16 text-slate-900 border-t border-slate-200 pt-10">Aceite Amigável</h2>
-                <p>Quando você marca a caixa <em>"De acordo"</em> lá na página de Cadastro, estamos fazendo um pacto digital de cavalheiros de que você entende o jogo: Nós construímos segurança e projeções matemáticas para seu benefício dentro da legislação brasileira, e você faz o uso honesto do sistema. Documentações anteriores deste texto podem ser <Link :href="route('site.contact')" class="text-emerald-600 underline underline-offset-4 font-bold hover:text-emerald-700">solicitadas ao nosso suporte</Link>.</p>
+            <div class="mb-6 rounded-3xl border border-slate-200 bg-white/80 p-5 md:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Indice</p>
+                    <button
+                        type="button"
+                        class="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 px-5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-700 transition hover:border-slate-950"
+                    >
+                        Baixar PDF
+                    </button>
+                    <!-- TODO: vincular botao a versao PDF oficial -->
+                </div>
+                <div class="mt-4 grid gap-2 md:grid-cols-2">
+                    <a
+                        v-for="item in sections"
+                        :key="item.id"
+                        :href="`#${item.id}`"
+                        class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:text-slate-900"
+                    >
+                        {{ item.label }}
+                    </a>
+                </div>
             </div>
 
-        </section>
+            <div class="space-y-4">
+                <article id="acesso" class="rounded-3xl border border-slate-200 bg-white/80 p-6 md:p-8">
+                    <h2 class="text-3xl tracking-tight text-slate-950">1. Acesso e licenca</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        O Kitamo concede licenca pessoal, limitada, nao exclusiva e revogavel para uso da plataforma web, respeitando estes termos.
+                    </p>
+                </article>
 
+                <article id="responsabilidade" class="rounded-3xl border border-slate-200 bg-white/80 p-6 md:p-8">
+                    <h2 class="text-3xl tracking-tight text-slate-950">2. Responsabilidade de uso</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        O Kitamo e software de organizacao e projecao financeira, nao consultoria juridica, contabil ou recomendacao de investimento.
+                    </p>
+                </article>
+
+                <article id="assinaturas" class="rounded-3xl border border-slate-200 bg-white/80 p-6 md:p-8">
+                    <h2 class="text-3xl tracking-tight text-slate-950">3. Assinaturas e reembolso</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        Planos pagos seguem ciclo de cobranca informado no ato da assinatura. Em caso de cancelamento, o acesso premium permanece ate o fim do periodo pago.
+                    </p>
+                    <p class="mt-3 text-base leading-relaxed text-slate-600">
+                        Para contratacoes online, aplicamos o prazo legal de arrependimento de 7 dias, conforme CDC.
+                    </p>
+                </article>
+
+                <article id="encerramento" class="rounded-3xl border border-slate-200 bg-white/80 p-6 md:p-8">
+                    <h2 class="text-3xl tracking-tight text-slate-950">4. Suspensao e encerramento</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        Contas podem ser suspensas em caso de fraude, uso abusivo, violacao de seguranca ou descumprimento material destes termos.
+                    </p>
+                </article>
+
+                <article id="foro" class="rounded-3xl border border-slate-200 bg-white/80 p-6 md:p-8">
+                    <h2 class="text-3xl tracking-tight text-slate-950">5. Foro e legislacao</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        Estes termos sao regidos pelas leis brasileiras. Fica eleito o foro da Comarca de Sao Paulo/SP, salvo disposicao legal em contrario.
+                    </p>
+                    <p class="mt-4 text-base leading-relaxed text-slate-600">
+                        Para solicitar versoes anteriores deste documento, acione o suporte oficial.
+                    </p>
+                    <Link
+                        :href="route('site.contact')"
+                        class="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-emerald-500 hover:text-slate-950"
+                    >
+                        Solicitar versoes anteriores
+                    </Link>
+                </article>
+            </div>
+        </section>
     </SiteLayout>
 </template>
