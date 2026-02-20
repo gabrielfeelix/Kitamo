@@ -66,24 +66,39 @@ export const institutionalFaq: SiteFaqItem[] = [
 export const pricingPlans: SitePricingPlan[] = [
     {
         name: 'Essencial',
-        subtitle: 'Controle mensal básico e visão pura. Sem pegadinhas.',
+        subtitle: 'Ideal para começar: controle manual com projeção de 30 dias.',
         monthly: '0',
-        features: [],
+        features: [
+            'Até 2 contas',
+            '1 cartão de crédito',
+            'Projeção de 30 dias',
+            'Sem backup automático',
+        ],
         ctaLabel: 'Testar',
     },
     {
         name: 'Pro',
-        subtitle: 'Automatize sua vida e enxergue o seu trimestre de forma brutal.',
+        subtitle: 'Plano recomendado para rotina ativa e visão trimestral.',
         monthly: '19',
-        features: [],
+        features: [
+            'Contas e cartões ilimitados',
+            'Projeção de 90 dias',
+            'Backup automático',
+            'Despesas recorrentes',
+        ],
         ctaLabel: 'Assinar',
         highlighted: true,
     },
     {
         name: 'Visionário',
-        subtitle: 'Antecipação extrema de 5 anos com acompanhamento VIP no WhatsApp.',
+        subtitle: 'Para planejamento avançado com visão de longo prazo.',
         monthly: '49',
-        features: [],
+        features: [
+            'Tudo do Pro',
+            'Projeção de até 5 anos',
+            'Suporte prioritário via WhatsApp',
+            'Estrutura completa sem limites',
+        ],
         ctaLabel: 'Assinar Elite',
     },
 ];

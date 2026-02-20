@@ -12,162 +12,167 @@ defineProps<{
 const billingFaq: SiteFaqItem[] = [
     {
         question: 'Existe plano gratuito?',
-        answer: 'Sim. O Essencial nunca cobra e entrega visão mensal pura.',
+        answer: 'Sim. O Essencial e gratuito e inclui previsao de 30 dias com limites de uso.',
     },
     {
-        question: 'Como faço upgrade para o Visionário?',
-        answer: 'Você pode subir a qualquer momento se achou que precisa projetar mais os seus próximos 12 meses.',
+        question: 'Posso mudar de plano a qualquer momento?',
+        answer: 'Sim. Upgrade e downgrade podem ser feitos conforme sua necessidade.',
     },
     {
-        question: 'O Kitamo conecta na minha conta bancária?',
-        answer: 'Não. O Kitamo não usa Open Finance e não conecta aos seus bancos. O controle é manual para manter previsibilidade e consistência.',
-    }
+        question: 'Como cancelo um plano pago?',
+        answer: 'O cancelamento e simples e pode ser feito sem burocracia. O plano volta ao Essencial no proximo ciclo.',
+    },
+    {
+        question: 'Aceita PIX?',
+        answer: 'Depende da forma de pagamento habilitada no momento. Se precisar de validacao comercial, fale com nosso suporte.',
+    },
+    {
+        question: 'Tem desconto anual?',
+        answer: 'Pode existir campanha pontual. Quando houver, a condicao aparece de forma explicita na tela de assinatura.',
+    },
+    {
+        question: 'O Kitamo conecta no meu banco?',
+        answer: 'Nao. O controle e manual e nao utiliza Open Finance.',
+    },
 ];
 
-const openFaqIndex = ref<number | null>(null);
+const openFaqIndex = ref<number | null>(0);
 
+const guarantees = [
+    {
+        title: '7 dias de garantia incondicional',
+        description: 'Se nao fizer sentido para voce, devolvemos o valor dentro do prazo legal informado.',
+    },
+    {
+        title: 'Cancele quando quiser',
+        description: 'Sem contrato travado. O controle da assinatura fica na sua mao.',
+    },
+    {
+        title: 'Seus dados sao seus',
+        description: 'Voce pode solicitar acesso, exportacao e exclusao conforme LGPD.',
+    },
+];
 </script>
 
 <template>
-    <Head title="Preços | Kitamo">
-        <meta name="description" content="Planos da Kitamo com estrutura clara por necessidade de controle." />
+    <Head title="Precos | Kitamo">
+        <meta name="description" content="Planos da Kitamo com comparacao clara de recursos e politica transparente." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        
-        <section class="max-w-[1400px] mx-auto px-6 py-24 md:py-32">
-            <div class="text-center max-w-2xl mx-auto mb-16">
-                <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500 mb-6">Investimento de longo prazo</p>
-                <h1 class="text-5xl md:text-[5.5rem] leading-[0.9] font-medium tracking-tight mb-8">O plano se paga em <span class="text-emerald-500 italic font-serif">uma assinatura</span> descoberta.</h1>
-                <p class="text-xl text-slate-600 font-medium">Você escolhe seu nível de antecipação. Sem surpresas ou taxas escondidas no meio do caminho.</p>
+        <section class="mx-auto w-full max-w-[1240px] px-5 pb-10 pt-10 text-center md:px-6 md:pb-12 md:pt-16">
+            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Precos</p>
+            <h1 class="mx-auto mt-5 max-w-4xl text-5xl leading-[0.92] tracking-[-0.03em] text-slate-950 md:text-6xl">
+                Precos transparentes. Sem surpresas.
+            </h1>
+            <p class="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-600 md:text-xl">
+                Escolha o plano certo para seu momento e evolua conforme sua rotina financeira amadurece.
+            </p>
+        </section>
+
+        <section class="mx-auto w-full max-w-[1240px] px-5 py-6 md:px-6 md:py-8">
+            <div class="grid gap-4 md:grid-cols-3">
+                <article
+                    v-for="plan in pricingPlans"
+                    :key="plan.name"
+                    class="rounded-3xl border p-6"
+                    :class="plan.highlighted ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-white/80'"
+                >
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{{ plan.name }}</p>
+                    <h2 class="mt-3 text-4xl tracking-tight text-slate-950">R$ {{ plan.monthly }}<span class="text-sm font-medium text-slate-500">/mes</span></h2>
+                    <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ plan.subtitle }}</p>
+
+                    <ul class="mt-5 space-y-2">
+                        <li
+                            v-for="feature in plan.features"
+                            :key="feature"
+                            class="flex items-start gap-2 text-sm font-medium text-slate-700"
+                        >
+                            <span class="mt-1 h-2 w-2 rounded-full bg-emerald-500"></span>
+                            <span>{{ feature }}</span>
+                        </li>
+                    </ul>
+
+                    <Link
+                        :href="canRegister ? '/register' : '/login'"
+                        class="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full text-[11px] font-bold uppercase tracking-[0.14em] transition"
+                        :class="plan.highlighted ? 'bg-slate-950 text-white hover:bg-emerald-500 hover:text-slate-950' : 'border border-slate-300 bg-white text-slate-700 hover:border-slate-950'"
+                    >
+                        {{ plan.ctaLabel }}
+                    </Link>
+                </article>
             </div>
+        </section>
 
-            <!-- Mobile View: Stacked Cards (Hidden on md and up) -->
-            <div class="grid gap-8 md:hidden">
-                <!-- Essencial Card -->
-                <div class="bg-white rounded-[2rem] p-8 border border-slate-200">
-                     <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[0].name }}</h3>
-                     <p class="text-sm font-bold mt-2 text-slate-500">R$ {{ pricingPlans[0].monthly }} <span class="text-xs font-normal">/mês</span></p>
-                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">{{ pricingPlans[0].subtitle }}</p>
-                     
-                     <div class="mt-8 space-y-4">
-                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
-                             <span class="text-slate-600">{{ feature.name }}</span>
-                             <span class="font-bold text-slate-900">
-                                 <span v-if="feature.status[0] === 'Sim'" class="text-emerald-500">✓</span>
-                                 <span v-else-if="feature.status[0] === 'Não'" class="text-slate-300">—</span>
-                                 <span v-else>{{ feature.status[0] }}</span>
-                             </span>
-                         </div>
-                     </div>
-                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
-                </div>
-
-                <!-- Pro Card -->
-                <div class="bg-slate-950 text-white rounded-[2rem] p-8 border border-slate-800 relative shadow-2xl">
-                     <span class="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-950 bg-emerald-400 px-3 py-1 rounded-full">Recomendado</span>
-                     <h3 class="text-4xl font-medium">{{ pricingPlans[1].name }}</h3>
-                     <p class="text-sm font-bold mt-2 text-emerald-400">R$ {{ pricingPlans[1].monthly }} <span class="text-xs font-normal text-emerald-400/70">/mês</span></p>
-                     <p class="text-sm text-slate-400 mt-4 leading-relaxed font-medium">{{ pricingPlans[1].subtitle }}</p>
-                     
-                     <div class="mt-8 space-y-4">
-                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-white/5 pb-3">
-                             <span class="text-slate-300">{{ feature.name }}</span>
-                             <span class="font-bold text-white">
-                                 <span v-if="feature.status[1] === 'Sim'" class="text-emerald-400">✓</span>
-                                 <span v-else-if="feature.status[1] === 'Não'" class="text-slate-600">—</span>
-                                 <span v-else>{{ feature.status[1] }}</span>
-                             </span>
-                         </div>
-                     </div>
-                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full bg-emerald-500 text-emerald-950 text-xs font-bold uppercase tracking-widest hover:bg-emerald-400 transition-colors">Assinar</Link>
-                </div>
-
-                <!-- Visionario Card -->
-                <div class="bg-white rounded-[2rem] p-8 border border-amber-200 relative overflow-hidden">
-                     <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 blur-3xl rounded-full"></div>
-                     <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[2].name }}</h3>
-                     <p class="text-sm font-bold mt-2 text-amber-600">R$ {{ pricingPlans[2].monthly }} <span class="text-xs font-normal opacity-70">/mês</span></p>
-                     <p class="text-sm text-slate-500 mt-4 leading-relaxed font-medium">{{ pricingPlans[2].subtitle }}</p>
-                     
-                     <div class="mt-8 space-y-4 relative z-10">
-                         <div v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="flex justify-between items-center text-sm border-b border-slate-50 pb-3">
-                             <span class="text-slate-600">{{ feature.name }}</span>
-                             <span class="font-bold text-amber-700">
-                                 <span v-if="feature.status[2] === 'Sim'">✓</span>
-                                 <span v-else-if="feature.status[2] === 'Não'" class="text-slate-300">—</span>
-                                 <span v-else>{{ feature.status[2] }}</span>
-                             </span>
-                         </div>
-                     </div>
-                     <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-8 rounded-full border border-amber-200 text-xs font-bold uppercase tracking-widest text-amber-700 hover:border-amber-400 hover:text-amber-800 transition-colors bg-amber-50 relative z-10">Assinar Elite</Link>
-                </div>
-            </div>
-
-            <!-- Desktop View: Massive Pricing Table Comparison Instead of Cards (Hidden on mobile) -->
-            <div class="hidden md:block bg-white rounded-[3rem] p-12 shadow-[0_40px_100px_rgba(2,6,23,0.05)] border border-slate-200 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#fbbf24]/5 blur-[120px] rounded-full"></div>
-
-                <div class="w-full">
-                    <table class="w-full relative z-10">
+        <section class="mx-auto w-full max-w-[1240px] px-5 py-12 md:px-6 md:py-16">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 md:p-8">
+                <h2 class="text-3xl tracking-tight text-slate-950 md:text-4xl">Comparativo de funcionalidades</h2>
+                <div class="mt-6 overflow-x-auto">
+                    <table class="min-w-full text-sm">
                         <thead>
-                            <tr class="border-b-2 border-slate-100">
-                                <th class="text-left w-1/3 pb-8 pr-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Funcionalidade Central</th>
-                                <th class="w-[22%] pb-8 px-4 text-center">
-                                    <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[0].name }}</h3>
-                                    <p class="text-sm font-bold mt-2 text-slate-500">R$ {{ pricingPlans[0].monthly }} <span class="text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-slate-950 transition-colors">Testar</Link>
-                                </th>
-                                <th class="w-[22%] pb-8 px-4 text-center relative">
-                                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">Recomendado</span>
-                                    <h3 class="text-4xl font-medium text-slate-900">{{ pricingPlans[1].name }}</h3>
-                                    <p class="text-sm font-bold mt-2 text-emerald-600">R$ {{ pricingPlans[1].monthly }} <span class="text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full bg-slate-950 text-white text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-emerald-500 hover:text-slate-950 transition-colors">Assinar</Link>
-                                </th>
-                                <th class="w-[22%] pb-8 px-4 text-center">
-                                    <h3 class="text-3xl font-medium text-slate-900">{{ pricingPlans[2].name }}</h3>
-                                    <p class="text-sm font-bold mt-2 text-amber-600">R$ {{ pricingPlans[2].monthly }} <span class="text-xs font-normal">/mês</span></p>
-                                    <Link :href="canRegister ? '/register' : '/login'" class="w-full inline-flex justify-center py-4 mt-6 rounded-full border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600 hover:border-amber-500 hover:text-amber-600 transition-colors">Assinar Elite</Link>
-                                </th>
+                            <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
+                                <th class="pb-3 pr-4">Funcionalidade</th>
+                                <th class="pb-3 pr-4">Essencial</th>
+                                <th class="pb-3 pr-4">Pro</th>
+                                <th class="pb-3">Visionario</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(feature, idx) in pricingFeatureComparisons" :key="idx" class="border-b border-slate-100/50 hover:bg-slate-50 transition-colors">
-                                <td class="py-6 pr-4 text-slate-900 font-medium text-base">{{ feature.name }}</td>
-                                <td class="py-6 px-4 text-center text-slate-500 font-bold text-base" v-for="(status, statusIdx) in feature.status" :key="statusIdx" :class="{'text-emerald-500': status === 'Sim', 'text-slate-300': status === 'Não'}">
-                                    <span v-if="status === 'Sim'">✓</span>
-                                    <span v-else-if="status === 'Não'">—</span>
-                                    <span v-else>{{ status }}</span>
-                                </td>
+                            <tr
+                                v-for="feature in pricingFeatureComparisons"
+                                :key="feature.name"
+                                class="border-b border-slate-100"
+                            >
+                                <td class="py-3 pr-4 font-medium text-slate-900">{{ feature.name }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ feature.status[0] }}</td>
+                                <td class="py-3 pr-4 text-slate-600">{{ feature.status[1] }}</td>
+                                <td class="py-3 text-slate-600">{{ feature.status[2] }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
         </section>
 
-        <!-- FAQs (Asymmetric Block) -->
-        <section class="bg-black py-24 text-white">
-            <div class="max-w-[1200px] mx-auto px-6 grid md:grid-cols-2 gap-16">
-                <div>
-                     <h2 class="text-5xl font-medium tracking-tight mb-8">Últimas objeções,<br/> <span class="text-slate-500">dúvidas rápidas.</span></h2>
-                     <p class="text-xl text-slate-400">Todo sistema de qualidade exige transparência. Saiba exatamente onde você está entrando.</p>
-                </div>
-                <!-- FAQ accordion -->
-                <div class="space-y-4 pt-10 border-t border-slate-800 md:border-0 md:pt-0">
-                     <div v-for="(faq, index) in billingFaq" :key="faq.question" class="border-b border-slate-800">
-                         <button @click="openFaqIndex = openFaqIndex === index ? null : index" class="w-full text-left py-6 flex justify-between items-center group">
-                             <h3 class="text-xl font-medium text-white group-hover:text-emerald-400 transition-colors pr-8">{{ faq.question }}</h3>
-                             <span class="text-slate-600 text-2xl transition-transform duration-300" :class="{'rotate-45 text-emerald-400': openFaqIndex === index}">+</span>
-                         </button>
-                         <div v-show="openFaqIndex === index" class="pb-6 pr-8">
-                             <p class="text-slate-500 leading-relaxed">{{ faq.answer }}</p>
-                         </div>
-                     </div>
-                </div>
+        <section class="mx-auto w-full max-w-[1240px] px-5 py-4 md:px-6 md:py-6">
+            <div class="grid gap-4 md:grid-cols-3">
+                <article
+                    v-for="item in guarantees"
+                    :key="item.title"
+                    class="rounded-3xl border border-slate-200 bg-white/80 p-6"
+                >
+                    <h3 class="text-xl tracking-tight text-slate-900">{{ item.title }}</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ item.description }}</p>
+                </article>
             </div>
         </section>
 
+        <section class="bg-slate-950 py-16 text-white md:py-20">
+            <div class="mx-auto grid w-full max-w-[1240px] gap-10 px-5 md:grid-cols-2 md:px-6">
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Perguntas frequentes</p>
+                    <h2 class="mt-4 text-4xl leading-[0.96] tracking-tight">Ultimas objecoes e duvidas</h2>
+                    <p class="mt-4 text-base leading-relaxed text-slate-300">Respostas diretas para voce escolher plano sem duvida escondida.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <article
+                        v-for="(faq, index) in billingFaq"
+                        :key="faq.question"
+                        class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                    >
+                        <button
+                            type="button"
+                            class="flex w-full items-center justify-between gap-5 py-2 text-left"
+                            @click="openFaqIndex = openFaqIndex === index ? null : index"
+                        >
+                            <h3 class="text-base font-semibold">{{ faq.question }}</h3>
+                            <span class="text-xl leading-none text-slate-400" :class="openFaqIndex === index ? 'rotate-45 text-emerald-300' : ''">+</span>
+                        </button>
+                        <p v-if="openFaqIndex === index" class="pb-2 text-sm leading-relaxed text-slate-300">{{ faq.answer }}</p>
+                    </article>
+                </div>
+            </div>
+        </section>
     </SiteLayout>
 </template>
