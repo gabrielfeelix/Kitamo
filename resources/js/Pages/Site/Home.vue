@@ -115,23 +115,23 @@ onUnmounted(() => {
                 <h2 class="text-5xl md:text-[6rem] leading-[0.9] tracking-[-0.04em] font-medium max-w-4xl mx-auto mb-10">
                     A primeira <span class="italic font-serif text-emerald-300">máquina do tempo</span> financeira que realmente funciona.
                 </h2>
-                <p class="text-slate-400 text-xl font-medium max-w-2xl mx-auto mb-16">
-                    A maioria dos apps desenha gráficos coloridos do que você já gastou. O Kitamo desenha o que <u class="underline-offset-4 decoration-emerald-500">vai sobrar</u> no fim do mês.
+                <p class="text-slate-300 text-xl font-medium max-w-2xl mx-auto mb-16">
+                    A maioria dos apps desenha gráficos coloridos do que você já gastou. O Kitamo desenha o que <u class="underline-offset-4 decoration-emerald-500 text-white">vai sobrar</u> no fim do mês.
                 </p>
                 
                 <!-- Massive visual data representation -->
-                <div class="w-full h-80 relative flex items-end justify-center gap-2 md:gap-4 px-4 overflow-hidden">
+                <div class="w-full h-80 relative flex items-end justify-center gap-1 sm:gap-2 md:gap-4 px-2 sm:px-4 overflow-hidden">
                     <!-- Fake bars -->
                     <!-- Past -->
-                    <div class="w-16 md:w-24 h-[40%] bg-slate-800 rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-slate-500 font-bold opacity-0 group-hover:opacity-100">Sem 1</span></div>
-                    <div class="w-16 md:w-24 h-[55%] bg-slate-800 rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-slate-500 font-bold opacity-0 group-hover:opacity-100">Sem 2</span></div>
+                    <div class="w-10 sm:w-16 md:w-24 h-[40%] bg-slate-800 rounded-t-lg sm:rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-slate-400 text-[10px] sm:text-base font-bold opacity-0 group-hover:opacity-100 hidden sm:block">Sem 1</span></div>
+                    <div class="w-10 sm:w-16 md:w-24 h-[55%] bg-slate-800 rounded-t-lg sm:rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-slate-400 text-[10px] sm:text-base font-bold opacity-0 group-hover:opacity-100 hidden sm:block">Sem 2</span></div>
                     <!-- Present -->
-                    <div class="w-16 md:w-24 h-[65%] bg-slate-600 rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-white font-bold opacity-0 group-hover:opacity-100">Hoje</span>
+                    <div class="w-10 sm:w-16 md:w-24 h-[65%] bg-slate-500 rounded-t-lg sm:rounded-t-xl relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-white text-[10px] sm:text-base font-bold opacity-0 group-hover:opacity-100 hidden sm:block">Hoje</span>
                         <div class="absolute bottom-0 left-0 w-full h-[6px] bg-white rounded-t-xl"></div>
                     </div>
                     <!-- Future Projection -->
-                    <div class="w-16 md:w-24 h-[80%] bg-emerald-900/40 border border-emerald-500/30 rounded-t-[1rem] border-dashed border-b-0 relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-emerald-400 font-bold opacity-100">+20%</span></div>
-                    <div class="w-16 md:w-24 h-[95%] bg-emerald-900/40 border border-emerald-500/30 rounded-t-[1rem] border-dashed border-b-0 relative group">
+                    <div class="w-10 sm:w-16 md:w-24 h-[80%] bg-emerald-900/40 border border-emerald-500/30 rounded-t-lg sm:rounded-t-[1rem] border-dashed border-b-0 relative group"><span class="absolute -top-8 left-1/2 -translate-x-1/2 text-emerald-400 text-[10px] sm:text-base font-bold hidden sm:block">+20%</span></div>
+                    <div class="w-10 sm:w-16 md:w-24 h-[95%] bg-emerald-900/40 border border-emerald-500/30 rounded-t-lg sm:rounded-t-[1rem] border-dashed border-b-0 relative group">
                         <div class="absolute -top-14 left-1/2 -translate-x-1/2 bg-emerald-400 text-slate-900 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap shadow-[0_0_30px_rgba(52,211,153,0.4)]">Meta do mês!</div>
                     </div>
                     

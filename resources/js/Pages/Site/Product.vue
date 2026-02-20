@@ -111,27 +111,27 @@ const activeScenario = computed(() => scenarios[activeScenarioIndex.value]);
         <section class="max-w-[1400px] mx-auto px-6 py-24">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                 <!-- Visual Box -->
-                <div class="w-full aspect-square bg-[#f6f6f4] rounded-[3rem] p-12 relative flex items-center justify-center border border-slate-200">
+                <div class="w-full aspect-square md:aspect-auto md:h-[500px] bg-[#f6f6f4] rounded-[3rem] p-6 md:p-12 relative flex items-center justify-center border border-slate-200 overflow-hidden md:overflow-visible">
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.05)_0%,transparent_60%)]"></div>
                     
-                    <div class="relative w-64 h-64">
+                    <div class="relative w-52 h-52 md:w-64 md:h-64">
                         <!-- Conic Gradient Pie Chart -->
                         <div class="w-full h-full rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.05)] border-4 border-white" style="background: conic-gradient(#10b981 0% 45%, #f59e0b 45% 70%, #ef4444 70% 85%, #cbd5e1 85% 100%);"></div>
                         
                         <!-- Inner floating circle -->
-                        <div class="absolute inset-0 m-auto w-40 h-40 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+                        <div class="absolute inset-0 m-auto w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
                             <span class="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Gasto Total</span>
-                            <span class="text-3xl font-medium tracking-tighter text-slate-900 mt-1">R$ 3.200</span>
+                            <span class="text-2xl md:text-3xl font-medium tracking-tighter text-slate-900 mt-1">R$ 3.200</span>
                         </div>
                         
                         <!-- Floating Tags Component (Copilot style) -->
-                        <div class="absolute -right-12 top-10 bg-white p-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-100">
-                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                            <div class="text-sm font-bold">Essenciais <span class="text-slate-400 font-normal ml-2">45%</span></div>
+                        <div class="absolute -right-6 md:-right-12 top-6 md:top-10 bg-white p-2 md:p-3 rounded-2xl shadow-xl flex items-center gap-2 md:gap-3 border border-slate-100 z-10">
+                            <div class="w-2 md:w-3 h-2 md:h-3 rounded-full bg-emerald-500"></div>
+                            <div class="text-xs md:text-sm font-bold whitespace-nowrap">Essenciais <span class="text-slate-400 font-normal ml-1 md:ml-2">45%</span></div>
                         </div>
-                        <div class="absolute -left-16 bottom-16 bg-white p-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-100">
-                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                            <div class="text-sm font-bold">Estilo de vida <span class="text-slate-400 font-normal ml-2">25%</span></div>
+                        <div class="absolute -left-6 md:-left-16 bottom-10 md:bottom-16 bg-white p-2 md:p-3 rounded-2xl shadow-xl flex items-center gap-2 md:gap-3 border border-slate-100 z-10">
+                            <div class="w-2 md:w-3 h-2 md:h-3 rounded-full bg-amber-500"></div>
+                            <div class="text-xs md:text-sm font-bold whitespace-nowrap">Estilo de vida <span class="text-slate-400 font-normal ml-1 md:ml-2">25%</span></div>
                         </div>
                     </div>
                 </div>

@@ -18,10 +18,10 @@ defineProps<{
         <section class="max-w-[900px] mx-auto px-6 py-24 md:py-32">
             
             <div class="mb-20">
-                <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors mb-6 inline-block">← Voltar</Link>
+                <Link :href="route('site.home')" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-emerald-500 transition-colors mb-6 inline-block">← Voltar</Link>
                 <h1 class="text-5xl md:text-[6rem] leading-[0.9] font-medium tracking-tight mb-8">Nossa lei de <span class="bg-slate-950 text-white px-2 italic font-serif">Privacidade.</span></h1>
                 <p class="text-xl text-slate-500">Documento base de como lidamos com a sua vida financeira.</p>
-                <div class="mt-8 flex gap-4 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-widest text-slate-400">
+                <div class="mt-8 flex gap-4 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-widest text-slate-500">
                     <span>Última atualização: Julho, 2026</span>
                     <span>•</span>
                     <span>Versão 2.1</span>
