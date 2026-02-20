@@ -11,6 +11,7 @@ const isLoaded = ref(false);
 const scrollProgress = ref(0);
 const activeSectionId = ref('hero');
 const activeStepIndex = ref(0);
+const activeScenarioIndex = ref(0);
 const prefersReducedMotion = ref(false);
 const heroTiltX = ref(0);
 const heroTiltY = ref(0);
@@ -26,6 +27,7 @@ const navSections = [
     { id: 'pain', label: 'Dor' },
     { id: 'components', label: 'Sistema' },
     { id: 'process', label: 'Fluxo' },
+    { id: 'scenarios', label: 'Cenários' },
     { id: 'proof', label: 'Provas' },
     { id: 'faq', label: 'FAQ' },
     { id: 'cta', label: 'Final' }
@@ -69,6 +71,30 @@ const processSteps = [
     }
 ];
 
+const decisionScenarios = [
+    {
+        label: 'Essencial',
+        title: 'Cortar vazamentos sem sacrificar rotina',
+        subtitle: 'Você começa com diagnóstico, remove desperdício e mantém o que importa.',
+        impact: '+R$ 640',
+        notes: ['Assinaturas não usadas identificadas', 'Reorganização de vencimentos', 'Meta semanal de controle']
+    },
+    {
+        label: 'Controle',
+        title: 'Estabilizar fluxo e reduzir ansiedade',
+        subtitle: 'A projeção prioriza as decisões críticas e antecipa falta de caixa.',
+        impact: '+R$ 1.280',
+        notes: ['Calendário de risco por semana', 'Ajustes em parcelas futuras', 'Proteção de saldo mínimo']
+    },
+    {
+        label: 'Expansão',
+        title: 'Planejar crescimento com previsibilidade',
+        subtitle: 'Depois da base, o foco vira alocar sobra com estratégia e meta.',
+        impact: '+R$ 2.100',
+        notes: ['Simulação de novos compromissos', 'Planejamento trimestral guiado', 'Reserva com gatilho automático']
+    }
+];
+
 const testimonials = [
     {
         quote: '"Parei de descobrir problema no susto."',
@@ -92,6 +118,14 @@ const testimonials = [
 
 const primaryCtaHref = computed(() => (props.canRegister ? '/register' : '/login'));
 const primaryCtaLabel = computed(() => (props.canRegister ? 'Criar conta grátis' : 'Entrar para testar'));
+const processProgress = computed(() => ((activeStepIndex.value + 1) / processSteps.length) * 100);
+const activeScenario = computed(
+    () => decisionScenarios[activeScenarioIndex.value] ?? decisionScenarios[0]
+);
+
+const setActiveScenario = (index: number) => {
+    activeScenarioIndex.value = index;
+};
 
 const markSectionVisible = (sectionId: string) => {
     if (revealedSections.value[sectionId]) {
@@ -450,7 +484,7 @@ onUnmounted(() => {
                         </p>
                     </div>
 
-                    <div class="bento-grid">
+                    <div class="bento-grid stagger-grid">
                         <article class="bento-card bento-card-xl">
                             <p class="bento-tag">Hero Motion</p>
                             <h3>Headline cinemático com leitura em camadas</h3>
@@ -494,10 +528,13 @@ onUnmounted(() => {
                 <div class="max-w-[1320px] mx-auto px-6">
                     <div class="grid lg:grid-cols-12 gap-8">
                         <div class="lg:col-span-4">
-                            <div class="lg:sticky lg:top-28 space-y-7">
+                            <div class="lg:sticky lg:top-28 space-y-6">
                                 <div>
                                     <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500 mb-4">Fluxo da LP</p>
                                     <h2 class="text-4xl md:text-5xl tracking-[-0.03em] leading-[1.05]">Ordem de fatores até converter</h2>
+                                </div>
+                                <div class="step-progress-rail" aria-hidden="true">
+                                    <span :style="{ width: `${processProgress}%` }"></span>
                                 </div>
                                 <div class="space-y-3">
                                     <div
@@ -571,6 +608,67 @@ onUnmounted(() => {
             </section>
 
             <section
+                id="scenarios"
+                data-observe-section="scenarios"
+                class="lp-reveal py-16 md:py-24"
+                :class="{ 'is-visible': isSectionVisible('scenarios') }"
+            >
+                <div class="max-w-[1320px] mx-auto px-6">
+                    <div class="grid lg:grid-cols-12 gap-8 items-start">
+                        <div class="lg:col-span-4">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500 mb-4">Cenários interativos</p>
+                            <h2 class="text-4xl md:text-5xl tracking-[-0.03em] leading-[1.05] mb-6">
+                                Simule resultado antes da decisão.
+                            </h2>
+                            <p class="text-slate-600 leading-relaxed mb-7">
+                                Componente inspirado em showcases Awwwards: você alterna contextos e vê impacto imediato sem sair da narrativa.
+                            </p>
+                            <div class="space-y-2">
+                                <button
+                                    v-for="(scenario, index) in decisionScenarios"
+                                    :key="scenario.label"
+                                    type="button"
+                                    class="scenario-tab"
+                                    :class="{ 'is-active': activeScenarioIndex === index }"
+                                    @mouseenter="setActiveScenario(index)"
+                                    @focus="setActiveScenario(index)"
+                                    @click="setActiveScenario(index)"
+                                >
+                                    <span>{{ scenario.label }}</span>
+                                    <strong>{{ scenario.impact }}</strong>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-8">
+                            <article class="scenario-panel">
+                                <p class="scenario-kicker">{{ activeScenario.label }}</p>
+                                <h3>{{ activeScenario.title }}</h3>
+                                <p class="scenario-subtitle">{{ activeScenario.subtitle }}</p>
+                                <div class="scenario-impact">
+                                    <span>Impacto mensal estimado</span>
+                                    <strong>{{ activeScenario.impact }}</strong>
+                                </div>
+                                <ul class="scenario-notes">
+                                    <li v-for="note in activeScenario.notes" :key="note">
+                                        <span class="scenario-note-dot"></span>
+                                        {{ note }}
+                                    </li>
+                                </ul>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="quick-convert-strip">
+                        <p>Entrada grátis • Configuração em minutos • Fluxo orientado por prioridade</p>
+                        <Link :href="primaryCtaHref" class="quick-convert-cta">
+                            {{ primaryCtaLabel }}
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            <section
                 id="proof"
                 data-observe-section="proof"
                 class="lp-reveal py-16 md:py-24"
@@ -605,7 +703,7 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="grid md:grid-cols-3 gap-4">
+                    <div class="grid md:grid-cols-3 gap-4 stagger-grid">
                         <article v-for="item in testimonials" :key="item.name" class="quote-card">
                             <p class="quote-title">{{ item.quote }}</p>
                             <p class="quote-body">{{ item.body }}</p>
@@ -679,6 +777,13 @@ onUnmounted(() => {
                 </div>
             </section>
         </main>
+
+        <div class="mobile-cta-dock sm:hidden">
+            <div class="mobile-cta-shell">
+                <p>Ative seu fluxo financeiro</p>
+                <Link :href="primaryCtaHref" class="mobile-cta-link">{{ primaryCtaLabel }}</Link>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -725,6 +830,43 @@ onUnmounted(() => {
 .lp-reveal.is-visible {
     opacity: 1;
     transform: none;
+}
+
+.stagger-grid > * {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+        opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lp-reveal.is-visible .stagger-grid > * {
+    opacity: 1;
+    transform: none;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(1) {
+    transition-delay: 70ms;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(2) {
+    transition-delay: 130ms;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(3) {
+    transition-delay: 190ms;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(4) {
+    transition-delay: 250ms;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(5) {
+    transition-delay: 310ms;
+}
+
+.lp-reveal.is-visible .stagger-grid > *:nth-child(6) {
+    transition-delay: 370ms;
 }
 
 .lp-nav-link {
@@ -1035,6 +1177,23 @@ onUnmounted(() => {
     transform: translateX(4px);
 }
 
+.step-progress-rail {
+    width: 100%;
+    max-width: 260px;
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.32);
+    overflow: hidden;
+}
+
+.step-progress-rail span {
+    display: block;
+    width: 0;
+    background: linear-gradient(90deg, #0f766e, #14b8a6);
+    height: 100%;
+    transition: width 320ms ease;
+}
+
 .process-card {
     border-radius: 28px;
     border: 1px solid rgba(15, 23, 42, 0.12);
@@ -1176,6 +1335,167 @@ onUnmounted(() => {
     box-shadow: 0 0 20px rgba(94, 234, 212, 0.58);
 }
 
+.scenario-tab {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.13);
+    background: rgba(255, 255, 255, 0.72);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #334155;
+    transition:
+        border-color 240ms ease,
+        background-color 240ms ease,
+        transform 240ms ease;
+}
+
+.scenario-tab span {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.scenario-tab strong {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.scenario-tab:hover,
+.scenario-tab.is-active {
+    border-color: rgba(15, 118, 110, 0.7);
+    background: rgba(236, 253, 245, 0.95);
+    transform: translateX(4px);
+}
+
+.scenario-panel {
+    border-radius: 30px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    padding: 30px;
+    min-height: 420px;
+    background:
+        radial-gradient(30rem 30rem at 8% 10%, rgba(94, 234, 212, 0.16), transparent 68%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.95));
+    box-shadow: 0 25px 40px -34px rgba(15, 23, 42, 0.45);
+}
+
+.scenario-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+.scenario-panel h3 {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.scenario-subtitle {
+    max-width: 560px;
+    color: #475569;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.scenario-impact {
+    margin-top: 28px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+}
+
+.scenario-impact span {
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.scenario-impact strong {
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+}
+
+.scenario-notes {
+    margin-top: 20px;
+    display: grid;
+    gap: 10px;
+}
+
+.scenario-notes li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.scenario-note-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #0f766e;
+}
+
+.quick-convert-strip {
+    margin-top: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: rgba(15, 23, 42, 0.92);
+    color: rgba(236, 253, 245, 0.92);
+    padding: 15px 18px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quick-convert-strip p {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.5;
+}
+
+.quick-convert-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    background: #5eead4;
+    color: #042f2e;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition:
+        transform 220ms ease,
+        background-color 220ms ease;
+}
+
+.quick-convert-cta:hover {
+    transform: translateY(-1px);
+    background: #99f6e4;
+}
+
 .metric-card {
     border-radius: 20px;
     border: 1px solid rgba(15, 23, 42, 0.13);
@@ -1294,6 +1614,52 @@ onUnmounted(() => {
     animation: lpSweep 7.5s linear infinite;
 }
 
+.mobile-cta-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    z-index: 60;
+    pointer-events: none;
+    padding: 0 12px;
+}
+
+.mobile-cta-shell {
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 16px;
+    backdrop-filter: blur(14px);
+    background: rgba(15, 23, 42, 0.9);
+    color: rgba(236, 253, 245, 0.88);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mobile-cta-shell p {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+}
+
+.mobile-cta-link {
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: #5eead4;
+    color: #052e2c;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 800;
+    padding: 0 14px;
+}
+
 @keyframes lpSweep {
     from {
         transform: translateX(-120%);
@@ -1354,6 +1720,11 @@ onUnmounted(() => {
     .process-card {
         grid-template-columns: 1fr;
     }
+
+    .quick-convert-strip {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1394,6 +1765,17 @@ onUnmounted(() => {
     .final-cta-shell {
         padding: 26px;
     }
+
+    .scenario-panel {
+        padding: 24px;
+        min-height: 0;
+    }
+
+    .scenario-impact {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1408,7 +1790,8 @@ onUnmounted(() => {
     .hero-spark,
     .ticker-group,
     .final-cta-shell::after,
-    .visual-grid-bars span {
+    .visual-grid-bars span,
+    .stagger-grid > * {
         animation: none !important;
         transition: none !important;
         transform: none !important;
