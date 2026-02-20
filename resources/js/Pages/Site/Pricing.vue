@@ -19,8 +19,8 @@ const billingFaq: SiteFaqItem[] = [
         answer: 'Você pode subir a qualquer momento se achou que precisa projetar mais os seus próximos 12 meses.',
     },
     {
-        question: 'E se o aplicativo quebrar minhas contas bancárias?',
-        answer: 'Kitamo utiliza Open Finance no modo de "Só Leitura". Impossível movimentar 1 centavo da sua conta através daqui.',
+        question: 'O Kitamo conecta na minha conta bancária?',
+        answer: 'Não. O Kitamo não usa Open Finance e não conecta aos seus bancos. O controle é manual para manter previsibilidade e consistência.',
     }
 ];
 

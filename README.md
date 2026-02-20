@@ -10,7 +10,7 @@
 
 Sistema de gestão financeira pessoal focado em **input manual confiável** e **projeção futura**.
 
-**Diferencial:** Não promete automação via Open Finance. Foca em controle manual que funciona e prevê se "vai dar dinheiro até o fim do mês".
+**Diferencial:** Não promete automação bancária. Foca em controle manual confiável e projeção de saldo para o fim do mês.
 
 **4 Dores que resolve:**
 1. ✅ Visibilidade de dívidas → "Quanto ainda devo?"

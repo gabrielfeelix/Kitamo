@@ -132,7 +132,7 @@ const submitContact = async () => {
                                 <option value="" disabled>Selecione um tópico...</option>
                                 <option value="duvida-produto">Como o produto funciona</option>
                                 <option value="duvida-planos">Custo, Planos ou Setup</option>
-                                <option value="privacidade-dados">Revisão de Dados e Open Finance</option>
+                                <option value="privacidade-dados">Revisão de Dados (LGPD)</option>
                                 <option value="parceria">Parceria Comercial (Influenciadores)</option>
                             </select>
                             <p v-if="contactErrors.objective" class="text-xs font-medium text-red-500 mt-2">{{ contactErrors.objective[0] }}</p>

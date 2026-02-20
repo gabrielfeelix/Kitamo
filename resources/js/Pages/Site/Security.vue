@@ -8,10 +8,10 @@ defineProps<{
 }>();
 
 const checks = [
-    { title: "Comunicação Segura (SSL/TLS)", desc: "100% da plataforma transporta dados em túneis blindados. De ponta a ponta." },
-    { title: "Arquitetura Isolada", desc: "Seu ID tem um namespace único no banco de dados. Nunca rola mixagem." },
-    { title: "Sincronização Read-Only", desc: "A API oficial dos bancos é usada sem privilégios de transação via Open Finance regulamentado." },
-    { title: "Hospedagem Corporativa", desc: "Infraestrutura escalável na AWS, a mesma cloud que os grandes bancos digitais usam." }
+    { title: "Comunicação Segura (SSL/TLS)", desc: "Dados em trânsito protegidos por conexão segura e boas práticas de criptografia." },
+    { title: "Arquitetura Isolada", desc: "Cada conta possui dados segregados no banco para evitar cruzamentos entre usuários." },
+    { title: "Sem Conexão Bancária", desc: "O Kitamo não usa Open Finance nem conecta em conta bancária. Os lançamentos são manuais." },
+    { title: "Infraestrutura Confiável", desc: "Ambiente em nuvem com rotinas de backup e monitoramento operacional." }
 ];
 </script>
 

@@ -36,11 +36,11 @@ defineProps<{
                 <p>A Kitamo é um <strong>software, não o seu contador mágico nem consultor financeiro</strong> registrado. Ações tomadas com base nas nossas projeções ou gráficos vermelhos piscando são de sua exclusiva responsabilidade no fim do dia.</p>
 
                 <h2>3. Pagamentos, Assinaturas e Reembolso</h2>
-                <p>Não há pegadinhas. Você seleciona o plano, insere um método de faturamento (processado majoritariamente pela Stripe), e cobraremos no ciclo acordado. Se o banco recursar no dia de corte, o sistema rebaixa você automaticamente ao Essencial (Nível Grátis) limitando sincronizações até você consertar seu cartão.</p>
+                <p>Não há pegadinhas. Você seleciona o plano, insere um método de faturamento e a cobrança ocorre no ciclo acordado. Se houver falha de pagamento, o sistema rebaixa automaticamente para o Essencial (nível grátis), limitando recursos premium até a regularização.</p>
                 <p><strong>Garantia incondicional de 7 dias (CDC Art. 49):</strong> Caso se arrependa da assinatura de qualquer plano premium dentro de 7 dias após a data da compra, basta acionar nosso suporte. Devolveremos 100% do seu dinheiro, sem formulários ou retenção forçada.</p>
 
                 <h2>4. O quebrar das regras</h2>
-                <p>Nós não banimos usuários a não ser que exista abuso grave contra nossas APIs de sincronização através de proxies não convencionais (bots invasivos). Em caso de rompimento flagrante desta regra, cortamos sua assinatura e encerramos a conta. Dinheiro não reembolsável nessas péssimas exceções (salvo o prazo de 7 dias mencionado).</p>
+                <p>Nós não banimos usuários a não ser que exista abuso grave da plataforma, como tentativas de fraude, automação não autorizada ou ataques aos nossos sistemas. Em caso de rompimento flagrante desta regra, cortamos a assinatura e encerramos a conta. Valores pagos não são reembolsáveis nessas exceções (salvo o prazo legal de 7 dias mencionado).</p>
                 
                 <h2>5. Foro Legal e Versões</h2>
                 <p>Este termo é regido pelas leis da República Federativa do Brasil. Quaisquer conflitos ou ações que não puderem ser resolvidas de forma amigável serão decididos no Foro da Comarca de São Paulo/SP, com exclusão de qualquer outro por mais privilegiado que seja.</p>

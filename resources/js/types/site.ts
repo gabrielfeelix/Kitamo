@@ -89,12 +89,13 @@ export const pricingPlans: SitePricingPlan[] = [
 ];
 
 export const pricingFeatureComparisons = [
-    { name: "Controle de Saldo ao Vivo", status: ["Sim", "Sim", "Sim"] },
-    { name: "Lembrete de Vencimentos", status: ["Sim", "Sim", "Sim"] },
-    { name: "Sincronização Bancária Open Finance", status: ["Apenas 2", "Ilimitado", "Ilimitado"] },
-    { name: "Dias de Projeção Futura", status: ["Até dia 30.", "Trimestre", "Até 5 anos."] },
-    { name: "Alerta de vazamento de assinaturas", status: ["Não", "Sim", "Sim"] },
-    { name: "Gestor Dedicado no WhatsApp", status: ["Não", "Não", "Sim"] }
+    { name: "Controle de saldo ao vivo", status: ["Sim", "Sim", "Sim"] },
+    { name: "Limite de contas", status: ["Até 2", "Ilimitado", "Ilimitado"] },
+    { name: "Limite de cartões", status: ["Até 1", "Ilimitado", "Ilimitado"] },
+    { name: "Projeção futura", status: ["30 dias", "90 dias", "5 anos"] },
+    { name: "Despesas recorrentes", status: ["Não", "Sim", "Sim"] },
+    { name: "Backup automático", status: ["Não", "Sim", "Sim"] },
+    { name: "Suporte prioritário WhatsApp", status: ["Não", "Não", "Sim"] },
 ];
 
 export const resourceCards = [

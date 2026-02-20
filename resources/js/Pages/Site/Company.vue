@@ -49,7 +49,7 @@ defineProps<{
                      <div class="space-y-6 lg:mt-20">
                          <div class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400 font-bold text-2xl">II</div>
                          <h3 class="text-3xl font-medium tracking-tight">O Fim da Planilha manual.</h3>
-                         <p class="text-slate-400 leading-relaxed font-medium">Uma equipe enxuta escrevendo código Open Finance resiliente. Nós pagamos o pedágio bancário para que você só tenha que aprovar o que nossos robôs já categorizaram com precisão clínica.</p>
+                         <p class="text-slate-400 leading-relaxed font-medium">Uma equipe enxuta construindo uma base de controle financeiro manual confiável. Você mantém domínio sobre os dados e ganha previsibilidade sem depender de integrações externas.</p>
                      </div>
                      
                      <div class="space-y-6 lg:mt-40">
