@@ -57,106 +57,110 @@ const submitContact = async () => {
     <Head title="Contato | Kitamo">
         <meta
             name="description"
-            content="Entre em contato com a equipe Kitamo para duvidas de produto, planos, privacidade e parcerias."
+            content="Fale com a equipe Kitamo para duvidas de produto, planos, privacidade e parcerias."
         />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto grid w-full max-w-[1240px] gap-10 px-5 pb-16 pt-10 md:grid-cols-12 md:px-6 md:pb-20 md:pt-16">
-            <div class="md:col-span-5 md:sticky md:top-32 md:h-fit">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Canal aberto</p>
-                <h1 class="mt-5 text-5xl leading-[0.92] tracking-[-0.03em] text-slate-950 md:text-6xl">
-                    Fale direto com a equipe
-                </h1>
-                <p class="mt-6 text-lg leading-relaxed text-slate-600 md:text-xl">
-                    Suporte humano para produto, planos, privacidade e parceria. Sem fila automatica para assuntos criticos.
-                </p>
+        <section class="mx-auto w-full max-w-[1320px] px-5 pb-12 pt-10 md:px-6 md:pb-16 md:pt-16">
+            <div class="contact-hero relative overflow-hidden rounded-[2.2rem] border border-slate-200 p-6 md:p-8">
+                <div class="grid items-center gap-8 md:grid-cols-12">
+                    <div class="md:col-span-7 text-white">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Canal direto</p>
+                        <h1 class="mt-4 text-5xl leading-[0.9] tracking-[-0.03em] md:text-6xl">
+                            Nenhum bot.
+                            <span class="block font-serif italic text-emerald-300">Conversa humana.</span>
+                        </h1>
+                        <p class="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
+                            Atendimento direto para produto, planos, privacidade e parceria. Sem fila automatica para assunto critico.
+                        </p>
 
-                <div class="mt-8 rounded-3xl border border-slate-200 bg-white/80 p-6">
-                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Canais de contato</h2>
-                    <ul class="mt-4 space-y-3 text-sm text-slate-700">
-                        <li class="rounded-2xl bg-slate-50 p-4">
-                            <p class="font-semibold text-slate-900">Email</p>
-                            <p>contato@kitamo.com.br</p>
-                        </li>
-                        <li class="rounded-2xl bg-slate-50 p-4">
-                            <p class="font-semibold text-slate-900">WhatsApp</p>
-                            <p>(XX) XXXXX-XXXX</p>
-                            <!-- TODO: substituir pelo numero oficial -->
-                        </li>
-                        <li class="rounded-2xl bg-slate-50 p-4">
-                            <p class="font-semibold text-slate-900">Horario de atendimento</p>
-                            <p>Segunda a sexta, 9h as 18h (horario de Brasilia)</p>
-                        </li>
-                    </ul>
-                </div>
+                        <div class="mt-7 grid max-w-2xl gap-3 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">Duvidas tecnicas</p>
+                                <p class="mt-1 text-sm text-white">~ 4 horas</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">Parcerias</p>
+                                <p class="mt-1 text-sm text-white">1 dia util</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">LGPD</p>
+                                <p class="mt-1 text-sm text-white">Prioridade maxima</p>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="mt-4 rounded-3xl border border-slate-200 bg-white/80 p-6">
-                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Localizacao</h2>
-                    <p class="mt-3 text-sm leading-relaxed text-slate-700">
-                        Somos uma empresa 100% remota, baseada no Brasil.
-                    </p>
-                </div>
-
-                <div class="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                    <h2 class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Tempos de resposta (SLA)</h2>
-                    <ul class="mt-4 space-y-3 text-sm text-slate-700">
-                        <li class="flex items-center justify-between border-b border-slate-200 pb-3">
-                            <span>Duvidas tecnicas</span>
-                            <span class="font-semibold text-slate-900">~ 4 horas</span>
-                        </li>
-                        <li class="flex items-center justify-between border-b border-slate-200 pb-3">
-                            <span>Parcerias / B2B</span>
-                            <span class="font-semibold text-slate-900">1 dia util</span>
-                        </li>
-                        <li class="flex items-center justify-between">
-                            <span>Revisao de dados (LGPD)</span>
-                            <span class="font-bold text-red-700">Prioridade maxima</span>
-                        </li>
-                    </ul>
+                    <div class="md:col-span-5">
+                        <img
+                            src="https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                            alt="Equipe em reuniao por videochamada"
+                            class="h-[320px] w-full rounded-[1.6rem] object-cover md:h-[400px]"
+                            loading="lazy"
+                        />
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="md:col-span-7">
-                <div class="rounded-3xl border border-slate-200 bg-white p-7 md:p-10">
+        <section class="mx-auto grid w-full max-w-[1320px] gap-8 px-5 pb-20 md:grid-cols-12 md:px-6 md:pb-24">
+            <aside class="md:col-span-4 md:sticky md:top-28 md:h-fit">
+                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Canais de contato</p>
+                <div class="mt-4 space-y-3 border-y border-slate-200 py-5">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Email</p>
+                        <p class="mt-1 text-base font-medium text-slate-900">contato@kitamo.com.br</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">WhatsApp</p>
+                        <p class="mt-1 text-base font-medium text-slate-900">(XX) XXXXX-XXXX</p>
+                        <!-- TODO: substituir pelo numero oficial -->
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Horario</p>
+                        <p class="mt-1 text-base font-medium text-slate-900">Seg-Sex, 9h as 18h (Brasilia)</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Base operacional</p>
+                        <p class="mt-1 text-base font-medium text-slate-900">Empresa 100% remota no Brasil</p>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="md:col-span-8">
+                <div class="rounded-[1.8rem] border border-slate-200 bg-white p-6 md:p-8">
                     <form class="space-y-6" @submit.prevent="submitContact">
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
-                                <label for="name" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                                    Como te chamamos?
-                                </label>
+                                <label for="name" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Como te chamamos?</label>
                                 <input
                                     id="name"
                                     v-model="contactForm.name"
                                     type="text"
                                     placeholder="Jane Doe"
-                                    class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                                    class="mt-2 h-12 w-full border-0 border-b-2 border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                                 />
                                 <p v-if="contactErrors.name" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.name[0] }}</p>
                             </div>
                             <div>
-                                <label for="email" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                                    Melhor e-mail
-                                </label>
+                                <label for="email" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Melhor e-mail</label>
                                 <input
                                     id="email"
                                     v-model="contactForm.email"
                                     type="email"
                                     placeholder="jane@empresa.com"
-                                    class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                                    class="mt-2 h-12 w-full border-0 border-b-2 border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                                 />
                                 <p v-if="contactErrors.email" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.email[0] }}</p>
                             </div>
                         </div>
 
                         <div>
-                            <label for="objective" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                                O que traz voce aqui?
-                            </label>
+                            <label for="objective" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">O que traz voce aqui?</label>
                             <select
                                 id="objective"
                                 v-model="contactForm.objective"
-                                class="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                                class="mt-2 h-12 w-full border-0 border-b-2 border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                             >
                                 <option value="" disabled>Selecione um topico...</option>
                                 <option value="duvida-produto">Duvida sobre o produto</option>
@@ -168,15 +172,13 @@ const submitContact = async () => {
                         </div>
 
                         <div>
-                            <label for="message" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                                Mensagem
-                            </label>
+                            <label for="message" class="ml-1 block text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Mensagem</label>
                             <textarea
                                 id="message"
                                 v-model="contactForm.message"
                                 rows="6"
                                 placeholder="Explique seu contexto para acelerarmos a resposta..."
-                                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
+                                class="mt-2 w-full border-0 border-b-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500"
                             ></textarea>
                             <p v-if="contactErrors.message" class="mt-2 text-xs font-medium text-red-600">{{ contactErrors.message[0] }}</p>
                         </div>
@@ -211,3 +213,11 @@ const submitContact = async () => {
         </section>
     </SiteLayout>
 </template>
+
+<style scoped>
+.contact-hero {
+    background:
+        radial-gradient(30rem 24rem at 8% 0%, rgba(16, 185, 129, 0.2), transparent 72%),
+        linear-gradient(145deg, #020617 0%, #0f172a 60%, #111827 100%);
+}
+</style>
