@@ -33,6 +33,11 @@
         --kitamo-body: 71 85 105; /* #475569 */
         --kitamo-surface: 255 255 255; /* #FFFFFF */
         --kitamo-bg: 248 250 252; /* #F8FAFC */
+
+        --motion-fast: 180ms;
+        --motion-base: 300ms;
+        --motion-slow: 480ms;
+        --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     [data-theme='dark'] {

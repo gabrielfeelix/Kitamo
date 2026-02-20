@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\Admin\LeadsController;
 use App\Http\Controllers\Admin\EmailCampaignController;
 use App\Http\Controllers\Admin\NewsItemsController;
+use App\Http\Controllers\Admin\WebsiteInquiryController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
@@ -32,7 +33,7 @@ use App\Http\Controllers\CreditCardController;
 use App\Http\Controllers\CreditCardPageController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsApiController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\SiteContactController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -44,14 +45,21 @@ if (app()->environment('local') && ! extension_loaded('pdo_mysql') && ! extensio
     Route::post('/logout', fn () => redirect('/'))->name('logout');
 }
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+$sitePageProps = static fn (): array => [
+    'canLogin' => Route::has('login'),
+    'canRegister' => Route::has('register'),
+];
+
+Route::get('/', fn () => Inertia::render('Site/Home', $sitePageProps()))->name('site.home');
+Route::get('/produto', fn () => Inertia::render('Site/Product', $sitePageProps()))->name('site.product');
+Route::get('/funcionalidades', fn () => Inertia::render('Site/Features', $sitePageProps()))->name('site.features');
+Route::get('/seguranca', fn () => Inertia::render('Site/Security', $sitePageProps()))->name('site.security');
+Route::get('/precos', fn () => Inertia::render('Site/Pricing', $sitePageProps()))->name('site.pricing');
+Route::get('/recursos', fn () => Inertia::render('Site/Resources', $sitePageProps()))->name('site.resources');
+Route::get('/empresa', fn () => Inertia::render('Site/Company', $sitePageProps()))->name('site.company');
+Route::get('/contato', fn () => Inertia::render('Site/Contact', $sitePageProps()))->name('site.contact');
+Route::get('/privacidade', fn () => Inertia::render('Site/Privacy', $sitePageProps()))->name('site.privacy');
+Route::get('/termos', fn () => Inertia::render('Site/Terms', $sitePageProps()))->name('site.terms');
 
 // Fallback to refresh XSRF-TOKEN cookie (works even without Sanctum route).
 Route::get('/csrf-cookie', fn () => response()->noContent())->name('csrf-cookie');
@@ -60,6 +68,9 @@ Route::redirect('/landingpage', '/');
 
 // Landing page newsletter subscription (unauthenticated)
 Route::post('/api/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('api.newsletter.subscribe');
+Route::post('/api/site/contact', [SiteContactController::class, 'store'])
+    ->middleware('throttle:12,1')
+    ->name('api.site.contact');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -326,6 +337,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	    Route::post('/admin/leads', [LeadsController::class, 'store'])->name('admin.leads.store');
 	    Route::patch('/admin/leads/{lead}', [LeadsController::class, 'update'])->name('admin.leads.update');
 	    Route::delete('/admin/leads/{lead}', [LeadsController::class, 'destroy'])->name('admin.leads.destroy');
+	    Route::get('/admin/inquiries', [WebsiteInquiryController::class, 'index'])->name('admin.inquiries.index');
+	    Route::patch('/admin/inquiries/{inquiry}', [WebsiteInquiryController::class, 'update'])->name('admin.inquiries.update');
+	    Route::delete('/admin/inquiries/{inquiry}', [WebsiteInquiryController::class, 'destroy'])->name('admin.inquiries.destroy');
 
 	    Route::get('/admin/news', [NewsItemsController::class, 'index'])->name('admin.news.index');
 	    Route::post('/admin/news', [NewsItemsController::class, 'store'])->name('admin.news.store');

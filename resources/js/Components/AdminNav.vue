@@ -15,6 +15,7 @@ const items = computed<Item[]>(() => [
     { label: 'Notificações', href: route('admin.notifications.index'), active: route().current('admin.notifications.*') },
     { label: 'E-mails e Comunicados', href: route('admin.emails.index'), active: route().current('admin.emails.*') },
     { label: 'Leads', href: route('admin.leads.index'), active: route().current('admin.leads.*') },
+    { label: 'Contatos Institucionais', href: route('admin.inquiries.index'), active: route().current('admin.inquiries.*') },
     { label: 'Novidades', href: route('admin.news.index'), active: route().current('admin.news.*') },
 ]);
 </script>

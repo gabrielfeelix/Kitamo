@@ -83,6 +83,13 @@ const items = computed<NavItem[]>(() => [
     },
     {
         section: 'MARKETING',
+        label: 'Contatos',
+        href: route('admin.inquiries.index'),
+        active: route().current('admin.inquiries.*'),
+        icon: '📨',
+    },
+    {
+        section: 'MARKETING',
         label: 'Changelog',
         href: route('admin.news.index'),
         active: route().current('admin.news.*'),
