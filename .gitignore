@@ -21,6 +21,7 @@
 /storage/pail
 /vendor
 /.hostinger_staging
+.hostinger.deploy.env
 kitamo-hostinger-backup-*.zip
 sors-hostinger-backup-*.zip
 Homestead.json
