@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
+import MotionSection from '@/Components/site/MotionSection.vue';
 
 defineProps<{
     canLogin?: boolean;
@@ -9,226 +10,230 @@ defineProps<{
 
 const timeline = [
     {
-        year: '2024',
-        text: 'Nascimento do conceito Kitamo com foco em projecao de caixa para pessoa fisica.',
+        year: 'O Começo',
+        title: 'Nascimento do Conceito',
+        text: 'Começou a incomodar a falta de clareza nas contas. O Kitamo nasceu focado em projeção de caixa que faz sentido pra pessoa física, sem complicação inútil.',
     },
     {
-        year: '2025',
-        text: 'Primeira versao operacional com contas, cartoes, recorrencias e metas.',
+        year: 'Lançamento',
+        title: 'A Máquina Roda',
+        text: 'Botamos na rua a primeira versão braba. Contas, cartões, metas e recorrências rodando limpo, ajudando a galera a arrumar a casa.',
     },
     {
-        year: '2026',
-        text: 'Evolucao para projecao de longo prazo com estrutura por planos e jornada institucional.',
+        year: 'Agora',
+        title: 'Expansão e Estrutura',
+        text: 'Subimos de nível. Projeção de longo prazo pesada, estrutura de planos justa e uma jornada institucional premium que você tá vendo agora.',
     },
     {
-        year: 'Proximo ciclo',
-        text: 'Expansao de inteligencia de alertas, relatorios e experiencia visual orientada a decisao.',
+        year: 'Próximos Passos',
+        title: 'Inteligência e Escala',
+        text: 'O futuro é alerta inteligente, relatórios que falam a sua língua e decisões automatizadas guiando seu próximo passo financeiro.',
     },
 ];
 
 const team = [
     {
         image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: '[Nome do Fundador]',
-        role: 'Fundador & CEO',
+        name: 'Fundador Desconhecido',
+        role: 'CEO & Founder',
     },
     {
         image: 'https://images.pexels.com/photos/3727462/pexels-photo-3727462.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: '[Nome da Lideranca Tecnica]',
+        name: 'Mestre dos Códigos',
         role: 'CTO',
     },
     {
         image: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: '[Nome de Produto]',
+        name: 'Dono do Produto',
         role: 'Product Lead',
     },
     {
         image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: '[Nome de Operacoes]',
+        name: 'Faz Acontecer',
         role: 'Operations Lead',
     },
     {
         image: 'https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: '[Nome de Growth]',
+        name: 'Máquina de Vendas',
         role: 'Growth Lead',
     },
 ];
 
 const stats = [
-    { label: '+3.5', value: 'anos no mercado' },
-    { label: '+50 mil', value: 'projecoes realizadas' },
-    { label: '+500', value: 'rotinas mensais apoiadas' },
-    { label: '+200 mil', value: 'alertas processados em 2026' },
+    { label: '+3.5', value: 'Anos na Estrada' },
+    { label: '+50 mil', value: 'Projeções Batidas' },
+    { label: '+500', value: 'Casas Organizadas Mensalmente' },
+    { label: '+200 mil', value: 'Alertas Salvos na Hora' },
 ];
 
 const values = [
     {
-        title: 'Clareza acima de volume',
-        description: 'Menos ruído de dashboard e mais contexto para decidir na hora certa.',
+        title: 'Ruído Zero',
+        description: 'Dashboard enfeitado é pra ego. A gente te dá clareza limpa pra você saber se dá ou não dá pra gastar hoje.',
     },
     {
-        title: 'Controle manual confiavel',
-        description: 'Voce domina os dados e constroi previsao com base no que realmente acontece.',
+        title: 'O Volante é Seu',
+        description: 'Sem robô fuçando na sua conta bancária e te dando sugestões burras. Controle manual, seguro e absoluto da sua vida.',
     },
     {
-        title: 'Privacidade por padrao',
-        description: 'Receita de assinatura. Nao vendemos comportamento e nao dependemos de publicidade.',
+        title: 'Grana é Grana',
+        description: 'Não vendemos sua rotina pra anunciante, seu comportamento não é mercadoria. Nossa renda vem da nossa assinatura.',
     },
 ];
 </script>
 
 <template>
-    <Head title="Empresa | Kitamo">
-        <meta
-            name="description"
-            content="Conheca a historia, a equipe e os valores do Kitamo, produto brasileiro de projecao financeira pessoal."
-        />
+    <Head title="A Empresa | Kitamo">
+        <meta name="description" content="Nossa história, nosso time e porque a gente não vende seus dados." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 pt-10 md:px-6 md:pb-20 md:pt-16">
-            <div class="grid items-center gap-8 md:grid-cols-12">
-                <div class="md:col-span-7">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Empresa</p>
-                    <h1 class="mt-4 text-6xl leading-[0.88] tracking-[-0.04em] text-slate-950 md:text-7xl">Sobre o Kitamo</h1>
-                    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl">
-                        Construimos um produto brasileiro para quem precisa previsibilidade financeira sem depender de adivinhacao no fim do mes.
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[60vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
+             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+             <div class="pointer-events-none absolute top-10 right-10 w-[500px] h-[500px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+            
+             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
+                 <div>
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Quem Somos</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold">
+                         Muito além do<br>
+                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">básico.</span>
+                     </h1>
+                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-xl text-left">
+                         Desenvolvemos uma parada construída no Brasil, feita pra galera que quer dominar o caixa sem ficar engessado.
+                     </p>
+                 </div>
+                 
+                 <div class="relative group mt-8 lg:mt-0">
+                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <img
+                         src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                         alt="Nossa galera no planejamento"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 hover:saturate-150 transition-all duration-700"
+                         loading="lazy"
+                     />
+                 </div>
+             </div>
+        </MotionSection>
+
+        <!-- Timeline Section -->
+        <MotionSection class="bg-gray-50 py-24 pb-32">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
+                <aside class="lg:col-span-5 lg:sticky lg:top-32 h-fit">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
+                        Nossa <span class="text-teal-500 font-serif italic">correria.</span>
+                    </h2>
+                    <p class="mt-6 text-lg text-slate-500 font-medium leading-relaxed max-w-sm">
+                        De onde viemos e pra onde estamos acelerando. A história do Kitamo rola rápida.
                     </p>
-                </div>
-                <div class="md:col-span-5">
-                    <div class="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white">
+                    <div class="mt-10 overflow-hidden rounded-[2rem] shadow-xl border border-slate-200 group">
                         <img
-                            src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                            alt="Equipe em reuniao de planejamento"
-                            class="h-[320px] w-full object-cover"
+                            src="https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=1100"
+                            alt="Equipe batendo meta"
+                            class="h-[250px] w-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700"
                             loading="lazy"
                         />
                     </div>
+                </aside>
+
+                <div class="lg:col-span-7">
+                    <div class="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-sm relative overflow-hidden">
+                         <div class="absolute left-[3.25rem] md:left-[4.25rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent"></div>
+                         
+                         <div class="space-y-12 relative z-10">
+                             <div v-for="(item, index) in timeline" :key="index" class="relative pl-16 md:pl-20 group">
+                                  <div class="absolute left-0 top-1.5 h-6 w-6 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform"></div>
+                                  <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-1">{{ item.year }}</p>
+                                  <h3 class="text-2xl font-extrabold text-slate-900 mb-2">{{ item.title }}</h3>
+                                  <p class="text-base font-medium leading-relaxed text-slate-600">{{ item.text }}</p>
+                             </div>
+                         </div>
+                    </div>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="grid gap-8 rounded-[2rem] border border-slate-200 bg-white p-6 md:grid-cols-12 md:p-8">
-                <div class="md:col-span-7">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Linha do tempo</p>
-                    <h2 class="mt-3 text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Evolucao do produto</h2>
+        <!-- Team & Stats Section -->
+        <MotionSection class="bg-white py-24 relative z-10 border-y border-slate-100">
+             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
+                 <div class="text-center mb-16">
+                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 inline-block bg-slate-50 px-4 py-2 border border-slate-100 rounded-lg">Quem Bota Pra Quebrar</p>
+                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900">A galera por trás da tela</h2>
+                 </div>
 
-                    <ol class="company-timeline mt-7 space-y-6 pl-8">
-                        <li
-                            v-for="item in timeline"
-                            :key="item.year"
-                            class="relative"
-                        >
-                            <span class="absolute -left-8 top-1 h-3 w-3 rounded-full bg-emerald-500"></span>
-                            <p class="text-sm font-bold uppercase tracking-[0.14em] text-emerald-700">{{ item.year }}</p>
-                            <p class="mt-1 text-sm leading-relaxed text-slate-600 md:text-base">{{ item.text }}</p>
-                        </li>
-                    </ol>
+                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                     <article v-for="member in team" :key="member.role" class="group flex flex-col items-center">
+                         <div class="w-full aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-100 mb-4 relative">
+                              <div class="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors z-10"></div>
+                              <img
+                                  :src="member.image"
+                                  :alt="member.name"
+                                  class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                                  loading="lazy"
+                              />
+                         </div>
+                         <p class="text-sm md:text-base font-extrabold text-slate-900 mb-1 group-hover:text-teal-600 transition-colors">{{ member.name }}</p>
+                         <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.15em] text-slate-400">{{ member.role }}</p>
+                     </article>
+                 </div>
+                 
+                 <!-- TODO: Inserir fotos e nomes reais depois -->
+
+                 <div class="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-6">
+                     <article v-for="item in stats" :key="item.label" class="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 text-center hover:bg-slate-100 hover:scale-105 transition-transform duration-300">
+                         <p class="text-4xl md:text-5xl font-extrabold tracking-tighter text-teal-500 mb-3">{{ item.label }}</p>
+                         <p class="text-[11px] md:text-xs font-bold uppercase tracking-[0.15em] text-slate-600 leading-relaxed">{{ item.value }}</p>
+                     </article>
+                 </div>
+             </div>
+        </MotionSection>
+
+        <!-- Values Section -->
+        <MotionSection class="relative overflow-hidden bg-slate-950 py-24 text-white">
+            <div class="absolute -left-20 bottom-0 h-96 w-96 rounded-full bg-teal-500/15 blur-[120px]"></div>
+            
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative z-10">
+                <div class="text-center mb-16 max-w-4xl mx-auto">
+                    <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">Por que a gente faz isso</p>
+                    <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[0.95] tracking-tighter text-white">
+                        Maximizar o poder da sua <span class="block font-serif italic text-teal-400 mt-2">decisão diária.</span>
+                    </h2>
+                    <p class="mt-6 text-xl leading-relaxed text-slate-400 font-medium">
+                        Pegamos dados bagunçados e transformamos em ação. Acabou a incerteza do começo de mês.
+                    </p>
                 </div>
 
-                <div class="md:col-span-5">
-                    <img
-                        src="https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=1100"
-                        alt="Pessoa apresentando resultado para equipe"
-                        class="h-[360px] w-full rounded-[1.4rem] object-cover"
-                        loading="lazy"
-                    />
-                </div>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Quem somos</p>
-                <p class="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 md:text-lg">
-                    Equipe especializada em produto, dados e experiencia financeira. Nosso foco e conectar clareza de leitura com acao pratica no cotidiano.
-                </p>
-
-                <div class="mt-7 grid gap-3 grid-cols-2 md:grid-cols-5">
-                    <article
-                        v-for="member in team"
-                        :key="member.role"
-                    >
-                        <img
-                            :src="member.image"
-                            :alt="member.name"
-                            class="h-52 w-full rounded-[1.2rem] object-cover"
-                            loading="lazy"
-                        />
-                        <p class="mt-2 text-sm font-semibold text-slate-900">{{ member.name }}</p>
-                        <p class="text-xs uppercase tracking-[0.12em] text-slate-500">{{ member.role }}</p>
-                    </article>
-                </div>
-                <!-- TODO: substituir por fotos e nomes reais -->
-
-                <div class="mt-7 grid gap-3 md:grid-cols-4">
-                    <article
-                        v-for="item in stats"
-                        :key="item.label"
-                        class="rounded-2xl border border-slate-200 px-4 py-4"
-                    >
-                        <p class="text-3xl font-semibold tracking-tight text-slate-950">{{ item.label }}</p>
-                        <p class="mt-1 text-xs uppercase tracking-[0.12em] text-slate-500">{{ item.value }}</p>
-                    </article>
-                </div>
-                <!-- TODO: substituir indicadores por numeros oficiais -->
-            </div>
-        </section>
-
-        <section class="relative overflow-hidden bg-slate-950 py-16 text-white md:py-20">
-            <div class="absolute -right-10 top-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
-            <div class="mx-auto w-full max-w-[1320px] px-5 md:px-6">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Nossa missao</p>
-                <h2 class="mt-3 max-w-4xl text-4xl leading-[0.95] tracking-tight md:text-5xl">
-                    Maximizar o impacto de cada decisao financeira diaria.
-                </h2>
-                <p class="mt-4 max-w-4xl text-base leading-relaxed text-slate-300 md:text-lg">
-                    Com tecnologia e metodo de produto, transformamos dados de rotina em contexto de acao. O objetivo e reduzir incerteza e melhorar a tomada de decisao.
-                </p>
-
-                <div class="mt-7 grid gap-4 md:grid-cols-3">
-                    <article
-                        v-for="item in values"
-                        :key="item.title"
-                        class="border-t border-white/20 pt-4"
-                    >
-                        <h3 class="text-2xl tracking-tight">{{ item.title }}</h3>
-                        <p class="mt-2 text-sm leading-relaxed text-slate-300 md:text-base">{{ item.description }}</p>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <article v-for="item in values" :key="item.title" class="bg-white/5 border border-white/10 p-8 rounded-[2rem] hover:bg-white/10 transition-colors duration-300 relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-teal-500/20 blur-xl rounded-full group-hover:bg-teal-400/30 transition-colors"></div>
+                        <h3 class="text-2xl font-extrabold tracking-tight text-white mb-4 relative z-10">{{ item.title }}</h3>
+                        <p class="text-base leading-relaxed text-slate-300 font-medium relative z-10">{{ item.description }}</p>
                     </article>
                 </div>
 
-                <div class="mt-8 flex flex-wrap gap-3">
+                <div class="mt-16 flex flex-wrap justify-center gap-4">
                     <Link
                         :href="route('site.contact')"
-                        class="inline-flex h-11 items-center justify-center rounded-full bg-emerald-400 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
+                        class="inline-flex h-14 items-center justify-center rounded-xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/30)]"
                     >
-                        Falar com especialista
+                        Tamo Pronto pra Falar
                     </Link>
                     <Link
                         :href="route('site.contact')"
-                        class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
+                        class="inline-flex h-14 items-center justify-center rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-200 transition-all hover:bg-white/10 hover:border-white hover:scale-105"
                     >
-                        Trabalhar com a gente
+                        Trabalhe com a Gente
                     </Link>
                 </div>
             </div>
-        </section>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.company-timeline {
-    position: relative;
-}
-
-.company-timeline::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.52), rgba(16, 185, 129, 0.12));
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
 }
 </style>
