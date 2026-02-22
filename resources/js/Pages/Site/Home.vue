@@ -133,7 +133,18 @@ const serviceBlocks = [
                             Como a máquina roda?
                         </Link>
                     </div>
-                    <p class="mt-5 text-slate-400 text-sm font-medium tracking-wide">Leva 2 minutos. Sem cartão de crédito.</p>
+                    <div class="mt-8 flex flex-col items-center gap-3">
+                        <p class="text-slate-400 text-[13px] font-medium tracking-wide">Leva 2 minutos. Sem cartão de crédito.</p>
+                        
+                        <!-- Security & Platforms Badges -->
+                        <div class="flex flex-wrap items-center justify-center gap-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-2">
+                            <span class="flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800"><svg class="w-3.5 h-3.5 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Criptografia AES-256</span>
+                            <span class="flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800"><svg class="w-3.5 h-3.5 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Adequado à LGPD</span>
+                        </div>
+                        <div class="flex items-center gap-3 mt-1 text-slate-500/80">
+                            <span class="text-xs font-semibold">Para Web, iOS e Android</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -115,6 +115,47 @@ const values = [
              </div>
         </MotionSection>
 
+        <!-- Manifesto do Fundador -->
+        <MotionSection class="bg-white py-32 border-b border-slate-100 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-teal-50 to-transparent pointer-events-none"></div>
+            <div class="mx-auto w-full max-w-[1000px] px-6 md:px-12 relative z-10">
+                <div class="flex flex-col md:flex-row gap-12 md:gap-20 items-start">
+                    <div class="w-full md:w-1/3 flex-shrink-0">
+                        <div class="relative rounded-[2rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-teal-900/10 mix-blend-multiply z-10"></div>
+                            <img src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Fundador do Kitamo" class="w-full aspect-[4/5] object-cover filter grayscale hover:grayscale-0 transition-[filter] duration-700" />
+                        </div>
+                        <div class="mt-6 text-center md:text-left">
+                            <h4 class="font-extrabold text-slate-900 text-xl">Gabriel Félix</h4>
+                            <p class="text-sm font-bold uppercase tracking-widest text-teal-600 mt-1">Fundador & CEO</p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-2/3">
+                        <span class="inline-block px-4 py-1.5 bg-slate-100 text-slate-500 font-extrabold text-[12px] uppercase tracking-[0.2em] rounded-full border border-slate-200 mb-8">Nossa Origem</span>
+                        <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 mb-10 leading-[1.1]">
+                            O KITAMO nasceu da culpa de olhar pro retrovisor.
+                        </h2>
+                        
+                        <div class="space-y-6 text-lg sm:text-xl text-slate-600 font-medium leading-relaxed font-serif">
+                            <p>
+                                "Eu estava cansado de sentar domingo à noite com uma planilha de 30 abas, olhar para trás e apenas aceitar que o dinheiro tinha ido embora. Era sempre a mesma sensação: culpa e ansiedade (efeito avestruz)."
+                            </p>
+                            <p>
+                                "A indústria inteira de finanças queria me vender aplicativos automáticos, que puxavam tudo sem que eu visse, criando uma gaiola invisível onde eu só olhava para o extrato quando já estava no vermelho."
+                            </p>
+                            <p>
+                                "O KITAMO não surgiu para ser mais um aglomerador de contas. Sugiu porque eu queria um GPS financeiro. Algo que pegasse o meu dinheiro hoje e me deixasse projetá-lo no tempo. Nós trouxemos a responsabilidade de volta para o usuário através da digitação manual, mas fizemos isso com a interface mais linda e rápida do mundo."
+                            </p>
+                            <p class="text-slate-900 font-extrabold pt-4 text-2xl">
+                                "Não confie no banco sozinho. Volte para o volante."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </MotionSection>
+
         <!-- Timeline Section -->
         <MotionSection class="bg-gray-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">

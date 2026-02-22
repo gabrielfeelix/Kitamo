@@ -52,7 +52,7 @@ const securityFlow = [
 
 const lgpd = [
     'Clicou em excluir? A gente pulveriza tudo. Sem letras miúdas.',
-    'Você pode checar, alterar e levar seus dados pra onde quiser na hora que quiser.',
+    'Seu dado é seu. Exporte tudo para Excel com 1 clique a qualquer momento.',
     'Nós NUNCA vamos vender seus dados. Seu dinheiro, sua privacidade.',
 ];
 </script>

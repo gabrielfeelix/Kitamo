@@ -84,7 +84,7 @@ export const institutionalFaq: SiteFaqItem[] = [
 export const pricingPlans: SitePricingPlan[] = [
     {
         name: 'Essencial',
-        subtitle: 'Ideal para começar: controle manual com projeção de 30 dias.',
+        subtitle: 'Ideal para começar: controle manual com projeção de 30 dias. Chega de tomar susto no fim do mês.',
         monthly: '0',
         features: [
             'Até 2 contas',
@@ -96,9 +96,11 @@ export const pricingPlans: SitePricingPlan[] = [
     },
     {
         name: 'Pro',
-        subtitle: 'Plano recomendado para rotina ativa e visão trimestral.',
+        subtitle: 'O plano Pro custa R$ 19, mas nossos usuários economizam em média R$ 300 cortando assinaturas esquecidas.',
         monthly: '19',
         features: [
+            'Teste o Pro por 14 dias. Cancele com 1 clique.',
+            'Acesso gratuito para parceiro(a)',
             'Contas e cartões ilimitados',
             'Projeção de 90 dias',
             'Backup automático',
@@ -112,6 +114,7 @@ export const pricingPlans: SitePricingPlan[] = [
         subtitle: 'Para planejamento avançado com visão de longo prazo.',
         monthly: '49',
         features: [
+            'Acesso gratuito para 2 parceiros/familiares',
             'Tudo do Pro',
             'Projeção de até 5 anos',
             'Suporte prioritário via WhatsApp',

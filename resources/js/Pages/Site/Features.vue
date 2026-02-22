@@ -201,6 +201,59 @@ const featureVisuals = [
             </div>
         </MotionSection>
 
+        <!-- Open Finance Attack Section -->
+        <MotionSection class="bg-slate-950 py-32 relative overflow-hidden border-t border-slate-900 border-b">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-900/10 via-slate-950 to-slate-950 pointer-events-none"></div>
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative z-10 text-center">
+                <span class="inline-block px-4 py-1.5 bg-red-500/10 text-red-500 font-extrabold text-[12px] uppercase tracking-[0.2em] rounded-full border border-red-500/20 mb-8">
+                    A Gaiola de Vidro
+                </span>
+                <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tighter text-white mb-8 max-w-4xl mx-auto leading-[1.1]">
+                    Por que não somos automáticos? <br>
+                    <span class="text-teal-500 italic font-serif">Porque o Open Finance falha com você.</span>
+                </h2>
+                
+                <p class="text-lg sm:text-xl text-slate-400 font-medium max-w-3xl mx-auto leading-relaxed mb-16">
+                    Sincronização bancária automática cria uma "Gaiola de Vidro": você gasta, o app registra sozinho, e 
+                    <strong class="text-slate-200">você nunca sente a dor da perda até ver a conta zerada</strong>. O KITAMO transforma 
+                    fricção em consciência. O controle real exige intenção. Ao digitar seus gastos, você volta a ser o dono do dinheiro.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto text-left">
+                    <div class="bg-slate-900/50 border border-slate-800 p-10 rounded-[2.5rem] backdrop-blur-sm opacity-60">
+                        <div class="flex items-center gap-3 mb-6 opacity-80">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-500/20 text-red-500">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
+                            <h3 class="font-extrabold text-xl text-slate-300">O Modo Automático</h3>
+                        </div>
+                        <ul class="space-y-4 text-slate-500 font-medium tracking-wide">
+                            <li class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> Gastos invisíveis que passam ilesos</li>
+                            <li class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> Reconexão bancária que vive quebrando</li>
+                            <li class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> Falta de peso na decisão pós-compra</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-teal-950/20 border border-teal-900/50 p-10 rounded-[2.5rem] backdrop-blur-md shadow-[0_0_50px_rgba(20,184,166,0.1)] relative">
+                        <div class="absolute -top-4 right-10 bg-teal-500 text-slate-950 px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg">
+                            O Caminho Kitamo
+                        </div>
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-teal-500/20 text-teal-400">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            <h3 class="font-extrabold text-xl text-white">Manual e Intencional</h3>
+                        </div>
+                        <ul class="space-y-4 text-teal-100/70 font-medium tracking-wide">
+                            <li class="flex items-start gap-2"><span class="text-teal-400 mt-1">•</span> Consciência forçada em cada centavo</li>
+                            <li class="flex items-start gap-2"><span class="text-teal-400 mt-1">•</span> Suas regras de categorização, não do robô</li>
+                            <li class="flex items-start gap-2"><span class="text-teal-400 mt-1">•</span> Segurança máxima (nenhuma senha de banco)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </MotionSection>
+
         <!-- Minimal FAQ Section -->
         <MotionSection class="bg-white py-24 relative overflow-hidden border-t border-slate-200">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 md:w-3/4 lg:w-3/5 text-center">

@@ -208,19 +208,23 @@ const socialLinks = [
                           <div class="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
                           <div class="absolute -right-20 -bottom-20 w-[150%] h-[150%] bg-[linear-gradient(145deg,rgba(20,184,166,0.3),transparent)] blur-3xl group-hover:rotate-12 transition-transform duration-1000"></div>
                           
-                          <div class="relative z-10">
-                              <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 px-3 py-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 backdrop-blur-sm">O Inbox Chato a Menos</p>
-                              <h3 class="text-3xl font-extrabold text-white">Nossa Newsletter <br>Quinzenal</h3>
+                          <div class="relative z-10 flex flex-col h-full">
+                              <p class="inline-flex w-fit items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 px-3 py-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 backdrop-blur-sm shadow-[0_0_15px_theme(colors.teal.500/20)]">Material Gratuito</p>
+                              <h3 class="text-3xl font-extrabold text-white leading-tight">Baixe o Playbook de 30 dias<br><span class="text-teal-400 font-serif italic">para sair do vermelho.</span></h3>
                               <p class="text-slate-400 font-medium leading-relaxed mt-4 mb-8">
-                                  Lembrete cirúrgicos quinzenais com pílulas de comportamento e avisos sobre updates do app pra reduzir o desespero do seu bolso.
+                                  Um guia prático e direto ao ponto que ensina o exato método para organizar sua vida financeira, blindar seu orçamento e estancar qualquer furo — em 4 etapas aplicáveis. Receba grátis no seu e-mail.
                               </p>
-                              <div class="flex">
-                                   <Link
-                                      :href="route('site.contact')"
-                                      class="inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-2xl bg-teal-500 px-10 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-[1.03] shadow-[0_0_20px_theme(colors.teal.500/30)]"
-                                  >
-                                      Bora, Assinar
-                                  </Link>
+                              <div class="flex mt-auto">
+                                   <!-- Substituted Link for a fake form button -->
+                                   <div class="relative w-full">
+                                       <input type="email" placeholder="Seu melhor e-mail..." class="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all font-medium pr-32" />
+                                       <button
+                                          type="button"
+                                          class="absolute right-1 top-1 bottom-1 inline-flex items-center justify-center rounded-xl bg-teal-500 px-6 text-[11px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-[transform,background-color] hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/30)]"
+                                      >
+                                          Baixar
+                                      </button>
+                                   </div>
                               </div>
                           </div>
                      </div>
