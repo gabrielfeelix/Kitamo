@@ -64,31 +64,29 @@ const lgpd = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[60vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-            
-            <div class="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-teal-600/20 blur-[150px] rounded-full mix-blend-screen opacity-50"></div>
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-white text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
+            <div class="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-teal-500/10 blur-[150px] rounded-full mix-blend-multiply opacity-60"></div>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
-                <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Sem Enrolação</p>
-                <h1 class="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 shadow-sm">Sem Enrolação</p>
+                <h1 class="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[0.95] tracking-tighter text-slate-900 font-extrabold max-w-4xl drop-shadow-sm">
                     Segurança levada a<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">sério de verdade.</span>
+                    <span class="text-teal-600 font-serif italic pr-2">sério de verdade.</span>
                 </h1>
-                <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto">
+                <p class="mt-8 text-xl leading-relaxed text-slate-600 font-medium max-w-2xl mx-auto">
                     A gente blinda o seu controle financeiro. Sem rastreio escondido.
                 </p>
 
                 <div class="mt-10 flex flex-wrap gap-4 justify-center items-center">
                     <Link
                         :href="route('site.contact')"
-                        class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]"
+                        class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/30)]"
                     >
                         Chama o Suporte
                     </Link>
                     <Link
                         :href="route('site.privacy')"
-                        class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-white/10 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-200 transition-all hover:bg-white/20 backdrop-blur-sm border border-white/20 hover:scale-105"
+                        class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-white px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-700 transition-all hover:bg-slate-50 border border-slate-300 hover:scale-105 shadow-sm"
                     >
                         Nossa Privacidade
                     </Link>

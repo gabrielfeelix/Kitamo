@@ -89,31 +89,28 @@ const values = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[60vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        <MotionSection class="relative min-h-[70vh] w-full overflow-hidden flex flex-col justify-end pt-32 pb-20">
+             <!-- Full Bleed Image Background -->
+             <div class="absolute inset-0">
+                 <img
+                     src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1920"
+                     alt="Nossa galera no planejamento"
+                     class="w-full h-full object-cover filter saturate-[0.8]"
+                 />
+                 <!-- Gradient Overlays for readability -->
+                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+                 <div class="absolute inset-0 bg-teal-900/20 mix-blend-multiply"></div>
+             </div>
             
-             <div class="pointer-events-none absolute top-10 right-10 w-[500px] h-[500px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
-            
-             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
-                 <div>
-                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Quem Somos</p>
-                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold">
-                         Muito além do<br>
-                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">básico.</span>
+             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12">
+                 <div class="max-w-3xl">
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-300 mb-6 drop-shadow-sm bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">Nossas Raízes</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[6rem] leading-[0.95] tracking-tighter text-white font-extrabold drop-shadow-lg">
+                         Atrás do <span class="font-serif text-teal-400 italic">código.</span>
                      </h1>
-                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-xl text-left">
-                         Desenvolvemos uma parada construída no Brasil, feita pra galera que quer dominar o caixa sem ficar engessado.
+                     <p class="mt-8 text-xl sm:text-2xl leading-relaxed text-slate-300 font-medium max-w-xl text-left drop-shadow">
+                         Desenvolvemos uma ferramenta construída no Brasil, feita pra galera que quer dominar o caixa sem ficar engessado num sistema chato.
                      </p>
-                 </div>
-                 
-                 <div class="relative group mt-8 lg:mt-0">
-                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
-                     <img
-                         src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                         alt="Nossa galera no planejamento"
-                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 hover:saturate-150 transition-all duration-700"
-                         loading="lazy"
-                     />
                  </div>
              </div>
         </MotionSection>

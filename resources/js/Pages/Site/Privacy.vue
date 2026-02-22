@@ -64,31 +64,31 @@ defineProps<{
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-50 text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
+            <div class="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
             
-            <div class="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+            <div class="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-500/10 blur-[130px] rounded-full mix-blend-multiply opacity-60"></div>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
                 <div class="lg:col-span-7">
-                    <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Seus Dados, Suas Regras</p>
-                    <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold">
+                    <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-100 px-4 py-2 rounded-full border border-teal-200 shadow-sm">Seus Dados, Suas Regras</p>
+                    <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter text-slate-900 font-extrabold drop-shadow-sm">
                         O papo reto da <br>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">Privacidade.</span>
+                        <span class="text-teal-600 font-serif italic pr-2">Privacidade.</span>
                     </h1>
-                    <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                    <p class="mt-8 text-xl leading-relaxed text-slate-600 font-medium max-w-2xl text-left">
                         Nada daquelas 40 páginas de juridiquês que ninguém lê pra esconder roubo de dados. Aqui a gente explica rápido o que entra e o que sai.
                     </p>
                     
                     <div class="mt-8 flex flex-wrap items-center gap-4 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
-                        <span class="bg-white/5 border border-white/10 px-3 py-1 rounded">Versão 1.1</span>
+                        <span class="bg-white border border-slate-200 px-3 py-1 rounded shadow-sm">Versão 1.1</span>
                         <span>Atualizado em: Fev/2026</span>
                     </div>
 
                     <div class="mt-10 flex gap-4">
                         <Link
                             :href="route('site.contact')"
-                            class="inline-flex h-12 items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]"
+                            class="inline-flex h-12 items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/30)]"
                         >
                             Chamar o DPO
                         </Link>

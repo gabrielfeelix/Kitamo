@@ -60,32 +60,32 @@ const socialLinks = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-stone-50 text-stone-900 flex flex-col justify-center pt-32 pb-20 border-b border-stone-200">
+             <div class="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
             
-             <div class="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+             <div class="pointer-events-none absolute bottom-0 right-0 w-[500px] h-[500px] bg-stone-200/50 blur-[130px] rounded-full mix-blend-multiply opacity-50"></div>
              
              <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
                  <div class="lg:col-span-7">
-                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Radar Kitamo</p>
-                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500 mb-6 drop-shadow-sm bg-white px-4 py-2 rounded-full border border-stone-200">Editorial</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter text-stone-900 font-extrabold max-w-4xl">
                          Conteúdo que<br>
-                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">faz diferença.</span>
+                         <span class="text-stone-600 font-serif italic pr-2">faz diferença.</span>
                      </h1>
-                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                     <p class="mt-8 text-xl leading-relaxed text-stone-600 font-medium max-w-2xl text-left">
                          Menos teoria barata de "guarde no porquinho" e mais playbook no estilo trincheira pra manter a conta sempre no azul.
                      </p>
                      
                      <div class="mt-10 flex gap-4">
                           <Link
                              :href="route('site.contact')"
-                             class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]"
+                             class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-stone-900 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-white transition-all hover:bg-stone-800 hover:scale-105 shadow-xl"
                          >
                              Assinar a Newsletter
                          </Link>
                          <Link
                              :href="route('site.product')"
-                             class="inline-flex h-12 items-center justify-center rounded-2xl border border-white/20 bg-white/5 backdrop-blur-sm px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-white transition-all hover:bg-white/10 hover:border-white hover:scale-105 hidden sm:inline-flex"
+                             class="inline-flex h-12 items-center justify-center rounded-2xl border border-stone-300 bg-white/50 backdrop-blur-sm px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-stone-700 transition-all hover:bg-white hover:border-stone-400 hover:scale-105 hidden sm:inline-flex"
                          >
                              Ir pro App
                          </Link>
@@ -93,11 +93,11 @@ const socialLinks = [
                  </div>
 
                  <div class="lg:col-span-5 relative group hidden lg:block">
-                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <div class="absolute inset-0 bg-stone-200 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700 mix-blend-multiply"></div>
                      <img
                          src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1400"
-                         alt="Kitamo rodando liso"
-                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 transition-all duration-700 hover:saturate-150"
+                         alt="Nossas publicações e time editorial"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-stone-200 shadow-xl filter sepia-[0.3] contrast-125 saturate-50 hover:saturate-100 transition-all duration-700 hover:sepia-0"
                          loading="lazy"
                      />
                  </div>

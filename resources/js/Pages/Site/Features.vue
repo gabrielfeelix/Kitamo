@@ -106,28 +106,28 @@ const featureVisuals = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-             <div class="pointer-events-none absolute -bottom-20 -right-20 w-[500px] h-[500px] bg-teal-600/20 blur-[150px] rounded-full mix-blend-screen opacity-50"></div>
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-gray-50 text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
+             <div class="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+             <div class="pointer-events-none absolute -top-20 -left-20 w-[500px] h-[500px] bg-teal-400/20 blur-[150px] rounded-full mix-blend-multiply opacity-60"></div>
             
              <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
                  <div class="lg:col-span-7">
-                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Por Baixo do Capô</p>
-                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 shadow-sm">Por Baixo do Capô</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter text-slate-900 font-extrabold max-w-4xl drop-shadow-sm">
                          A Máquina que<br>
-                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">resolve a bronca.</span>
+                         <span class="text-teal-600 font-serif italic pr-2">resolve a bronca.</span>
                      </h1>
-                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                     <p class="mt-8 text-xl leading-relaxed text-slate-600 font-medium max-w-2xl text-left">
                          Cada tela foi esculpida pra bater na dor que mais dói. Sai o "quanto que eu gastei no mês?" e entra o "quanto que falta antes de quebrar em outubro?".
                      </p>
                  </div>
                  
                  <div class="lg:col-span-5 relative group">
-                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <div class="absolute inset-0 bg-teal-500/10 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
                      <img
                          src="https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=1200"
                          alt="Kitamo rodando liso"
-                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 transition-all duration-700 hover:saturate-150"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-slate-200 shadow-2xl filter saturate-[0.8] hover:saturate-150 transition-all duration-700"
                          loading="lazy"
                      />
                  </div>

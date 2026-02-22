@@ -61,19 +61,19 @@ const submitContact = async () => {
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
-             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-indigo-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-indigo-900/50">
+             <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
             
-             <div class="pointer-events-none absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+             <div class="pointer-events-none absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-sky-500/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
             
              <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
-                 <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">A Gente Resolve</p>
-                 <h1 class="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                 <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-sky-400 mb-6 drop-shadow-sm bg-sky-400/10 px-4 py-2 rounded-full border border-sky-400/20">A Gente Resolve</p>
+                 <h1 class="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-indigo-50 font-extrabold max-w-4xl">
                      Nenhum robô,<br>
-                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">só nós.</span>
+                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300 font-serif italic pr-2">só nós.</span>
                  </h1>
-                 <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto">
-                     Mandou, bateu, respondeu. Atendimento humano, direto ao ponto e sem enrolação.
+                 <p class="mt-8 text-xl leading-relaxed text-indigo-200 font-medium max-w-2xl mx-auto">
+                     Mandou, bateu, respondeu. Atendimento direto ao ponto e sem enrolação.
                  </p>
              </div>
         </MotionSection>
