@@ -123,11 +123,13 @@ const featureVisuals = [
                  </div>
                  
                  <div class="lg:col-span-5 relative group">
-                     <div class="absolute inset-0 bg-teal-500/10 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <div class="absolute inset-0 bg-teal-500/10 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-[transform,background-color] duration-700"></div>
                      <img
                          src="https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=1200"
                          alt="Kitamo rodando liso"
-                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-slate-200 shadow-2xl filter saturate-[0.8] hover:saturate-150 transition-all duration-700"
+                         width="1200"
+                         height="800"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-slate-200 shadow-2xl filter saturate-[0.8] hover:saturate-150 transition-[filter,transform] duration-700"
                          loading="lazy"
                      />
                  </div>
@@ -183,11 +185,13 @@ const featureVisuals = [
                              </div>
                              
                              <div class="md:col-span-4 self-stretch hidden md:block relative bg-slate-100 rounded-2xl overflow-hidden group-hover:shadow-[0_0_30px_rgba(20,184,166,0.15)] transition-shadow duration-700">
-                                 <div class="absolute inset-0 bg-slate-900/10 z-10 group-hover:bg-transparent transition-colors"></div>
+                                 <div class="absolute inset-0 bg-slate-900/10 z-10 group-hover:bg-transparent transition-[background-color] duration-300"></div>
                                  <img
                                      :src="featureVisuals[index % featureVisuals.length]"
                                      :alt="item.title"
-                                     class="absolute inset-0 w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                     width="800"
+                                     height="800"
+                                     class="absolute inset-0 w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-110 transition-[filter,transform] duration-700"
                                      loading="lazy"
                                  />
                              </div>

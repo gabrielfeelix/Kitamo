@@ -124,13 +124,16 @@ const serviceBlocks = [
                 </p>
 
                 <!-- Dual Action Hero -->
-                <div class="mt-14 flex flex-col sm:flex-row gap-5 items-center w-full sm:w-auto">
-                    <Link :href="primaryHref" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] bg-teal-500 px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_theme(colors.teal.500/40)]">
-                        Assumir o Controle
-                    </Link>
-                    <Link :href="route('site.product')" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] border-2 border-slate-700 bg-transparent px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-300 transition-all hover:border-slate-500 hover:text-white hover:bg-white/5 active:scale-95">
-                        Como a máquina roda?
-                    </Link>
+                <div class="mt-14 flex flex-col items-center w-full">
+                    <div class="flex flex-col sm:flex-row gap-5 items-center w-full sm:w-auto">
+                        <Link :href="primaryHref" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] bg-teal-500 px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-[transform,background-color,box-shadow] hover:bg-teal-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_theme(colors.teal.500/40)] focus-visible:ring-4 focus-visible:ring-teal-400">
+                            Assumir o Controle
+                        </Link>
+                        <Link :href="route('site.product')" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] border-2 border-slate-700 bg-transparent px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-300 transition-[border-color,color,background-color] hover:border-slate-500 hover:text-white hover:bg-white/5 active:scale-95 focus-visible:ring-4 focus-visible:ring-slate-500">
+                            Como a máquina roda?
+                        </Link>
+                    </div>
+                    <p class="mt-5 text-slate-400 text-sm font-medium tracking-wide">Leva 2 minutos. Sem cartão de crédito.</p>
                 </div>
             </div>
 
@@ -204,20 +207,49 @@ const serviceBlocks = [
                     <article 
                         v-for="(step, index) in flowTimeline" 
                         :key="step.number"
-                        class="relative group rounded-[3rem] bg-white/5 border border-white/10 p-10 sm:p-14 hover:bg-white/10 transition-colors duration-500 backdrop-blur-sm"
+                        class="relative group rounded-[3rem] bg-white/5 border border-white/10 p-10 sm:p-14 hover:bg-white/10 transition-colors duration-500 backdrop-blur-sm overflow-hidden"
                         :class="index % 2 !== 0 ? 'sm:ml-20' : 'sm:mr-20'"
                     >
                          <!-- Giant Background Number -->
-                         <div class="absolute right-8 top-8 text-[8rem] sm:text-[10rem] font-extrabold leading-none text-white/5 pointer-events-none select-none group-hover:text-teal-500/10 group-hover:rotate-12 transition-all duration-700">
+                         <div class="absolute right-8 top-8 text-[8rem] sm:text-[10rem] font-extrabold leading-none text-white/5 pointer-events-none select-none group-hover:text-teal-500/10 group-hover:rotate-12 transition-[color,transform] duration-700">
                              {{ step.number }}
                          </div>
                          
-                         <div class="relative z-10">
-                             <div class="h-16 w-16 bg-slate-900 border border-slate-700 rounded-2xl flex items-center justify-center font-extrabold text-2xl text-teal-400 mb-8 shadow-inner group-hover:scale-110 group-hover:border-teal-500 transition-all duration-300">
-                                 {{ step.number }}
+                         <div class="relative z-10 flex flex-col xl:flex-row gap-8 items-start xl:items-center">
+                             <div class="flex-1">
+                                 <div class="h-16 w-16 bg-slate-900 border border-slate-700 rounded-2xl flex items-center justify-center font-extrabold text-2xl text-teal-400 mb-8 shadow-inner group-hover:scale-110 group-hover:border-teal-500 transition-[transform,border-color] duration-300">
+                                     {{ step.number }}
+                                 </div>
+                                 <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-6 group-hover:text-teal-300 transition-colors">{{ step.title }}</h3>
+                                 <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md">{{ step.text }}</p>
                              </div>
-                             <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-6 group-hover:text-teal-300 transition-colors">{{ step.title }}</h3>
-                             <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md">{{ step.text }}</p>
+                             
+                             <!-- Micro-animation specific for step 2 "O Hábito" -->
+                             <div v-if="step.number === '02'" class="xl:w-[250px] flex-shrink-0 mt-6 xl:mt-0 relative perspective-1000">
+                                 <div class="absolute inset-0 bg-teal-500/10 blur-xl rounded-full scale-150 group-hover:animate-pulse transition-all duration-700 pointer-events-none"></div>
+                                 <div class="relative bg-slate-900/80 p-5 border border-white/10 rounded-[2rem] shadow-2xl backdrop-blur-md transform rotate-y-[-10deg] rotate-x-[5deg] group-hover:rotate-0 group-hover:translate-y-[-5px] transition-[transform,box-shadow] duration-700 overflow-hidden">
+                                     <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                                     <div class="flex flex-col gap-4">
+                                         <div class="flex items-center gap-3">
+                                             <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shadow-inner">
+                                                 <span class="text-red-400 text-lg">🍔</span>
+                                             </div>
+                                             <div class="flex flex-col gap-1">
+                                                 <div class="h-2 w-16 bg-slate-700 rounded-full"></div>
+                                                 <div class="h-1.5 w-10 bg-slate-800 rounded-full"></div>
+                                             </div>
+                                         </div>
+                                         <div class="h-16 bg-slate-950/50 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-teal-500/30 transition-colors duration-700">
+                                             <div class="absolute inset-0 bg-gradient-to-b from-teal-500/5 to-transparent"></div>
+                                             <span class="text-teal-400 font-bold text-xl relative z-10 font-[tabular-nums] tracking-tight">- R$ 45,00</span>
+                                         </div>
+                                         <div class="h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-[0_5px_15px_theme(colors.teal.500/20)] relative overflow-hidden hover:bg-teal-400 transition-colors cursor-pointer group/btn">
+                                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000"></div>
+                                             <span class="text-slate-950 font-extrabold text-[11px] uppercase tracking-widest relative z-10 flex items-center gap-1">Lançar <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
                          </div>
                     </article>
                 </div>
@@ -254,6 +286,55 @@ const serviceBlocks = [
                      </span>
                  </Link>
              </div>
+        </MotionSection>
+
+        <!-- ================= SOCIAL PROOF: DEPOIMENTOS ================= -->
+        <MotionSection class="bg-slate-50 py-32 border-b border-slate-200">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
+                <div class="text-center mb-20 relative">
+                    <div class="absolute inset-x-0 -top-10 h-32 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-100/50 to-transparent pointer-events-none"></div>
+                    <p class="relative text-[12px] font-extrabold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 inline-block">Quem tá usando e não larga mais</p>
+                    <h2 class="relative text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter leading-[0.95] text-slate-900">
+                        O impacto real.<br>
+                        <span class="italic font-serif text-slate-500">Pessoas reais.</span>
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div class="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-[shadow,transform] hover:-translate-y-1">
+                        <div class="flex items-center gap-4 mb-6">
+                            <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Avatar Usuário" width="60" height="60" class="w-14 h-14 rounded-full object-cover">
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 leading-tight">Camila Martins</h4>
+                                <span class="text-sm font-medium text-slate-500">Designer Freelancer</span>
+                            </div>
+                        </div>
+                        <p class="text-lg text-slate-700 font-medium">"Pela primeira vez dormi tranquila sabendo que o dinheiro ia dar. A visão que o app me dá 3 meses lá na frente acabou com os sustos dos boletos aleatórios."</p>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-8 rounded-[2.5rem] shadow-lg shadow-teal-900/20 hover:shadow-2xl transition-[shadow,transform] hover:-translate-y-1 transform md:-translate-y-4">
+                        <div class="flex items-center gap-4 mb-6">
+                            <img src="https://images.pexels.com/photos/837358/pexels-photo-837358.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Avatar Usuário" width="60" height="60" class="w-14 h-14 rounded-full object-cover border-2 border-slate-800">
+                            <div>
+                                <h4 class="font-extrabold text-white leading-tight">Lucas Andrade</h4>
+                                <span class="text-sm font-medium text-teal-500">Casado, 2 filhos</span>
+                            </div>
+                        </div>
+                        <p class="text-lg text-slate-300 font-medium">"Eu e minha esposa não brigamos mais por causa do extrato. O Kitamo deixa as regras do jogo visíveis na hora de organizar a conta. Zero aborrecimento."</p>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-[shadow,transform] hover:-translate-y-1">
+                        <div class="flex items-center gap-4 mb-6">
+                            <img src="https://images.pexels.com/photos/3764545/pexels-photo-3764545.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Avatar Usuário" width="60" height="60" class="w-14 h-14 rounded-full object-cover">
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 leading-tight">Mariana Reis</h4>
+                                <span class="text-sm font-medium text-slate-500">Gestora de Projetos</span>
+                            </div>
+                        </div>
+                        <p class="text-lg text-slate-700 font-medium">"Eu não sento mais com planilha de domingo à noite. Bato o olho no app de manhã pegando o metrô e em 50 segundos decido o orçamento da semana. Mágico."</p>
+                    </div>
+                </div>
+            </div>
         </MotionSection>
 
         <!-- ================= THE MASSIVE FOOTER CTA ================= -->

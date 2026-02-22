@@ -18,6 +18,7 @@ SSH_USER="${SSH_USER:-}"
 SSH_PORT="${SSH_PORT:-}"
 SSH_KEY="${SSH_KEY:-${HOME}/.ssh/kitamo_deploy}"
 PROJECT_DIR="${PROJECT_DIR:-~/domains/kitamo.com.br/public_html}"
+PHP_BIN="${PHP_BIN:-/opt/alt/php83/usr/bin/php}"
 
 if [[ -z "${SSH_TARGET}" && ( -z "${SSH_HOST}" || -z "${SSH_USER}" ) ]]; then
   echo "Uso:"
@@ -109,11 +110,16 @@ chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 rm -f public/hot || true
 
-# PHP 8.3 no Hostinger (php no PATH e 7.2 do sistema)
-PHP_BIN=\"/opt/alt/php83/usr/bin/php\"
+# Exige PHP 8.2+ explicitamente para evitar cair no php 7.2 do PATH
+PHP_BIN=\"${PHP_BIN}\"
 if [ ! -x \"\$PHP_BIN\" ]; then
-  PHP_BIN=\"php\"
-  echo \"AVISO: PHP 8.3 nao encontrado, usando php do PATH\"
+  echo \"ERRO: PHP_BIN nao encontrado/executavel: \$PHP_BIN\"
+  echo \"Defina PHP_BIN corretamente (ex.: /opt/alt/php83/usr/bin/php)\"
+  exit 12
+fi
+if ! \"\$PHP_BIN\" -r 'exit(version_compare(PHP_VERSION, \"8.2.0\", \">=\") ? 0 : 1);'; then
+  echo \"ERRO: PHP em PHP_BIN e menor que 8.2. Ajuste PHP_BIN.\"
+  exit 13
 fi
 
 \$PHP_BIN artisan optimize:clear

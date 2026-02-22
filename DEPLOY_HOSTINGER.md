@@ -45,6 +45,22 @@ O `php` no PATH do SSH e PHP 7.2 (sistema). Para comandos artisan, usar:
 /opt/alt/php83/usr/bin/php artisan optimize:clear
 ```
 
+## Scheduler (cron no hPanel)
+
+Os agendamentos de `routes/console.php` so rodam se existir cron chamando `schedule:run` a cada minuto.
+
+Na Hostinger, configure no hPanel:
+
+- **Comando**:
+
+```bash
+cd ~/domains/kitamo.com.br/public_html && /opt/alt/php83/usr/bin/php artisan schedule:run >> /dev/null 2>&1
+```
+
+- **Periodicidade**: `* * * * *` (todo minuto)
+
+Observacao: neste servidor, o comando `crontab` nao esta disponivel via SSH, entao a configuracao deve ser feita no painel.
+
 ## Troubleshooting
 
 ### erro de permissao em cache/storage
