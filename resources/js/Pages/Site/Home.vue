@@ -91,13 +91,16 @@ const serviceBlocks = [
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         
         <!-- ================= HERO ================= -->
-        <MotionSection class="relative min-h-[100vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32">
-            <!-- Noise Texture -->
-            <div class="absolute inset-0 opacity-[0.025] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-            
-            <!-- Dynamic Orbs -->
-            <div class="pointer-events-none absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-teal-600/20 blur-[150px] mix-blend-screen opacity-70 animate-pulse"></div>
-            <div class="pointer-events-none absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[130px] mix-blend-screen opacity-50"></div>
+        <MotionSection class="relative min-h-[100vh] w-full bg-slate-950 text-white flex flex-col justify-center pt-32">
+            <!-- Background Container to clip orbs -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <!-- Noise Texture -->
+                <div class="absolute inset-0 opacity-[0.025] mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+                
+                <!-- Dynamic Orbs -->
+                <div class="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-teal-600/20 blur-[150px] mix-blend-screen opacity-70 animate-pulse"></div>
+                <div class="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[130px] mix-blend-screen opacity-50"></div>
+            </div>
 
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 flex flex-col items-center text-center">
                 <!-- Status Badge -->

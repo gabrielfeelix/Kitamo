@@ -89,10 +89,13 @@ const personas = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section - Centered and Immersive -->
-        <MotionSection class="relative min-h-screen w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center items-center pt-32 pb-40">
-            <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-            
-            <div class="absolute top-0 inset-x-0 h-[40vh] bg-gradient-to-b from-teal-900/30 to-transparent blur-3xl mix-blend-screen pointer-events-none"></div>
+        <MotionSection class="relative min-h-[90vh] w-full bg-slate-950 text-white flex flex-col justify-center items-center pt-32 pb-32">
+            <!-- Background clipping container -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+                
+                <div class="absolute top-0 inset-x-0 h-[40vh] bg-gradient-to-b from-teal-900/30 to-transparent blur-3xl mix-blend-screen"></div>
+            </div>
 
             <div class="relative z-10 mx-auto w-full max-w-[1000px] px-6 text-center flex flex-col items-center">
                 <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 backdrop-blur shadow-[0_0_15px_theme(colors.teal.500/20)]">A Ferramenta</p>
@@ -112,7 +115,7 @@ const personas = [
             </div>
 
             <!-- Floating Hero Image intercepting next section -->
-            <div class="absolute -bottom-32 sm:-bottom-48 md:-bottom-64 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-20 group perspective-1000">
+            <div class="relative mx-auto w-[90%] max-w-[1200px] z-20 group perspective-1000 mt-20 sm:mt-24 lg:mt-32 -mb-32 sm:-mb-40 lg:-mb-56">
                 <div class="absolute inset-0 bg-teal-500/20 rounded-[3rem] blur-3xl transform group-hover:bg-teal-400/30 transition-colors duration-1000 opacity-60"></div>
                 <img
                     src="https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg?auto=compress&cs=tinysrgb&w=1400"
@@ -122,9 +125,9 @@ const personas = [
                 />
                 
                 <!-- Floating tags mapping to the image -->
-                <div class="absolute top-1/4 left-[10%] hidden md:block bg-slate-950/80 backdrop-blur border border-white/20 text-white px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transform -translate-y-full shadow-lg group-hover:-translate-y-8 transition-all duration-700 delay-100">Contas</div>
+                <div class="absolute top-1/4 left-[10%] hidden md:block bg-slate-950/80 backdrop-blur border border-white/20 text-white px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transform -translate-y-full shadow-lg group-hover:-translate-y-8 transition-all duration-700 delay-100 z-30">Contas</div>
                 
-                <div class="absolute bottom-1/4 right-[15%] hidden md:block bg-teal-500/90 backdrop-blur border border-teal-300 text-teal-950 px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transform translate-y-full shadow-[0_0_20px_theme(colors.teal.500/40)] group-hover:translate-y-8 transition-all duration-700 delay-200">Previsão Segura</div>
+                <div class="absolute bottom-1/4 right-[15%] hidden md:block bg-teal-500/90 backdrop-blur border border-teal-300 text-teal-950 px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transform translate-y-full shadow-[0_0_20px_theme(colors.teal.500/40)] group-hover:translate-y-8 transition-all duration-700 delay-200 z-30">Previsão Segura</div>
             </div>
         </MotionSection>
 
