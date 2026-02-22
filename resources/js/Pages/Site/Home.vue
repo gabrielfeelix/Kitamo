@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 import PricingBlock from '@/Components/site/PricingBlock.vue';
+import MotionSection from '@/Components/site/MotionSection.vue';
 import { pricingPlans } from '@/types/site';
 
 const props = defineProps<{
@@ -13,463 +14,260 @@ const primaryHref = props.canRegister ? '/register' : '/login';
 
 const destinationCards = [
     {
-        title: 'Autonomos',
+        title: 'Autônomos',
         subtitle: 'Renda irregular',
-        description: 'Antecipe semanas de maior pressao antes do fechamento de caixa.',
+        description: 'Antecipe semanas de maior pressão antes do fechamento de caixa.',
         image: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=900',
+        class: 'md:mt-12', 
     },
     {
         title: 'Casais',
         subtitle: 'Planejamento conjunto',
-        description: 'Consolidem gastos fixos e variaveis com um plano unico de decisao.',
+        description: 'Consolidem gastos fixos e variáveis com um plano único de decisão.',
         image: 'https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=900',
+        class: 'md:-mt-8',
     },
     {
         title: 'Profissionais CLT',
         subtitle: 'Ciclo mensal',
-        description: 'Conecte salario, fatura e recorrencias com previsibilidade diaria.',
+        description: 'Conecte salário, fatura e recorrências com previsibilidade diária.',
         image: 'https://images.pexels.com/photos/1184572/pexels-photo-1184572.jpeg?auto=compress&cs=tinysrgb&w=900',
+        class: 'md:mt-24', 
     },
 ];
 
 const flowTimeline = [
     {
-        number: '01',
+        number: '1',
         title: 'Configurar base financeira',
-        text: 'Cadastre contas, cartoes, recorrencias e categorias em uma estrutura unica.',
+        text: 'Cadastre contas, cartões e categorias em uma estrutura única, conectada com a sua realidade.',
     },
     {
-        number: '02',
-        title: 'Ativar rotina de lancamentos',
-        text: 'Mantenha entradas e saidas atualizadas com pouco atrito no dia a dia.',
+        number: '2',
+        title: 'Ativar a rotina de caixa',
+        text: 'Mantenha entradas e saídas centralizadas. O atrito desaparece, a clareza se torna a regra.',
     },
     {
-        number: '03',
-        title: 'Ler risco por data',
-        text: 'A projecao mostra em que dia o saldo pode entrar em zona critica.',
+        number: '3',
+        title: 'Leitura de risco futuro',
+        text: 'O algoritmo projeta seus dias. Saiba exatamente quando e onde o seu saldo corre perigo.',
     },
     {
-        number: '04',
-        title: 'Executar ajuste semanal',
-        text: 'Priorize cortes e redistribuicoes antes da fatura travar seu mes.',
-    },
-];
-
-const splitShowcase = [
-    {
-        tag: '/Sobre',
-        title: 'Aproximamos voce da sua previsao real',
-        description: 'Painel orientado a decisao com leitura de saldo projetado e alertas por data.',
-        image: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    },
-    {
-        tag: '/Cases',
-        title: 'Resultados praticos de uso continuo',
-        description: 'Rotina semanal curta para manter clareza financeira sem voltar para planilhas.',
-        image: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        number: '4',
+        title: 'Ajuste cirúrgico semanal',
+        text: 'Priorize os cortes ou mova fundos antes que a fatura comprometa a liquidez do mês.',
     },
 ];
 
 const serviceBlocks = [
     {
-        title: 'Leitura de saldo em tempo real',
-        description: 'Visao objetiva dos proximos dias para agir antes do vencimento.',
-        background: 'bg-emerald-100/70',
+        title: 'Leitura em Tempo Real',
+        description: 'Visão oblíqua dos próximos dias. Ação em tempo hábil.',
     },
     {
-        title: 'Analise de risco por data',
-        description: 'Pontos de pressao financeira destacados com prioridade de acao.',
-        background: 'bg-slate-100',
+        title: 'Análise de Risco',
+        description: 'Identificação imediata de pontos de pressão e ruptura.',
     },
     {
-        title: 'Rotina guiada de ajuste',
-        description: 'Passos semanais para manter o caixa previsivel sem sobrecarga.',
-        background: 'bg-emerald-100/70',
+        title: 'Sincronia Semanal',
+        description: 'Passos guiados para restabelecer a estabilidade sem pânico.',
     },
-];
-
-const comparisonRows = [
-    { feature: 'Foco principal', others: 'Historico de gastos', kitamo: 'Projecao de caixa' },
-    { feature: 'Integracao bancaria', others: 'Sim (Open Finance)', kitamo: 'Nao (input manual)' },
-    { feature: 'Faixa de preco', others: 'R$ 20-45/mes', kitamo: 'Gratis ou R$ 19/mes' },
-    { feature: 'Complexidade', others: 'Alta', kitamo: 'Baixa' },
 ];
 </script>
 
 <template>
-    <Head title="Kitamo | Projecao financeira para o seu mes">
-        <meta
-            name="description"
-            content="Kitamo e o app de financas pessoais focado em projecao de caixa para decidir antes da falta de saldo."
-        />
+    <Head title="Kitamo | O Design do Seu Mês">
+        <meta name="description" content="Kitamo é a arquitetura financeira focada em antecipação de caixa e decisão." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="relative mx-auto w-full max-w-[1360px] px-5 pb-14 pt-10 md:px-6 md:pb-20 md:pt-16">
-            <div class="pointer-events-none absolute bottom-12 left-0 top-12 hidden w-10 rounded-r-2xl bg-emerald-100/85 xl:block"></div>
-            <div class="pointer-events-none absolute bottom-12 right-0 top-12 hidden w-10 rounded-l-2xl bg-emerald-100/60 xl:block"></div>
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[90vh] w-full overflow-hidden bg-[#0a0f12] text-white flex flex-col justify-center pt-24 pb-16">
+            <!-- Dramatic ambient glow background -->
+            <div class="pointer-events-none absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-emerald-600/20 blur-[120px]"></div>
+            <div class="pointer-events-none absolute bottom-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]"></div>
 
-            <div class="hero-shell relative overflow-hidden rounded-[2.2rem] border border-slate-200 p-6 md:p-8">
-                <div class="grid items-center gap-8 md:grid-cols-12">
-                    <div class="md:col-span-6 text-white">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Projecao financeira pessoal</p>
-                        <h1 class="mt-4 text-5xl leading-[0.9] tracking-[-0.03em] md:text-6xl">
-                            O mes nao precisa
-                            <span class="block font-serif italic text-emerald-300">te surpreender.</span>
-                        </h1>
-                        <p class="mt-5 max-w-xl text-base leading-relaxed text-slate-300 md:text-lg">
-                            O Kitamo transforma controle manual em visao de futuro para voce decidir antes do caixa apertar.
-                        </p>
+            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7">
+                    <p class="text-[12px] font-bold uppercase tracking-[0.2em] text-emerald-400 mb-6 drop-shadow-sm">Engenharia de Caixa</p>
+                    <h1 class="text-6xl sm:text-7xl lg:text-[5.5rem] leading-[0.9] tracking-tighter mix-blend-lighten">
+                        O mês não<br />
+                        <span class="block text-emerald-300 font-serif italic pr-4 mt-2">precisa te surpreender.</span>
+                    </h1>
+                    <p class="mt-8 max-w-lg text-lg sm:text-xl leading-relaxed text-slate-400 font-light">
+                        Esqueça olhar pelo retrovisor. Kitamo é visão preditiva.<br/>O controle do fluxo futuro na ponta dos seus dedos.
+                    </p>
 
-                        <div class="mt-7 flex flex-wrap gap-3">
-                            <Link
-                                :href="primaryHref"
-                                class="inline-flex h-11 items-center justify-center rounded-full bg-emerald-400 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
-                            >
-                                Comecar gratis
-                            </Link>
-                            <Link
-                                :href="route('site.product') + '#demo'"
-                                class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                            >
-                                Ver demonstracao
-                            </Link>
-                        </div>
-
-                        <div class="mt-8 grid max-w-md grid-cols-3 gap-4">
-                            <div>
-                                <p class="text-3xl font-semibold tracking-tight">30d</p>
-                                <p class="text-xs uppercase tracking-[0.12em] text-slate-400">Essencial</p>
-                            </div>
-                            <div>
-                                <p class="text-3xl font-semibold tracking-tight">90d</p>
-                                <p class="text-xs uppercase tracking-[0.12em] text-slate-400">Pro</p>
-                            </div>
-                            <div>
-                                <p class="text-3xl font-semibold tracking-tight">5a</p>
-                                <p class="text-xs uppercase tracking-[0.12em] text-slate-400">Visionario</p>
-                            </div>
-                        </div>
+                    <div class="mt-10 flex flex-wrap gap-4">
+                        <Link :href="primaryHref" class="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-emerald-400 px-8 text-[12px] font-extrabold uppercase tracking-[0.14em] text-slate-950 transition-transform hover:scale-105 active:scale-95">
+                            <span class="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0"></span>
+                            <span class="relative">Acesso Imediato</span>
+                        </Link>
+                        <Link :href="route('site.product') + '#demo'" class="inline-flex h-14 items-center justify-center rounded-full border border-white/20 px-8 text-[12px] font-extrabold uppercase tracking-[0.14em] text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-950">
+                            Explorar a Dinâmica
+                        </Link>
                     </div>
 
-                    <div class="md:col-span-6">
-                        <div class="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-slate-900">
-                            <div class="hero-diagonal absolute -right-16 -top-16 h-[150%] w-[75%]"></div>
-                            <img
-                                src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1400"
-                                alt="Pessoa em reuniao analisando indicadores"
-                                class="relative z-10 h-[360px] w-full object-cover object-center md:h-[430px]"
-                                loading="lazy"
-                            />
-                            <div class="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/15 bg-slate-950/70 p-4 backdrop-blur">
-                                <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-300">Alerta inteligente</p>
-                                <p class="mt-1 text-sm text-slate-200">Risco de saldo negativo em 27/03. Ajuste recomendado: reduzir variavel em R$ 320.</p>
-                            </div>
+                    <div class="mt-16 flex gap-12 font-mono text-sm tracking-widest text-slate-500 uppercase">
+                        <div>
+                            <strong class="block text-2xl text-emerald-400 font-sans tracking-tight mb-1">0_</strong>
+                            <span class="text-[10px]">Surpresas</span>
+                        </div>
+                        <div>
+                            <strong class="block text-2xl text-white font-sans tracking-tight mb-1">30+</strong>
+                            <span class="text-[10px]">Dias de Visão</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="grid gap-6 md:grid-cols-12 md:items-end">
-                <div class="md:col-span-5">
-                    <h2 class="text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Diferentes perfis, a mesma clareza de caixa.</h2>
-                </div>
-                <p class="md:col-span-4 text-base leading-relaxed text-slate-600">
-                    O produto acompanha diferentes perfis sem mudar a pergunta central: o plano financeiro do mes esta sustentavel?
-                </p>
-                <p class="md:col-span-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-700 md:text-right">Aplicacoes reais</p>
-            </div>
-
-            <div class="mt-7 grid gap-4 md:grid-cols-3">
-                <article
-                    v-for="item in destinationCards"
-                    :key="item.title"
-                    class="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white"
-                >
-                    <div class="relative h-60 overflow-hidden">
+                <div class="lg:col-span-5 relative hidden lg:block">
+                    <div class="absolute -inset-4 bg-emerald-500/20 rounded-[3rem] blur-2xl transform rotate-3"></div>
+                    <div class="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-slate-900 shadow-2xl transition-transform duration-700 hover:rotate-2 hover:scale-[1.02]">
                         <img
-                            :src="item.image"
-                            :alt="item.title"
-                            class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                            loading="lazy"
+                            src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                            alt="Interface Abstrata"
+                            class="h-[600px] w-full object-cover opacity-80 mix-blend-luminosity"
                         />
-                        <span class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-800">Perfil</span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                                <span class="text-xs font-bold uppercase tracking-widest text-rose-300">Ponto de Fricção</span>
+                            </div>
+                            <p class="text-sm text-slate-300 font-light leading-relaxed">Risco de colapso de liquidez em D+12. Recomendado: diluição de R$ 450.</p>
+                        </div>
                     </div>
-                    <div class="p-5">
-                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">{{ item.subtitle }}</p>
-                        <h3 class="mt-2 text-3xl leading-tight tracking-tight text-slate-950">{{ item.title }}</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ item.description }}</p>
+                </div>
+            </div>
+        </MotionSection>
+
+        <!-- Perfis Section -->
+        <MotionSection class="bg-slate-50 py-24 sm:py-32 relative overflow-hidden">
+            <div class="mx-auto max-w-[1440px] px-6 md:px-12">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                    <h2 class="text-5xl sm:text-6xl font-medium tracking-tighter text-slate-900 max-w-2xl leading-[1.05]">
+                        Diferentes arquiteturas<br><span class="text-slate-400">mesma disciplina.</span>
+                    </h2>
+                    <p class="max-w-xs text-sm uppercase tracking-[0.15em] font-semibold text-slate-500 text-right">
+                        Não importa a origem<br/>Importa o destino do recurso
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div v-for="item in destinationCards" :key="item.title" :class="['group relative', item.class]">
+                        <div class="absolute inset-0 bg-emerald-900/5 translate-y-4 translate-x-4 rounded-3xl transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6 -z-10"></div>
+                        <article class="bg-white rounded-3xl overflow-hidden border border-slate-200/60 shadow-xl shadow-slate-200/50 transition-all duration-500 group-hover:-translate-y-2 h-full flex flex-col">
+                            <div class="relative h-64 overflow-hidden">
+                                <img :src="item.image" :alt="item.title" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>
+                                <div class="absolute bottom-5 left-6 right-6 text-white">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-300 mb-2">{{ item.subtitle }}</p>
+                                    <h3 class="text-3xl font-medium tracking-tight">{{ item.title }}</h3>
+                                </div>
+                            </div>
+                            <div class="p-6 md:p-8 flex-grow flex flex-col justify-between bg-white text-slate-600">
+                                <p class="text-base leading-relaxed">{{ item.description }}</p>
+                            </div>
+                        </article>
                     </div>
-                </article>
+                </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="relative overflow-hidden bg-[#06180f] py-16 text-white md:py-20">
-            <div class="pointer-events-none absolute inset-0 hidden xl:block">
-                <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=700" alt="" class="float-shot float-a" aria-hidden="true" />
-                <img src="https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=700" alt="" class="float-shot float-b" aria-hidden="true" />
-                <img src="https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=700" alt="" class="float-shot float-c" aria-hidden="true" />
-                <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=700" alt="" class="float-shot float-d" aria-hidden="true" />
-            </div>
+        <!-- Timeline Section -->
+        <MotionSection class="bg-slate-950 py-32 text-slate-300 relative">
+            <!-- Decorative noisy overlay -->
+            <div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+                <div class="lg:sticky lg:top-32">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400">Modelo Operacional</p>
+                    <h2 class="mt-4 text-5xl sm:text-6xl font-medium tracking-tighter text-white leading-[1.05]">
+                        A coreografia<br><span class="italic font-serif text-slate-500">da precisão.</span>
+                    </h2>
+                    <p class="mt-8 text-xl font-light leading-relaxed text-slate-400 max-w-md">
+                        Abandone a complexidade. A projeção perfeita exige um método rígido, não esforço excessivo. Veja como a rotina funciona no Kitamo.
+                    </p>
+                </div>
 
-            <div class="mx-auto grid w-full max-w-[1320px] items-center gap-8 px-5 md:grid-cols-12 md:px-6">
-                <div class="md:col-span-6">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Tour operacional</p>
-                    <h2 class="mt-3 text-4xl leading-[0.95] tracking-tight md:text-5xl">Da base de dados ao ajuste semanal</h2>
-
-                    <ol class="flow-timeline mt-7 space-y-6 pl-10">
-                        <li v-for="step in flowTimeline" :key="step.number" class="relative">
-                            <span class="absolute -left-10 top-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-[0_0_0_6px_rgba(16,185,129,0.14)]">
+                <div class="relative">
+                    <div class="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 hidden sm:block"></div>
+                    
+                    <div class="flex flex-col gap-16 relative">
+                        <div v-for="(step, index) in flowTimeline" :key="step.number" class="group relative sm:pl-24">
+                            <div class="absolute left-0 top-0 hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 border border-slate-800 text-2xl font-serif italic text-emerald-400 shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-emerald-950 group-hover:border-emerald-800">
                                 {{ step.number }}
-                            </span>
-                            <h3 class="text-2xl leading-tight tracking-tight">{{ step.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-300 md:text-base">{{ step.text }}</p>
-                        </li>
-                    </ol>
-                </div>
-
-                <div class="md:col-span-6">
-                    <div class="rounded-[1.8rem] bg-[#d9ecff] p-5 md:p-6">
-                        <img
-                            src="https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                            alt="Pessoa acompanhando dados no smartphone"
-                            class="h-[420px] w-full rounded-[1.3rem] object-cover"
-                            loading="lazy"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 py-14 md:px-6 md:py-20">
-            <div class="grid gap-4 md:grid-cols-2">
-                <article
-                    v-for="item in splitShowcase"
-                    :key="item.tag"
-                    class="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white"
-                >
-                    <div class="p-6 md:p-7">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ item.tag }}</p>
-                        <h3 class="mt-3 text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">{{ item.title }}</h3>
-                        <p class="mt-4 text-sm leading-relaxed text-slate-600 md:text-base">{{ item.description }}</p>
-                    </div>
-                    <img
-                        :src="item.image"
-                        :alt="item.title"
-                        class="h-56 w-full object-cover"
-                        loading="lazy"
-                    />
-                </article>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="rounded-[1.8rem] border border-slate-200 bg-white p-6 md:p-8">
-                <h2 class="text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Confira os nossos blocos de decisao</h2>
-                <div class="mt-7 grid gap-4 md:grid-cols-3">
-                    <article
-                        v-for="item in serviceBlocks"
-                        :key="item.title"
-                        class="rounded-[1.3rem] p-5"
-                        :class="item.background"
-                    >
-                        <h3 class="text-2xl leading-tight tracking-tight text-slate-900">{{ item.title }}</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ item.description }}</p>
-                        <div class="mt-4 h-24 rounded-xl bg-white/80 p-3">
-                            <svg viewBox="0 0 180 70" class="h-full w-full" aria-hidden="true">
-                                <path d="M0 58 C15 42, 30 49, 48 30 C66 11, 80 24, 100 40 C120 56, 145 33, 180 20" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="dark-stat relative overflow-hidden rounded-[2rem] border border-slate-900 p-6 md:p-8">
-                <div class="grid items-center gap-8 md:grid-cols-12">
-                    <div class="md:col-span-5">
-                        <div class="rounded-[1.2rem] bg-white/95 p-5 text-slate-900">
-                            <p class="text-3xl font-semibold tracking-tight">+150 mil</p>
-                            <p class="mt-1 text-sm text-slate-600">decisoes financeiras apoiadas</p>
-                            <div class="mt-4 h-28 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 p-4">
-                                <svg viewBox="0 0 200 80" class="h-full w-full" aria-hidden="true">
-                                    <path d="M0 62 C20 55, 32 28, 52 36 C72 44, 95 74, 118 48 C140 22, 165 26, 200 14" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                                </svg>
                             </div>
-                        </div>
-                    </div>
-                    <div class="md:col-span-7 text-white">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Estatisticas</p>
-                        <h2 class="mt-3 max-w-2xl text-4xl leading-[0.95] tracking-tight md:text-5xl">
-                            Maximize o potencial do seu mes com projecao de caixa.
-                        </h2>
-                        <p class="mt-4 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-                            O Kitamo nao e mais um painel de historico. E uma ferramenta de antecipacao para decidir antes do impacto.
-                        </p>
-                        <div class="mt-7 flex flex-wrap gap-3">
-                            <Link
-                                :href="primaryHref"
-                                class="inline-flex h-11 items-center justify-center rounded-full bg-emerald-400 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
-                            >
-                                Criar conta
-                            </Link>
-                            <Link
-                                :href="route('site.contact')"
-                                class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                            >
-                                Falar com especialista
-                            </Link>
+                            <h3 class="text-3xl font-medium tracking-tight text-white mb-4">{{ step.title }}</h3>
+                            <p class="text-lg text-slate-400 font-light leading-relaxed group-hover:text-slate-300 transition-colors">{{ step.text }}</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="overflow-x-auto border-y border-slate-200 py-8">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Comparacao honesta</p>
-                <table class="mt-4 min-w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
-                            <th class="pb-3 pr-4">Criterio</th>
-                            <th class="pb-3 pr-4">Outros apps</th>
-                            <th class="pb-3">Kitamo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="row in comparisonRows" :key="row.feature" class="border-b border-slate-100">
-                            <td class="py-3 pr-4 font-semibold text-slate-900">{{ row.feature }}</td>
-                            <td class="py-3 pr-4 text-slate-600">{{ row.others }}</td>
-                            <td class="py-3 font-semibold text-emerald-700">{{ row.kitamo }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p class="mt-4 text-xs text-slate-500">Outros apps incluem Mobills, Organizze e similares.</p>
+        <!-- Service Blocks Deep Comparison Section -->
+        <MotionSection class="bg-slate-50 py-32 relative">
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+                <div class="text-center max-w-3xl mx-auto mb-20">
+                    <h2 class="text-5xl sm:text-6xl font-medium tracking-tighter text-slate-900 mb-6">Mecânicas da<br/>Antecipação</h2>
+                    <p class="text-xl text-slate-500 font-light">Se os dados são um fluxo contínuo, analisá-los retrospectivamente é abraçar o erro. O Kitamo muda o vetor temporal do seu dinheiro.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
+                    <div v-for="(block, index) in serviceBlocks" :key="index" class="bg-white p-10 rounded-[2.5rem] border border-slate-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative overflow-hidden group">
+                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                        <span class="block text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase mb-4">{{ String(index + 1).padStart(2, '0') }}. Fundamento</span>
+                        <h3 class="text-3xl font-medium tracking-tight text-slate-900 mb-4">{{ block.title }}</h3>
+                        <p class="text-slate-600 leading-relaxed">{{ block.description }}</p>
+                    </div>
+                </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="bg-white py-14 md:py-16">
-            <div class="mx-auto w-full max-w-[1320px] px-5 md:px-6">
-                <p class="text-[11px] text-center font-bold uppercase tracking-[0.16em] text-slate-500">Precos</p>
-                <h2 class="mt-3 text-center text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Escolha seu ritmo de controle</h2>
-                <div class="mt-8">
+        <!-- Preços Section -->
+        <MotionSection class="bg-slate-900 py-32 relative text-white rounded-t-[4rem] sm:rounded-t-[6rem] -mt-10 overflow-hidden z-20">
+            <!-- Dramatic ambient glow background -->
+            <div class="pointer-events-none absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/10 via-slate-900 to-slate-950"></div>
+            
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10">
+                <div class="text-center max-w-2xl mx-auto mb-20">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-400 mb-4">Acesso ao Motor</p>
+                    <h2 class="text-5xl sm:text-6xl font-medium tracking-tighter mb-6">Controle seu<br/> ritmo financeiro.</h2>
+                    <p class="text-xl text-slate-400 font-light">
+                        Comece com o essencial gratuitamente. Escale o modelo preditivo conforme a complexidade da sua vida o exigir.
+                    </p>
+                </div>
+
+                <div class="max-w-[1100px] mx-auto">
                     <PricingBlock :plans="pricingPlans" :can-register="canRegister" />
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="bg-emerald-400 py-16 md:py-20">
-            <div class="mx-auto w-full max-w-[1320px] px-5 text-center md:px-6">
-                <h2 class="text-5xl leading-[0.88] tracking-[-0.03em] text-slate-950 md:text-6xl">Comece a projetar seu mes hoje</h2>
-                <p class="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-slate-900/80 md:text-lg">
-                    Plano Essencial gratis para sempre. Upgrade apenas quando precisar de mais profundidade.
-                </p>
-                <Link
-                    :href="primaryHref"
-                    class="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-7 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition hover:bg-white hover:text-slate-950"
-                >
-                    Criar conta gratuita
-                </Link>
+        <!-- Footer Call to Action -->
+        <MotionSection class="bg-emerald-500 py-24 sm:py-32 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-300 to-emerald-600 mix-blend-multiply opacity-50"></div>
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 text-center relative z-10">
+                <h2 class="text-6xl sm:text-7xl lg:text-[7.5rem] font-medium tracking-tighter text-emerald-950 leading-[0.9]">
+                    Projete amanhã.<br><span class="italic font-serif opacity-80">Hoje.</span>
+                </h2>
+                <div class="mt-12">
+                    <Link
+                        :href="primaryHref"
+                        class="inline-flex h-16 items-center justify-center rounded-full bg-slate-950 px-10 text-[13px] font-extrabold uppercase tracking-[0.2em] text-white transition-transform hover:scale-105 hover:bg-slate-900 shadow-2xl"
+                    >
+                        Iniciar Arquitetura Financeira
+                    </Link>
+                </div>
             </div>
-        </section>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.hero-shell {
-    background:
-        radial-gradient(34rem 24rem at 12% 0%, rgba(16, 185, 129, 0.2), transparent 72%),
-        linear-gradient(140deg, #030712 0%, #0f172a 58%, #111827 100%);
-}
-
-.hero-diagonal {
-    background: linear-gradient(145deg, rgba(16, 185, 129, 0.65), rgba(99, 102, 241, 0.6));
-    transform: rotate(-18deg);
-    border-radius: 2rem;
-}
-
-.flow-timeline {
-    position: relative;
-}
-
-.flow-timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.5), rgba(16, 185, 129, 0.08));
-}
-
-.float-shot {
-    position: absolute;
-    width: 170px;
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    box-shadow: 0 18px 45px rgba(2, 6, 23, 0.45);
-    animation: drift 8s ease-in-out infinite;
-}
-
-.float-a {
-    left: 4%;
-    top: 16%;
-    transform: rotate(-12deg);
-}
-
-.float-b {
-    left: 10%;
-    bottom: 18%;
-    transform: rotate(10deg);
-    animation-delay: 1.2s;
-}
-
-.float-c {
-    right: 4%;
-    top: 18%;
-    transform: rotate(14deg);
-    animation-delay: 2.2s;
-}
-
-.float-d {
-    right: 10%;
-    bottom: 15%;
-    transform: rotate(-10deg);
-    animation-delay: 0.8s;
-}
-
-.dark-stat {
-    background:
-        radial-gradient(26rem 20rem at 10% 100%, rgba(16, 185, 129, 0.18), transparent 76%),
-        linear-gradient(140deg, #030712 0%, #020617 100%);
-}
-
-@keyframes drift {
-    0%,
-    100% {
-        transform: translateY(0) rotate(var(--rotate, 0deg));
-    }
-    50% {
-        transform: translateY(-10px) rotate(var(--rotate, 0deg));
-    }
-}
-
-.float-a {
-    --rotate: -12deg;
-}
-
-.float-b {
-    --rotate: 10deg;
-}
-
-.float-c {
-    --rotate: 14deg;
-}
-
-.float-d {
-    --rotate: -10deg;
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
 }
 </style>

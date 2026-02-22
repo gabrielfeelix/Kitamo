@@ -1,0 +1,26 @@
+# Global Frontend Design Rules (ALWAYS APPLY TO KITAMO)
+
+When writing, refactoring, or designing any frontend code (Vue components, Tailwind CSS, HTML, JS) for Kitamo, you MUST ALWAYS follow these directives to avoid generic "AI slop" aesthetics. Apply these rules meticulously to create distinctive, production-grade frontend interfaces.
+
+## 1. Design Thinking & Concept
+Before executing any frontend task:
+- Commit to a BOLD aesthetic direction (e.g., minimalist, maximalist, editorial, brute/raw, etc.).
+- Never deliver generic or neutral designs.
+- Ask yourself: What makes this interface unforgettable?
+
+## 2. Aesthetics & Execution
+Focus intensely on these pillars:
+- **Typography**: Refuse generic fonts (Inter, Roboto, Arial). Choose distinctive, characterful fonts. Pair display fonts creatively.
+- **Color**: Use striking palettes. Commit to strong, dominant colors with sharp accents over timid, evenly-distributed ones. Use CSS variables for theming.
+- **Motion**: Every page load should delight. Use CSS animations, staggered reveals (via animation-delay), and surprising hover states. Avoid standard, boring transitions.
+- **Spatial Composition**: Break the grid securely. Use diagonal flows, overlaps, and bold asymmetry instead of standard centered cards.
+- **Details**: No flat color blocks. Use deep shadows, overlapping transparencies, noise/grain textures, gradient meshes, or layered patterns to build atmosphere.
+
+## 3. Strict Prohibitions (NEVER DO THIS)
+- NO purple gradients on white backgrounds.
+- NO predictable "card-behind-card" basic layouts.
+- NO cookie-cutter, lifeless designs without contextual identity.
+- NEVER disregard constraints (performance, framework, accessibility) while aiming for boldness.
+
+**IMPORTANT**: 
+Whether the design demands maximalist chaos or refined, constrained elegance, your execution must be perfectly aligned with that vision. Claude is capable of extraordinary creative work—never hold back on creating something unique.
