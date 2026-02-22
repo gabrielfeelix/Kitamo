@@ -9,15 +9,24 @@ produção, publicar no servidor ou executar o script de hospedagem.
 ## Consulte
 Leia `docs/hostinger.md` para detalhes do servidor.
 
-## Sequência de Deploy
-1. Verificar que não há mudanças não commitadas
-2. Rodar npm run build (compila assets)
-3. Verificar que /public/build NÃO está no commit
-4. Executar scripts/hostinger-deploy-ssh.sh
-5. Verificar logs de erro após deploy
-6. Confirmar que kitamo.com.br está respondendo
+## Deploy principal (GitHub Actions)
 
-## Atenção
+O deploy e automatizado: cada push para `main` triggera `.github/workflows/deploy.yml`.
+Nao precisa rodar nada manualmente — basta fazer push.
+
+## Deploy manual (SSH script)
+
+Se precisar deployar sem GitHub Actions:
+
+1. Verificar que nao ha mudancas nao commitadas
+2. Rodar `scripts/hostinger-deploy-ssh.sh`
+3. Verificar logs de erro apos deploy
+4. Confirmar que kitamo.com.br esta respondendo
+
+## Atencao
+
 - Nunca subir com .env de desenvolvimento
 - Preservar storage/ e .env no servidor
-- Após migrations novas: rodar php artisan migrate no servidor
+- PHP no servidor: sempre usar `/opt/alt/php83/usr/bin/php` (NAO usar `php` que e 7.2)
+- O `.htaccess` na raiz do repo redireciona requests para `public/` — NUNCA remover
+- Se extensoes PHP pararem de funcionar (PDO not found, etc), contatar suporte Hostinger sobre CageFS

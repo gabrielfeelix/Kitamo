@@ -2,7 +2,7 @@
 
 **Versão:** 1.0.0 (MVP)
 **Status:** Em desenvolvimento
-**Última atualização:** 14/02/2026
+**Última atualização:** 22/02/2026
 
 ---
 
@@ -25,7 +25,7 @@ Sistema de gestão financeira pessoal focado em **input manual confiável** e **
 - **Backend:** Laravel 12 + PHP 8.3
 - **Frontend:** Vue 3 + TypeScript 5.6 + Inertia.js
 - **CSS:** Tailwind CSS 3.2.1
-- **Database:** SQLite (Local) / PostgreSQL (Produção via Supabase)
+- **Database:** SQLite (Local) / MySQL (Produção via Hostinger)
 - **Build:** Vite 7.0
 - **Deploy:** Hostinger via SSH
 
@@ -63,7 +63,7 @@ Todos os contextos e regras estão em `.agent/`.
 - PHP 8.3+
 - Composer
 - Node.js 20+
-- SQLite (ou PostgreSQL)
+- SQLite (local) / MySQL (produção)
 
 ### 2. Instalação
 ```bash
@@ -89,27 +89,28 @@ APP_DEBUG=true
 # Database Local (SQLite)
 DB_CONNECTION=sqlite
 
-# Database Produção (PostgreSQL/Supabase)
+# Database Produção (MySQL/Hostinger)
 # Apenas no servidor de produção
-# DB_CONNECTION=pgsql
-# DB_HOST=aws-1-sa-east-1.pooler.supabase.com
-# DB_PORT=5432
-# DB_DATABASE=postgres
-# DB_USERNAME=postgres.seu_user
-# DB_PASSWORD="sua_senha_secreta"
+# DB_CONNECTION=mysql
+# DB_HOST=srv1722.hstgr.io
+# DB_PORT=3306
+# DB_DATABASE=nome_do_banco
+# DB_USERNAME=usuario
+# DB_PASSWORD="senha"
 ```
 
 ---
 
 ## 🚀 DEPLOY (HOSTINGER)
 
-O deploy é automatizado via script SSH.
-**Não rode manualmente** se não souber o que está fazendo. Use o workflow `/deploy`.
+O deploy e automatizado via GitHub Actions — cada push para `main` faz deploy automatico.
+Para detalhes, consulte `DEPLOY_HOSTINGER.md` e `DEPLOY_STRUCTURE.md`.
 
-### Variáveis de Deploy (Secrets)
-As credenciais SSH (`SSH_HOST`, `SSH_USER`, `SSH_PORT`) devem ser configuradas nas variáveis de ambiente do CI/CD ou passadas na execução do script, nunca hardcoded no código.
+### Secrets do GitHub Actions
+- `SSH_KEY`: Chave privada SSH para acesso ao servidor
 
-Consulte `.agent/skills/deploy/docs/hostinger.md` para detalhes da infraestrutura.
+### PHP no servidor
+O `php` no PATH do SSH e PHP 7.2. Sempre usar `/opt/alt/php83/usr/bin/php`.
 
 ---
 

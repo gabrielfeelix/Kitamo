@@ -73,7 +73,7 @@ Todas as 5 melhorias solicitadas foram implementadas com sucesso:
 3. Configure os Authorized Redirect URIs:
    - `https://kitamo.com.br/auth/google/callback`
 4. Adicione credenciais no `.env` do servidor
-5. Execute `php artisan config:cache` no servidor
+5. Execute `/opt/alt/php83/usr/bin/php artisan config:cache` no servidor
 
 **Redirect URI correto:**
 ```
@@ -309,7 +309,7 @@ OK: deploy finalizado
 
 ### Curto Prazo (semana que vem)
 2. **Notificações - Fase 1:**
-   - Executar migrations no servidor: `php artisan migrate`
+   - Executar migrations no servidor: `/opt/alt/php83/usr/bin/php artisan migrate`
    - Testar criação de metas com date picker
    - Verificar CSRF auto-refresh funcionando
 
@@ -377,15 +377,15 @@ https://kitamo.com.br/dashboard
 
 ### 4. Migrations (no servidor)
 ```bash
-# SSH no servidor:
-ssh -i ~/.ssh/kitamo_deploy -p 65002 u626119115@147.79.84.203
+# SSH no servidor (use o alias configurado no ~/.ssh/config):
+ssh hostinger-kitamo
 cd domains/kitamo.com.br/public_html
 
 # Executar migrations:
-php artisan migrate
+/opt/alt/php83/usr/bin/php artisan migrate
 
 # Verificar tabelas criadas:
-php artisan db:show
+/opt/alt/php83/usr/bin/php artisan db:show
 ```
 
 ---

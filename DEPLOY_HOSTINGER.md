@@ -2,77 +2,67 @@
 
 Projeto no servidor:
 
-- `~/domains/<seu-dominio>/public_html`
+- `~/domains/kitamo.com.br/public_html`
 
-## Configuracao segura (sem expor credenciais no comando)
+## Deploy principal (GitHub Actions)
 
-1. Copie o arquivo de exemplo:
+Cada push para `main` triggera o workflow `.github/workflows/deploy.yml` que:
 
-```bash
-cp .hostinger.deploy.env.example .hostinger.deploy.env
-```
+1. Build frontend (`npm run build`)
+2. `composer install`
+3. `rsync` para o servidor
+4. Fix permissoes e symlinks
+5. Roda migrations e cache commands
 
-2. Edite `.hostinger.deploy.env` com seus dados reais.
-
-3. Opcional: configure um alias no `~/.ssh/config` e use `SSH_TARGET`.
-
-Exemplo de `~/.ssh/config`:
-
-```sshconfig
-Host hostinger-kitamo
-    HostName <HOST_OR_IP>
-    User <SSH_USER>
-    Port <SSH_PORT>
-    IdentityFile ~/.ssh/kitamo_deploy
-    ServerAliveInterval 60
-    ServerAliveCountMax 3
-```
-
-## Deploy recomendado (automatizado)
+## Deploy manual (SSH script)
 
 ```bash
 scripts/hostinger-deploy-ssh.sh
 ```
 
-O script faz:
+Requer `.hostinger.deploy.env` configurado (veja `.hostinger.deploy.env.example`).
 
-1. Build frontend local (`npm run build`)
-2. Staging + `composer install --no-dev` em staging
-3. Gera zip de deploy
-4. Upload via SCP
-5. Extrai/sincroniza no servidor preservando `.env` e `storage/`
-6. Roda cache commands do Laravel
+## Configuracao SSH
 
-## Validar se deploy foi aplicado
+Configure no `~/.ssh/config`:
 
-```bash
-# versao Laravel e commit atual
-ssh hostinger-kitamo 'cd ~/domains/<seu-dominio>/public_html && php artisan --version && git rev-parse --short HEAD || true'
-
-# assets atualizados
-ssh hostinger-kitamo 'ls -lt ~/domains/<seu-dominio>/public_html/public/build/assets | head -10'
+```sshconfig
+Host hostinger-kitamo
+    HostName 147.79.84.203
+    User u626119115
+    Port 65002
+    IdentityFile ~/.ssh/kitamo_fix
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
 ```
 
-## Troubleshooting rapido
+## PHP no servidor
 
-### `artisan não encontrado`
+O `php` no PATH do SSH e PHP 7.2 (sistema). Para comandos artisan, usar:
 
-Confirme `PROJECT_DIR` no `.hostinger.deploy.env`.
+```bash
+/opt/alt/php83/usr/bin/php artisan migrate --force
+/opt/alt/php83/usr/bin/php artisan optimize:clear
+```
+
+## Troubleshooting
 
 ### erro de permissao em cache/storage
 
 ```bash
-ssh hostinger-kitamo 'cd ~/domains/<seu-dominio>/public_html && chmod -R 775 storage bootstrap/cache'
+ssh hostinger-kitamo 'cd ~/domains/kitamo.com.br/public_html && chmod -R 775 storage bootstrap/cache'
 ```
 
-### migrations pendentes
+### extensoes PHP nao carregam (PDO not found, mbstring, etc)
 
-```bash
-ssh hostinger-kitamo 'cd ~/domains/<seu-dominio>/public_html && php artisan migrate --force'
-```
+Verificar phpinfo() — se "Additional .ini files parsed" estiver vazio, contatar suporte Hostinger para rodar `cagefsctl --rebuild-alt-php-ini` e `cagefsctl --force-update`.
+
+### assets 404 / site em branco
+
+O `.htaccess` da raiz redireciona requests para `public/`. Se estiver faltando ou incorreto, o site quebra. Esse arquivo vem do repositorio e e deployado automaticamente.
 
 ## Seguranca
 
 - Nao commitar `.hostinger.deploy.env`
-- Nao passar `SSH_HOST=... SSH_USER=...` direto na linha de comando
-- Se credenciais vazaram em chat/historico, rotacione senha/chave SSH no painel da Hostinger
+- Nao expor credenciais SSH em chat/historico
+- Se credenciais vazaram, rotacione senha/chave SSH no painel da Hostinger

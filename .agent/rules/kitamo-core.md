@@ -10,16 +10,17 @@
 - Backend: Laravel 12 + PHP 8.3
 - Frontend: Vue 3.4 + TypeScript 5.6 + Inertia.js
 - CSS: Tailwind CSS 3.2.1
-- Database DEV: SQLite | PROD: PostgreSQL via Supabase
+- Database DEV: SQLite | PROD: MySQL via Hostinger
 - Build: Vite 7.0.7
-- Deploy: Hostinger via scripts/hostinger-deploy-ssh.sh
+- Deploy: Hostinger via GitHub Actions (rsync) — ver `.github/workflows/deploy.yml`
+- PHP no servidor: `/opt/alt/php83/usr/bin/php` (NAO usar `php` que e 7.2)
 
 ## Convenções Obrigatórias
 - TypeScript types obrigatórios em todo frontend
 - Migrations são imutáveis — sempre criar novas, nunca modificar
 - Mobile-first em todos os componentes Vue
 - npm install sempre com --legacy-peer-deps
-- Session e Cache: driver file (nunca database — incompatível com Supabase)
+- Session e Cache: driver file (nunca database em shared hosting)
 - Nunca commitar /public/build
 
 ## Design System
