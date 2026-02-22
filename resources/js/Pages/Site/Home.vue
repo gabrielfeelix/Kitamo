@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
-import PricingBlock from '@/Components/site/PricingBlock.vue';
 import MotionSection from '@/Components/site/MotionSection.vue';
-import { pricingPlans } from '@/types/site';
 
 const props = defineProps<{
     canLogin?: boolean;
@@ -12,65 +10,75 @@ const props = defineProps<{
 
 const primaryHref = props.canRegister ? '/register' : '/login';
 
+// Reimagined Destination Cards for an Asymmetrical Bento Grid
 const destinationCards = [
     {
-        title: 'Para a Galera CLT',
-        subtitle: 'Boleto no dia certo',
-        description: 'Faça seu salário render conectando seus gastos com seu ciclo mensal. Zero sustos no dia 5.',
-        image: 'https://images.pexels.com/photos/1184572/pexels-photo-1184572.jpeg?auto=compress&cs=tinysrgb&w=900',
-        class: 'md:mt-12', 
+        title: 'A Galera CLT',
+        subtitle: 'Boleto no Dia Certo',
+        description: 'Faça seu salário render conectando seus gastos com o ciclo mensal do pagamento.',
+        image: 'https://images.pexels.com/photos/1184572/pexels-photo-1184572.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        wrapperClass: 'md:col-span-8',
+        heightClass: 'h-[450px]',
     },
     {
         title: 'Para Casais',
-        subtitle: 'Paz em dose dupla',
-        description: 'Juntem as rendas e dividam as contas em um mapa único. Menos treta, mais viagens juntos.',
-        image: 'https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=900',
-        class: 'md:-mt-8',
+        subtitle: 'Paz Conjugal',
+        description: 'Juntem as rendas num mapa único e acabem com as brigas por extrato surpresa.',
+        image: 'https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        wrapperClass: 'md:col-span-4',
+        heightClass: 'h-[450px]',
     },
     {
         title: 'Autônomos e Freelas',
-        subtitle: 'Domando o imprevisível',
-        description: 'Antecipe os meses de vacas magras e prepare o caixa para quando a grana tá alta.',
-        image: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=900',
-        class: 'md:mt-24', 
+        subtitle: 'Domando o Imprevisível',
+        description: 'Ganhou bem esse mês? Joga pra frente. A antecipação te salva na vaca magra.',
+        image: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=1400',
+        wrapperClass: 'md:col-span-12',
+        heightClass: 'h-[400px] sm:h-[500px]',
     },
 ];
 
 const flowTimeline = [
     {
-        number: '1',
-        title: 'Bota a casa em ordem',
-        text: 'Cadastre suas contas, cartões e o que você gasta no mês. Não se preocupa, o processo é super fácil.',
+        number: '01',
+        title: 'A Fundação',
+        text: 'Cadastre contas e dívidas. Um clique, e sua base tá pronta.',
     },
     {
-        number: '2',
-        title: 'Liga o piloto não-tão-automático',
-        text: 'Mantenha a rotina e jogue as entradas e saídas no Kitamo. É rapidinho e a clareza entra na sua vida.',
+        number: '02',
+        title: 'O Hábito',
+        text: 'Tirou do bolso? Joga no app. 5 segundos pro hábito virar rotina.',
     },
     {
-        number: '3',
-        title: 'Veja o futuro da conta',
-        text: 'O algoritmo lê sua rotina e te fala bem antes se o salário não vai chegar no fim do mês.',
+        number: '03',
+        title: 'O Radar',
+        text: 'O sinal vermelho acende se faltar grana pro boleto de semana que vem.',
     },
     {
-        number: '4',
-        title: 'Ajuste a rota no sapatinho',
-        text: 'Mova um dinheiro ali, corte um ifood de fim de semana ali, pronto, o mês voltou pros eixos.',
+        number: '04',
+        title: 'A Paz',
+        text: 'Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente.',
     },
 ];
 
 const serviceBlocks = [
     {
-        title: 'Futuro na Tela',
-        description: 'Veja como vai estar seu saldo daqui a 30 dias. Chega de viver só olhando pro que já aconteceu.',
+        title: 'Previsão Pura',
+        description: 'Seu saldo em 30, 60 ou 90 dias.',
+        icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+        col: 'md:col-span-4'
     },
     {
-        title: 'Radar contra Perrengue',
-        description: 'Identifica gastos que vão te estourar e avisa na hora. É aquele amigo que te salva do cheque especial.',
+        title: 'Zero Planilhas Feias',
+        description: 'Adeus formatações condicionais que sempre quebram.',
+        icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+        col: 'md:col-span-4'
     },
     {
-        title: 'Revisão Modo Turbo',
-        description: 'Tire 10 minutinhos no fim de semana e organize a vida sem drama e sem planilhas feias.',
+        title: 'Multicontas reais',
+        description: 'Tudo num lugar só, mas separado do seu jeito.',
+        icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+        col: 'md:col-span-4'
     },
 ];
 </script>
@@ -81,132 +89,99 @@ const serviceBlocks = [
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <!-- Hero Section -->
-        <MotionSection class="relative min-h-screen w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-24 pb-16 border-b border-white/5">
-            <!-- Dramatic ambient glow background, premium look -->
-            <div class="pointer-events-none absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-teal-600/30 blur-[140px] mix-blend-screen opacity-60"></div>
-            <div class="pointer-events-none absolute bottom-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-blue-600/20 blur-[130px] mix-blend-screen opacity-50"></div>
-            <!-- Subtly Noise Overlay for texture -->
-            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        
+        <!-- ================= HERO ================= -->
+        <MotionSection class="relative min-h-[100vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-40">
+            <!-- Noise Texture -->
+            <div class="absolute inset-0 opacity-[0.025] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+            <!-- Dynamic Orbs -->
+            <div class="pointer-events-none absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-teal-600/20 blur-[150px] mix-blend-screen opacity-70 animate-pulse"></div>
+            <div class="pointer-events-none absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[130px] mix-blend-screen opacity-50"></div>
 
-            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-7">
-                    <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">
-                        <span class="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
-                        <span>Seu dinheiro no modo fácil</span>
-                    </p>
-                    <h1 class="text-[4rem] sm:text-[5rem] lg:text-[6.5rem] leading-[0.9] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold">
-                        O seu mês,<br />
-                        <span class="block text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-4 mt-2">nas suas regras.</span>
-                    </h1>
-                    <p class="mt-8 max-w-lg text-lg sm:text-xl leading-relaxed text-slate-400 font-medium">
-                        Chega de fechar o mês no susto. Com o Kitamo, você vê o futuro da sua conta e toma as rédeas da parada na palma da mão.
-                    </p>
-
-                    <div class="mt-10 flex flex-wrap gap-4 items-center">
-                        <Link :href="primaryHref" class="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-teal-500 px-8 text-[13px] font-extrabold uppercase tracking-[0.14em] text-slate-950 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_-5px_theme(colors.teal.500)]">
-                            <span class="absolute inset-0 bg-white/30 translate-y-full transition-transform duration-300 group-hover:translate-y-0"></span>
-                            <span class="relative">Acesso Imediato</span>
-                        </Link>
-                        <Link :href="route('site.product') + '#demo'" class="inline-flex h-14 items-center justify-center rounded-full border border-slate-700 px-8 text-[13px] font-bold uppercase tracking-[0.14em] text-slate-300 backdrop-blur-sm transition-all hover:bg-slate-800 hover:border-slate-500 hover:text-white">
-                            Ver como a magia acontece
-                        </Link>
-                    </div>
-
-                    <div class="mt-12 flex items-center gap-10 border-t border-slate-800 pt-8 max-w-md">
-                        <div class="flex flex-col gap-1">
-                            <strong class="text-3xl text-teal-400 font-sans tracking-tight leading-none">Zero</strong>
-                            <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Surpresas no fim de mês</span>
-                        </div>
-                        <div class="w-px h-10 bg-slate-800"></div>
-                        <div class="flex flex-col gap-1">
-                            <strong class="text-3xl text-white font-sans tracking-tight leading-none">30+</strong>
-                            <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dias de Visão de Futuro</span>
-                        </div>
-                    </div>
+            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 flex flex-col items-center text-center">
+                <!-- Status Badge -->
+                <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-2.5 rounded-full backdrop-blur-md mb-8 group hover:bg-white/10 transition-colors cursor-pointer shadow-lg shadow-black/20">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                    </span>
+                    <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-teal-300">O fim das planilhas</span>
                 </div>
 
-                <div class="lg:col-span-5 relative hidden lg:flex justify-end perspective-1000">
-                    <div class="absolute -inset-4 bg-teal-500/20 rounded-[3rem] blur-2xl transform rotate-3"></div>
-                    <div class="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-slate-900 shadow-2xl transition-all duration-700 hover:rotate-2 hover:scale-[1.03] group w-full max-w-md translate-y-8">
-                        <img
-                            src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                            alt="Interface Abstrata"
-                            class="h-[500px] w-full object-cover opacity-60 mix-blend-luminosity transition-opacity duration-500 group-hover:opacity-80"
+                <!-- Epic Typography -->
+                <h1 class="text-[4.5rem] sm:text-[6rem] lg:text-[8.5rem] leading-[0.85] tracking-tighter text-slate-50 font-extrabold max-w-5xl">
+                    Seu dinheiro.<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-300 to-emerald-400 font-serif italic pr-4">Visível hoje.</span>
+                </h1>
+                
+                <p class="mt-8 text-xl sm:text-2xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto drop-shadow-sm">
+                    Antecipe furos, dome faturas e pouse o avião no fim do mês com paz de espírito. Totalmente online.
+                </p>
+
+                <!-- Dual Action Hero -->
+                <div class="mt-14 flex flex-col sm:flex-row gap-5 items-center w-full sm:w-auto">
+                    <Link :href="primaryHref" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] bg-teal-500 px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_theme(colors.teal.500/40)]">
+                        Assumir o Controle
+                    </Link>
+                    <Link :href="route('site.product')" class="w-full sm:w-auto inline-flex h-16 items-center justify-center rounded-[2rem] border-2 border-slate-700 bg-transparent px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-300 transition-all hover:border-slate-500 hover:text-white hover:bg-white/5 active:scale-95">
+                        Como a máquina roda?
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Floating UI Preview (Breaks the next section) -->
+            <div class="absolute -bottom-32 sm:-bottom-40 lg:-bottom-56 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-20 perspective-1000">
+                <div class="absolute inset-0 bg-teal-500/10 rounded-[4rem] blur-3xl transform -translate-y-10"></div>
+                <div class="relative rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 bg-slate-900/80 backdrop-blur-sm shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden transition-transform duration-1000 transform hover:-translate-y-4 rotate-x-6 hover:rotate-x-0 group">
+                    <img
+                        src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                        alt="Dashboard Mockup"
+                        class="w-full h-auto aspect-video object-cover filter saturate-[0.85] opacity-80 group-hover:saturate-110 group-hover:opacity-100 transition-all duration-700"
+                    />
+                    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent"></div>
+                </div>
+            </div>
+        </MotionSection>
+
+        <!-- Spacer for the intersecting hero image -->
+        <div class="bg-slate-50 h-32 sm:h-48 lg:h-64 border-t border-slate-200"></div>
+
+        <!-- ================= BENTO GRID DESTINATIONS ================= -->
+        <MotionSection class="bg-slate-50 py-24 pb-40">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
+                <div class="flex flex-col md:flex-row items-end justify-between gap-10 mb-20 text-slate-900 border-b border-slate-200 pb-16">
+                    <div class="max-w-3xl">
+                        <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 w-fit">Qual a sua dor hoje?</p>
+                        <h2 class="text-5xl lg:text-[5rem] font-extrabold tracking-tighter leading-[0.95]">
+                            Uma ferramenta.<br><span class="font-serif italic text-slate-500">Múltiplas vidas salvas.</span>
+                        </h2>
+                    </div>
+                    <p class="max-w-sm text-lg font-medium text-slate-500 leading-relaxed md:text-right">A inteligência do Kitamo se adapta ao formato da sua bagunça financeira.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
+                    <div 
+                        v-for="card in destinationCards" 
+                        :key="card.title" 
+                        class="group relative overflow-hidden rounded-[3rem] bg-slate-900 border border-slate-200 shadow-xl"
+                        :class="[card.wrapperClass, card.heightClass]"
+                    >
+                        <!-- Dynamic Image -->
+                        <img 
+                            :src="card.image" 
+                            :alt="card.title" 
+                            class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity filter group-hover:mix-blend-normal group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                         />
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                        <!-- Soft Gradients -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-transparent group-hover:from-slate-950/90 transition-colors duration-500"></div>
                         
-                        <!-- Premium floating UI Card -->
-                        <div class="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-2xl translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                            <div class="flex items-center gap-3 mb-3 pb-3 border-b border-white/10">
-                                <span class="flex h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_10px_theme(colors.red.400)] animate-pulse"></span>
-                                <span class="text-[10px] font-bold uppercase tracking-widest text-red-300">Alerta de Perrengue</span>
-                            </div>
-                            <p class="text-sm text-slate-200 font-medium leading-relaxed">Faltam R$ 450 pro boleto da internet da semana que vem. <span class="text-teal-300 font-bold cursor-pointer hover:underline">Resolver com 1 clique?</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </MotionSection>
-
-        <!-- Perfis Section -->
-        <MotionSection class="bg-gray-100 py-24 sm:py-32 relative overflow-hidden">
-            <div class="mx-auto max-w-[1440px] px-6 md:px-12">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                    <h2 class="text-5xl sm:text-6xl font-extrabold tracking-tighter text-slate-800 max-w-2xl leading-[1.05]">
-                        Feito pra você,<br><span class="text-slate-500">não importa a fase.</span>
-                    </h2>
-                    <p class="max-w-xs text-xs uppercase tracking-[0.15em] font-bold text-slate-400 text-right">
-                        Dinheiro é sua ferramenta<br/>Use a seu favor
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div v-for="item in destinationCards" :key="item.title" :class="['group relative', item.class]">
-                        <div class="absolute inset-0 bg-teal-900/5 translate-y-4 translate-x-4 rounded-[2rem] transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6 -z-10"></div>
-                        <article class="bg-white rounded-[2rem] overflow-hidden border border-slate-200 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2 h-full flex flex-col">
-                            <div class="relative h-64 overflow-hidden">
-                                <img :src="item.image" :alt="item.title" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent"></div>
-                                <div class="absolute bottom-6 left-6 right-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-teal-300 mb-2 drop-shadow-md">{{ item.subtitle }}</p>
-                                    <h3 class="text-3xl font-bold tracking-tight">{{ item.title }}</h3>
-                                </div>
-                            </div>
-                            <div class="p-8 flex-grow flex flex-col justify-between bg-white text-slate-600 rounded-b-[2rem]">
-                                <p class="text-base font-medium leading-relaxed">{{ item.description }}</p>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </div>
-        </MotionSection>
-
-        <!-- Timeline Section -->
-        <MotionSection class="bg-white py-32 text-slate-800 relative z-10 border-t border-slate-200">
-            <div class="max-w-[1440px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-24 items-start">
-                <div class="lg:sticky lg:top-32 lg:col-span-2">
-                    <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-4 bg-teal-50 px-3 py-1.5 rounded-md border border-teal-100">Como funciona</p>
-                    <h2 class="mt-2 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
-                        Sem milagres,<br><span class="text-teal-500">só o básico bem feito.</span>
-                    </h2>
-                    <p class="mt-6 text-lg font-medium leading-relaxed text-slate-500 max-w-sm">
-                        Não enchemos a sua tela com gráficos que você não entende. A nossa parada é te dar clareza no dia a dia, de jeito fácil.
-                    </p>
-                </div>
-
-                <div class="relative lg:col-span-3">
-                    <div class="absolute left-6 top-8 bottom-8 w-1 bg-gradient-to-b from-teal-500/0 via-teal-500 to-teal-500/0 hidden sm:block rounded-full"></div>
-                    
-                    <div class="flex flex-col gap-12 relative">
-                        <div v-for="(step, index) in flowTimeline" :key="step.number" class="group relative sm:pl-20">
-                            <!-- Premium Number Bubble -->
-                            <div class="absolute left-0 top-0 hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white border-2 border-slate-100 text-xl font-bold text-teal-500 shadow-md transition-all duration-300 group-hover:scale-110 group-hover:border-teal-500 group-hover:text-teal-600 group-hover:shadow-teal-500/20">
-                                {{ step.number }}
-                            </div>
-                            <div class="bg-slate-50 border border-slate-100 p-8 rounded-3xl transition-all duration-300 hover:shadow-xl hover:bg-white hover:border-teal-100">
-                                <h3 class="text-2xl font-bold tracking-tight text-slate-900 mb-3">{{ step.title }}</h3>
-                                <p class="text-base text-slate-600 font-medium leading-relaxed">{{ step.text }}</p>
+                        <!-- Intersecting Content -->
+                        <div class="absolute inset-0 p-10 lg:p-14 flex flex-col justify-end text-white outline-none">
+                            <div class="transform group-hover:-translate-y-4 transition-transform duration-500">
+                                <p class="text-[11px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-4 drop-shadow-md bg-slate-950/50 backdrop-blur w-fit px-3 py-1.5 rounded-lg border border-white/10">{{ card.subtitle }}</p>
+                                <h3 class="text-4xl lg:text-5xl font-extrabold tracking-tighter mb-4">{{ card.title }}</h3>
+                                <p class="text-lg text-slate-300 font-medium max-w-lg leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{{ card.description }}</p>
                             </div>
                         </div>
                     </div>
@@ -214,61 +189,93 @@ const serviceBlocks = [
             </div>
         </MotionSection>
 
-        <!-- Service Blocks Deep Comparison Section -->
-        <MotionSection class="bg-slate-950 py-32 relative border-t border-slate-800 text-slate-200">
-             <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+        <!-- ================= VERTICAL SNAKE TIMELINE ================= -->
+        <MotionSection class="bg-slate-950 py-40 relative text-white overflow-hidden border-t-[8px] border-teal-500 shadow-2xl">
+            <!-- Background organic blob -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.08)_0,transparent_70%)] pointer-events-none"></div>
+
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10 flex flex-col lg:flex-row gap-20">
+                <div class="lg:w-1/3 lg:sticky lg:top-40 h-fit">
+                    <h2 class="text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter text-white leading-[0.95] mb-8">O ritmo.</h2>
+                    <p class="text-xl text-slate-400 font-medium leading-relaxed">Não force o controle financeiro a ser uma punição diária. Siga os 4 passos viscerais que mantêm a engrenagem limpa gastando minutos.</p>
+                </div>
+                
+                <div class="lg:w-2/3 flex flex-col gap-12 sm:gap-6">
+                    <article 
+                        v-for="(step, index) in flowTimeline" 
+                        :key="step.number"
+                        class="relative group rounded-[3rem] bg-white/5 border border-white/10 p-10 sm:p-14 hover:bg-white/10 transition-colors duration-500 backdrop-blur-sm"
+                        :class="index % 2 !== 0 ? 'sm:ml-20' : 'sm:mr-20'"
+                    >
+                         <!-- Giant Background Number -->
+                         <div class="absolute right-8 top-8 text-[8rem] sm:text-[10rem] font-extrabold leading-none text-white/5 pointer-events-none select-none group-hover:text-teal-500/10 group-hover:rotate-12 transition-all duration-700">
+                             {{ step.number }}
+                         </div>
+                         
+                         <div class="relative z-10">
+                             <div class="h-16 w-16 bg-slate-900 border border-slate-700 rounded-2xl flex items-center justify-center font-extrabold text-2xl text-teal-400 mb-8 shadow-inner group-hover:scale-110 group-hover:border-teal-500 transition-all duration-300">
+                                 {{ step.number }}
+                             </div>
+                             <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-6 group-hover:text-teal-300 transition-colors">{{ step.title }}</h3>
+                             <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md">{{ step.text }}</p>
+                         </div>
+                    </article>
+                </div>
+            </div>
+        </MotionSection>
+
+        <!-- ================= BRAWNY SERVICE BLOCKS ================= -->
+        <MotionSection class="bg-white py-32 rounded-t-[4rem] rounded-b-[4rem] relative z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.3)] border-b border-slate-200">
+             <div class="mx-auto max-w-[1440px] px-6 md:px-12 text-center mb-20">
+                 <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-6 drop-shadow-sm bg-slate-100 px-4 py-2 rounded-full border border-slate-200 inline-block">Sem Firulas</p>
+                 <h2 class="text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter leading-[0.95] text-slate-900"><span class="italic font-serif text-teal-500 pr-2">Por que</span> Kitamo?</h2>
+             </div>
              
-            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10">
-                <div class="text-center max-w-3xl mx-auto mb-20">
-                    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tighter text-white mb-6">Porque funciona</h2>
-                    <p class="text-xl text-slate-400 font-medium">Você tá cansado de olhar pro app do banco e não saber pra onde seu dinheiro tá indo. A gente também tava, então a gente mudou a lógica.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-                    <div v-for="(block, index) in serviceBlocks" :key="index" class="bg-slate-900 p-10 rounded-[2rem] border border-slate-800 hover:border-teal-500/50 hover:bg-slate-800/80 transition-all duration-300 relative overflow-hidden group shadow-2xl">
-                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-teal-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                        <span class="inline-flex w-10 h-10 items-center justify-center rounded-lg bg-slate-800 text-teal-400 font-bold mb-6 font-mono text-sm group-hover:bg-teal-500/20 group-hover:text-teal-300 transition-colors">0{{ index + 1 }}</span>
-                        <h3 class="text-2xl font-bold tracking-tight text-white mb-4">{{ block.title }}</h3>
-                        <p class="text-slate-400 leading-relaxed font-medium">{{ block.description }}</p>
-                    </div>
-                </div>
-            </div>
+             <div class="mx-auto max-w-[1440px] px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+                  <div 
+                      v-for="(block, idx) in serviceBlocks" 
+                      :key="block.title" 
+                      class="bg-slate-50 border border-slate-200 rounded-[3rem] p-10 sm:p-14 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col"
+                      :class="block.col"
+                  >
+                       <div class="w-20 h-20 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm flex items-center justify-center mb-10 group-hover:bg-teal-500 group-hover:border-teal-600 transition-colors duration-500">
+                           <svg class="h-8 w-8 text-slate-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" :d="block.icon"/></svg>
+                       </div>
+                       <h3 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-4">{{ block.title }}</h3>
+                       <p class="text-lg text-slate-500 font-medium leading-relaxed mt-auto">{{ block.description }}</p>
+                  </div>
+             </div>
+             
+             <div class="mt-20 flex justify-center">
+                 <Link :href="route('site.pricing')" class="group relative inline-flex items-center gap-4 text-xl font-extrabold tracking-tight text-slate-900 hover:text-teal-600 transition-colors">
+                     Ver planos de assinatura
+                     <span class="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full group-hover:bg-teal-100 transition-colors">
+                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                     </span>
+                 </Link>
+             </div>
         </MotionSection>
 
-        <!-- Preços Section -->
-        <MotionSection class="bg-gray-100 py-32 relative text-slate-900 rounded-b-[4rem] z-20 overflow-hidden shadow-2xl">
-            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10">
-                <div class="text-center max-w-2xl mx-auto mb-16">
-                    <p class="text-[12px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-4 bg-teal-100/50 inline-block px-4 py-2 rounded-full border border-teal-200">Quanto vai custar?</p>
-                    <h2 class="text-5xl sm:text-6xl font-extrabold tracking-tighter text-slate-900 mb-6">Pague o justo.</h2>
-                    <p class="text-lg text-slate-600 font-medium">
-                        Tem o plano 0800 pra você organizar a bagunça, e se quiser voar mais alto, os planos pagos ajudam a gente a pagar nossos boletos também.
-                    </p>
-                </div>
-
-                <div class="max-w-[1100px] mx-auto ring-1 ring-slate-200 rounded-[2.5rem] bg-white p-2">
-                    <PricingBlock :plans="pricingPlans" :can-register="canRegister" />
-                </div>
-            </div>
-        </MotionSection>
-
-        <!-- Footer Call to Action -->
-        <MotionSection class="bg-teal-500 py-32 relative overflow-hidden flex flex-col items-center justify-center">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-teal-300 to-teal-700 mix-blend-multiply opacity-50"></div>
-            <!-- Decorative circle -->
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="max-w-[1000px] mx-auto px-6 md:px-12 text-center relative z-10">
-                <h2 class="text-6xl sm:text-7xl lg:text-[7.5rem] font-extrabold tracking-tighter text-teal-950 leading-[0.9]">
-                    Toma o controle.<br><span class="italic font-serif opacity-90 text-teal-900">Agora.</span>
+        <!-- ================= THE MASSIVE FOOTER CTA ================= -->
+        <MotionSection class="bg-teal-500 py-40 sm:py-52 relative overflow-hidden -mt-20 pt-48 flex flex-col items-center justify-center text-center">
+            <!-- Organic overlay -->
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-teal-400 to-teal-700 mix-blend-multiply opacity-60 pointer-events-none"></div>
+            
+            <div class="max-w-[1200px] mx-auto px-6 md:px-12 relative z-10 flex flex-col items-center">
+                <span class="inline-block px-6 py-2 bg-slate-950/20 backdrop-blur-md rounded-full text-white font-extrabold text-[12px] uppercase tracking-[0.2em] mb-10 shadow-lg border border-white/20">O Jogo Virou</span>
+                
+                <h2 class="text-[5rem] sm:text-[7rem] lg:text-[9rem] font-extrabold tracking-tighter text-teal-950 leading-[0.85] w-full break-words px-4 drop-shadow-[0_10px_20px_theme(colors.teal.600)]">
+                    Controle.<br><span class="opacity-70">Agora.</span>
                 </h2>
-                <p class="mt-8 text-xl font-medium text-teal-950/80 max-w-lg mx-auto">Não deixa pro mês que vem o que você pode ajeitar hoje em 10 minutinhos.</p>
-                <div class="mt-12">
+                
+                <p class="mt-12 text-2xl font-bold text-teal-950/80 max-w-2xl mx-auto px-4">Não espere mais 30 dias para mudar sua realidade. Feche o vazamento hoje.</p>
+                
+                <div class="mt-16 sm:mt-20 w-full sm:w-auto px-6">
                     <Link
                         :href="primaryHref"
-                        class="inline-flex h-16 items-center justify-center rounded-full bg-slate-950 px-10 text-[14px] font-extrabold uppercase tracking-[0.16em] text-white transition-all hover:scale-105 hover:bg-slate-900 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] focus:ring-4 focus:ring-slate-900/30"
+                        class="flex w-full sm:w-auto h-20 sm:h-24 px-12 sm:px-20 items-center justify-center rounded-[3rem] bg-slate-950 text-[16px] sm:text-[18px] font-extrabold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:scale-[1.03] hover:bg-slate-900 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] focus:ring-4 focus:ring-slate-950/30"
                     >
-                        Criar minha conta Grátis
+                        Criar Conta Grátis
                     </Link>
                 </div>
             </div>
@@ -277,7 +284,10 @@ const serviceBlocks = [
 </template>
 
 <style scoped>
-h1, h2, h3 {
+h1, h2, h3, strong {
     font-feature-settings: "salt" on, "ss01" on;
+}
+html {
+    scroll-behavior: smooth;
 }
 </style>
