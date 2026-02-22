@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 import MotionSection from '@/Components/site/MotionSection.vue';
+import AnimatedDashboardMockup from '@/Components/site/AnimatedDashboardMockup.vue';
 
 const props = defineProps<{
     canLogin?: boolean;
@@ -114,15 +115,13 @@ const personas = [
                 </div>
             </div>
 
-            <!-- Floating Hero Image intercepting next section -->
+            <!-- Floating Hero Animated Mockup intercepting next section -->
             <div class="relative mx-auto w-[90%] max-w-[1200px] z-20 group perspective-1000 mt-20 sm:mt-24 lg:mt-32 -mb-32 sm:-mb-40 lg:-mb-56">
                 <div class="absolute inset-0 bg-teal-500/20 rounded-[3rem] blur-3xl transform group-hover:bg-teal-400/30 transition-colors duration-1000 opacity-60"></div>
-                <img
-                    src="https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg?auto=compress&cs=tinysrgb&w=1400"
-                    alt="Visão geral do produto dashboard"
-                    class="relative w-full h-auto aspect-video md:aspect-[21/9] object-cover rounded-[2.5rem] border border-white/10 shadow-2xl filter saturate-[0.8] hover:saturate-110 transition-all duration-700 transform rotate-x-6 hover:rotate-x-0 group-hover:-translate-y-4"
-                    style="transform-style: preserve-3d; transform: rotateX(8deg);"
-                />
+                
+                <div class="relative z-10 transform rotate-x-6 hover:rotate-x-0 group-hover:-translate-y-4 transition-all duration-700" style="transform-style: preserve-3d; transform: rotateX(8deg);">
+                    <AnimatedDashboardMockup />
+                </div>
                 
                 <!-- Floating tags mapping to the image -->
                 <div class="absolute top-1/4 left-[10%] hidden md:block bg-slate-950/80 backdrop-blur border border-white/20 text-white px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transform -translate-y-full shadow-lg group-hover:-translate-y-8 transition-all duration-700 delay-100 z-30">Contas</div>

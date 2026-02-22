@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 import MotionSection from '@/Components/site/MotionSection.vue';
+import AnimatedDashboardMockup from '@/Components/site/AnimatedDashboardMockup.vue';
 
 const props = defineProps<{
     canLogin?: boolean;
@@ -137,12 +138,8 @@ const serviceBlocks = [
             <div class="relative mx-auto w-[90%] max-w-[1200px] z-20 perspective-1000 mt-20 sm:mt-24 lg:mt-32 -mb-32 sm:-mb-40 lg:-mb-56">
                 <div class="absolute inset-0 bg-teal-500/10 rounded-[4rem] blur-3xl transform -translate-y-10"></div>
                 <div class="relative rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 bg-slate-900/80 backdrop-blur-sm shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden transition-transform duration-1000 transform hover:-translate-y-4 rotate-x-6 hover:rotate-x-0 group">
-                    <img
-                        src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1600"
-                        alt="Dashboard Mockup"
-                        class="w-full h-auto aspect-video object-cover filter saturate-[0.85] opacity-80 group-hover:saturate-110 group-hover:opacity-100 transition-all duration-700"
-                    />
-                    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent"></div>
+                    <AnimatedDashboardMockup />
+                    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none"></div>
                 </div>
             </div>
         </MotionSection>

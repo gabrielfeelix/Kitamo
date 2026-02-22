@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://127.0.0.1:8000';
 const SCREENSHOT_DIR = './screenshots_kitamo';
 
 if (!fs.existsSync(SCREENSHOT_DIR)) {
