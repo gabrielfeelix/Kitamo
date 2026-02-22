@@ -5,6 +5,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SSH_OPTS: "-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
+      REMOTE: "u626119115@147.79.84.203"
+      PROJECT_DIR: "~/domains/kitamo.com.br/public_html"
+      PHP_BIN: "/opt/alt/php83/usr/bin/php"
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -17,34 +22,34 @@ jobs:
       - run: composer install --no-interaction --no-progress --prefer-dist
       - run: npm ci --legacy-peer-deps
       - run: npm run build
-      - name: Deploy
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/key
           chmod 600 ~/.ssh/key
-          SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
+      - name: Deploy
+        run: |
           for attempt in 1 2 3; do
             echo "Deploy attempt $attempt/3..."
             rsync -avz --timeout=60 -e "ssh $SSH_OPTS" \
               --exclude='.git' --exclude='node_modules' \
-              ./ u626119115@147.79.84.203:~/domains/kitamo.com.br/public_html && break
+              ./ $REMOTE:$PROJECT_DIR && break
             sleep 10
           done
-      - name: Verify build assets exist on Hostinger
+      - name: Verify build assets
         run: |
-          SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
-          ssh $SSH_OPTS \
-            u626119115@147.79.84.203 \
-            'cd ~/domains/kitamo.com.br/public_html && test -f public/build/manifest.json && ls -la public/build/assets | head -50'
-      - name: Fix permissions and create symlink (Hostinger)
+          ssh $SSH_OPTS $REMOTE \
+            "cd $PROJECT_DIR && test -f public/build/manifest.json && echo 'Assets OK'"
+      - name: Fix permissions and create symlink
         run: |
-          SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
-          ssh $SSH_OPTS \
-            u626119115@147.79.84.203 \
-            'cd ~/domains/kitamo.com.br/public_html && chmod -R 775 storage bootstrap/cache && mkdir -p storage/app/public/receipts && rm -f public/storage && ln -s ../storage/app/public public/storage && ls -la public/storage && echo "Storage setup complete"'
-      - name: Run migrations + cache (Hostinger)
+          ssh $SSH_OPTS $REMOTE \
+            "cd $PROJECT_DIR && chmod -R 775 storage bootstrap/cache && mkdir -p storage/app/public/receipts && rm -f public/storage && ln -s ../storage/app/public public/storage && echo 'Permissions OK'"
+      - name: Run migrations + cache
         run: |
-          SSH_OPTS="-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
-          ssh $SSH_OPTS \
-            u626119115@147.79.84.203 \
-            'set -e; cd ~/domains/kitamo.com.br/public_html; (php -v; php artisan --version; php artisan migrate:status || true; php artisan migrate --force -v; php artisan optimize:clear; php artisan config:cache; php artisan route:cache; php artisan view:cache; echo "OK") || (echo "--- laravel.log (tail) ---"; tail -n 200 storage/logs/laravel.log || true; exit 1)'
+          ssh $SSH_OPTS $REMOTE "set -e; cd $PROJECT_DIR; \
+            $PHP_BIN artisan migrate --force; \
+            $PHP_BIN artisan optimize:clear; \
+            $PHP_BIN artisan config:cache; \
+            $PHP_BIN artisan route:cache; \
+            $PHP_BIN artisan view:cache; \
+            echo 'Deploy complete'"

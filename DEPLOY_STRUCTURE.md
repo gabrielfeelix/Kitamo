@@ -1,7 +1,7 @@
 # 📁 Estrutura de Deploy - Laravel na Hostinger
 
 > **Status**: ✅ Produção estável
-> **Última atualização**: 2026-01-22
+> **Última atualização**: 2026-02-22
 > **Document Root**: `~/domains/kitamo.com.br/public_html/`
 
 ## 🎯 Arquitetura Atual
@@ -18,8 +18,7 @@
 │   └── app/
 │       └── public/        # Arquivos públicos (receipts, avatars)
 ├── vendor/                # Dependencies do Composer
-├── .htaccess              # ⚠️ CRÍTICO: Rewrite para /public/
-├── index.php              # Não usado (mantido por compatibilidade)
+├── .htaccess              # ⚠️ CRÍTICO: Rewrite para /public/ (vem do repo)
 └── public/                # 🌐 WEBROOT REAL
     ├── index.php          # ✅ Entry point da aplicação
     ├── .htaccess          # Configuração Laravel padrão
@@ -107,7 +106,9 @@ $app->handleRequest(Request::capture());
 2. ✅ **Deploy**: `rsync` para `public_html/`
 3. ✅ **Symlink**: Cria `public/storage → ../storage/app/public`
 4. ✅ **Permissões**: `chmod 775 storage/ bootstrap/cache/`
-5. ✅ **Cache**: `php artisan config:cache && route:cache`
+5. ✅ **Cache**: `/opt/alt/php83/usr/bin/php artisan config:cache && route:cache`
+
+**⚠️ IMPORTANTE**: O `php` no PATH do servidor é PHP 7.2 (sistema). Sempre usar `/opt/alt/php83/usr/bin/php` para comandos artisan.
 
 **⚠️ NÃO FAZ MAIS**:
 - ❌ Copiar `public/build/` para `build/` na raiz (removido em a6bad96)
@@ -136,19 +137,22 @@ ln -s ../storage/app/public public/storage
 
 ### ❌ 500 Internal Server Error
 
-**Causa 1**: Caminhos errados no `index.php`
-**Solução**: Verificar que usa `__DIR__.'/../'`
+**Causa 1**: `.htaccess` da raiz ausente ou incorreto
+**Solução**: O `.htaccess` que redireciona para `public/` vem do repositório. Se estiver faltando, o deploy não incluiu. Verifique que existe no repo raiz.
 
-**Causa 2**: Cache corrompido
+**Causa 2**: Extensões PHP não carregando (CageFS/CloudLinux)
+**Solução**: Verificar phpinfo() — se "Additional .ini files parsed" estiver vazio, contatar suporte Hostinger para rodar `cagefsctl --rebuild-alt-php-ini` e `cagefsctl --force-update`.
+
+**Causa 3**: Cache corrompido
 **Solução**: Limpar cache
 
 ```bash
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
+/opt/alt/php83/usr/bin/php artisan optimize:clear
+/opt/alt/php83/usr/bin/php artisan config:cache
+/opt/alt/php83/usr/bin/php artisan route:cache
 ```
 
-**Causa 3**: Permissões incorretas
+**Causa 4**: Permissões incorretas
 **Solução**: Ajustar permissões
 
 ```bash

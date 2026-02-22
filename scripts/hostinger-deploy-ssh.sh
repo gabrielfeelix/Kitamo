@@ -109,14 +109,23 @@ chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 rm -f public/hot || true
 
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# PHP 8.3 no Hostinger (php no PATH e 7.2 do sistema)
+PHP_BIN=\"/opt/alt/php83/usr/bin/php\"
+if [ ! -x \"\$PHP_BIN\" ]; then
+  PHP_BIN=\"php\"
+  echo \"AVISO: PHP 8.3 nao encontrado, usando php do PATH\"
+fi
 
-# Executar script de pós-deploy (adapta estrutura para Hostinger)
-if [ -f scripts/hostinger-post-deploy.sh ]; then
-  bash scripts/hostinger-post-deploy.sh
+\$PHP_BIN artisan optimize:clear
+\$PHP_BIN artisan config:cache
+\$PHP_BIN artisan route:cache
+\$PHP_BIN artisan view:cache
+
+# Criar symlink de storage se nao existir
+if [ ! -L public/storage ]; then
+  mkdir -p storage/app/public
+  ln -s ../storage/app/public public/storage
+  echo \"Symlink public/storage criado\"
 fi
 
 echo \"OK: deploy finalizado\"
