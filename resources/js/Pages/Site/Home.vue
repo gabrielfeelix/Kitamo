@@ -236,29 +236,20 @@ const serviceBlocks = [
                              </div>
                              
                              <!-- Micro-animation specific for step 2 "O Hábito" -->
-                             <div v-if="step.number === '02'" class="xl:w-[250px] flex-shrink-0 mt-6 xl:mt-0 relative perspective-1000">
-                                 <div class="absolute inset-0 bg-teal-500/10 blur-xl rounded-full scale-150 group-hover:animate-pulse transition-all duration-700 pointer-events-none"></div>
-                                 <div class="relative bg-slate-900/80 p-5 border border-white/10 rounded-[2rem] shadow-2xl backdrop-blur-md transform rotate-y-[-10deg] rotate-x-[5deg] group-hover:rotate-0 group-hover:translate-y-[-5px] transition-[transform,box-shadow] duration-700 overflow-hidden">
-                                     <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-                                     <div class="flex flex-col gap-4">
-                                         <div class="flex items-center gap-3">
-                                             <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shadow-inner">
-                                                 <span class="text-red-400 text-lg">🍔</span>
-                                             </div>
-                                             <div class="flex flex-col gap-1">
-                                                 <div class="h-2 w-16 bg-slate-700 rounded-full"></div>
-                                                 <div class="h-1.5 w-10 bg-slate-800 rounded-full"></div>
-                                             </div>
-                                         </div>
-                                         <div class="h-16 bg-slate-950/50 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-teal-500/30 transition-colors duration-700">
-                                             <div class="absolute inset-0 bg-gradient-to-b from-teal-500/5 to-transparent"></div>
-                                             <span class="text-teal-400 font-bold text-xl relative z-10 font-[tabular-nums] tracking-tight">- R$ 45,00</span>
-                                         </div>
-                                         <div class="h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-[0_5px_15px_theme(colors.teal.500/20)] relative overflow-hidden hover:bg-teal-400 transition-colors cursor-pointer group/btn">
-                                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000"></div>
-                                             <span class="text-slate-950 font-extrabold text-[11px] uppercase tracking-widest relative z-10 flex items-center gap-1">Lançar <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>
-                                         </div>
-                                     </div>
+                             <div v-if="step.number === '02'" class="xl:w-[280px] flex-shrink-0 mt-6 xl:mt-0 relative perspective-1000">
+                                 <div class="absolute inset-0 bg-teal-500/10 blur-xl rounded-full scale-150 transition-all duration-700 pointer-events-none"></div>
+                                 <div class="relative rounded-[2.5rem] shadow-2xl overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] group-hover:rotate-0 group-hover:translate-y-[-5px] transition-[transform,box-shadow,border-color] duration-700 border-4 border-slate-800 bg-slate-900 group-hover:border-teal-500/50">
+                                    <div class="absolute top-2 inset-x-0 h-4 flex justify-center z-10">
+                                        <div class="w-12 h-4 bg-slate-950 rounded-full"></div>
+                                    </div>
+                                    <video 
+                                        src="/videos/demo-habit.mp4" 
+                                        autoplay 
+                                        loop 
+                                        muted 
+                                        playsinline 
+                                        class="w-full h-auto aspect-[9/16] object-cover pointer-events-none filter brightness-110 saturate-110"
+                                     ></video>
                                  </div>
                              </div>
                          </div>
