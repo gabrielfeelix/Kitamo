@@ -12,27 +12,27 @@ defineProps<{
 const billingFaq: SiteFaqItem[] = [
     {
         question: 'Existe plano gratuito?',
-        answer: 'Sim. O Essencial e gratuito e inclui projecao de 30 dias com limites de uso.',
+        answer: 'Sim! O plano Essencial é de graça e te dá visão de 30 dias pra frente. Ideal pra começar a organizar a casa sem botar a mão no bolso.',
     },
     {
         question: 'Posso mudar de plano a qualquer momento?',
-        answer: 'Sim. Upgrade e downgrade ficam disponiveis conforme sua necessidade.',
+        answer: 'Lógico. Sentiu que precisa de mais visão de futuro? Sobe de plano. Apertou? Desce.',
     },
     {
         question: 'Como cancelo um plano pago?',
-        answer: 'O cancelamento e direto e o plano retorna ao Essencial no ciclo seguinte.',
+        answer: 'Sem botão escondido ou ligação chata. Você cancela com 2 cliques na sua conta e o plano volta pro gratuito no mês seguinte.',
     },
     {
         question: 'Aceita PIX?',
-        answer: 'Depende do metodo habilitado no momento da assinatura. Consulte o suporte para detalhe comercial.',
+        answer: 'Sim, dependendo da tela de checkout ativa no momento. Boleto e Cartão de Crédito também sempre salvam.',
     },
     {
         question: 'Tem desconto anual?',
-        answer: 'Pode haver campanha pontual. Quando existir, ela aparece explicitamente no checkout.',
+        answer: 'Se tiver campanha rodando você vai ver gigante na tela. Fica de olho.',
     },
     {
         question: 'O Kitamo conecta no meu banco?',
-        answer: 'Nao. O controle e manual e nao utiliza Open Finance.',
+        answer: 'Não. O controle é seu, manual e intencional. Sem open finance fuçando onde não deve. Tirou do bolso, põe no app.',
     },
 ];
 
@@ -41,20 +41,20 @@ const openFaqIndex = ref<number | null>(0);
 const planShowcase = [
     {
         title: 'Essencial',
-        subtitle: 'Para quem esta organizando o primeiro ciclo',
-        description: 'Comece com previsao de 30 dias e estrutura basica para ganhar clareza.',
+        subtitle: 'Pra arrumar a bagunça do primeiro mês',
+        description: '30 dias de visão pra frente. Chega de tomar susto quando a fatura fecha.',
         image: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
         title: 'Pro',
-        subtitle: 'Para rotina financeira ativa',
-        description: 'Amplie para 90 dias, recorrencias e backup para operacao constante.',
+        subtitle: 'Pra quem o negócio já tá rodando',
+        description: 'Amplie a visão pra 90 dias, coloque os gastos da casa toda no automático.',
         image: 'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
-        title: 'Visionario',
-        subtitle: 'Para planejamento de longo prazo',
-        description: 'Projecao de ate 5 anos com suporte prioritario para cenarios avancados.',
+        title: 'Visionário',
+        subtitle: 'Pra planejar lá na frente',
+        description: 'Projeção de até 5 anos. Quer saber quando dá pra comprar o carro? Vem pra cá.',
         image: 'https://images.pexels.com/photos/3727462/pexels-photo-3727462.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
 ];
@@ -67,190 +67,220 @@ const guarantees = [
 </script>
 
 <template>
-    <Head title="Precos | Kitamo">
-        <meta name="description" content="Planos Kitamo com comparativo claro, cenarios de uso e condicoes transparentes." />
+    <Head title="Preços | Kitamo">
+        <meta name="description" content="Planos Kitamo: transparente, sem pegadinhas." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 pt-10 md:px-6 md:pb-20 md:pt-16">
-            <div class="pricing-hero relative overflow-hidden rounded-[2.2rem] border border-slate-200 p-6 md:p-8">
-                <div class="grid items-center gap-8 md:grid-cols-12">
-                    <div class="md:col-span-6 text-white">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Precos</p>
-                        <h1 class="mt-4 text-5xl leading-[0.9] tracking-[-0.03em] md:text-6xl">
-                            Um plano para cada
-                            <span class="font-serif italic text-emerald-300">fase financeira</span>
-                        </h1>
-                        <p class="mt-5 max-w-xl text-base leading-relaxed text-slate-300 md:text-lg">
-                            Estrutura transparente para voce escolher profundidade de projecao sem surpresa de cobranca.
-                        </p>
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[70vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
+            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+            <div class="pointer-events-none absolute top-10 left-10 w-[500px] h-[500px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+            
+            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
+                <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Sem letrinhas miúdas</p>
+                <h1 class="text-5xl sm:text-6xl lg:text-[5.5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                    Preços pro seu<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">momento financeiro.</span>
+                </h1>
+                <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto">
+                    Estrutura justa e direta. Você escolhe quão longe quer ver o seu dinheiro.
+                </p>
 
-                        <div class="mt-7 inline-flex rounded-full border border-white/20 bg-white/10 p-1 text-[11px] font-bold uppercase tracking-[0.14em]">
-                            <span class="rounded-full bg-white px-4 py-2 text-slate-950">Mensal</span>
-                            <span class="px-4 py-2 text-white/85">Anual (em breve)</span>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-6">
-                        <img
-                            src="https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                            alt="Equipe analisando dados financeiros"
-                            class="h-[340px] w-full rounded-[1.6rem] object-cover md:h-[400px]"
-                            loading="lazy"
-                        />
-                    </div>
+                <div class="mt-12 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 p-1.5 backdrop-blur-md">
+                    <span class="rounded-full bg-teal-500 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-950 shadow-sm transition-all hover:bg-teal-400 cursor-pointer">Mensal</span>
+                    <span class="px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-white/60 cursor-not-allowed">Anual (Em breve)</span>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white">
-                <div class="grid md:grid-cols-3 md:divide-x md:divide-slate-200">
+        <!-- Pricing Cards Section -->
+        <MotionSection class="bg-gray-50 py-24 relative -mt-10 overflow-hidden">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
+                <div class="grid lg:grid-cols-3 gap-8">
                     <article
                         v-for="plan in pricingPlans"
                         :key="plan.name"
-                        class="relative px-5 py-8 md:px-8"
-                        :class="plan.highlighted ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'"
+                        class="relative rounded-[2.5rem] border p-8 md:p-10 transition-transform duration-500 hover:-translate-y-2 flex flex-col"
+                        :class="plan.highlighted ? 'bg-slate-950 text-white border-slate-800 shadow-2xl scale-[1.02] lg:scale-[1.05] z-10' : 'bg-white text-slate-900 border-slate-200 shadow-sm hover:shadow-xl'"
                     >
-                        <span
-                            v-if="plan.highlighted"
-                            class="absolute right-5 top-5 rounded-full bg-emerald-400 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-950"
-                        >
-                            Mais popular
-                        </span>
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em]" :class="plan.highlighted ? 'text-emerald-300' : 'text-slate-500'">{{ plan.name }}</p>
-                        <h2 class="mt-3 text-5xl tracking-tight" :class="plan.highlighted ? 'text-white' : 'text-slate-950'">
-                            R$ {{ plan.monthly }}
-                            <span class="text-base font-medium" :class="plan.highlighted ? 'text-slate-300' : 'text-slate-500'">/mes</span>
-                        </h2>
-                        <p class="mt-3 text-sm leading-relaxed" :class="plan.highlighted ? 'text-slate-300' : 'text-slate-600'">{{ plan.subtitle }}</p>
-                        <ul class="mt-5 space-y-2">
+                        <div v-if="plan.highlighted" class="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-teal-400 to-emerald-500 px-5 py-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-950 shadow-lg whitespace-nowrap">
+                            A galera prefere
+                        </div>
+                        
+                        <p class="text-[12px] font-bold uppercase tracking-[0.2em] mb-4" :class="plan.highlighted ? 'text-teal-400' : 'text-slate-500'">{{ plan.name }}</p>
+                        
+                        <div class="mb-6 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold" :class="plan.highlighted ? 'text-slate-400' : 'text-slate-400'">R$</span>
+                            <h2 class="text-6xl font-extrabold tracking-tighter" :class="plan.highlighted ? 'text-white' : 'text-slate-950'">{{ plan.monthly }}</h2>
+                            <span class="text-lg font-medium" :class="plan.highlighted ? 'text-slate-400' : 'text-slate-500'">/mês</span>
+                        </div>
+                        
+                        <p class="text-sm leading-relaxed mb-8 flex-grow font-medium" :class="plan.highlighted ? 'text-slate-300' : 'text-slate-600'">{{ plan.subtitle }}</p>
+                        
+                        <ul class="space-y-4 mb-10">
                             <li
                                 v-for="feature in plan.features"
                                 :key="feature"
-                                class="flex items-start gap-2 text-sm font-medium"
+                                class="flex items-center gap-3 text-sm font-bold"
                                 :class="plan.highlighted ? 'text-slate-200' : 'text-slate-700'"
                             >
-                                <span class="mt-1 h-2 w-2 rounded-full" :class="plan.highlighted ? 'bg-emerald-300' : 'bg-emerald-500'"></span>
-                                <span>{{ feature }}</span>
+                                <svg class="h-5 w-5 flex-shrink-0" :class="plan.highlighted ? 'text-teal-400' : 'text-teal-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                {{ feature }}
                             </li>
                         </ul>
+                        
                         <Link
                             :href="canRegister ? '/register' : '/login'"
-                            class="mt-7 inline-flex h-11 items-center justify-center rounded-full px-6 text-[11px] font-bold uppercase tracking-[0.14em] transition"
-                            :class="plan.highlighted ? 'bg-white text-slate-950 hover:bg-emerald-300' : 'border border-slate-300 text-slate-700 hover:border-slate-950'"
+                            class="mt-auto inline-flex h-14 w-full items-center justify-center rounded-2xl px-6 text-[13px] font-extrabold uppercase tracking-[0.15em] transition-all active:scale-95"
+                            :class="plan.highlighted ? 'bg-teal-500 text-slate-950 hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]' : 'bg-slate-100 text-slate-900 hover:bg-slate-200 hover:scale-105'"
                         >
                             {{ plan.ctaLabel }}
                         </Link>
                     </article>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="grid gap-6 md:grid-cols-12 md:items-end">
-                <div class="md:col-span-5">
-                    <h2 class="text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Qual plano combina com seu momento?</h2>
-                </div>
-                <p class="md:col-span-4 text-base leading-relaxed text-slate-600">
-                    Cada tier foi desenhado para uma fase de maturidade financeira. Voce evolui sem refazer sua base de controle.
-                </p>
-                <p class="md:col-span-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-700 md:text-right">Casos de uso</p>
-            </div>
-
-            <div class="mt-7 grid gap-4 md:grid-cols-3">
-                <article
-                    v-for="item in planShowcase"
-                    :key="item.title"
-                    class="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white"
-                >
-                    <div class="relative h-56 overflow-hidden">
-                        <img
-                            :src="item.image"
-                            :alt="item.title"
-                            class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                            loading="lazy"
-                        />
-                        <span class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-800">{{ item.title }}</span>
-                    </div>
-                    <div class="p-5">
-                        <p class="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">{{ item.subtitle }}</p>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ item.description }}</p>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="overflow-x-auto border-y border-slate-200 py-8">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Comparativo tecnico</p>
-                <table class="mt-4 min-w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-left text-xs uppercase tracking-[0.14em] text-slate-500">
-                            <th class="pb-3 pr-4">Funcionalidade</th>
-                            <th class="pb-3 pr-4">Essencial</th>
-                            <th class="pb-3 pr-4">Pro</th>
-                            <th class="pb-3">Visionario</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="feature in pricingFeatureComparisons" :key="feature.name" class="border-b border-slate-100">
-                            <td class="py-3 pr-4 font-medium text-slate-900">{{ feature.name }}</td>
-                            <td class="py-3 pr-4 text-slate-600">{{ feature.status[0] }}</td>
-                            <td class="py-3 pr-4 text-slate-600">{{ feature.status[1] }}</td>
-                            <td class="py-3 text-slate-600">{{ feature.status[2] }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-6 flex flex-wrap gap-3">
-                <span
-                    v-for="item in guarantees"
-                    :key="item"
-                    class="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700"
-                >
-                    {{ item }}
-                </span>
-            </div>
-        </section>
-
-        <section class="relative overflow-hidden bg-slate-950 py-16 text-white md:py-20">
-            <div class="absolute right-10 top-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
-            <div class="mx-auto grid w-full max-w-[1320px] gap-10 px-5 md:grid-cols-12 md:px-6">
-                <div class="md:col-span-4">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">FAQ</p>
-                    <h2 class="mt-4 text-4xl leading-[0.95] tracking-[-0.03em] md:text-5xl">Duvidas de assinatura</h2>
-                    <p class="mt-4 text-base leading-relaxed text-slate-300">
-                        Respostas diretas para voce decidir com seguranca.
+        <!-- Use Cases Section -->
+        <MotionSection class="bg-gray-50 py-24 pb-32">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
+                <div class="lg:col-span-5 lg:sticky lg:top-32 h-fit">
+                    <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
+                        Qual plano combina com  a sua <span class="text-teal-500 font-serif italic">vibe?</span>
+                    </h2>
+                    <p class="mt-6 text-lg text-slate-500 font-medium leading-relaxed max-w-sm">
+                        Os planos foram desenhados para a sua fase lógica e financeira. Não importa por onde comece, a base de dados evolui com você.
                     </p>
                 </div>
-                <div class="md:col-span-8">
+
+                <div class="lg:col-span-7 flex flex-col gap-8">
                     <article
-                        v-for="(faq, index) in billingFaq"
-                        :key="faq.question"
-                        class="border-b border-white/15 py-4"
+                        v-for="item in planShowcase"
+                        :key="item.title"
+                        class="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white grid sm:grid-cols-2 hover:shadow-xl transition-all duration-300"
                     >
-                        <button
-                            type="button"
-                            class="flex w-full items-center justify-between gap-5 text-left"
-                            @click="openFaqIndex = openFaqIndex === index ? null : index"
-                        >
-                            <h3 class="text-lg font-semibold tracking-tight">{{ faq.question }}</h3>
-                            <span class="text-xl leading-none text-slate-400" :class="openFaqIndex === index ? 'rotate-45 text-emerald-300' : ''">+</span>
-                        </button>
-                        <p v-if="openFaqIndex === index" class="mt-3 text-sm leading-relaxed text-slate-300 md:text-base">{{ faq.answer }}</p>
+                        <div class="relative h-48 sm:h-full overflow-hidden">
+                            <img
+                                :src="item.image"
+                                :alt="item.title"
+                                class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                loading="lazy"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent sm:hidden"></div>
+                            <span class="absolute left-6 top-6 rounded-full bg-white/95 px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-900 shadow-sm backdrop-blur-sm">{{ item.title }}</span>
+                        </div>
+                        <div class="p-8 md:p-10 flex flex-col justify-center">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.15em] text-teal-600 mb-2">{{ item.subtitle }}</p>
+                            <p class="text-base font-medium leading-relaxed text-slate-600">{{ item.description }}</p>
+                        </div>
                     </article>
                 </div>
             </div>
-        </section>
+        </MotionSection>
+
+        <!-- Comparation Table Section -->
+        <MotionSection class="bg-white py-24 border-y border-slate-100">
+             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 flex flex-col items-center">
+                <div class="text-center mb-16">
+                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 inline-block bg-slate-50 px-4 py-2 border border-slate-100 rounded-lg">Papo Reto</p>
+                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900">Comparativo no detalhe</h2>
+                </div>
+                
+                <div class="w-full overflow-x-auto pb-4">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b-2 border-slate-950 text-left text-[11px] font-extrabold uppercase tracking-[0.15em] text-slate-400">
+                                <th class="pb-6 pr-4 pl-4 w-1/4">Funcionalidade</th>
+                                <th class="pb-6 pr-4 w-1/4">Essencial</th>
+                                <th class="pb-6 pr-4 w-1/4 text-teal-600">Pro</th>
+                                <th class="pb-6 pr-4 w-1/4">Visionário</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="feature in pricingFeatureComparisons" :key="feature.name" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="py-5 pr-4 pl-4 font-bold text-slate-700">{{ feature.name }}</td>
+                                <td class="py-5 pr-4 text-slate-500 font-medium">{{ feature.status[0] }}</td>
+                                <td class="py-5 pr-4 text-slate-900 font-bold bg-teal-50/30">{{ feature.status[1] }}</td>
+                                <td class="py-5 pr-4 text-slate-500 font-medium">{{ feature.status[2] }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-16 flex flex-wrap justify-center gap-4">
+                    <span
+                        v-for="item in guarantees"
+                        :key="item"
+                        class="inline-flex items-center gap-2 rounded-xl border border-teal-100 bg-teal-50 px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.15em] text-teal-800"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        {{ item }}
+                    </span>
+                </div>
+            </div>
+        </MotionSection>
+
+        <!-- FAQ Section -->
+        <MotionSection class="relative overflow-hidden bg-slate-950 py-32 text-white">
+            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            <div class="absolute right-10 top-0 h-96 w-96 rounded-full bg-teal-500/10 blur-[100px]"></div>
+            
+            <div class="mx-auto grid w-full max-w-[1440px] gap-16 px-6 lg:grid-cols-12 md:px-12 relative z-10">
+                <div class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+                    <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">FAQ</p>
+                    <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-white leading-[1.05]">
+                        Dúvidas na<br>hora de assinar?
+                    </h2>
+                    <p class="mt-6 text-lg text-slate-400 font-medium leading-relaxed">
+                        A real, sem curva. Tudo que a galera mais pergunta antes de fechar com a gente.
+                    </p>
+                </div>
+                
+                <div class="lg:col-span-8 flex flex-col gap-4">
+                    <article
+                        v-for="(faq, index) in billingFaq"
+                        :key="faq.question"
+                        class="border border-white/10 bg-white/5 rounded-2xl overflow-hidden transition-all duration-300"
+                        :class="openFaqIndex === index ? 'bg-white/10 ring-1 ring-teal-500/30' : 'hover:bg-white/10'"
+                    >
+                        <button
+                            type="button"
+                            class="flex w-full items-center justify-between gap-5 p-6 md:p-8 text-left outline-none"
+                            @click="openFaqIndex = openFaqIndex === index ? null : index"
+                        >
+                            <h3 class="text-lg md:text-xl font-bold tracking-tight pr-8" :class="openFaqIndex === index ? 'text-teal-300' : 'text-slate-200'">{{ faq.question }}</h3>
+                            <div 
+                                class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-white/20 transition-transform duration-300"
+                                :class="openFaqIndex === index ? 'rotate-180 bg-teal-500/20 border-teal-500/30' : ''"
+                            >
+                                <svg class="w-4 h-4" :class="openFaqIndex === index ? 'text-teal-300' : 'text-white'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </button>
+                        <div 
+                            class="grid transition-all duration-300 ease-in-out"
+                            :class="openFaqIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
+                        >
+                            <div class="overflow-hidden">
+                                <p class="px-6 md:px-8 pb-6 md:pb-8 text-base leading-relaxed text-slate-300 font-medium">
+                                    {{ faq.answer }}
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.pricing-hero {
-    background:
-        radial-gradient(30rem 24rem at 10% 0%, rgba(16, 185, 129, 0.2), transparent 70%),
-        linear-gradient(145deg, #020617 0%, #0f172a 60%, #111827 100%);
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
 }
 </style>

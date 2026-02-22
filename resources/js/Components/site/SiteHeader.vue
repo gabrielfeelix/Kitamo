@@ -11,23 +11,23 @@ const props = defineProps<{
 const mobileOpen = ref(false);
 
 const primaryHref = computed(() => (props.canRegister ? '/register' : '/login'));
-const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'Entrar para testar'));
+const primaryLabel = computed(() => (props.canRegister ? 'Criar Conta' : 'Acessar APP'));
 </script>
 
 <template>
-    <header class="fixed inset-x-0 top-0 z-50 border-b border-white/50 bg-[#f7f8f4]/90 backdrop-blur-xl">
-        <div class="mx-auto flex h-20 w-full max-w-[1240px] items-center justify-between px-5 md:px-6">
-            <Link :href="route('site.home')" class="text-2xl font-bold tracking-[-0.04em] text-slate-950">
-                kitamo
+    <header class="fixed inset-x-0 top-0 z-50 py-4 px-4 pointer-events-none transition-all duration-300">
+        <div class="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-6 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg pointer-events-auto transition-all duration-300 hover:bg-slate-900/60">
+            <Link :href="route('site.home')" class="text-2xl font-extrabold tracking-[-0.04em] text-white flex items-center gap-1 group">
+                kitamo<span class="text-teal-400 group-hover:animate-pulse">.</span>
             </Link>
 
-            <nav class="hidden items-center gap-7 lg:flex">
+            <nav class="hidden items-center gap-2 lg:flex p-1 bg-white/5 rounded-full border border-white/5">
                 <Link
                     v-for="item in headerNavigation"
                     :key="item.routeName"
                     :href="route(item.routeName)"
                     class="site-nav-link"
-                    :class="{ 'is-active': route().current(item.routeName) }"
+                    :class="{ 'is-active bg-white/10 text-white': route().current(item.routeName), 'text-slate-300': !route().current(item.routeName) }"
                 >
                     {{ item.label }}
                 </Link>
@@ -37,13 +37,13 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
                 <Link
                     v-if="canLogin"
                     href="/login"
-                    class="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 px-5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-800 transition hover:bg-slate-900 hover:text-white"
+                    class="inline-flex h-10 items-center justify-center rounded-xl px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:text-white hover:bg-white/10"
                 >
                     Entrar
                 </Link>
                 <Link
                     :href="primaryHref"
-                    class="inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-6 text-[11px] font-bold uppercase tracking-[0.15em] text-white transition hover:bg-emerald-500 hover:text-slate-950"
+                    class="inline-flex h-10 items-center justify-center rounded-xl bg-teal-500 px-6 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_-5px_theme(colors.teal.500)]"
                 >
                     {{ primaryLabel }}
                 </Link>
@@ -51,12 +51,12 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
 
             <button
                 type="button"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-700 lg:hidden"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/5 text-white lg:hidden transition-all hover:bg-white/10"
                 aria-label="Abrir navegação"
                 @click="mobileOpen = !mobileOpen"
             >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path v-if="!mobileOpen" d="M3 6h18M3 12h18M3 18h18" />
+                    <path v-if="!mobileOpen" d="M4 6h16M4 12h16M4 18h16" />
                     <path v-else d="M6 6l12 12M18 6L6 18" />
                 </svg>
             </button>
@@ -64,57 +64,72 @@ const primaryLabel = computed(() => (props.canRegister ? 'Começar grátis' : 'E
 
         <!-- Mobile Menu Overlay -->
         <Teleport to="body">
-            <div v-if="mobileOpen" class="fixed inset-x-0 top-20 bottom-0 bg-[#f7f8f4] z-[60] p-6 flex flex-col justify-between overflow-y-auto lg:hidden pt-10 border-t border-slate-200">
-            <div class="grid gap-2">
-                <Link
-                    v-for="item in headerNavigation"
-                    :key="`mobile-${item.routeName}`"
-                    :href="route(item.routeName)"
-                    class="text-2xl font-medium tracking-tight text-slate-800 p-4 border-b border-slate-200"
-                    :class="{ 'text-emerald-500': route().current(item.routeName) }"
-                    @click="mobileOpen = false"
-                >
-                    {{ item.label }}
-                </Link>
-            </div>
+            <transition name="fade">
+                <div v-if="mobileOpen" class="fixed inset-0 z-[60] bg-slate-950/95 backdrop-blur-xl p-6 flex flex-col pt-24">
+                    <button class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-xl bg-white/10 text-white border border-white/10" @click="mobileOpen = false">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                    </button>
+                    <div class="grid gap-4 flex-grow">
+                        <Link
+                            v-for="item in headerNavigation"
+                            :key="`mobile-${item.routeName}`"
+                            :href="route(item.routeName)"
+                            class="text-4xl font-extrabold tracking-tighter text-slate-300 p-2 transition-colors hover:text-white"
+                            :class="{ 'text-teal-400': route().current(item.routeName) }"
+                            @click="mobileOpen = false"
+                        >
+                            {{ item.label }}
+                        </Link>
+                    </div>
 
-            <div class="mt-8 grid gap-4">
-                <Link
-                    v-if="canLogin"
-                    href="/login"
-                    class="inline-flex h-14 items-center justify-center rounded-full border border-slate-300 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-700 w-full"
-                    @click="mobileOpen = false"
-                >
-                    Entrar na minha conta
-                </Link>
-                <Link
-                    :href="primaryHref"
-                    class="inline-flex h-14 items-center justify-center rounded-full bg-slate-950 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-400 w-full"
-                    @click="mobileOpen = false"
-                >
-                    {{ primaryLabel }}
-                </Link>
-            </div>
-            </div>
+                    <div class="mt-8 grid gap-4 pb-8 border-t border-white/10 pt-8">
+                        <Link
+                            v-if="canLogin"
+                            href="/login"
+                            class="inline-flex h-16 items-center justify-center rounded-xl border border-white/20 bg-white/5 text-[14px] font-bold uppercase tracking-[0.16em] text-white w-full transition-all active:scale-95"
+                            @click="mobileOpen = false"
+                        >
+                            Entrar na minha conta
+                        </Link>
+                        <Link
+                            :href="primaryHref"
+                            class="inline-flex h-16 items-center justify-center rounded-xl bg-teal-500 text-[14px] font-extrabold uppercase tracking-[0.15em] text-slate-950 w-full transition-all active:scale-95 shadow-[0_0_30px_-5px_theme(colors.teal.500)]"
+                            @click="mobileOpen = false"
+                        >
+                            {{ primaryLabel }}
+                        </Link>
+                    </div>
+                </div>
+            </transition>
         </Teleport>
     </header>
 </template>
 
 <style scoped>
 .site-nav-link {
-    color: #475569;
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     font-weight: 700;
-    transition: color 180ms ease;
-    padding: 8px 12px;
+    transition: all 200ms ease;
+    padding: 8px 16px;
+    border-radius: 99px;
 }
 
-.site-nav-link:hover,
-.site-nav-link.is-active {
-    color: #0f172a;
-    background: rgba(0,0,0,0.03);
-    border-radius: 99px;
+.site-nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
