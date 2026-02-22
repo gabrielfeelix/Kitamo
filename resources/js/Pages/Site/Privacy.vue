@@ -1,51 +1,52 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
+import MotionSection from '@/Components/site/MotionSection.vue';
 
 const sections = [
     {
         id: 'coleta',
-        label: 'Coleta e uso de dados',
-        title: '1. Coleta e uso de dados',
+        label: 'O que entra e sai',
+        title: '1. O que coletamos (e por quê)',
         content: [
-            'Coletamos apenas os dados necessarios para funcionamento da plataforma, suporte e seguranca.',
-            'O Kitamo nao vende dados pessoais e nao utiliza informacoes para publicidade comportamental.',
+            'A gente só pede o que é estritamente necessário pra fazer o Kitamo rodar liso pra você: email pra login, dados de conta pra você se organizar, e métricas anônimas de erro pra arrumarmos bugs.',
+            'Não somos corretores de dados. O Kitamo ganha dinheiro com a assinatura que você paga, não vendendo sua vida financeira pra fazer anúncio. Simples assim.',
         ],
     },
     {
         id: 'protecao',
-        label: 'Protecao de dados',
-        title: '2. Protecao de dados',
+        label: 'A tranca do cofre',
+        title: '2. Como a gente protege tudo',
         content: [
-            'O Kitamo nao se conecta a contas bancarias. O cadastro e manual por escolha de produto.',
-            'Dados sao protegidos em transito e em repouso com controles tecnicos compativeis com padroes de mercado.',
+            'Primeira regra: o Kitamo não espia seu banco. Não ligamos direto na sua conta bancária sem você querer (Open Finance? Só se um dia a gente fizer de um jeito muito transparente). A gente acredita em controle manual, porque o humano no volante é mais confiável do que um robô dedurando suas compras.',
+            'Embaixo do capô, tudo que trafega pra gente tá em túnel fechado (TLS 1.3) e tudo que é salvo no banco de dados tá blindado com criptografia pesada (AES-256).',
         ],
     },
     {
         id: 'compartilhamento',
-        label: 'Compartilhamento',
-        title: '3. Compartilhamento',
+        label: 'Com quem dividimos',
+        title: '3. Quem vê seus dados?',
         content: [
-            'Compartilhamento ocorre apenas com operadores essenciais de infraestrutura e seguranca.',
-            'Esses operadores atuam sob obrigacao contratual de confidencialidade e protecao de dados.',
+            'Basicamente: nós e as máquinas que mantêm o site no ar (servidores, envio de email, gateway de pagamento). Ninguém mais.',
+            'Esses parceiros técnicos assinam contratos monstruosos e não podem usar seus dados pra absolutamente nada além de fazer o serviço que a gente contratou.',
         ],
     },
     {
         id: 'direitos',
-        label: 'Direitos LGPD',
-        title: '4. Seus direitos (LGPD)',
+        label: 'A lei é sua',
+        title: '4. Seus Direitos (LGPD sem juridiquês)',
         content: [
-            'Voce pode solicitar confirmacao de tratamento, acesso, correcao, portabilidade e exclusao de dados.',
-            'As solicitacoes sao tratadas conforme Art. 18 da LGPD e priorizadas pelo canal oficial.',
+            'A LGPD diz que a bola é sua. Isso significa que você bate na nossa porta e pede pra ver o que temos sobre você, corrigir besteiras, exportar tudo pra um Excel ou mandar a gente deletar sua conta inteira da face da Terra.',
+            'Pediu a exclusão no aplicativo? A gente roda um script e aterra seus dados. Não tem pegadinha, não tem "reter por 5 anos pra fins publicitários".',
         ],
     },
     {
         id: 'contato',
-        label: 'Contato DPO',
-        title: '5. Contato com DPO',
+        label: 'Dúvidas e Broncas',
+        title: '5. Fale com a chefia (DPO)',
         content: [
-            'Para exercicio de direitos e duvidas regulatorias, utilize nosso canal oficial de contato.',
-            'O atendimento para demandas de dados pessoais recebe priorizacao de SLA.',
+            'Deu alguma zica ou só quer exercer um direito da LGPD? Você tem canal verde.',
+            'Manda um chamego lá na página de contato. Assuntos de dados têm "SLA VIP" (ou seja, a gente para o que tá fazendo pra te responder rápido).',
         ],
     },
 ];
@@ -58,97 +59,109 @@ defineProps<{
 
 <template>
     <Head title="Privacidade | Kitamo">
-        <meta name="description" content="Politica de privacidade da Kitamo com compromisso de transparencia e conformidade com LGPD." />
+        <meta name="description" content="Sua vida não é mercadoria. Como tratamos seus dados limpo e sem enrolação." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-12 pt-10 md:px-6 md:pb-16 md:pt-16">
-            <div class="privacy-hero relative overflow-hidden rounded-[2.1rem] border border-slate-200 p-6 md:p-8">
-                <div class="grid items-center gap-8 md:grid-cols-12">
-                    <div class="md:col-span-7 text-white">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Privacidade</p>
-                        <h1 class="mt-4 text-5xl leading-[0.9] tracking-[-0.03em] md:text-6xl">
-                            Politica de privacidade
-                        </h1>
-                        <p class="mt-4 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-                            Este documento explica como tratamos dados de forma transparente, segura e em conformidade com a LGPD.
-                        </p>
-                        <div class="mt-6 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">
-                            <span>Ultima atualizacao: 20 de fevereiro de 2026</span>
-                            <span>Versao 1.1</span>
-                        </div>
-                        <div class="mt-6 flex flex-wrap gap-3">
-                            <button
-                                type="button"
-                                class="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
-                            >
-                                Baixar PDF
-                            </button>
-                            <!-- TODO: vincular botao a versao PDF oficial -->
-                            <Link
-                                :href="route('site.contact')"
-                                class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                            >
-                                Falar com DPO
-                            </Link>
-                        </div>
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
+            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+            <div class="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+            
+            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7">
+                    <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Seus Dados, Suas Regras</p>
+                    <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold">
+                        O papo reto da <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">Privacidade.</span>
+                    </h1>
+                    <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                        Nada daquelas 40 páginas de juridiquês que ninguém lê pra esconder roubo de dados. Aqui a gente explica rápido o que entra e o que sai.
+                    </p>
+                    
+                    <div class="mt-8 flex flex-wrap items-center gap-4 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                        <span class="bg-white/5 border border-white/10 px-3 py-1 rounded">Versão 1.1</span>
+                        <span>Atualizado em: Fev/2026</span>
                     </div>
 
-                    <div class="md:col-span-5">
-                        <img
-                            src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                            alt="Equipe revisando documento de politica"
-                            class="h-[320px] w-full rounded-[1.6rem] object-cover md:h-[400px]"
-                            loading="lazy"
-                        />
+                    <div class="mt-10 flex gap-4">
+                        <Link
+                            :href="route('site.contact')"
+                            class="inline-flex h-12 items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]"
+                        >
+                            Chamar o DPO
+                        </Link>
                     </div>
                 </div>
+
+                <div class="lg:col-span-5 hidden lg:block relative group p-6">
+                    <div class="absolute inset-0 bg-teal-500/10 blur-3xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <img
+                         src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                         alt="Documentos limpos"
+                         class="relative h-[350px] w-full object-cover rounded-[2.5rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 hover:saturate-150 transition-all duration-700"
+                         loading="lazy"
+                     />
+                </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto grid w-full max-w-[1320px] gap-8 px-5 pb-20 md:grid-cols-12 md:px-6 md:pb-24">
-            <aside class="md:col-span-4 md:sticky md:top-28 md:h-fit">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Indice do documento</p>
-                <nav class="mt-4 border-y border-slate-200 py-4">
-                    <a
-                        v-for="item in sections"
-                        :key="item.id"
-                        :href="`#${item.id}`"
-                        class="block border-b border-slate-100 py-3 text-sm font-semibold text-slate-700 last:border-b-0 hover:text-emerald-700"
-                    >
-                        {{ item.label }}
-                    </a>
-                </nav>
-            </aside>
-
-            <div class="md:col-span-8">
-                <article
-                    v-for="(item, index) in sections"
-                    :id="item.id"
-                    :key="item.id"
-                    class="grid gap-5 border-t border-slate-200 py-8 first:border-t-0 first:pt-0 md:grid-cols-12"
-                >
-                    <p class="md:col-span-2 text-3xl font-semibold tracking-tight text-slate-300">0{{ index + 1 }}</p>
-                    <div class="md:col-span-10">
-                        <h2 class="text-4xl leading-tight tracking-tight text-slate-950 md:text-5xl">{{ item.title }}</h2>
-                        <p
-                            v-for="paragraph in item.content"
-                            :key="paragraph"
-                            class="mt-4 text-base leading-relaxed text-slate-600 md:text-lg"
-                        >
-                            {{ paragraph }}
-                        </p>
+        <!-- Document Body -->
+        <MotionSection class="bg-gray-50 py-24 pb-32">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
+                <aside class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Navegue no Doc</p>
+                        <nav class="flex flex-col space-y-2">
+                            <a
+                                v-for="(item, index) in sections"
+                                :key="item.id"
+                                :href="`#${item.id}`"
+                                class="group flex items-center gap-4 p-3 rounded-xl hover:bg-teal-50 transition-colors"
+                            >
+                                <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-teal-100 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:text-teal-600 transition-colors">0{{ index + 1 }}</span>
+                                <span class="text-sm font-bold text-slate-700 group-hover:text-slate-950 transition-colors">{{ item.label }}</span>
+                            </a>
+                        </nav>
                     </div>
-                </article>
+                </aside>
+
+                <div class="lg:col-span-8 space-y-12">
+                     <article
+                         v-for="(item, index) in sections"
+                         :id="item.id"
+                         :key="item.id"
+                         class="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group"
+                     >
+                         <div class="absolute -right-6 -top-6 text-[8rem] font-bold text-slate-50 opacity-40 select-none pointer-events-none group-hover:text-teal-50 group-hover:scale-110 transition-transform duration-700">
+                            0{{ index + 1 }}
+                         </div>
+                         
+                         <div class="relative z-10">
+                             <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900 mb-6">{{ item.title }}</h2>
+                             <div class="space-y-6">
+                                 <p
+                                     v-for="(paragraph, i) in item.content"
+                                     :key="i"
+                                     class="text-lg leading-relaxed text-slate-600 font-medium"
+                                 >
+                                     {{ paragraph }}
+                                 </p>
+                             </div>
+                         </div>
+                     </article>
+                </div>
             </div>
-        </section>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.privacy-hero {
-    background:
-        radial-gradient(30rem 24rem at 8% 0%, rgba(16, 185, 129, 0.2), transparent 72%),
-        linear-gradient(145deg, #020617 0%, #0f172a 60%, #111827 100%);
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
+}
+html {
+    scroll-behavior: smooth;
 }
 </style>

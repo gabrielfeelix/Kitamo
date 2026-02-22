@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
+import MotionSection from '@/Components/site/MotionSection.vue';
 
 defineProps<{
     canLogin?: boolean;
@@ -10,90 +11,82 @@ defineProps<{
 const features = [
     {
         id: 'projecao',
-        title: 'Projecao de caixa',
-        badge: 'Feature principal',
+        title: 'Mestre da Projeção de Caixa',
+        badge: 'O Coração',
         description:
-            'A projecao organiza saldo atual, receitas futuras, despesas, recorrencias e parcelas em uma linha temporal de decisao. Em vez de reagir ao extrato, voce age antes do risco.',
-        bullets: ['Leitura diaria de saldo futuro', 'Alerta de data critica', 'Impacto de cada decisao no fluxo'],
+            'A parada mais pesada que temos. Pega seu saldo, cruza com tudo que vai sair e entrar pra te dar a visão do futuro. Você age meses antes do problema chegar.',
+        bullets: ['Painel diário pra prever o vermelho', 'Sem susto no extrato de amanhã', 'Olhou, decidiu, salvou a pele'],
     },
     {
         id: 'contas',
-        title: 'Gestao de contas',
+        title: 'Gestão que Resolve',
+        badge: '',
         description:
-            'Base unica para conta corrente, poupanca, carteira e investimentos com historico organizado por periodo.',
-        bullets: ['Estrutura por tipo de conta', 'Historico mensal por conta', 'Consolidado de saldo para visao rapida'],
+            'Um HUB só, mas a grana separada do seu jeito: corrente, reserva, carteira, corretora. O histórico fica certinho por período pra você arrastar e revisar rápido.',
+        bullets: ['Cria conta e separa a grana', 'Olha pro passado pra aprender o que rolou', 'Visão macro: a soma de tudo num clique'],
     },
     {
         id: 'cartoes',
-        title: 'Cartoes de credito',
+        title: 'Cartão de Crédito? Domado',
+        badge: '',
         description:
-            'Ciclo de fatura, limite e vencimento entram no planejamento sem friccao, evitando surpresa no fechamento.',
-        bullets: ['Controle de fechamento e vencimento', 'Limite e utilizacao em tempo real', 'Fatura refletida na projecao'],
+            'Aquela bola de neve? Não mais. Jogou aqui e nós rastreamos o ciclo da fatura, o fechamento maldito e o quanto já pegou do seu limite. E o melhor: joga direto na sua projeção de fluxo.',
+        bullets: ['Notifica o fechamento da fatura', 'Cobre na Projeção: bate na conta certa na hora certa', 'Limite acompanhado ao vivo'],
     },
     {
         id: 'parcelamentos',
-        title: 'Parcelamentos',
+        title: 'Parcelar é bom (se tiver controle)',
+        badge: '',
         description:
-            'Cada compra parcelada e rastreada item a item para mostrar quanto ainda pesa nos proximos meses.',
-        bullets: ['Divisao automatica em N parcelas', 'Rastreio individual de parcelas', 'Aparicao no mes correspondente'],
+            'Fez 10x sem juros no telefone? Cadastra a primeira parcela e o sistema empilha o resto sozinho, caindo nos meses certos do seu banco e consumindo seu fôlego financeiro futuro pra você não esquecer.',
+        bullets: ['10x, 24x... empilha tudo no automático', 'Bate lá no futuro do gráfico de projeção', 'Edita uma, e altera o resto se errar'],
     },
     {
         id: 'recorrentes',
-        title: 'Despesas recorrentes',
+        title: 'Rotina sem Retrabalho',
+        badge: 'Top Uso',
         description:
-            'Mensal, quinzenal, semanal ou anual: recorrencias entram no fluxo para reduzir retrabalho e esquecimento.',
-        bullets: ['Frequencias flexiveis', 'Projecao automatica futura', 'Lembretes de revisao'],
+            'Netflix, academia, conta de luz. Pra que ficar lançando de novo todo mês? Você joga a assinatura na esteira e nós jogamos no seu caixa infinito.',
+        bullets: ['Acomoda semanal, quinzenal e mensal', 'Fica engatilhado no calendário sem esforço', 'Lembretes de revisão: tá pagando pra não usar? Cancela'],
     },
     {
         id: 'metas',
-        title: 'Metas financeiras',
+        title: 'Bater Metas (de verdade)',
+        badge: '',
         description:
-            'Objetivos com valor e prazo para transformar intencao em ritmo de execucao.',
-        bullets: ['Status de progresso', 'Depositos incrementais', 'Leitura no ritmo / adiantado / atrasado'],
+            'Trocar de carro ou montar a reserva de segurança. Coloca um nome, um valor alvo, e rastreia como você tá performando pra chegar lá sem virar promessa de ano novo genérica.',
+        bullets: ['Acompanhe a barra verde subir', 'Aposte contra vocé mesmo se atrasar', 'Diferencia a grana da meta e o resto do fluxo livre'],
     },
     {
         id: 'relatorios',
-        title: 'Analise e relatorios',
+        title: 'Raio-X (Relatórios sem Ego)',
+        badge: '',
         description:
-            'Visualizacao por categoria e comparacao entre periodos com exportacao para rotina de prestacao de contas.',
-        bullets: ['Categorias de gasto', 'Comparacao entre meses', 'Exportacao Excel e PDF'],
-    },
-    {
-        id: 'dashboard',
-        title: 'Dashboard personalizavel',
-        description:
-            'Widgets configuraveis para priorizar o que e relevante no seu momento financeiro.',
-        bullets: ['Escolha de widgets', 'Seis modulos disponiveis', 'Painel adaptado por prioridade'],
-    },
-    {
-        id: 'notificacoes',
-        title: 'Notificacoes inteligentes',
-        description:
-            'Alertas de saldo baixo, vencimento e resumo semanal para manter consistencia sem excesso de ruído.',
-        bullets: ['Saldo baixo', 'Vencimentos criticos', 'Resumo semanal'],
+            'Chega na gringa, bate na reunião com seu parceiro(a) ou com o contador entregando pronto. Comparativo do mês pra saber se tá rasgando grana nas categorias certas ou erradas.',
+        bullets: ['Pinga onde você mais gastar na coragem da verdade', 'Mês x Mês com seta pra cima e pra baixo', 'Tira do sistema em CSV e PDF'],
     },
 ];
 
 const faq = [
     {
-        question: 'O Kitamo conecta no meu banco?',
-        answer: 'Nao. O Kitamo nao usa Open Finance. O cadastro e manual para manter controle e previsibilidade.',
+        question: 'O Kitamo é um daqueles apps que pede a senha do meu banco?',
+        answer: 'Foge disso! Nós não metemos Open Finance e robôs pra fuçar na sua conta. Você lança e a gente trabalha, pra manter seu controle humano soberano e inviolável.',
     },
     {
-        question: 'Preciso lancar tudo manualmente?',
-        answer: 'Sim, com atalhos como recorrencias e parcelamentos para reduzir tarefas repetitivas.',
+        question: 'Então tem que adicionar tudo na mão? Cês tão de sacanagem.',
+        answer: 'A entrada inicial sim! Depois a mágica vem: coisas recorrentes, boletos fixos e faturas rodam num circuito 100% automático pelos nossos algoritmos.',
     },
     {
-        question: 'A projecao considera parcelas futuras?',
-        answer: 'Sim. Cada parcela e posicionada no periodo correspondente e impacta a projecao.',
+        question: 'E se eu parcelar o IPVA do carro velho lá? Empilha sozinho?',
+        answer: 'Demais. Ele entende a parcela N de X e avisa você mês a mês sobre como essa parcela tá matando seu saldo na projeção futura.',
     },
     {
-        question: 'Posso usar com mais de uma conta e cartao?',
-        answer: 'Sim. Os limites variam por plano e podem ser ampliados com upgrade.',
+        question: 'Meu primo doidão ganha pouco, vai pagar assinatura se apertar?',
+        answer: 'Não se você falar do plano essencial que existe hoje! Tem plano que começa bem barato pra ajudar quem tá zerado a virar o jogo antes de pensar na mensalidade robusta.',
     },
     {
-        question: 'Existe exportacao para relatorios?',
-        answer: 'Sim. A plataforma permite exportar dados em Excel e PDF.',
+        question: 'Eu posso botar planilha excel aí dentro pra não perder o histórico antigo?',
+        answer: 'Em breve soltamos o importador pesado pra quem tá vindo de planilha antiga não passar nervoso reconectando.',
     },
 ];
 
@@ -107,139 +100,143 @@ const featureVisuals = [
 </script>
 
 <template>
-    <Head title="Funcionalidades | Kitamo">
-        <meta
-            name="description"
-            content="Funcionalidades do Kitamo em profundidade: projecao de caixa, cartoes, recorrencias, metas e notificacoes inteligentes."
-        />
+    <Head title="Funcionalidades da Máquina | Kitamo">
+        <meta name="description" content="Descubra a máquina por baixo do capô: projeção futurista, gestão raiz de cartões, organização absurda." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 pt-10 md:px-6 md:pb-16 md:pt-16">
-            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Funcionalidades</p>
-            <h1 class="mt-5 max-w-5xl text-5xl leading-[0.9] tracking-[-0.03em] text-slate-950 md:text-7xl">
-                Clareza operacional para responder:
-                <span class="font-serif italic text-emerald-600">vai fechar no verde?</span>
-            </h1>
-            <p class="mt-6 max-w-3xl text-lg leading-relaxed text-slate-600 md:text-xl">
-                Cada modulo resolve uma parte da rotina financeira e converge para uma decisao unica: manter o caixa sustentavel nos proximos dias.
-            </p>
-        </section>
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
+             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+             <div class="pointer-events-none absolute -bottom-20 -right-20 w-[500px] h-[500px] bg-teal-600/20 blur-[150px] rounded-full mix-blend-screen opacity-50"></div>
+            
+             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
+                 <div class="lg:col-span-7">
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Por Baixo do Capô</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                         A Máquina que<br>
+                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">resolve a bronca.</span>
+                     </h1>
+                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                         Cada tela foi esculpida pra bater na dor que mais dói. Sai o "quanto que eu gastei no mês?" e entra o "quanto que falta antes de quebrar em outubro?".
+                     </p>
+                 </div>
+                 
+                 <div class="lg:col-span-5 relative group">
+                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <img
+                         src="https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                         alt="Kitamo rodando liso"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 transition-all duration-700 hover:saturate-150"
+                         loading="lazy"
+                     />
+                 </div>
+             </div>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-16 md:px-6 md:pb-20">
-            <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
-                <aside class="lg:col-span-4 lg:sticky lg:top-28 lg:h-fit">
-                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Mapa de modulos</p>
-                    <ul class="mt-4 space-y-2 border-l border-slate-300 pl-4">
-                        <li v-for="(item, index) in features" :key="item.id">
-                            <a
-                                :href="`#${item.id}`"
-                                class="group inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
-                            >
-                                <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 group-hover:text-emerald-700">
-                                    0{{ index + 1 }}
-                                </span>
-                                <span>{{ item.title }}</span>
-                            </a>
-                        </li>
-                    </ul>
+        <!-- Features Matrix Section -->
+        <MotionSection class="bg-gray-50 py-24 pb-32">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
+                <aside class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Mapa do Tesouro</p>
+                    <div class="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm overflow-hidden">
+                        <ul class="space-y-1">
+                            <li v-for="(item, index) in features" :key="item.id">
+                                <a
+                                    :href="`#${item.id}`"
+                                    class="group flex items-center gap-4 px-4 py-3 rounded-2xl transition hover:bg-slate-50"
+                                >
+                                    <span class="text-[10px] font-extrabold text-slate-300 transition-colors group-hover:text-teal-600">0{{ index + 1 }}</span>
+                                    <span class="text-sm font-bold text-slate-600 transition-colors group-hover:text-slate-900">{{ item.title }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </aside>
 
-                <div class="lg:col-span-8">
+                <div class="lg:col-span-8 flex flex-col gap-8">
                     <article
                         v-for="(item, index) in features"
                         :id="item.id"
                         :key="item.id"
-                        class="feature-row"
+                        class="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-sm transition-all hover:border-teal-300 hover:shadow-xl group overflow-hidden relative"
                     >
-                        <div class="grid items-start gap-8 md:grid-cols-12">
-                            <div class="md:col-span-7">
-                                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                                    0{{ index + 1 }} / modulo
-                                </p>
-                                <div class="mt-3 flex flex-wrap items-center gap-2">
-                                    <h2 class="text-4xl leading-tight tracking-tight text-slate-950 md:text-5xl">{{ item.title }}</h2>
-                                    <span
-                                        v-if="item.badge"
-                                        class="inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700"
-                                    >
-                                        {{ item.badge }}
-                                    </span>
-                                </div>
-                                <p class="mt-4 text-base leading-relaxed text-slate-600 md:text-lg">{{ item.description }}</p>
-                                <ul class="mt-5 space-y-2">
-                                    <li
-                                        v-for="point in item.bullets"
-                                        :key="point"
-                                        class="flex items-start gap-2 text-sm font-medium leading-relaxed text-slate-700 md:text-base"
-                                    >
-                                        <span class="mt-1 h-2 w-2 rounded-full bg-emerald-500"></span>
-                                        <span>{{ point }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="md:col-span-5">
-                                <img
-                                    :src="featureVisuals[index % featureVisuals.length]"
-                                    :alt="item.title"
-                                    class="h-[220px] w-full rounded-[1.4rem] object-cover"
-                                    loading="lazy"
-                                />
-                            </div>
-                        </div>
+                         <div class="absolute -right-10 -bottom-10 text-[8rem] font-bold text-slate-50 opacity-50 select-none pointer-events-none group-hover:text-teal-50 group-hover:scale-110 transition-transform duration-700">
+                             0{{ index + 1 }}
+                         </div>
+                         
+                         <div class="grid md:grid-cols-12 gap-10 items-center relative z-10">
+                             <div class="md:col-span-8">
+                                 <div class="flex items-center gap-3 mb-6">
+                                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900">{{ item.title }}</h2>
+                                     <span v-if="item.badge" class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] bg-teal-100 text-teal-800">{{ item.badge }}</span>
+                                 </div>
+                                 <p class="text-lg leading-relaxed text-slate-600 font-medium">{{ item.description }}</p>
+                                 <ul class="mt-8 space-y-4">
+                                     <li v-for="point in item.bullets" :key="point" class="flex items-start gap-3">
+                                         <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-teal-600 mt-1">
+                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                         </span>
+                                         <span class="text-base font-bold text-slate-700">{{ point }}</span>
+                                     </li>
+                                 </ul>
+                             </div>
+                             
+                             <div class="md:col-span-4 self-stretch hidden md:block relative bg-slate-100 rounded-2xl overflow-hidden group-hover:shadow-[0_0_30px_rgba(20,184,166,0.15)] transition-shadow duration-700">
+                                 <div class="absolute inset-0 bg-slate-900/10 z-10 group-hover:bg-transparent transition-colors"></div>
+                                 <img
+                                     :src="featureVisuals[index % featureVisuals.length]"
+                                     :alt="item.title"
+                                     class="absolute inset-0 w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                     loading="lazy"
+                                 />
+                             </div>
+                         </div>
                     </article>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="relative overflow-hidden bg-slate-950 py-16 text-white md:py-20">
-            <div class="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-500/20 blur-3xl"></div>
-            <div class="mx-auto grid w-full max-w-[1320px] gap-8 px-5 md:grid-cols-12 md:px-6">
-                <div class="md:col-span-4">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">FAQ</p>
-                    <h2 class="mt-4 text-4xl leading-[0.95] tracking-[-0.03em]">Perguntas objetivas</h2>
-                    <p class="mt-4 text-base leading-relaxed text-slate-300">
-                        Sem resposta vaga: o que o produto faz, o que nao faz e como funciona na pratica.
-                    </p>
-                </div>
-                <div class="md:col-span-8">
-                    <details
-                        v-for="item in faq"
-                        :key="item.question"
-                        class="border-b border-white/15 py-4"
+        <!-- Minimal FAQ Section -->
+        <MotionSection class="bg-white py-24 relative overflow-hidden border-t border-slate-200">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 md:w-3/4 lg:w-3/5 text-center">
+                <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-200">Perguntas Diretas</p>
+                <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 mb-12">FAQ de papo reto</h2>
+                
+                <div class="text-left space-y-4">
+                    <details 
+                        v-for="item in faq" 
+                        :key="item.question" 
+                        class="group bg-slate-50 border border-slate-200 rounded-2xl p-6 open:bg-white open:border-teal-200 open:shadow-lg transition-all"
                     >
-                        <summary class="cursor-pointer list-none text-lg font-semibold tracking-tight">{{ item.question }}</summary>
-                        <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 md:text-base">{{ item.answer }}</p>
+                        <summary class="cursor-pointer list-none font-bold text-lg text-slate-800 flex justify-between items-center group-open:text-teal-600">
+                            {{ item.question }}
+                            <span class="flex-shrink-0 ml-4 h-8 w-8 rounded-full border-2 border-slate-200 flex items-center justify-center group-open:border-teal-500 group-open:bg-teal-50 transition-colors">
+                                <svg class="w-4 h-4 text-slate-500 group-open:text-teal-600 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </span>
+                        </summary>
+                        <p class="mt-6 text-base leading-relaxed text-slate-600 font-medium pl-2 border-l-2 border-teal-200">{{ item.answer }}</p>
                     </details>
-                    <div class="mt-7 flex flex-wrap gap-3">
-                        <Link
-                            :href="route('site.pricing')"
-                            class="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
-                        >
-                            Ver planos
-                        </Link>
-                        <Link
-                            :href="route('site.contact')"
-                            class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                        >
-                            Tirar duvidas
-                        </Link>
-                    </div>
+                </div>
+
+                <div class="mt-16 flex flex-wrap justify-center gap-4">
+                    <Link
+                        :href="route('site.pricing')"
+                        class="inline-flex h-14 items-center justify-center rounded-2xl bg-slate-950 px-10 text-[12px] font-extrabold uppercase tracking-[0.15em] text-white transition-all hover:bg-teal-500 hover:text-slate-950 hover:shadow-[0_0_20px_theme(colors.teal.500/40)] hover:scale-105 active:scale-95"
+                    >
+                        Bora ver os planos
+                    </Link>
                 </div>
             </div>
-        </section>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.feature-row {
-    border-top: 1px solid rgba(148, 163, 184, 0.35);
-    padding: 2.5rem 0;
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
 }
-
-.feature-row:first-child {
-    padding-top: 0;
-    border-top: 0;
+html {
+    scroll-behavior: smooth;
 }
-
 </style>

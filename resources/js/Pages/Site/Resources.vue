@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
+import MotionSection from '@/Components/site/MotionSection.vue';
 import { resourceCards } from '@/types/site';
 
 defineProps<{
@@ -21,18 +22,18 @@ const filteredCards = computed(() => {
 const editorialTimeline = [
     {
         year: '2026',
-        title: 'Serie Projecao na Pratica',
-        description: 'Guias curtos focados em risco de saldo, rotina semanal e tomada de decisao.',
+        title: 'Série: Projeção na Prática',
+        description: 'Guias curtos focados no que importa. Risco de saldo, rotina rápida e decisão suja, mas segura.',
     },
     {
         year: '2026',
-        title: 'Playbooks por Perfil',
-        description: 'Conteudos para autonomos, casais e profissionais CLT com cenarios reais.',
+        title: 'Playbooks: Como a galera joga',
+        description: 'Como os autônomos se defendem, como solteiros poupam, como casais param de brigar por extrato.',
     },
     {
         year: '2026',
-        title: 'Newsletter Operacional',
-        description: 'Resumo quinzenal com ajustes praticos para manter previsibilidade financeira.',
+        title: 'A Nova Newsletter',
+        description: 'Esqueça os textões chatos. Pílulas quinzenais de controle visceral pra manter a roda girando limpa.',
     },
 ];
 
@@ -46,218 +47,194 @@ const visuals = [
 ];
 
 const socialLinks = [
-    { label: 'Instagram', note: '@kitamo (TODO)' },
-    { label: 'LinkedIn', note: '/company/kitamo (TODO)' },
-    { label: 'YouTube', note: '/kitamo (TODO)' },
+    { label: 'Instagram', note: 'Em Breve... Construindo' },
+    { label: 'LinkedIn', note: 'Em Breve... Bastidores da Equipe' },
+    { label: 'YouTube', note: 'Em Breve... Tutorial e Papo Reto' },
 ];
 </script>
 
 <template>
-    <Head title="Recursos | Kitamo">
-        <meta
-            name="description"
-            content="Guias, playbooks e newsletter da Kitamo para projecao de caixa e organizacao financeira pessoal."
-        />
+    <Head title="Guias e Radar | Kitamo">
+        <meta name="description" content="Conteúdo pra usar na prática: Playbooks reais e linha editorial pra não quebrar a conta." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
-        <section class="relative mx-auto w-full max-w-[1360px] px-5 pb-14 pt-10 md:px-6 md:pb-20 md:pt-16">
-            <div class="pointer-events-none absolute bottom-12 left-0 top-12 hidden w-10 rounded-r-2xl bg-emerald-100/85 xl:block"></div>
-            <div class="pointer-events-none absolute bottom-12 right-0 top-12 hidden w-10 rounded-l-2xl bg-emerald-100/60 xl:block"></div>
+        <!-- Hero Section -->
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-20 border-b border-white/5">
+             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+            
+             <div class="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-teal-600/20 blur-[130px] rounded-full mix-blend-screen opacity-50"></div>
+             
+             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 grid lg:grid-cols-12 gap-12 items-center">
+                 <div class="lg:col-span-7">
+                     <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 drop-shadow-sm bg-teal-400/10 px-4 py-2 rounded-full border border-teal-400/20">Radar Kitamo</p>
+                     <h1 class="text-5xl sm:text-6xl md:text-[5rem] leading-[0.95] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-4xl">
+                         Conteúdo que<br>
+                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-green-400 font-serif italic pr-2">faz diferença.</span>
+                     </h1>
+                     <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl text-left">
+                         Menos teoria barata de "guarde no porquinho" e mais playbook no estilo trincheira pra manter a conta sempre no azul.
+                     </p>
+                     
+                     <div class="mt-10 flex gap-4">
+                          <Link
+                             :href="route('site.contact')"
+                             class="inline-flex h-12 w-auto items-center justify-center rounded-2xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/40)]"
+                         >
+                             Assinar a Newsletter
+                         </Link>
+                         <Link
+                             :href="route('site.product')"
+                             class="inline-flex h-12 items-center justify-center rounded-2xl border border-white/20 bg-white/5 backdrop-blur-sm px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-white transition-all hover:bg-white/10 hover:border-white hover:scale-105 hidden sm:inline-flex"
+                         >
+                             Ir pro App
+                         </Link>
+                     </div>
+                 </div>
 
-            <div class="resources-shell relative overflow-hidden rounded-[2.2rem] border border-slate-200 p-6 md:p-8">
-                <div class="grid items-center gap-8 md:grid-cols-12">
-                    <div class="md:col-span-7 text-white">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Recursos, guias e newsletter</p>
-                        <h1 class="mt-4 text-5xl leading-[0.9] tracking-[-0.03em] md:text-6xl">
-                            Conteudo para
-                            <span class="block font-serif italic text-emerald-300">decidir antes do aperto</span>
-                        </h1>
-                        <p class="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-                            Material editorial direto ao ponto para transformar controle manual em previsibilidade diaria de caixa.
-                        </p>
+                 <div class="lg:col-span-5 relative group hidden lg:block">
+                     <div class="absolute inset-0 bg-teal-500/20 blur-2xl rounded-[2rem] transform group-hover:scale-105 transition-transform duration-700"></div>
+                     <img
+                         src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1400"
+                         alt="Kitamo rodando liso"
+                         class="relative h-[300px] sm:h-[400px] w-full object-cover rounded-[2rem] border border-white/10 shadow-2xl filter grayscale hover:grayscale-0 transition-all duration-700 hover:saturate-150"
+                         loading="lazy"
+                     />
+                 </div>
+             </div>
+        </MotionSection>
 
-                        <div class="mt-7 flex flex-wrap gap-3">
-                            <button
-                                type="button"
-                                class="inline-flex h-11 items-center justify-center rounded-full bg-emerald-400 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-300"
-                            >
-                                Assinar newsletter
-                            </button>
-                            <!-- TODO: integrar assinatura real da newsletter -->
-                            <Link
-                                :href="route('site.product')"
-                                class="inline-flex h-11 items-center justify-center rounded-full border border-white/30 px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                            >
-                                Ver produto
-                            </Link>
-                        </div>
-
-                        <div class="mt-8 flex flex-wrap gap-2">
-                            <span
-                                v-for="tag in ['Guias praticos', 'Playbooks', 'Operacao semanal']"
-                                :key="tag"
-                                class="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em]"
-                            >
-                                {{ tag }}
-                            </span>
-                        </div>
+        <!-- Dynamic Filter and Catalog -->
+        <MotionSection class="bg-gray-50 py-24 pb-32">
+            <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
+                <aside class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6 drop-shadow-sm bg-slate-100 px-4 py-2 rounded-full border border-slate-200 inline-block">Navegue pelas rotas</p>
+                    <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
+                        O que você <span class="text-teal-500 font-serif italic">precisa hoje?</span>
+                    </h2>
+                    
+                    <div class="mt-10 flex flex-wrap gap-3">
+                         <button
+                             v-for="category in categories"
+                             :key="category"
+                             type="button"
+                             class="inline-flex h-12 items-center justify-center rounded-full border-2 px-6 text-[12px] font-extrabold uppercase tracking-[0.15em] transition-all hover:scale-105 active:scale-95"
+                             :class="selectedCategory === category ? 'border-teal-500 bg-teal-500 text-slate-950 shadow-[0_0_15px_theme(colors.teal.500/30)]' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'"
+                             @click="selectedCategory = category"
+                         >
+                             {{ category }}
+                         </button>
                     </div>
 
-                    <div class="md:col-span-5">
-                        <div class="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-slate-900">
-                            <div class="resource-glow absolute -right-14 -top-20 h-[150%] w-[75%]"></div>
-                            <img
-                                src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1400"
-                                alt="Equipe revisando planejamento financeiro"
-                                class="relative z-10 h-[360px] w-full object-cover object-center md:h-[430px]"
-                                loading="lazy"
-                            />
-                            <div class="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/15 bg-slate-950/75 p-4 backdrop-blur">
-                                <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-300">Edicao atual</p>
-                                <p class="mt-1 text-sm text-slate-200">Ritual financeiro de 20 minutos para revisar risco e realocar gastos.</p>
+                    <div class="mt-16 bg-slate-950 p-8 rounded-[2rem] text-white overflow-hidden relative group">
+                        <div class="absolute -right-20 -top-20 w-[150%] h-[150%] bg-[linear-gradient(145deg,rgba(20,184,166,0.3),transparent)] blur-xl group-hover:rotate-12 transition-transform duration-700"></div>
+                        <h3 class="text-2xl font-extrabold text-white mb-2 relative z-10">Agenda Editorial</h3>
+                        <div class="space-y-6 mt-8 relative z-10 border-l border-white/10 pl-6">
+                            <div v-for="item in editorialTimeline" :key="item.title" class="relative group/timeline">
+                                <div class="absolute -left-7 top-1 h-3 w-3 rounded-full bg-teal-500 shadow-[0_0_10px_theme(colors.teal.500/50)] group-hover/timeline:scale-150 transition-transform"></div>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400">{{ item.year }}</p>
+                                <p class="text-lg font-bold text-white mt-1">{{ item.title }}</p>
+                                <p class="text-sm font-medium text-slate-400 leading-relaxed mt-1">{{ item.description }}</p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-10 md:px-6 md:pb-14">
-            <div class="flex flex-wrap gap-2">
-                <button
-                    v-for="category in categories"
-                    :key="category"
-                    type="button"
-                    class="inline-flex h-10 items-center justify-center rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.14em] transition"
-                    :class="selectedCategory === category ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-950'"
-                    @click="selectedCategory = category"
-                >
-                    {{ category }}
-                </button>
-            </div>
-        </section>
-
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="grid gap-10 lg:grid-cols-12">
-                <aside class="lg:col-span-4">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Linha editorial</p>
-                    <h2 class="mt-3 text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Trilha de conteudo em evolucao continua</h2>
-                    <ol class="timeline mt-7 space-y-6 pl-8">
-                        <li v-for="item in editorialTimeline" :key="item.title" class="relative">
-                            <span class="absolute -left-8 top-1 h-3 w-3 rounded-full bg-emerald-500"></span>
-                            <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{{ item.year }}</p>
-                            <h3 class="mt-1 text-2xl leading-tight tracking-tight text-slate-950">{{ item.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-600 md:text-base">{{ item.description }}</p>
-                        </li>
-                    </ol>
                 </aside>
 
-                <div class="lg:col-span-8">
-                    <article
-                        v-for="(card, idx) in filteredCards"
-                        :key="card.title"
-                        class="group grid gap-4 border-t border-slate-200 py-6 first:border-t-0 first:pt-0 md:grid-cols-[220px_minmax(0,1fr)] md:items-center"
-                    >
-                        <div class="relative h-44 overflow-hidden rounded-[1.2rem]">
-                            <img
-                                :src="visuals[idx % visuals.length]"
-                                :alt="card.title"
-                                class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                                loading="lazy"
-                            />
-                            <span class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-800">{{ card.readTime }}</span>
-                        </div>
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                     <article
+                         v-for="(card, idx) in filteredCards"
+                         :key="card.title"
+                         class="bg-white rounded-[2rem] border border-slate-200 p-4 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 group grid md:grid-cols-[200px_minmax(0,1fr)] gap-6"
+                     >
+                         <div class="relative w-full aspect-video md:aspect-square overflow-hidden rounded-[1.5rem] bg-slate-100">
+                             <img
+                                 :src="visuals[idx % visuals.length]"
+                                 :alt="card.title"
+                                 class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                 loading="lazy"
+                             />
+                             <div class="absolute top-2 left-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-400">
+                                 {{ card.readTime }}
+                             </div>
+                         </div>
 
-                        <div>
-                            <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">{{ card.category }}</p>
-                            <h3 class="mt-2 text-3xl leading-tight tracking-tight text-slate-950">{{ card.title }}</h3>
-                            <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">{{ card.excerpt }}</p>
-                            <div class="mt-4 flex flex-wrap items-center gap-3">
-                                <button
-                                    type="button"
-                                    class="inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-emerald-500 hover:text-slate-950"
-                                >
-                                    Ler guia
-                                </button>
-                                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Publicado em breve</span>
-                            </div>
-                        </div>
-                    </article>
+                         <div class="flex flex-col justify-center py-2 md:pr-4">
+                             <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-2">{{ card.category }}</p>
+                             <h3 class="text-2xl font-extrabold text-slate-900 leading-tight mb-3 group-hover:text-teal-600 transition-colors">{{ card.title }}</h3>
+                             <p class="text-base text-slate-600 leading-relaxed font-medium mb-6 line-clamp-3">{{ card.excerpt }}</p>
+                             
+                             <div class="mt-auto flex items-center gap-4">
+                                  <button
+                                     type="button"
+                                     class="inline-flex h-10 items-center justify-center rounded-2xl bg-slate-100 px-6 text-[11px] font-extrabold uppercase tracking-[0.15em] text-slate-600 transition-all hover:bg-slate-950 hover:text-white"
+                                 >
+                                     Ler Material
+                                 </button>
+                                 <span class="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">Cozinhando...</span>
+                             </div>
+                         </div>
+                     </article>
+
+                     <div v-if="filteredCards.length === 0" class="text-center py-20">
+                         <h3 class="text-2xl font-bold text-slate-800">Tudo vazio por aqui.</h3>
+                         <p class="text-slate-500 mt-2">Nenhum artigo encontrado nessa categoria. Escolha outra ali em cima.</p>
+                     </div>
                 </div>
             </div>
-        </section>
+        </MotionSection>
 
-        <section class="mx-auto w-full max-w-[1320px] px-5 pb-14 md:px-6 md:pb-20">
-            <div class="grid gap-4 md:grid-cols-12">
-                <article class="relative overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white p-6 md:col-span-7 md:p-7">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Canal da comunidade</p>
-                    <h2 class="mt-3 text-4xl leading-[0.95] tracking-tight text-slate-950 md:text-5xl">Acompanhe a evolucao do produto e dos guias</h2>
-                    <p class="mt-4 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
-                        Compartilhamos bastidores, melhorias de interface, decisoes de produto e material pratico para quem usa projecao no dia a dia.
-                    </p>
+        <!-- Social Community Footer CTA -->
+        <MotionSection class="bg-white relative overflow-hidden border-t border-slate-200">
+             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 py-24">
+                 <div class="grid lg:grid-cols-2 gap-16 items-center">
+                     <div>
+                         <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-200">Galera da Linha de Frente</p>
+                         <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
+                              Acompanhe o <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-green-600 font-serif italic pr-2">que tá rolando.</span>
+                         </h2>
+                         <p class="mt-6 text-xl leading-relaxed text-slate-500 font-medium">
+                              Compartilhamos as pancadas, os bastidores, dicas brabas do app e o suor que é rodar um produto focado na galera. Sem palestrante motivacional ensinando a ficar rico.
+                         </p>
 
-                    <div class="mt-6 grid gap-3 sm:grid-cols-3">
-                        <div
-                            v-for="social in socialLinks"
-                            :key="social.label"
-                            class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                        >
-                            <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-600">{{ social.label }}</p>
-                            <p class="mt-2 text-sm text-slate-500">{{ social.note }}</p>
-                        </div>
-                    </div>
-                </article>
+                         <div class="mt-12 grid sm:grid-cols-3 gap-4">
+                              <div v-for="social in socialLinks" :key="social.label" class="bg-slate-50 border border-slate-100 p-6 rounded-2xl hover:bg-slate-100 hover:border-slate-200 transition-colors w-full group">
+                                   <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-slate-900 group-hover:text-teal-600 transition-colors">{{ social.label }}</p>
+                                   <p class="mt-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 line-clamp-2">{{ social.note }}</p>
+                              </div>
+                         </div>
+                     </div>
 
-                <article class="overflow-hidden rounded-[1.8rem] bg-slate-950 text-white md:col-span-5">
-                    <img
-                        src="https://images.pexels.com/photos/7654580/pexels-photo-7654580.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                        alt="Pessoa produzindo conteudo em estudio"
-                        class="h-56 w-full object-cover"
-                        loading="lazy"
-                    />
-                    <div class="p-6">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-300">Newsletter quinzenal</p>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-300">
-                            Insights praticos para reduzir surpresa financeira sem adicionar complexidade desnecessaria.
-                        </p>
-                        <Link
-                            :href="route('site.contact')"
-                            class="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-white/30 px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:border-white"
-                        >
-                            Entrar na lista
-                        </Link>
-                    </div>
-                </article>
-            </div>
-        </section>
+                     <div class="bg-slate-950 rounded-[2.5rem] p-10 md:p-14 text-white hover:shadow-2xl transition-all duration-700 group relative overflow-hidden">
+                          <div class="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+                          <div class="absolute -right-20 -bottom-20 w-[150%] h-[150%] bg-[linear-gradient(145deg,rgba(20,184,166,0.3),transparent)] blur-3xl group-hover:rotate-12 transition-transform duration-1000"></div>
+                          
+                          <div class="relative z-10">
+                              <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-6 px-3 py-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 backdrop-blur-sm">O Inbox Chato a Menos</p>
+                              <h3 class="text-3xl font-extrabold text-white">Nossa Newsletter <br>Quinzenal</h3>
+                              <p class="text-slate-400 font-medium leading-relaxed mt-4 mb-8">
+                                  Lembrete cirúrgicos quinzenais com pílulas de comportamento e avisos sobre updates do app pra reduzir o desespero do seu bolso.
+                              </p>
+                              <div class="flex">
+                                   <Link
+                                      :href="route('site.contact')"
+                                      class="inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-2xl bg-teal-500 px-10 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-[1.03] shadow-[0_0_20px_theme(colors.teal.500/30)]"
+                                  >
+                                      Bora, Assinar
+                                  </Link>
+                              </div>
+                          </div>
+                     </div>
+                 </div>
+             </div>
+        </MotionSection>
     </SiteLayout>
 </template>
 
 <style scoped>
-.resources-shell {
-    background:
-        radial-gradient(34rem 24rem at 12% 0%, rgba(16, 185, 129, 0.2), transparent 72%),
-        linear-gradient(140deg, #030712 0%, #0f172a 58%, #111827 100%);
+h1, h2, h3 {
+    font-feature-settings: "salt" on, "ss01" on;
 }
-
-.resource-glow {
-    background: linear-gradient(145deg, rgba(16, 185, 129, 0.65), rgba(99, 102, 241, 0.6));
-    transform: rotate(-18deg);
-    border-radius: 2rem;
-}
-
-.timeline {
-    position: relative;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 6px;
-    bottom: 6px;
-    width: 2px;
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.45), rgba(16, 185, 129, 0.1));
+html {
+    scroll-behavior: smooth;
 }
 </style>
