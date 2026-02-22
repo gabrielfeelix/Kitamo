@@ -91,7 +91,7 @@ const serviceBlocks = [
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         
         <!-- ================= HERO ================= -->
-        <MotionSection class="relative min-h-[100vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32 pb-40">
+        <MotionSection class="relative min-h-[100vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center pt-32">
             <!-- Noise Texture -->
             <div class="absolute inset-0 opacity-[0.025] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
             
@@ -131,7 +131,7 @@ const serviceBlocks = [
             </div>
 
             <!-- Floating UI Preview (Breaks the next section) -->
-            <div class="absolute -bottom-32 sm:-bottom-40 lg:-bottom-56 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-20 perspective-1000">
+            <div class="relative mx-auto w-[90%] max-w-[1200px] z-20 perspective-1000 mt-20 sm:mt-24 lg:mt-32 -mb-32 sm:-mb-40 lg:-mb-56">
                 <div class="absolute inset-0 bg-teal-500/10 rounded-[4rem] blur-3xl transform -translate-y-10"></div>
                 <div class="relative rounded-[2.5rem] sm:rounded-[4rem] border border-white/10 bg-slate-900/80 backdrop-blur-sm shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden transition-transform duration-1000 transform hover:-translate-y-4 rotate-x-6 hover:rotate-x-0 group">
                     <img
