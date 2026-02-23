@@ -66,28 +66,8 @@ const destinationCards = [
     },
 ];
 
-const flowTimeline = [
-    {
-        number: '01',
-        title: 'A Fundação',
-        text: 'Cadastre contas e dívidas. Um clique, e sua base tá pronta.',
-    },
-    {
-        number: '02',
-        title: 'O Hábito',
-        text: 'Tirou do bolso? Joga no app. 5 segundos pro hábito virar rotina.',
-    },
-    {
-        number: '03',
-        title: 'O Radar',
-        text: 'O sinal vermelho acende se faltar grana pro boleto de semana que vem.',
-    },
-    {
-        number: '04',
-        title: 'A Paz',
-        text: 'Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente.',
-    },
-] as const;
+
+
 
 const serviceBlocks = [
     {
@@ -221,110 +201,233 @@ const serviceBlocks = [
             </div>
         </MotionSection>
 
-        <!-- ================= O RITMO (Todoist-style sticky + stagger) ================= -->
-        <section class="bg-slate-950 relative text-white overflow-hidden border-t-[8px] border-teal-500 shadow-2xl">
+        <!-- ================= O RITMO — reimagined (Linear/Stripe-style) ================= -->
+        <section class="bg-slate-950 relative text-white overflow-hidden">
             <!-- Noise texture -->
             <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');"></div>
-            <!-- Radial glow -->
-            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.07)_0,transparent_70%)] pointer-events-none"></div>
 
             <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10">
-                <div class="flex flex-col lg:flex-row gap-0 lg:gap-24">
 
-                    <!-- LEFT: Sticky Panel (Todoist-style) -->
-                    <div class="lg:w-[38%] py-32 lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col lg:justify-center">
-                        <!-- Eyebrow -->
-                        <p class="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 w-fit">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-                            O sistema de 4 passos
-                        </p>
-                        <h2 class="text-5xl lg:text-[5rem] font-extrabold tracking-tighter text-white leading-[0.92] mb-8">
-                            O<br><span class="text-transparent bg-clip-text bg-gradient-to-br from-teal-300 to-emerald-400">ritmo.</span>
-                        </h2>
-                        <p class="text-xl text-slate-400 font-medium leading-relaxed max-w-sm mb-12">
-                            Não é disciplina, é sistema. Os 4 passos que mantêm a engrenagem limpa e a cabeça no lugar.
-                        </p>
+                <!-- Section header -->
+                <div class="pt-32 pb-20 lg:pb-28 max-w-3xl">
+                    <p class="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 w-fit">
+                        <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                        O sistema de 4 passos
+                    </p>
+                    <h2 class="text-5xl lg:text-[5.5rem] font-extrabold tracking-tighter text-white leading-[0.88] mb-8">
+                        O<br><span class="text-transparent bg-clip-text bg-gradient-to-br from-teal-300 to-emerald-400">ritmo.</span>
+                    </h2>
+                    <p class="text-xl text-slate-400 font-medium leading-relaxed max-w-lg">
+                        Não é disciplina, é sistema. Cada passo resolve uma peça — e a engrenagem roda sozinha.
+                    </p>
+                </div>
 
-                        <!-- Step indicators (pill nav) -->
-                        <div class="flex gap-2 flex-wrap">
-                            <div v-for="step in flowTimeline" :key="step.number"
-                                class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/5 text-[11px] font-bold text-slate-500 tracking-wider">
-                                <span class="text-teal-500">{{ step.number }}</span>
-                                <span>{{ step.title }}</span>
+                <!-- ═══════ STEP 01 — A FUNDAÇÃO ═══════ -->
+                <div
+                    :ref="(el) => registerCard(el as HTMLElement, 0)"
+                    class="group grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-6 cursor-default"
+                >
+                    <!-- Text side -->
+                    <div class="p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-br from-slate-900/80 to-slate-900/40">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-teal-400 bg-teal-500/10 px-3 py-1.5 rounded-lg border border-teal-500/20">Passo 01</span>
+                        </div>
+                        <h3 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-[0.95] mb-5">
+                            A Fundação
+                        </h3>
+                        <p class="text-lg text-slate-400 font-medium leading-relaxed max-w-md mb-8">
+                            Cadastre contas e dívidas em segundos. Um clique, e o mapa financeiro tá montado.
+                        </p>
+                        <div class="flex items-center gap-2 text-[12px] font-bold text-teal-400/70">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" /></svg>
+                            Leva menos de 1 minuto
+                        </div>
+                    </div>
+                    <!-- Mockup side -->
+                    <div class="relative bg-slate-900/60 p-8 sm:p-10 lg:p-12 flex items-center justify-center min-h-[320px] overflow-hidden">
+                        <!-- Glow -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-teal-500/[0.06] blur-[80px] pointer-events-none"></div>
+                        <!-- Mini account cards -->
+                        <div class="relative w-full max-w-[340px] space-y-3">
+                            <div class="flex items-center gap-3 bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 group-hover:bg-white/[0.09] group-hover:border-teal-500/20 transition-all duration-500">
+                                <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0"><div class="w-3 h-3 rounded bg-violet-400"></div></div>
+                                <div class="flex-1 min-w-0"><div class="text-sm font-bold text-white">Nubank</div><div class="text-[11px] text-slate-500">Conta Digital</div></div>
+                                <div class="text-sm font-bold text-teal-400">R$ 3.200</div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 group-hover:bg-white/[0.09] group-hover:border-teal-500/20 transition-all duration-500 delay-75">
+                                <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0"><div class="w-3 h-3 rounded bg-orange-400"></div></div>
+                                <div class="flex-1 min-w-0"><div class="text-sm font-bold text-white">Itaú</div><div class="text-[11px] text-slate-500">Conta Corrente</div></div>
+                                <div class="text-sm font-bold text-teal-400">R$ 8.500</div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 group-hover:bg-white/[0.09] group-hover:border-red-500/20 transition-all duration-500 delay-150">
+                                <div class="w-10 h-10 rounded-xl bg-sky-500/20 flex items-center justify-center flex-shrink-0"><div class="w-3 h-3 rounded bg-sky-400"></div></div>
+                                <div class="flex-1 min-w-0"><div class="text-sm font-bold text-white">Cartão Visa</div><div class="text-[11px] text-slate-500">Crédito</div></div>
+                                <div class="text-sm font-bold text-red-400">-R$ 1.200</div>
+                            </div>
+                            <!-- Success indicator -->
+                            <div class="flex items-center gap-3 mt-4 bg-teal-500/10 border border-teal-500/20 rounded-xl px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-200">
+                                <svg class="w-5 h-5 text-teal-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <span class="text-[12px] font-bold text-teal-400">Base configurada · Saldo líquido R$ 10.500</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- RIGHT: Stagger cards column -->
-                    <div class="lg:w-[62%] py-16 lg:py-32 flex flex-col gap-8">
-                        <article
-                            v-for="(step, index) in flowTimeline"
-                            :key="step.number"
-                            :ref="(el) => registerCard(el as HTMLElement, index)"
-                            class="rhythm-card group relative rounded-[2.5rem] border border-white/[0.08] p-10 sm:p-14 overflow-hidden cursor-default"
-                            :class="index % 2 !== 0 ? 'sm:ml-16' : ''"
-                        >
-                            <!-- Hover glow -->
-                            <div class="absolute inset-0 bg-gradient-to-br from-teal-500/0 to-teal-500/0 group-hover:from-teal-500/[0.04] group-hover:to-transparent transition-all duration-700 rounded-[2.5rem]"></div>
-                            
-                            <!-- Step number watermark -->
-                            <div class="absolute -right-4 -top-4 text-[7rem] sm:text-[9rem] font-extrabold leading-none text-white/[0.04] pointer-events-none select-none group-hover:text-teal-500/[0.07] group-hover:translate-x-2 group-hover:-translate-y-2 transition-[color,transform] duration-700">
-                                {{ step.number }}
-                            </div>
-
-                            <div class="relative z-10 flex flex-col xl:flex-row gap-10 items-start xl:items-center">
-                                <div class="flex-1">
-                                    <!-- Step badge -->
-                                    <div class="flex items-center gap-4 mb-8">
-                                        <div class="h-14 w-14 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center font-extrabold text-xl text-teal-400 group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-all duration-300">
-                                            {{ step.number }}
-                                        </div>
-                                        <!-- Progress line -->
-                                        <div class="flex-1 h-px bg-white/[0.06] relative overflow-hidden">
-                                            <div class="absolute left-0 top-0 h-full bg-gradient-to-r from-teal-500 to-transparent w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
-                                        </div>
-                                    </div>
-
-                                    <h3 class="text-3xl sm:text-[2.5rem] font-extrabold tracking-tight text-white leading-tight mb-5 group-hover:text-teal-200 transition-colors duration-300">
-                                        {{ step.title }}
-                                    </h3>
-                                    <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md group-hover:text-slate-300 transition-colors duration-300">
-                                        {{ step.text }}
-                                    </p>
-                                </div>
-
-                                <!-- Phone mockup only for step 02 -->
-                                <div v-if="step.number === '02'" class="xl:w-[220px] flex-shrink-0 mt-4 xl:mt-0 relative">
-                                    <div class="absolute inset-0 bg-teal-500/15 blur-2xl rounded-full pointer-events-none scale-110"></div>
-                                    <div class="relative rounded-[2rem] overflow-hidden border-4 border-slate-800 bg-slate-900 group-hover:border-teal-500/40 transition-colors duration-700 shadow-2xl">
-                                        <div class="absolute top-2 inset-x-0 h-4 flex justify-center z-10">
-                                            <div class="w-10 h-4 bg-slate-950 rounded-full"></div>
-                                        </div>
-                                        <video src="/videos/demo-habit.mp4" autoplay loop muted playsinline class="w-full h-auto aspect-[9/16] object-cover pointer-events-none"></video>
-                                    </div>
-                                </div>
-
-                                <!-- Icon illustration for other steps -->
-                                <div v-else class="xl:w-[100px] flex-shrink-0 flex items-center justify-center">
-                                    <div class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/10 group-hover:border-teal-500/20 transition-all duration-500">
-                                        <svg v-if="step.number === '01'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                                        </svg>
-                                        <svg v-if="step.number === '03'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.008H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                        </svg>
-                                        <svg v-if="step.number === '04'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-
                 </div>
+
+                <!-- ═══════ STEP 02 — O HÁBITO ═══════ -->
+                <div
+                    :ref="(el) => registerCard(el as HTMLElement, 1)"
+                    class="group grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-6 cursor-default"
+                >
+                    <!-- Phone mockup (narrow) -->
+                    <div class="lg:col-span-2 relative bg-slate-900/60 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-[400px] lg:min-h-0 order-2 lg:order-1">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-500/[0.06] blur-[80px] pointer-events-none"></div>
+                        <div class="relative w-[200px]">
+                            <div class="rounded-[2rem] overflow-hidden border-[3px] border-slate-700 bg-slate-900 group-hover:border-cyan-500/30 transition-colors duration-700 shadow-2xl">
+                                <div class="absolute top-2 inset-x-0 h-4 flex justify-center z-10"><div class="w-8 h-3 bg-slate-950 rounded-full"></div></div>
+                                <video src="/videos/demo-habit.mp4" autoplay loop muted playsinline class="w-full h-auto aspect-[9/16] object-cover pointer-events-none"></video>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Text side (wider) -->
+                    <div class="lg:col-span-3 p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-bl from-slate-900/80 to-slate-900/40 order-1 lg:order-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/20">Passo 02</span>
+                            <span class="text-[11px] font-bold text-slate-600 bg-white/5 px-3 py-1.5 rounded-lg">5 segundos ⚡</span>
+                        </div>
+                        <h3 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-[0.95] mb-5">
+                            O Hábito
+                        </h3>
+                        <p class="text-lg text-slate-400 font-medium leading-relaxed max-w-md mb-8">
+                            Tirou do bolso? Joga no app. O lançamento é tão rápido que vira reflexo — como trancar a porta.
+                        </p>
+                        <!-- Mini inline mockup: typing preview -->
+                        <div class="bg-white/[0.04] border border-white/[0.08] rounded-xl px-5 py-4 max-w-sm group-hover:border-cyan-500/20 transition-all duration-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] text-slate-500 font-bold">LANÇAR RÁPIDO</span>
+                                <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                            </div>
+                            <div class="text-white font-semibold text-sm">Pizza com a galera</div>
+                            <div class="text-red-400 font-bold text-lg mt-1">-R$ 89,00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════ STEP 03 — O RADAR ═══════ -->
+                <div
+                    :ref="(el) => registerCard(el as HTMLElement, 2)"
+                    class="group grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-6 cursor-default"
+                >
+                    <!-- Text side -->
+                    <div class="p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-br from-slate-900/80 to-slate-900/40">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">Passo 03</span>
+                        </div>
+                        <h3 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-[0.95] mb-5">
+                            O Radar
+                        </h3>
+                        <p class="text-lg text-slate-400 font-medium leading-relaxed max-w-md mb-8">
+                            O sinal vermelho acende antes do furo acontecer. Você vê semana a semana o que vem pela frente.
+                        </p>
+                        <!-- Alert inline preview -->
+                        <div class="bg-red-500/[0.06] border border-red-500/20 rounded-xl px-5 py-4 max-w-sm opacity-0 group-hover:opacity-100 transition-all duration-700">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                <span class="text-[12px] font-bold text-red-400">Fatura do cartão vence em 5 dias</span>
+                            </div>
+                            <div class="text-[12px] text-slate-500 mt-1">Saldo insuficiente · faltam <span class="text-red-400 font-bold">R$ 1.800</span></div>
+                        </div>
+                    </div>
+                    <!-- Bar chart mockup -->
+                    <div class="relative bg-slate-900/60 p-8 sm:p-10 lg:p-12 flex items-end justify-center min-h-[320px] overflow-hidden">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-500/[0.04] blur-[80px] pointer-events-none"></div>
+                        <!-- Bars -->
+                        <div class="relative flex items-end gap-4 sm:gap-6 h-48 w-full max-w-[320px]">
+                            <div class="flex-1 flex flex-col items-center gap-2">
+                                <div class="text-[11px] font-bold text-teal-400">R$ 4.2k</div>
+                                <div class="w-full bg-teal-500/80 rounded-t-lg transition-all duration-700 group-hover:bg-teal-400" style="height: 140px;"></div>
+                                <div class="text-[10px] text-slate-500 font-medium">Hoje</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2">
+                                <div class="text-[11px] font-bold text-teal-400">R$ 5.8k</div>
+                                <div class="w-full bg-teal-500/80 rounded-t-lg transition-all duration-700 group-hover:bg-teal-400" style="height: 180px;"></div>
+                                <div class="text-[10px] text-slate-500 font-medium">Sem 2</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2">
+                                <div class="text-[11px] font-bold text-teal-400">R$ 3.1k</div>
+                                <div class="w-full bg-teal-500/60 rounded-t-lg transition-all duration-700 group-hover:bg-teal-400/80" style="height: 100px;"></div>
+                                <div class="text-[10px] text-slate-500 font-medium">Sem 3</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2">
+                                <div class="text-[11px] font-bold text-red-400 group-hover:animate-pulse">-R$ 1.8k</div>
+                                <div class="w-full bg-red-500/70 rounded-t-lg group-hover:bg-red-500 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all duration-700" style="height: 20px;"></div>
+                                <div class="text-[10px] text-red-400 font-bold">Sem 4 ⚠</div>
+                            </div>
+                            <!-- Zero line -->
+                            <div class="absolute bottom-[26px] left-0 right-0 h-px bg-white/[0.06]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════ STEP 04 — A PAZ ═══════ -->
+                <div
+                    :ref="(el) => registerCard(el as HTMLElement, 3)"
+                    class="group rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-32 cursor-default relative"
+                >
+                    <!-- Full-width dramatic card -->
+                    <div class="relative p-10 sm:p-14 lg:p-20 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-emerald-950/30 overflow-hidden min-h-[380px] flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-20">
+                        <!-- Glow -->
+                        <div class="absolute -right-20 -bottom-20 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.06] blur-[120px] pointer-events-none"></div>
+
+                        <!-- Text -->
+                        <div class="relative z-10 flex-1 max-w-xl">
+                            <div class="flex items-center gap-3 mb-6">
+                                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">Passo 04</span>
+                            </div>
+                            <h3 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[0.92] mb-5">
+                                A Paz
+                            </h3>
+                            <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md mb-8">
+                                Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente. Sem surpresas, sem estresse.
+                            </p>
+                            <!-- CTA -->
+                            <Link :href="primaryHref" class="inline-flex h-14 items-center justify-center rounded-2xl bg-emerald-500 px-8 text-[13px] font-extrabold uppercase tracking-[0.1em] text-slate-950 hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_theme(colors.emerald.500/30)]">
+                                Quero essa paz
+                            </Link>
+                        </div>
+
+                        <!-- Peace dashboard preview -->
+                        <div class="relative z-10 w-full max-w-[340px] space-y-3 flex-shrink-0">
+                            <!-- Balance card -->
+                            <div class="bg-white/[0.06] border border-emerald-500/15 rounded-2xl px-5 py-5 group-hover:border-emerald-500/30 transition-all duration-500">
+                                <div class="text-[11px] text-slate-500 font-bold mb-1">SALDO FIM DO MÊS</div>
+                                <div class="text-3xl font-extrabold text-emerald-400 tracking-tight group-hover:text-emerald-300 transition-colors duration-500">+R$ 2.400</div>
+                                <div class="h-2 bg-white/[0.06] rounded-full mt-3 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[85%] group-hover:w-full transition-all duration-1000 ease-out"></div>
+                                </div>
+                            </div>
+                            <!-- Cut items -->
+                            <div class="flex gap-3">
+                                <div class="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 group-hover:border-emerald-500/15 transition-all duration-500 delay-100">
+                                    <div class="text-[10px] text-emerald-400 font-bold">ECONOMIZADO</div>
+                                    <div class="text-lg font-extrabold text-emerald-400 mt-0.5">+R$ 187</div>
+                                </div>
+                                <div class="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 group-hover:border-white/[0.1] transition-all duration-500 delay-200">
+                                    <div class="text-[10px] text-slate-500 font-bold">CORTADO</div>
+                                    <div class="text-lg font-extrabold text-slate-400 mt-0.5 line-through decoration-emerald-500/40">2 itens</div>
+                                </div>
+                            </div>
+                            <!-- Peace badge -->
+                            <div class="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-300">
+                                <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span class="text-[12px] font-bold text-emerald-400">Mês no azul — você está no controle</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
+
 
         <!-- ================= BRAWNY SERVICE BLOCKS ================= -->
         <MotionSection class="bg-white py-32 rounded-t-[4rem] rounded-b-[4rem] relative z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.3)] border-b border-slate-200">
