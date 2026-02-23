@@ -34,43 +34,61 @@ function registerCard(el: HTMLElement | null, index: number) {
     cardObservers.push(obs);
 }
 
+// Fade-in observer for persona content (NOT background)
+function registerFadeElement(el: HTMLElement | null, delay: number = 0) {
+    if (!el) return;
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(32px)';
+    el.style.transition = `opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`;
+
+    const obs = new IntersectionObserver(
+        (entries) => {
+            if (entries[0].isIntersecting) {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                obs.disconnect();
+            }
+        },
+        { threshold: 0.15 }
+    );
+    obs.observe(el);
+    cardObservers.push(obs);
+}
+
 onUnmounted(() => cardObservers.forEach(o => o.disconnect()));
 
 const primaryHref = props.canRegister ? '/register' : '/login';
 
-// Persona cards — immersive design with inline mockups
+// Persona data - for the horizontally-scrolling "scenario tickets"
 const personaCards = [
     {
         title: 'A Galera CLT',
         subtitle: 'Boleto no Dia Certo',
-        description: 'Conecte seus gastos ao ciclo do pagamento. O Kitamo mostra semana a semana quanto do salário sobra — antes do cheque especial fazer a festa.',
-        accent: 'teal',
-        accentColor: '#14B8A6',
+        description: 'Conecte seus gastos ao ciclo do pagamento. Semana a semana, sem cheque especial.',
+        accent: '#14B8A6',
+        accentLabel: 'teal',
         icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-        mockup: { type: 'salary', balance: 'R$ 4.800', spent: 'R$ 2.100', remaining: 'R$ 2.700', progress: 56, week: 'Semana 2 de 4' },
+        stat: { label: 'R$ 2.700', sub: 'sobrando esta semana', progress: 56 },
     },
     {
         title: 'Para Casais',
         subtitle: 'Paz Conjugal',
-        description: 'Juntem as rendas num mapa único e acabem com as brigas por extrato surpresa. Cada um vê quanto contribui, e as decisões viram consenso — não ressentimento.',
-        accent: 'cyan',
-        accentColor: '#06B6D4',
+        description: 'Juntem as rendas num mapa único. Zero briga por extrato surpresa.',
+        accent: '#06B6D4',
+        accentLabel: 'cyan',
         icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-        mockup: { type: 'couple', person1: 'Você', person1Amount: 'R$ 3.200', person2: 'Parceiro(a)', person2Amount: 'R$ 2.800', total: 'R$ 6.000' },
+        stat: { label: 'R$ 6.000', sub: 'conta compartilhada', progress: 100 },
     },
     {
-        title: 'Autônomos e Freelas',
+        title: 'Freelas & Autônomos',
         subtitle: 'Domando o Imprevisível',
-        description: 'Ganhou bem esse mês? Joga pra frente. A antecipação te salva na vaca magra. O Kitamo nivela a montanha-russa, mostrando 90 dias à frente.',
-        accent: 'amber',
-        accentColor: '#F59E0B',
+        description: 'Ganhou bem? Joga pra frente. O Kitamo nivela a montanha-russa.',
+        accent: '#F59E0B',
+        accentLabel: 'amber',
         icon: 'M13 10V3L4 14h7v7l9-11h-7z',
-        mockup: { type: 'freelancer', months: [{m: 'Jan', v: 8200}, {m: 'Fev', v: 3100}, {m: 'Mar', v: 11500}, {m: 'Abr', v: 4800}], avg: 'R$ 6.900' },
+        stat: { label: 'R$ 6.900', sub: 'média mensal', progress: 73 },
     },
 ];
-
-
-
 
 const serviceBlocks = [
     {
@@ -162,10 +180,12 @@ const serviceBlocks = [
         <!-- Spacer for the intersecting hero image -->
         <div class="bg-slate-50 h-32 sm:h-48 lg:h-64 border-t border-slate-200"></div>
 
-        <!-- ================= QUEM USA O KITAMO — Immersive Personas ================= -->
-        <MotionSection class="bg-slate-50 py-24 pb-40">
+        <!-- ================= QUEM USA O KITAMO — Scenario Tickets ================= -->
+        <!-- NO MotionSection wrapper — background is always slate-50, only inner content fades -->
+        <section class="bg-slate-50 py-24 pb-40">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
-                <div class="flex flex-col md:flex-row items-end justify-between gap-10 mb-20 text-slate-900 border-b border-slate-200 pb-16">
+                <!-- Header with fade-in -->
+                <div :ref="(el) => registerFadeElement(el as HTMLElement, 0)" class="flex flex-col md:flex-row items-end justify-between gap-10 mb-20 text-slate-900 border-b border-slate-200 pb-16">
                     <div class="max-w-3xl">
                         <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 w-fit">Qual a sua dor hoje?</p>
                         <h2 class="text-5xl lg:text-[5rem] font-extrabold tracking-tighter leading-[0.95]">
@@ -175,103 +195,52 @@ const serviceBlocks = [
                     <p class="max-w-sm text-lg font-medium text-slate-500 leading-relaxed md:text-right">A inteligência do Kitamo se adapta ao formato da sua bagunça financeira.</p>
                 </div>
 
-                <div class="flex flex-col gap-8">
+                <!-- Scenario Ticket Strip — horizontal cards with unique visual per persona -->
+                <div :ref="(el) => registerFadeElement(el as HTMLElement, 150)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div 
-                        v-for="(card, idx) in personaCards" 
+                        v-for="card in personaCards" 
                         :key="card.title" 
-                        class="group grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-[2.5rem] overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-2xl hover:border-slate-300 transition-all duration-500 cursor-default"
+                        class="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
                     >
-                        <!-- Text & Context Side -->
-                        <div class="p-10 sm:p-14 lg:p-16 flex flex-col justify-center" :class="idx % 2 === 0 ? 'order-1' : 'order-1 lg:order-2'">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center" :style="`background: ${card.accentColor}15`">
-                                    <svg class="w-5 h-5" :style="`color: ${card.accentColor}`" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="card.icon" /></svg>
+                        <!-- Accent top stripe -->
+                        <div class="h-1.5 w-full" :style="`background: ${card.accent}`"></div>
+                        
+                        <div class="p-8 pb-6">
+                            <!-- Badge + Icon row -->
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-11 h-11 rounded-2xl flex items-center justify-center" :style="`background: ${card.accent}12`">
+                                    <svg class="w-5 h-5" :style="`color: ${card.accent}`" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="card.icon" /></svg>
                                 </div>
-                                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border" :style="`color: ${card.accentColor}; background: ${card.accentColor}10; border-color: ${card.accentColor}20`">{{ card.subtitle }}</span>
+                                <span class="text-[10px] font-extrabold uppercase tracking-[0.2em] px-3 py-1 rounded-full border" :style="`color: ${card.accent}; background: ${card.accent}08; border-color: ${card.accent}25`">{{ card.subtitle }}</span>
                             </div>
-                            <h3 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-[0.95] mb-5 group-hover:text-slate-800 transition-colors">
-                                {{ card.title }}
-                            </h3>
-                            <p class="text-lg text-slate-500 font-medium leading-relaxed max-w-md mb-8">
-                                {{ card.description }}
-                            </p>
-                            <Link :href="primaryHref" class="inline-flex w-fit h-12 items-center justify-center rounded-2xl bg-slate-900 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-white transition-all hover:scale-105 active:scale-95" :style="`--tw-shadow-color: ${card.accentColor}30`">
-                                Começar agora
-                            </Link>
+                            
+                            <!-- Title -->
+                            <h3 class="text-2xl font-extrabold tracking-tight text-slate-900 mb-2">{{ card.title }}</h3>
+                            <p class="text-sm text-slate-500 font-medium leading-relaxed mb-6">{{ card.description }}</p>
+                            
+                            <!-- Inline stat mockup -->
+                            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                                <div class="flex items-baseline justify-between mb-3">
+                                    <span class="text-2xl font-extrabold tracking-tight" :style="`color: ${card.accent}`">{{ card.stat.label }}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ card.stat.sub }}</span>
+                                </div>
+                                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-1000 group-hover:brightness-110" :style="`width: ${card.stat.progress}%; background: ${card.accent}`"></div>
+                                </div>
+                            </div>
                         </div>
-
-                        <!-- Inline Dashboard Mockup Side -->
-                        <div class="relative p-8 sm:p-10 lg:p-12 flex items-center justify-center min-h-[360px] overflow-hidden" :class="idx % 2 === 0 ? 'order-2 bg-slate-50' : 'order-2 lg:order-1 bg-slate-50'">
-                            <!-- Glow -->
-                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full blur-[100px] pointer-events-none opacity-30" :style="`background: ${card.accentColor}`"></div>
-
-                            <!-- CLT mockup: salary tracker -->
-                            <div v-if="card.mockup.type === 'salary'" class="relative w-full max-w-[340px] space-y-4">
-                                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm group-hover:shadow-md transition-shadow">
-                                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-1">{{ card.mockup.week }}</div>
-                                    <div class="flex items-baseline justify-between">
-                                        <div class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ card.mockup.remaining }}</div>
-                                        <div class="text-[12px] font-bold text-teal-600">sobrando</div>
-                                    </div>
-                                    <div class="h-3 bg-slate-100 rounded-full mt-4 overflow-hidden"><div class="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full transition-all duration-1000 group-hover:w-[70%]" :style="`width: ${card.mockup.progress}%`"></div></div>
-                                    <div class="flex justify-between text-[11px] font-bold mt-2"><span class="text-slate-400">Gasto: {{ card.mockup.spent }}</span><span class="text-slate-400">Salário: {{ card.mockup.balance }}</span></div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <div class="flex-1 bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><div class="text-[10px] font-bold text-teal-600 mb-0.5">ALUGUEL</div><div class="text-sm font-extrabold text-slate-900">-R$ 1.200</div><div class="text-[10px] text-slate-400 mt-1">Dia 10 ✓</div></div>
-                                    <div class="flex-1 bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><div class="text-[10px] font-bold text-amber-600 mb-0.5">LUZ</div><div class="text-sm font-extrabold text-slate-900">-R$ 280</div><div class="text-[10px] text-amber-500 mt-1">Dia 15 ⏳</div></div>
-                                </div>
-                            </div>
-
-                            <!-- Couple mockup: shared finances -->
-                            <div v-if="card.mockup.type === 'couple'" class="relative w-full max-w-[340px] space-y-4">
-                                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                                    <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">CONTA COMPARTILHADA</div>
-                                    <div class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">{{ card.mockup.total }}</div>
-                                    <div class="space-y-3">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center"><span class="text-[11px] font-bold text-cyan-700">V</span></div>
-                                            <div class="flex-1"><div class="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-cyan-500 rounded-full" style="width: 53%"></div></div></div>
-                                            <span class="text-sm font-bold text-slate-700">{{ card.mockup.person1Amount }}</span>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center"><span class="text-[11px] font-bold text-violet-700">P</span></div>
-                                            <div class="flex-1"><div class="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-violet-500 rounded-full" style="width: 47%"></div></div></div>
-                                            <span class="text-sm font-bold text-slate-700">{{ card.mockup.person2Amount }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bg-cyan-50 border border-cyan-200 rounded-xl px-4 py-3 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                    <svg class="w-4 h-4 text-cyan-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                    <span class="text-[12px] font-bold text-cyan-700">Ambos com acesso completo · Zero surpresas</span>
-                                </div>
-                            </div>
-
-                            <!-- Freelancer mockup: income chart -->
-                            <div v-if="card.mockup.type === 'freelancer'" class="relative w-full max-w-[340px] space-y-4">
-                                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">RENDA VARIÁVEL</div>
-                                        <div class="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Média: {{ card.mockup.avg }}</div>
-                                    </div>
-                                    <div class="flex items-end gap-3 h-28">
-                                        <div v-for="month in card.mockup.months" :key="month.m" class="flex-1 flex flex-col items-center gap-1">
-                                            <div class="text-[10px] font-bold" :class="month.v > 6000 ? 'text-teal-600' : 'text-amber-600'">{{ (month.v / 1000).toFixed(1) }}k</div>
-                                            <div class="w-full rounded-t-lg transition-all duration-700" :class="month.v > 6000 ? 'bg-teal-500 group-hover:bg-teal-400' : 'bg-amber-400 group-hover:bg-amber-300'" :style="`height: ${(month.v / 11500) * 80}px`"></div>
-                                            <div class="text-[10px] text-slate-400 font-medium">{{ month.m }}</div>
-                                        </div>
-                                    </div>
-                                    <!-- Average line -->
-                                    <div class="relative mt-1"><div class="absolute -top-[50px] left-0 right-0 h-px border-t border-dashed border-amber-400/40"></div></div>
-                                </div>
-                                <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                    <span class="text-[12px] font-bold text-amber-700">O Kitamo nivela: reserva nos meses bons, libera nos fracos</span>
-                                </div>
-                            </div>
+                        
+                        <!-- Bottom CTA -->
+                        <div class="px-8 pb-6">
+                            <Link :href="primaryHref" class="inline-flex h-10 items-center text-[11px] font-extrabold uppercase tracking-[0.15em] text-slate-500 group-hover:text-slate-900 transition-colors gap-2">
+                                Começar agora
+                                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
-        </MotionSection>
+        </section>
 
         <!-- ================= O RITMO — reimagined (Linear/Stripe-style) ================= -->
         <section class="bg-slate-950 relative text-white overflow-hidden">
@@ -315,10 +284,14 @@ const serviceBlocks = [
                             Leva menos de 1 minuto
                         </div>
                     </div>
-                    <!-- Video side -->
-                    <div class="relative bg-slate-900/60 flex items-center justify-center min-h-[320px] overflow-hidden">
+                    <!-- Video side — dark bg wrapper to prevent white bleed -->
+                    <div class="relative bg-slate-950 flex items-center justify-center min-h-[320px] overflow-hidden">
                         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-teal-500/[0.06] blur-[80px] pointer-events-none"></div>
-                        <video src="/videos/ritmo-fundacao.mp4" autoplay loop muted playsinline class="w-full h-full object-cover pointer-events-none"></video>
+                        <div class="w-full h-full max-w-[600px] p-6">
+                            <div class="rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl">
+                                <video src="/videos/ritmo-fundacao.mp4" autoplay loop muted playsinline class="w-full h-auto object-cover pointer-events-none"></video>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -327,7 +300,7 @@ const serviceBlocks = [
                     :ref="(el) => registerCard(el as HTMLElement, 1)"
                     class="group grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-6 cursor-default"
                 >
-                    <!-- Phone mockup (narrow) -->
+                    <!-- Phone mockup (narrow) — LEFT side -->
                     <div class="lg:col-span-2 relative bg-slate-900/60 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-[400px] lg:min-h-0 order-2 lg:order-1">
                         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-500/[0.06] blur-[80px] pointer-events-none"></div>
                         <div class="relative w-[200px]">
@@ -337,7 +310,7 @@ const serviceBlocks = [
                             </div>
                         </div>
                     </div>
-                    <!-- Text side (wider) -->
+                    <!-- Text side (wider) — RIGHT side -->
                     <div class="lg:col-span-3 p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-bl from-slate-900/80 to-slate-900/40 order-1 lg:order-2">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/20">Passo 02</span>
@@ -366,7 +339,7 @@ const serviceBlocks = [
                     :ref="(el) => registerCard(el as HTMLElement, 2)"
                     class="group grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-6 cursor-default"
                 >
-                    <!-- Text side -->
+                    <!-- Text side — LEFT -->
                     <div class="p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-br from-slate-900/80 to-slate-900/40">
                         <div class="flex items-center gap-3 mb-6">
                             <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">Passo 03</span>
@@ -386,44 +359,40 @@ const serviceBlocks = [
                             <div class="text-[12px] text-slate-500 mt-1">Saldo insuficiente · faltam <span class="text-red-400 font-bold">R$ 1.800</span></div>
                         </div>
                     </div>
-                    <!-- Video side -->
+                    <!-- Video side — RIGHT -->
                     <div class="relative bg-slate-900/60 flex items-center justify-center min-h-[320px] overflow-hidden">
                         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-500/[0.04] blur-[80px] pointer-events-none"></div>
                         <video src="/videos/ritmo-radar.mp4" autoplay loop muted playsinline class="w-full h-full object-cover pointer-events-none"></video>
                     </div>
                 </div>
 
-                <!-- ═══════ STEP 04 — A PAZ ═══════ -->
+                <!-- ═══════ STEP 04 — A PAZ (INVERTED: video LEFT, text RIGHT — zigzag) ═══════ -->
                 <div
                     :ref="(el) => registerCard(el as HTMLElement, 3)"
-                    class="group rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-32 cursor-default relative"
+                    class="group grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-[2.5rem] overflow-hidden border border-white/[0.06] mb-32 cursor-default"
                 >
-                    <!-- Full-width dramatic card -->
-                    <div class="relative p-10 sm:p-14 lg:p-20 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-emerald-950/30 overflow-hidden min-h-[380px] flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-20">
-                        <!-- Glow -->
+                    <!-- Video side — LEFT (zigzag: inverted from Step 03) -->
+                    <div class="relative bg-gradient-to-br from-emerald-950/40 to-slate-900/60 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-[380px] order-2 lg:order-1 overflow-hidden">
                         <div class="absolute -right-20 -bottom-20 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.06] blur-[120px] pointer-events-none"></div>
-
-                        <!-- Text -->
-                        <div class="relative z-10 flex-1 max-w-xl">
-                            <div class="flex items-center gap-3 mb-6">
-                                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">Passo 04</span>
-                            </div>
-                            <h3 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[0.92] mb-5">
-                                A Paz
-                            </h3>
-                            <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md mb-8">
-                                Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente. Sem surpresas, sem estresse.
-                            </p>
-                            <!-- CTA -->
-                            <Link :href="primaryHref" class="inline-flex h-14 items-center justify-center rounded-2xl bg-emerald-500 px-8 text-[13px] font-extrabold uppercase tracking-[0.1em] text-slate-950 hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_theme(colors.emerald.500/30)]">
-                                Quero essa paz
-                            </Link>
-                        </div>
-
-                        <!-- Video side -->
-                        <div class="relative z-10 w-full max-w-[450px] flex-shrink-0 rounded-2xl overflow-hidden border border-emerald-500/15 group-hover:border-emerald-500/30 transition-colors duration-500 shadow-2xl">
+                        <div class="relative z-10 w-full max-w-[450px] rounded-2xl overflow-hidden border border-emerald-500/15 group-hover:border-emerald-500/30 transition-colors duration-500 shadow-2xl">
                             <video src="/videos/ritmo-paz.mp4" autoplay loop muted playsinline class="w-full h-auto object-cover pointer-events-none"></video>
                         </div>
+                    </div>
+                    <!-- Text side — RIGHT -->
+                    <div class="p-10 sm:p-14 lg:p-16 flex flex-col justify-center bg-gradient-to-bl from-slate-900/80 to-emerald-950/30 order-1 lg:order-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">Passo 04</span>
+                        </div>
+                        <h3 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[0.92] mb-5">
+                            A Paz
+                        </h3>
+                        <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md mb-8">
+                            Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente. Sem surpresas, sem estresse.
+                        </p>
+                        <!-- CTA -->
+                        <Link :href="primaryHref" class="inline-flex w-fit h-14 items-center justify-center rounded-2xl bg-emerald-500 px-8 text-[13px] font-extrabold uppercase tracking-[0.1em] text-slate-950 hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_theme(colors.emerald.500/30)]">
+                            Quero essa paz
+                        </Link>
                     </div>
                 </div>
 
@@ -432,36 +401,40 @@ const serviceBlocks = [
 
 
         <!-- ================= BRAWNY SERVICE BLOCKS ================= -->
-        <MotionSection class="bg-white py-32 rounded-t-[4rem] rounded-b-[4rem] relative z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.3)] border-b border-slate-200">
-             <div class="mx-auto max-w-[1440px] px-6 md:px-12 text-center mb-20">
-                 <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-6 drop-shadow-sm bg-slate-100 px-4 py-2 rounded-full border border-slate-200 inline-block">Sem Firulas</p>
-                 <h2 class="text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter leading-[0.95] text-slate-900"><span class="italic font-serif text-teal-500 pr-2">Por que</span> Kitamo?</h2>
-             </div>
-             
-             <div class="mx-auto max-w-[1440px] px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
-                  <div 
-                      v-for="(block, idx) in serviceBlocks" 
-                      :key="block.title" 
-                      class="bg-slate-50 border border-slate-200 rounded-[3rem] p-10 sm:p-14 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col"
-                      :class="block.col"
-                  >
-                       <div class="w-20 h-20 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm flex items-center justify-center mb-10 group-hover:bg-teal-500 group-hover:border-teal-600 transition-colors duration-500">
-                           <svg class="h-8 w-8 text-slate-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" :d="block.icon"/></svg>
-                       </div>
-                       <h3 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-4">{{ block.title }}</h3>
-                       <p class="text-lg text-slate-500 font-medium leading-relaxed mt-auto">{{ block.description }}</p>
-                  </div>
-             </div>
-             
-             <div class="mt-20 flex justify-center">
-                 <Link :href="route('site.pricing')" class="group relative inline-flex items-center gap-4 text-xl font-extrabold tracking-tight text-slate-900 hover:text-teal-600 transition-colors">
-                     Ver planos de assinatura
-                     <span class="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full group-hover:bg-teal-100 transition-colors">
-                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                     </span>
-                 </Link>
-             </div>
-        </MotionSection>
+        <section class="bg-slate-50 pt-0 pb-16 relative z-20">
+            <div class="mx-auto max-w-[1440px] px-6 md:px-12">
+                <MotionSection class="bg-white rounded-[3rem] border border-slate-200 shadow-[0_-20px_50px_rgba(0,0,0,0.08)] px-6 md:px-12 pt-24 pb-20">
+                     <div class="text-center mb-20">
+                         <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-6 drop-shadow-sm bg-slate-100 px-4 py-2 rounded-full border border-slate-200 inline-block">Sem Firulas</p>
+                         <h2 class="text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter leading-[0.95] text-slate-900"><span class="italic font-serif text-teal-500 pr-2">Por que</span> Kitamo?</h2>
+                     </div>
+                     
+                     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                          <div 
+                              v-for="(block, idx) in serviceBlocks" 
+                              :key="block.title" 
+                              class="bg-slate-50 border border-slate-200 rounded-[2rem] p-10 sm:p-14 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col"
+                              :class="block.col"
+                          >
+                               <div class="w-20 h-20 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm flex items-center justify-center mb-10 group-hover:bg-teal-500 group-hover:border-teal-600 transition-colors duration-500">
+                                   <svg class="h-8 w-8 text-slate-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" :d="block.icon"/></svg>
+                               </div>
+                               <h3 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-4">{{ block.title }}</h3>
+                               <p class="text-lg text-slate-500 font-medium leading-relaxed mt-auto">{{ block.description }}</p>
+                          </div>
+                     </div>
+                     
+                     <div class="mt-20 flex justify-center">
+                         <Link :href="route('site.pricing')" class="group relative inline-flex items-center gap-4 text-xl font-extrabold tracking-tight text-slate-900 hover:text-teal-600 transition-colors">
+                             Ver planos de assinatura
+                             <span class="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full group-hover:bg-teal-100 transition-colors">
+                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                             </span>
+                         </Link>
+                     </div>
+                </MotionSection>
+            </div>
+        </section>
 
         <!-- ================= SOCIAL PROOF: DEPOIMENTOS ================= -->
         <MotionSection class="bg-slate-50 py-32 border-b border-slate-200">
