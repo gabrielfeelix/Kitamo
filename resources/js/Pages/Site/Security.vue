@@ -95,7 +95,7 @@ const lgpd = [
         </MotionSection>
 
         <!-- Controls Section -->
-        <MotionSection class="bg-gray-50 py-24 pb-32">
+        <MotionSection class="bg-slate-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
                 <div class="lg:col-span-5 lg:sticky lg:top-32 h-fit">
                     <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
@@ -137,9 +137,10 @@ const lgpd = [
                         <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4 inline-block bg-white/5 border border-white/10 px-4 py-2 rounded-lg">Ciclo Constante</p>
                         <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-white leading-[1.05]">A rotina <span class="text-green-400 font-serif italic">inquebrável</span> do sistema.</h2>
 
-                        <ol class="mt-12 space-y-8 relative before:absolute before:inset-y-0 before:left-6 before:w-[2px] before:bg-gradient-to-b before:from-teal-500/50 before:to-transparent">
-                            <li v-for="step in securityFlow" :key="step.step" class="relative pl-16">
-                                <span class="absolute left-2 top-0 inline-flex flex-col h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-xs font-bold text-slate-950 shadow-[0_0_15px_theme(colors.teal.500/30)] z-10">
+                        <ol class="mt-12 space-y-8 relative before:absolute before:inset-y-0 before:left-[14px] before:w-[2px] before:bg-gradient-to-b before:from-teal-500/50 before:to-transparent">
+                            <li v-for="step in securityFlow" :key="step.step" class="relative pl-14">
+                                <span class="absolute left-0 top-0 inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-xs font-bold text-slate-950 shadow-[0_0_15px_theme(colors.teal.500/30)] z-10">
+                                    {{ step.step }}
                                 </span>
                                 <h3 class="text-2xl tracking-tight text-white font-bold">{{ step.title }}</h3>
                                 <p class="mt-2 text-base leading-relaxed text-slate-400 font-medium">{{ step.text }}</p>
@@ -168,7 +169,7 @@ const lgpd = [
         </MotionSection>
 
         <!-- Conformity / LGPD Section -->
-        <MotionSection class="bg-gray-50 py-24 border-b border-slate-200">
+        <MotionSection class="bg-slate-50 py-24 border-b border-slate-200">
             <div class="mx-auto grid w-full max-w-[1440px] px-6 md:px-12 lg:grid-cols-12 gap-16">
                 <div class="lg:col-span-5 flex flex-col justify-center lg:sticky lg:top-32 h-fit">
                     <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-950 leading-[1.05]">Privacidade é coisa <span class="text-teal-500 font-serif italic">óbvia.</span></h2>

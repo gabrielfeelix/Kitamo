@@ -105,7 +105,7 @@ const socialLinks = [
         </MotionSection>
 
         <!-- Dynamic Filter and Catalog -->
-        <MotionSection class="bg-gray-50 py-24 pb-32">
+        <MotionSection class="bg-slate-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
                 <aside class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6 drop-shadow-sm bg-slate-100 px-4 py-2 rounded-full border border-slate-200 inline-block">Navegue pelas rotas</p>

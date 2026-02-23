@@ -157,7 +157,7 @@ const values = [
         </MotionSection>
 
         <!-- Timeline Section -->
-        <MotionSection class="bg-gray-50 py-24 pb-32">
+        <MotionSection class="bg-slate-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
                 <aside class="lg:col-span-5 lg:sticky lg:top-32 h-fit">
                     <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">
@@ -178,11 +178,11 @@ const values = [
 
                 <div class="lg:col-span-7">
                     <div class="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-sm relative overflow-hidden">
-                         <div class="absolute left-[3.25rem] md:left-[4.25rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent"></div>
+                         <div class="absolute left-[2.75rem] md:left-[3.75rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent"></div>
                          
                          <div class="space-y-12 relative z-10">
-                             <div v-for="(item, index) in timeline" :key="index" class="relative pl-16 md:pl-20 group">
-                                  <div class="absolute left-0 top-1.5 h-6 w-6 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform"></div>
+                             <div v-for="(item, index) in timeline" :key="index" class="relative pl-12 md:pl-16 group">
+                                  <div class="absolute left-[0.5rem] md:left-[0.75rem] top-1 h-7 w-7 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform"></div>
                                   <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-1">{{ item.year }}</p>
                                   <h3 class="text-2xl font-extrabold text-slate-900 mb-2">{{ item.title }}</h3>
                                   <p class="text-base font-medium leading-relaxed text-slate-600">{{ item.text }}</p>

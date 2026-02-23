@@ -97,8 +97,8 @@ const guarantees = [
         </MotionSection>
 
         <!-- Dynamic Pricing Cards Grid -->
-        <MotionSection class="bg-gray-50 py-20 pb-40 relative">
-            <div class="absolute top-0 inset-x-0 h-[200px] bg-gray-50 -mt-[200px]"></div>
+        <MotionSection class="bg-slate-50 py-20 pb-40 relative">
+            <div class="absolute top-0 inset-x-0 h-[200px] bg-slate-50 -mt-[200px]"></div>
             
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative -mt-32 sm:-mt-24 lg:-mt-16 z-20">
                 <div class="grid lg:grid-cols-3 gap-6 xl:gap-10 items-end">

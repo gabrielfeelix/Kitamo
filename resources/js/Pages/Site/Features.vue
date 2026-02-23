@@ -106,7 +106,7 @@ const featureVisuals = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-gray-50 text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
+        <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-slate-50 text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
              <div class="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
              <div class="pointer-events-none absolute -top-20 -left-20 w-[500px] h-[500px] bg-teal-400/20 blur-[150px] rounded-full mix-blend-multiply opacity-60"></div>
             
@@ -137,7 +137,7 @@ const featureVisuals = [
         </MotionSection>
 
         <!-- Features Matrix Section -->
-        <MotionSection class="bg-gray-50 py-24 pb-32">
+        <MotionSection class="bg-slate-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
                 <aside class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Mapa do Tesouro</p>

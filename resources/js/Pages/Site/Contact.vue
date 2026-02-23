@@ -79,7 +79,7 @@ const submitContact = async () => {
         </MotionSection>
 
         <!-- Form and Contacts Section -->
-        <MotionSection class="bg-gray-50 py-24 pb-32">
+        <MotionSection class="bg-slate-50 py-24 pb-32">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 grid gap-16 lg:grid-cols-12">
                 <aside class="lg:col-span-5 lg:sticky lg:top-32 h-fit">
                     <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tighter text-slate-900 leading-[1.05]">

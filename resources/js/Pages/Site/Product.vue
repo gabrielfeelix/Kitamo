@@ -131,10 +131,10 @@ const personas = [
         </MotionSection>
 
         <!-- Spacer for the floating image -->
-        <div class="bg-gray-50 h-32 sm:h-48 md:h-64 border-t border-slate-200"></div>
+        <div class="bg-slate-50 h-32 sm:h-48 md:h-64 border-t border-slate-200"></div>
 
         <!-- Alternating Modules Section (Zig-Zag dynamic layout) -->
-        <MotionSection class="bg-gray-50 py-24 pb-32 overflow-hidden">
+        <MotionSection class="bg-slate-50 py-24 pb-32 overflow-hidden">
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
                 <div class="text-center mb-20 md:mb-32">
                     <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-4 bg-teal-50 px-4 py-2 rounded-full border border-teal-100">Pilares da Plataforma</p>
