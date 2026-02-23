@@ -12,76 +12,76 @@ const timeline = [
     {
         year: 'O Começo',
         title: 'Nascimento do Conceito',
-        text: 'Começou a incomodar a falta de clareza nas contas. O Kitamo nasceu focado em projeção de caixa que faz sentido pra pessoa física, sem complicação inútil.',
+        text: 'A falta de clareza nas contas começou a incomodar. O Kitamo nasceu focado em projeção de caixa que faz sentido para a pessoa física — sem complexidade desnecessária.',
     },
     {
         year: 'Lançamento',
         title: 'A Máquina Roda',
-        text: 'Botamos na rua a primeira versão braba. Contas, cartões, metas e recorrências rodando limpo, ajudando a galera a arrumar a casa.',
+        text: 'Lançamos a primeira versão funcional. Contas, cartões, metas e recorrências rodando de forma limpa — ajudando as pessoas a organizarem suas finanças de verdade.',
     },
     {
         year: 'Agora',
         title: 'Expansão e Estrutura',
-        text: 'Subimos de nível. Projeção de longo prazo pesada, estrutura de planos justa e uma jornada institucional premium que você tá vendo agora.',
+        text: 'Subimos de nível. Projeção de longo prazo robusta, planos justos e uma experiência institucional premium — que é o que você vê agora.',
     },
     {
         year: 'Próximos Passos',
         title: 'Inteligência e Escala',
-        text: 'O futuro é alerta inteligente, relatórios que falam a sua língua e decisões automatizadas guiando seu próximo passo financeiro.',
+        text: 'O futuro inclui alertas inteligentes, relatórios que falam a sua língua e recomendações automatizadas para guiar suas próximas decisões financeiras.',
     },
 ];
 
 const team = [
     {
         image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: 'Fundador Desconhecido',
-        role: 'CEO & Founder',
+        name: 'Gabriel Félix',
+        role: 'CEO & Fundador',
     },
     {
         image: 'https://images.pexels.com/photos/3727462/pexels-photo-3727462.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: 'Mestre dos Códigos',
+        name: 'Líder Técnico',
         role: 'CTO',
     },
     {
         image: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: 'Dono do Produto',
+        name: 'Líder de Produto',
         role: 'Product Lead',
     },
     {
         image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: 'Faz Acontecer',
+        name: 'Líder de Operações',
         role: 'Operations Lead',
     },
     {
         image: 'https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg?auto=compress&cs=tinysrgb&w=700',
-        name: 'Máquina de Vendas',
+        name: 'Líder de Crescimento',
         role: 'Growth Lead',
     },
 ];
 
 const stats = [
-    { label: '+3.5', value: 'Anos na Estrada', accent: 'teal', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { label: '+3.5', value: 'Anos de Operação', accent: 'teal', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
     { label: '+50 mil', value: 'Projeções Batidas', accent: 'emerald', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
-    { label: '+500', value: 'Casas Organizadas Mensalmente', accent: 'amber', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { label: '+200 mil', value: 'Alertas Salvos na Hora', accent: 'cyan', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
+    { label: '+500', value: 'Famílias Organizadas por Mês', accent: 'amber', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    { label: '+200 mil', value: 'Alertas Enviados', accent: 'cyan', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
 ];
 
 const values = [
     {
         title: 'Ruído Zero',
-        description: 'Dashboard enfeitado é pra ego. A gente te dá clareza limpa pra você saber se dá ou não dá pra gastar hoje.',
+        description: 'Sem gráficos decorativos que não servem pra nada. Cada número no painel existe para te ajudar a decidir se dá ou não dá para gastar hoje.',
         icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
         accent: 'teal',
     },
     {
         title: 'O Volante é Seu',
-        description: 'Sem robô fuçando na sua conta bancária e te dando sugestões burras. Controle manual, seguro e absoluto da sua vida.',
+        description: 'Sem robô acessando sua conta bancária. Você lança, você controla. O Kitamo é ferramenta, não gaiola.',
         icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
         accent: 'emerald',
     },
     {
         title: 'Grana é Grana',
-        description: 'Não vendemos sua rotina pra anunciante, seu comportamento não é mercadoria. Nossa renda vem da nossa assinatura.',
+        description: 'Seus dados não são vendidos para anunciantes. Seu comportamento não é mercadoria. Nossa receita vem exclusivamente da assinatura.',
         icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
         accent: 'amber',
     },
@@ -90,7 +90,7 @@ const values = [
 
 <template>
     <Head title="A Empresa | Kitamo">
-        <meta name="description" content="Nossa história, nosso time e porque a gente não vende seus dados." />
+        <meta name="description" content="Conheça o time, a história e os valores por trás do Kitamo." />
     </Head>
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
@@ -115,7 +115,7 @@ const values = [
                          Atrás do <span class="font-serif text-teal-400 italic">código.</span>
                      </h1>
                      <p class="mt-8 text-xl sm:text-2xl leading-relaxed text-slate-300 font-medium max-w-xl text-left drop-shadow">
-                         Desenvolvemos uma ferramenta construída no Brasil, feita pra galera que quer dominar o caixa sem ficar engessado num sistema chato.
+                         Uma ferramenta construída no Brasil, feita para quem quer dominar o próprio caixa sem depender de planilhas quebradas.
                      </p>
                  </div>
              </div>
@@ -151,7 +151,7 @@ const values = [
                                 "A indústria inteira de finanças queria me vender aplicativos automáticos, que puxavam tudo sem que eu visse, criando uma gaiola invisível onde eu só olhava para o extrato quando já estava no vermelho."
                             </p>
                             <p>
-                                "O KITAMO não surgiu para ser mais um aglomerador de contas. Sugiu porque eu queria um GPS financeiro. Algo que pegasse o meu dinheiro hoje e me deixasse projetá-lo no tempo. Nós trouxemos a responsabilidade de volta para o usuário através da digitação manual, mas fizemos isso com a interface mais linda e rápida do mundo."
+                                "O KITAMO não surgiu para ser mais um aglomerador de contas. Surgiu porque eu queria um GPS financeiro. Algo que pegasse o meu dinheiro hoje e me deixasse projetá-lo no tempo. Nós trouxemos a responsabilidade de volta para o usuário através do lançamento manual, mas fizemos isso com a interface mais rápida e intuitiva possível."
                             </p>
                             <p class="text-slate-900 font-extrabold pt-4 text-2xl">
                                 "Não confie no banco sozinho. Volte para o volante."
@@ -170,7 +170,7 @@ const values = [
                         Nossa <span class="text-teal-500 font-serif italic">correria.</span>
                     </h2>
                     <p class="mt-6 text-lg text-slate-500 font-medium leading-relaxed max-w-sm">
-                        De onde viemos e pra onde estamos acelerando. A história do Kitamo rola rápida.
+                        De onde viemos e para onde estamos caminhando. A trajetória do Kitamo, resumida.
                     </p>
                     <div class="mt-10 overflow-hidden rounded-[2rem] shadow-xl border border-slate-200 group">
                         <img
@@ -203,8 +203,8 @@ const values = [
         <MotionSection class="bg-white py-24 relative z-10 border-y border-slate-100">
              <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12">
                  <div class="text-center mb-16">
-                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 inline-block bg-slate-50 px-4 py-2 border border-slate-100 rounded-lg">Quem Bota Pra Quebrar</p>
-                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900">A galera por trás da tela</h2>
+                     <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 inline-block bg-slate-50 px-4 py-2 border border-slate-100 rounded-lg">O Time</p>
+                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tighter text-slate-900">As pessoas por trás da tela</h2>
                  </div>
 
                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -244,12 +244,12 @@ const values = [
             
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative z-10">
                 <div class="text-center mb-16 max-w-4xl mx-auto">
-                    <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">Por que a gente faz isso</p>
+                    <p class="inline-flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400 mb-4 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">Nossos Valores</p>
                     <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[0.95] tracking-tighter text-white">
-                        Maximizar o poder da sua <span class="block font-serif italic text-teal-400 mt-2">decisão diária.</span>
+                        Empoderar cada <span class="block font-serif italic text-teal-400 mt-2">decisão financeira.</span>
                     </h2>
                     <p class="mt-6 text-xl leading-relaxed text-slate-400 font-medium">
-                        Pegamos dados bagunçados e transformamos em ação. Acabou a incerteza do começo de mês.
+                        Transformamos dados financeiros confusos em clareza para agir. Chega de incerteza no começo do mês.
                     </p>
                 </div>
 
@@ -269,13 +269,13 @@ const values = [
                         :href="route('site.contact')"
                         class="inline-flex h-14 items-center justify-center rounded-xl bg-teal-500 px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 shadow-[0_0_20px_theme(colors.teal.500/30)]"
                     >
-                        Tamo Pronto pra Falar
+                        Fale Conosco
                     </Link>
                     <Link
                         :href="route('site.contact')"
                         class="inline-flex h-14 items-center justify-center rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm px-8 text-[12px] font-extrabold uppercase tracking-[0.15em] text-slate-200 transition-all hover:bg-white/10 hover:border-white hover:scale-105"
                     >
-                        Trabalhe com a Gente
+                        Trabalhe Conosco
                     </Link>
                 </div>
             </div>

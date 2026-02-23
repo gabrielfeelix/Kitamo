@@ -148,7 +148,7 @@ const serviceBlocks = [
                 </h1>
                 
                 <p class="mt-8 text-xl sm:text-2xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto drop-shadow-sm">
-                    Antecipe furos, dome faturas e pouse o avião no fim do mês com paz de espírito. Totalmente online.
+                    Antecipe furos, controle faturas e feche o mês com tranquilidade. Totalmente online.
                 </p>
 
                 <!-- Dual Action Hero -->
@@ -497,7 +497,7 @@ const serviceBlocks = [
                     Controle.<br><span class="opacity-70">Agora.</span>
                 </h2>
                 
-                <p class="mt-12 text-2xl font-bold text-teal-950/80 max-w-2xl mx-auto px-4">Não espere mais 30 dias para mudar sua realidade. Feche o vazamento hoje.</p>
+                <p class="mt-12 text-2xl font-bold text-teal-950/80 max-w-2xl mx-auto px-4">Não espere mais 30 dias para mudar sua realidade financeira. Comece agora.</p>
                 
                 <div class="mt-16 sm:mt-20 w-full sm:w-auto px-6">
                     <Link

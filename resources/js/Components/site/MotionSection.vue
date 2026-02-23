@@ -40,7 +40,7 @@ onMounted(() => {
                 observer?.disconnect();
             }
         },
-        { threshold: 0.2 }
+        { threshold: 0.15 }
     );
 
     observer.observe(sectionRef.value);
@@ -55,14 +55,23 @@ onUnmounted(() => {
     <component
         :is="props.as"
         ref="sectionRef"
-        :class="[props.class, 'site-motion', { 'is-visible': visible }]"
+        :class="[props.class, 'site-motion-wrap']"
     >
-        <slot />
+        <!-- Inner wrapper that actually animates — background stays visible -->
+        <div :class="['site-motion-inner', { 'is-visible': visible }]">
+            <slot />
+        </div>
     </component>
 </template>
 
 <style scoped>
-.site-motion {
+/* The outer wrapper (section) keeps its background always visible — NO opacity/transform */
+.site-motion-wrap {
+    /* Intentionally no opacity or transform — background always renders */
+}
+
+/* Only the inner content fades in + slides up */
+.site-motion-inner {
     opacity: 0;
     transform: translateY(28px);
     transition:
@@ -70,13 +79,13 @@ onUnmounted(() => {
         transform var(--motion-slow, 480ms) var(--motion-ease, cubic-bezier(0.2, 0.8, 0.2, 1));
 }
 
-.site-motion.is-visible {
+.site-motion-inner.is-visible {
     opacity: 1;
     transform: none;
 }
 
 @media (prefers-reduced-motion: reduce), print {
-    .site-motion {
+    .site-motion-inner {
         opacity: 1 !important;
         transform: none !important;
         transition: none !important;

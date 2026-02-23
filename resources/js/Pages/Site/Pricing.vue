@@ -13,23 +13,23 @@ defineProps<{
 const billingFaq: SiteFaqItem[] = [
     {
         question: 'Existe plano gratuito pra sempre?',
-        answer: 'Sim! O plano Essencial é 0800 e te dá visão de 30 dias pra frente. Ideal pra quem quer botar a casa em ordem sem risco.',
+        answer: 'Sim! O plano Essencial é gratuito e sempre será. Ele oferece visão de 30 dias à frente — ideal para começar a organizar suas finanças sem compromisso.',
     },
     {
         question: 'Posso mudar de ideia (e de plano) depois?',
-        answer: 'Com certeza. Seu momento financeiro muda, o Kitamo acompanha. O upgrade ou downgrade rola direto nas configurações.',
+        answer: 'Com certeza. Seu momento financeiro muda e o Kitamo acompanha. O upgrade ou downgrade é feito direto nas configurações, em poucos cliques.',
     },
     {
         question: 'Como cancelo um plano pago se eu não curtir?',
-        answer: 'Sem botão escondido no rodapé nem ligação chata pro telemarketing. 2 cliques e você volta pro gratuito.',
+        answer: 'Sem botão escondido e sem ligação para telemarketing. Dois cliques nas configurações e você volta ao plano gratuito.',
     },
     {
         question: 'Aceita meu dezenove no PIX?',
-        answer: 'Rodamos PIX, Boleto e Cartão de Crédito pra não ter desculpa de "meu cartão virou".',
+        answer: 'Aceitamos PIX, Boleto Bancário e Cartão de Crédito. Você escolhe a melhor opção.',
     },
     {
         question: 'O Kitamo vai fuçar no meu banco limitando meu acesso?',
-        answer: 'Nunca. Não usamos Open Finance agressivo. Seus dados, seu controle. Você decide o que entra no fluxo.',
+        answer: 'Nunca. Não utilizamos Open Finance invasivo. Seus dados ficam sob seu controle total — você decide o que entra na plataforma.',
     },
 ];
 
@@ -38,20 +38,20 @@ const openFaqIndex = ref<number | null>(0);
 const planShowcase = [
     {
         title: 'Essencial',
-        subtitle: 'Pra arrumar a bagunça do primeiro mês',
-        description: '30 dias de visão pra frente. Chega de tomar susto quando a fatura fecha. Ideal pra quem tá estancando o sangramento.',
+        subtitle: 'Para organizar o primeiro mês',
+        description: '30 dias de visão à frente. Chega de tomar susto quando a fatura fecha. Ideal para quem está começando a se organizar.',
         image: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
         title: 'Pro',
-        subtitle: 'Pra quem o negócio já tá rodando',
-        description: 'Amplie a visão pra 90 dias, coloque os gastos da casa toda no automático. Pra galera que já tem reserva de emergência.',
+        subtitle: 'Para quem já mantém a rotina',
+        description: 'Amplie a visão para 90 dias. Gerencie toda a casa com recorrências automáticas. Para quem já tem o hábito de organização.',
         image: 'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
     {
         title: 'Visionário',
-        subtitle: 'Pra planejar lá na frente',
-        description: 'Projeção de até 5 anos. Quer saber quando dá pra comprar o carro ou financiar um teto? Seu painel mora aqui.',
+        subtitle: 'Para planejar o longo prazo',
+        description: 'Projeção de até 5 anos. Quer saber quando dá para comprar o carro ou financiar o apartamento? Seu painel de controle está aqui.',
         image: 'https://images.pexels.com/photos/3727462/pexels-photo-3727462.jpeg?auto=compress&cs=tinysrgb&w=900',
     },
 ];
@@ -77,18 +77,18 @@ const guarantees = [
             <div class="pointer-events-none absolute top-0 inset-x-0 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-slate-950 to-slate-950 opacity-80 blur-3xl"></div>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
-                <p class="inline-flex items-center space-x-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-cyan-400 mb-8 px-5 py-2.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm shadow-[0_0_20px_theme(colors.cyan.500/15)]">Sem letrinhas miúdas no rodapé</p>
+                <p class="inline-flex items-center space-x-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-cyan-400 mb-8 px-5 py-2.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm shadow-[0_0_20px_theme(colors.cyan.500/15)]">Transparência Total</p>
                 <h1 class="text-6xl sm:text-7xl lg:text-[7rem] leading-[0.9] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-5xl mx-auto drop-shadow-2xl">
                     Planejamento no<br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-300 to-emerald-400 font-serif italic pr-2">seu tamanho.</span>
                 </h1>
                 <p class="mt-10 text-xl sm:text-2xl leading-relaxed text-slate-400 font-medium max-w-3xl mx-auto">
-                    Você escolhe a abrangência do seu radar futuro. Comece de graça, escale conforme o seu controle avança. Simples, na lata.
+                    Escolha a abrangência do seu radar financeiro. Comece de graça, evolua conforme sua necessidade. Sem pegadinhas.
                 </p>
 
                 <div class="mt-14 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-2 backdrop-blur-md shadow-2xl">
                     <span class="rounded-full bg-teal-500 px-8 py-3 text-[12px] font-extrabold uppercase tracking-widest text-slate-950 shadow-[0_0_15px_theme(colors.teal.500/50)] transition-all hover:bg-teal-400 cursor-pointer">Mensal</span>
-                    <span class="px-8 py-3 text-[12px] font-extrabold uppercase tracking-widest text-slate-500/80 cursor-not-allowed hidden sm:inline-block">Anual (Lançando logo logo)</span>
+                    <span class="px-8 py-3 text-[12px] font-extrabold uppercase tracking-widest text-slate-500/80 cursor-not-allowed hidden sm:inline-block">Anual (Em breve)</span>
                 </div>
             </div>
             
@@ -310,7 +310,7 @@ const guarantees = [
                         Tira-Teima.
                     </h2>
                     <p class="mt-6 text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
-                        Tudo que cai no inbox do suporte resolvido em 2 linhas abaixo.
+                        As perguntas mais comuns sobre planos, pagamentos e privacidade.
                     </p>
                 </div>
                 
@@ -352,7 +352,7 @@ const guarantees = [
                 <div class="mt-16 bg-slate-900 rounded-[2.5rem] w-full p-10 flex flex-col sm:flex-row items-center justify-between gap-8 text-white shadow-xl">
                     <div>
                         <h4 class="text-2xl font-bold tracking-tight mb-2">Ainda na dúvida?</h4>
-                        <p class="text-slate-400 font-medium">Manda um alô no fale conosco. A gente responde em humano.</p>
+                        <p class="text-slate-400 font-medium">Mande uma mensagem no fale conosco. Respondemos pessoalmente.</p>
                     </div>
                     <Link
                         :href="route('site.contact')"
