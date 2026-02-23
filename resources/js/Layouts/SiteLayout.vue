@@ -13,7 +13,7 @@ defineProps<{
         <div class="site-ambient"></div>
         <SiteHeader :can-login="canLogin" :can-register="canRegister" />
 
-        <main class="relative z-10 pt-24">
+        <main class="relative z-10">
             <slot />
         </main>
 
