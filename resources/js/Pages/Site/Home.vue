@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import SiteLayout from '@/Layouts/SiteLayout.vue';
 import MotionSection from '@/Components/site/MotionSection.vue';
@@ -8,6 +9,32 @@ const props = defineProps<{
     canLogin?: boolean;
     canRegister?: boolean;
 }>();
+
+// Scroll-stagger animation for rhythm cards (Todoist-style)
+const cardObservers: IntersectionObserver[] = [];
+
+function registerCard(el: HTMLElement | null, index: number) {
+    if (!el) return;
+    // Set initial hidden state
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(48px)';
+    el.style.transition = `opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${index * 120}ms, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${index * 120}ms`;
+
+    const obs = new IntersectionObserver(
+        (entries) => {
+            if (entries[0].isIntersecting) {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                obs.disconnect();
+            }
+        },
+        { threshold: 0.15 }
+    );
+    obs.observe(el);
+    cardObservers.push(obs);
+}
+
+onUnmounted(() => cardObservers.forEach(o => o.disconnect()));
 
 const primaryHref = props.canRegister ? '/register' : '/login';
 
@@ -60,7 +87,7 @@ const flowTimeline = [
         title: 'A Paz',
         text: 'Ajuste a rota, corte o que der, e o mês volta pro azul na sua frente.',
     },
-];
+] as const;
 
 const serviceBlocks = [
     {
@@ -203,60 +230,110 @@ const serviceBlocks = [
             </div>
         </MotionSection>
 
-        <!-- ================= VERTICAL SNAKE TIMELINE ================= -->
-        <MotionSection class="bg-slate-950 py-40 relative text-white overflow-hidden border-t-[8px] border-teal-500 shadow-2xl">
-            <!-- Background organic blob -->
-            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.08)_0,transparent_70%)] pointer-events-none"></div>
+        <!-- ================= O RITMO (Todoist-style sticky + stagger) ================= -->
+        <section class="bg-slate-950 relative text-white overflow-hidden border-t-[8px] border-teal-500 shadow-2xl">
+            <!-- Noise texture -->
+            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');"></div>
+            <!-- Radial glow -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.07)_0,transparent_70%)] pointer-events-none"></div>
 
-            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10 flex flex-col lg:flex-row gap-20">
-                <div class="lg:w-1/3 lg:sticky lg:top-40 h-fit">
-                    <h2 class="text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter text-white leading-[0.95] mb-8">O ritmo.</h2>
-                    <p class="text-xl text-slate-400 font-medium leading-relaxed">Não force o controle financeiro a ser uma punição diária. Siga os 4 passos viscerais que mantêm a engrenagem limpa gastando minutos.</p>
-                </div>
-                
-                <div class="lg:w-2/3 flex flex-col gap-12 sm:gap-6">
-                    <article 
-                        v-for="(step, index) in flowTimeline" 
-                        :key="step.number"
-                        class="relative group rounded-[3rem] bg-white/5 border border-white/10 p-10 sm:p-14 hover:bg-white/10 transition-colors duration-500 backdrop-blur-sm overflow-hidden"
-                        :class="index % 2 !== 0 ? 'sm:ml-20' : 'sm:mr-20'"
-                    >
-                         <!-- Giant Background Number -->
-                         <div class="absolute right-8 top-8 text-[8rem] sm:text-[10rem] font-extrabold leading-none text-white/5 pointer-events-none select-none group-hover:text-teal-500/10 group-hover:rotate-12 transition-[color,transform] duration-700">
-                             {{ step.number }}
-                         </div>
-                         
-                         <div class="relative z-10 flex flex-col xl:flex-row gap-8 items-start xl:items-center">
-                             <div class="flex-1">
-                                 <div class="h-16 w-16 bg-slate-900 border border-slate-700 rounded-2xl flex items-center justify-center font-extrabold text-2xl text-teal-400 mb-8 shadow-inner group-hover:scale-110 group-hover:border-teal-500 transition-[transform,border-color] duration-300">
-                                     {{ step.number }}
-                                 </div>
-                                 <h3 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-6 group-hover:text-teal-300 transition-colors">{{ step.title }}</h3>
-                                 <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md">{{ step.text }}</p>
-                             </div>
-                             
-                             <!-- Micro-animation specific for step 2 "O Hábito" -->
-                             <div v-if="step.number === '02'" class="xl:w-[280px] flex-shrink-0 mt-6 xl:mt-0 relative perspective-1000">
-                                 <div class="absolute inset-0 bg-teal-500/10 blur-xl rounded-full scale-150 transition-all duration-700 pointer-events-none"></div>
-                                 <div class="relative rounded-[2.5rem] shadow-2xl overflow-hidden transform rotate-y-[-10deg] rotate-x-[5deg] group-hover:rotate-0 group-hover:translate-y-[-5px] transition-[transform,box-shadow,border-color] duration-700 border-4 border-slate-800 bg-slate-900 group-hover:border-teal-500/50">
-                                    <div class="absolute top-2 inset-x-0 h-4 flex justify-center z-10">
-                                        <div class="w-12 h-4 bg-slate-950 rounded-full"></div>
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 relative z-10">
+                <div class="flex flex-col lg:flex-row gap-0 lg:gap-24">
+
+                    <!-- LEFT: Sticky Panel (Todoist-style) -->
+                    <div class="lg:w-[38%] py-32 lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col lg:justify-center">
+                        <!-- Eyebrow -->
+                        <p class="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 w-fit">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                            O sistema de 4 passos
+                        </p>
+                        <h2 class="text-5xl lg:text-[5rem] font-extrabold tracking-tighter text-white leading-[0.92] mb-8">
+                            O<br><span class="text-transparent bg-clip-text bg-gradient-to-br from-teal-300 to-emerald-400">ritmo.</span>
+                        </h2>
+                        <p class="text-xl text-slate-400 font-medium leading-relaxed max-w-sm mb-12">
+                            Não é disciplina, é sistema. Os 4 passos que mantêm a engrenagem limpa e a cabeça no lugar.
+                        </p>
+
+                        <!-- Step indicators (pill nav) -->
+                        <div class="flex gap-2 flex-wrap">
+                            <div v-for="step in flowTimeline" :key="step.number"
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/5 text-[11px] font-bold text-slate-500 tracking-wider">
+                                <span class="text-teal-500">{{ step.number }}</span>
+                                <span>{{ step.title }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Stagger cards column -->
+                    <div class="lg:w-[62%] py-16 lg:py-32 flex flex-col gap-8">
+                        <article
+                            v-for="(step, index) in flowTimeline"
+                            :key="step.number"
+                            :ref="(el) => registerCard(el as HTMLElement, index)"
+                            class="rhythm-card group relative rounded-[2.5rem] border border-white/[0.08] p-10 sm:p-14 overflow-hidden cursor-default"
+                            :class="index % 2 !== 0 ? 'sm:ml-16' : ''"
+                        >
+                            <!-- Hover glow -->
+                            <div class="absolute inset-0 bg-gradient-to-br from-teal-500/0 to-teal-500/0 group-hover:from-teal-500/[0.04] group-hover:to-transparent transition-all duration-700 rounded-[2.5rem]"></div>
+                            
+                            <!-- Step number watermark -->
+                            <div class="absolute -right-4 -top-4 text-[7rem] sm:text-[9rem] font-extrabold leading-none text-white/[0.04] pointer-events-none select-none group-hover:text-teal-500/[0.07] group-hover:translate-x-2 group-hover:-translate-y-2 transition-[color,transform] duration-700">
+                                {{ step.number }}
+                            </div>
+
+                            <div class="relative z-10 flex flex-col xl:flex-row gap-10 items-start xl:items-center">
+                                <div class="flex-1">
+                                    <!-- Step badge -->
+                                    <div class="flex items-center gap-4 mb-8">
+                                        <div class="h-14 w-14 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center font-extrabold text-xl text-teal-400 group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-all duration-300">
+                                            {{ step.number }}
+                                        </div>
+                                        <!-- Progress line -->
+                                        <div class="flex-1 h-px bg-white/[0.06] relative overflow-hidden">
+                                            <div class="absolute left-0 top-0 h-full bg-gradient-to-r from-teal-500 to-transparent w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                                        </div>
                                     </div>
-                                    <video 
-                                        src="/videos/demo-habit.mp4" 
-                                        autoplay 
-                                        loop 
-                                        muted 
-                                        playsinline 
-                                        class="w-full h-auto aspect-[9/16] object-cover pointer-events-none filter brightness-110 saturate-110"
-                                     ></video>
-                                 </div>
-                             </div>
-                         </div>
-                    </article>
+
+                                    <h3 class="text-3xl sm:text-[2.5rem] font-extrabold tracking-tight text-white leading-tight mb-5 group-hover:text-teal-200 transition-colors duration-300">
+                                        {{ step.title }}
+                                    </h3>
+                                    <p class="text-lg sm:text-xl text-slate-400 font-medium leading-relaxed max-w-md group-hover:text-slate-300 transition-colors duration-300">
+                                        {{ step.text }}
+                                    </p>
+                                </div>
+
+                                <!-- Phone mockup only for step 02 -->
+                                <div v-if="step.number === '02'" class="xl:w-[220px] flex-shrink-0 mt-4 xl:mt-0 relative">
+                                    <div class="absolute inset-0 bg-teal-500/15 blur-2xl rounded-full pointer-events-none scale-110"></div>
+                                    <div class="relative rounded-[2rem] overflow-hidden border-4 border-slate-800 bg-slate-900 group-hover:border-teal-500/40 transition-colors duration-700 shadow-2xl">
+                                        <div class="absolute top-2 inset-x-0 h-4 flex justify-center z-10">
+                                            <div class="w-10 h-4 bg-slate-950 rounded-full"></div>
+                                        </div>
+                                        <video src="/videos/demo-habit.mp4" autoplay loop muted playsinline class="w-full h-auto aspect-[9/16] object-cover pointer-events-none"></video>
+                                    </div>
+                                </div>
+
+                                <!-- Icon illustration for other steps -->
+                                <div v-else class="xl:w-[100px] flex-shrink-0 flex items-center justify-center">
+                                    <div class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/10 group-hover:border-teal-500/20 transition-all duration-500">
+                                        <svg v-if="step.number === '01'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                                        </svg>
+                                        <svg v-if="step.number === '03'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.008H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                        </svg>
+                                        <svg v-if="step.number === '04'" class="w-8 h-8 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
                 </div>
             </div>
-        </MotionSection>
+        </section>
 
         <!-- ================= BRAWNY SERVICE BLOCKS ================= -->
         <MotionSection class="bg-white py-32 rounded-t-[4rem] rounded-b-[4rem] relative z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.3)] border-b border-slate-200">
