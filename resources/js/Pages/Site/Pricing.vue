@@ -57,9 +57,9 @@ const planShowcase = [
 ];
 
 const guarantees = [
-    '7 dias incondicionais',
-    'Cancelamento sem estresse',
-    'Controle de dados 100% seu',
+    { text: '7 dias incondicionais', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', accent: 'teal' },
+    { text: 'Cancelamento sem estresse', icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15', accent: 'cyan' },
+    { text: 'Controle de dados 100% seu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', accent: 'emerald' },
 ];
 </script>
 
@@ -93,7 +93,7 @@ const guarantees = [
             </div>
             
             <!-- Bottom decorative fade -->
-            <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-gray-50 to-transparent"></div>
+            <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent"></div>
         </MotionSection>
 
         <!-- Dynamic Pricing Cards Grid -->
@@ -190,16 +190,16 @@ const guarantees = [
                 </div>
 
                 <!-- Trust Guarantees row below pricing cards -->
-                <div class="mt-20 flex flex-wrap items-center justify-center gap-6 md:gap-12 w-full max-w-4xl mx-auto border-t border-slate-200 pt-16">
+                <div class="mt-20 flex flex-wrap items-center justify-center gap-6 md:gap-8 w-full max-w-4xl mx-auto border-t border-slate-200 pt-16">
                     <div
                         v-for="item in guarantees"
-                        :key="item"
-                        class="flex items-center gap-3"
+                        :key="item.text"
+                        class="flex items-center gap-4 bg-white rounded-2xl border border-slate-200 px-6 py-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
                     >
-                        <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-teal-600">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl" :class="`bg-${item.accent}-50`">
+                            <svg class="h-5 w-5" :class="`text-${item.accent}-500`" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon"/></svg>
                         </span>
-                        <span class="font-extrabold text-slate-600 text-[13px] uppercase tracking-widest">{{ item }}</span>
+                        <span class="font-extrabold text-slate-700 text-[13px] uppercase tracking-widest">{{ item.text }}</span>
                     </div>
                 </div>
             </div>

@@ -10,6 +10,18 @@ export default {
         './resources/js/**/*.vue',
     ],
 
+    safelist: [
+        // Dynamic accent colors used in Company, Product, Pricing pages
+        ...['teal', 'emerald', 'amber', 'cyan'].flatMap(c => [
+            `bg-${c}-50`, `bg-${c}-100`, `bg-${c}-400`, `bg-${c}-500`,
+            `bg-${c}-500/10`, `bg-${c}-500/20`,
+            `text-${c}-400`, `text-${c}-500`,
+            `border-${c}-500/20`,
+            `group-hover:bg-${c}-100`, `group-hover:bg-${c}-500/20`,
+            `group-hover:text-${c}-300`,
+        ]),
+    ],
+
     theme: {
         extend: {
             fontFamily: {

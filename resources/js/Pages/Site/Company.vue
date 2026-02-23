@@ -60,24 +60,30 @@ const team = [
 ];
 
 const stats = [
-    { label: '+3.5', value: 'Anos na Estrada' },
-    { label: '+50 mil', value: 'Projeções Batidas' },
-    { label: '+500', value: 'Casas Organizadas Mensalmente' },
-    { label: '+200 mil', value: 'Alertas Salvos na Hora' },
+    { label: '+3.5', value: 'Anos na Estrada', accent: 'teal', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { label: '+50 mil', value: 'Projeções Batidas', accent: 'emerald', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
+    { label: '+500', value: 'Casas Organizadas Mensalmente', accent: 'amber', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    { label: '+200 mil', value: 'Alertas Salvos na Hora', accent: 'cyan', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
 ];
 
 const values = [
     {
         title: 'Ruído Zero',
         description: 'Dashboard enfeitado é pra ego. A gente te dá clareza limpa pra você saber se dá ou não dá pra gastar hoje.',
+        icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+        accent: 'teal',
     },
     {
         title: 'O Volante é Seu',
         description: 'Sem robô fuçando na sua conta bancária e te dando sugestões burras. Controle manual, seguro e absoluto da sua vida.',
+        icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+        accent: 'emerald',
     },
     {
         title: 'Grana é Grana',
         description: 'Não vendemos sua rotina pra anunciante, seu comportamento não é mercadoria. Nossa renda vem da nossa assinatura.',
+        icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
+        accent: 'amber',
     },
 ];
 </script>
@@ -220,8 +226,12 @@ const values = [
                  <!-- TODO: Inserir fotos e nomes reais depois -->
 
                  <div class="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-6">
-                     <article v-for="item in stats" :key="item.label" class="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 text-center hover:bg-slate-100 hover:scale-105 transition-transform duration-300">
-                         <p class="text-4xl md:text-5xl font-extrabold tracking-tighter text-teal-500 mb-3">{{ item.label }}</p>
+                     <article v-for="item in stats" :key="item.label" class="relative bg-white rounded-[2rem] p-8 border border-slate-200 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group overflow-hidden">
+                         <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" :class="`bg-${item.accent}-400`"></div>
+                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors duration-300" :class="`bg-${item.accent}-50 group-hover:bg-${item.accent}-100`">
+                             <svg class="w-6 h-6" :class="`text-${item.accent}-500`" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" /></svg>
+                         </div>
+                         <p class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-3" :class="`text-${item.accent}-500`">{{ item.label }}</p>
                          <p class="text-[11px] md:text-xs font-bold uppercase tracking-[0.15em] text-slate-600 leading-relaxed">{{ item.value }}</p>
                      </article>
                  </div>
@@ -244,10 +254,13 @@ const values = [
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-8">
-                    <article v-for="item in values" :key="item.title" class="bg-white/5 border border-white/10 p-8 rounded-[2rem] hover:bg-white/10 transition-colors duration-300 relative overflow-hidden group">
-                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-teal-500/20 blur-xl rounded-full group-hover:bg-teal-400/30 transition-colors"></div>
-                        <h3 class="text-2xl font-extrabold tracking-tight text-white mb-4 relative z-10">{{ item.title }}</h3>
-                        <p class="text-base leading-relaxed text-slate-300 font-medium relative z-10">{{ item.description }}</p>
+                    <article v-for="item in values" :key="item.title" class="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] hover:bg-white/[0.08] hover:border-white/15 transition-all duration-500 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 w-28 h-28 blur-2xl rounded-full transition-all duration-500 opacity-20 group-hover:opacity-40" :class="`bg-${item.accent}-400`"></div>
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 border transition-all duration-300" :class="`bg-${item.accent}-500/10 border-${item.accent}-500/20 group-hover:bg-${item.accent}-500/20`">
+                            <svg class="w-7 h-7" :class="`text-${item.accent}-400`" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" /></svg>
+                        </div>
+                        <h3 class="text-2xl font-extrabold tracking-tight text-white mb-4 relative z-10 group-hover:text-white/90 transition-colors">{{ item.title }}</h3>
+                        <p class="text-base leading-relaxed text-slate-400 font-medium relative z-10">{{ item.description }}</p>
                     </article>
                 </div>
 

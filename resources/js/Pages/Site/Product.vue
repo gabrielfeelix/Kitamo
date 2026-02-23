@@ -50,28 +50,32 @@ const journey = [
         title: 'Bota os pingos nos is',
         description: 'Puxa o extrato uma vez, anota as contas fixas e pronto. A fundação tá feita. Zero stress inicial.',
         colSpan: 'col-span-1 md:col-span-2 lg:col-span-3',
-        height: 'min-h-[250px]',
+        height: 'min-h-[280px]',
+        accent: 'teal',
     },
     {
         number: '2',
         title: 'Alimenta o monstrinho',
         description: 'Tirou do bolso? Coloca no Kitamo. Rápido, como mandar um zap.',
         colSpan: 'col-span-1 md:col-span-1 lg:col-span-2',
-        height: 'min-h-[200px]',
+        height: 'min-h-[240px]',
+        accent: 'cyan',
     },
     {
         number: '3',
         title: 'Recebe a real',
         description: 'O painel acende vermelho se for faltar grana.',
         colSpan: 'col-span-1 md:col-span-1 lg:col-span-2',
-        height: 'min-h-[200px]',
+        height: 'min-h-[240px]',
+        accent: 'amber',
     },
     {
         number: '4',
         title: 'O mês nas suas regras',
         description: 'Você move as peças, enxuga um gasto hoje, decide cortar assinatura, e a paz volta ao seu bolso.',
         colSpan: 'col-span-1 md:col-span-2 lg:col-span-3',
-        height: 'min-h-[250px]',
+        height: 'min-h-[280px]',
+        accent: 'emerald',
     },
 ];
 
@@ -216,13 +220,43 @@ const personas = [
                         v-for="step in journey" 
                         :key="step.number" 
                         :class="[step.colSpan, step.height]"
-                        class="bg-white/5 border border-white/10 rounded-[2rem] p-8 md:p-10 flex flex-col hover:bg-white/10 transition-colors duration-500 group relative overflow-hidden backdrop-blur-sm"
+                        class="bg-white/5 border border-white/10 rounded-[2rem] p-8 md:p-10 flex flex-col hover:bg-white/[0.08] transition-all duration-500 group relative overflow-hidden backdrop-blur-sm"
                     >
-                        <div class="absolute -right-10 -top-10 text-[10rem] font-bold text-white/5 group-hover:text-white/10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">{{ step.number }}</div>
+                        <!-- Background glow per card -->
+                        <div class="absolute -right-10 -bottom-10 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none" :class="`bg-${step.accent}-400`"></div>
+                        <div class="absolute -right-10 -top-10 text-[10rem] font-bold text-white/[0.03] group-hover:text-white/[0.06] group-hover:scale-110 transition-transform duration-700 pointer-events-none select-none">{{ step.number }}</div>
                         
-                        <div class="flex items-center justify-center w-12 h-12 bg-slate-900 border border-slate-700 rounded-xl text-teal-400 font-extrabold text-lg mb-6 group-hover:border-teal-500 group-hover:bg-slate-800 transition-colors shadow-inner">{{ step.number }}</div>
-                        <h3 class="text-2xl lg:text-3xl font-extrabold text-white mb-3 group-hover:text-teal-300 transition-colors z-10">{{ step.title }}</h3>
-                        <p class="text-lg text-slate-400 font-medium leading-relaxed max-w-lg z-10">{{ step.description }}</p>
+                        <div class="flex items-center justify-center w-12 h-12 rounded-2xl font-extrabold text-lg mb-5 border transition-all duration-300" :class="`bg-${step.accent}-500/10 border-${step.accent}-500/20 text-${step.accent}-400 group-hover:bg-${step.accent}-500/20`">{{ step.number }}</div>
+                        <h3 class="text-2xl lg:text-3xl font-extrabold text-white mb-3 transition-colors z-10" :class="`group-hover:text-${step.accent}-300`">{{ step.title }}</h3>
+                        <p class="text-base text-slate-400 font-medium leading-relaxed max-w-lg z-10 mb-4">{{ step.description }}</p>
+                        
+                        <!-- Inline mini-mockup per step -->
+                        <div v-if="step.number === '1'" class="mt-auto flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-500 z-10">
+                            <div class="flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 text-[11px] font-bold text-white"><div class="w-2 h-2 rounded bg-violet-400"></div>Nubank</div>
+                            <div class="flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 text-[11px] font-bold text-white"><div class="w-2 h-2 rounded bg-orange-400"></div>Itaú</div>
+                            <div class="flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 rounded-xl px-3 py-2 text-[11px] font-bold text-teal-400">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                Pronto
+                            </div>
+                        </div>
+                        <div v-if="step.number === '2'" class="mt-auto flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-500 z-10">
+                            <div class="flex-1 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 text-[11px] font-medium text-slate-500">Almoço R$ 28,50</div>
+                            <div class="w-9 h-9 rounded-xl bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            </div>
+                        </div>
+                        <div v-if="step.number === '3'" class="mt-auto flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity duration-500 z-10">
+                            <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-[11px] font-bold text-amber-400">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                Sem 4: -R$ 1.8k
+                            </div>
+                        </div>
+                        <div v-if="step.number === '4'" class="mt-auto flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-500 z-10">
+                            <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 text-[11px] font-bold text-emerald-400">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Mês no azul · +R$ 2.400
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
