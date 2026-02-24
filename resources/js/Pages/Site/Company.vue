@@ -184,11 +184,13 @@ const values = [
 
                 <div class="lg:col-span-7">
                     <div class="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-sm relative overflow-hidden">
-                         <div class="absolute left-[2.75rem] md:left-[3.75rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent"></div>
-                         
-                         <div class="space-y-12 relative z-10">
+                         <!-- Linha vertical com gradiente (z-index 0 - atrás) -->
+                         <div class="absolute left-[2.75rem] md:left-[3.75rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent z-0"></div>
+
+                         <div class="space-y-12 relative">
                              <div v-for="(item, index) in timeline" :key="index" class="relative pl-12 md:pl-16 group">
-                                  <div class="absolute left-[0.5rem] md:left-[0.75rem] top-1 h-7 w-7 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform"></div>
+                                  <!-- Circunferência (z-index 10 - na frente) -->
+                                  <div class="absolute left-[0.5rem] md:left-[0.75rem] top-1 h-7 w-7 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform z-10"></div>
                                   <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-1">{{ item.year }}</p>
                                   <h3 class="text-2xl font-extrabold text-slate-900 mb-2">{{ item.title }}</h3>
                                   <p class="text-base font-medium leading-relaxed text-slate-600">{{ item.text }}</p>
