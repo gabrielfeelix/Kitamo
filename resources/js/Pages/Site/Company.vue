@@ -96,17 +96,19 @@ const values = [
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
         <MotionSection class="relative min-h-[70vh] w-full overflow-hidden flex flex-col justify-end pt-32 pb-20">
-             <!-- Full Bleed Image Background -->
-             <div class="absolute inset-0">
-                 <img
-                     src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1920"
-                     alt="Nossa galera no planejamento"
-                     class="w-full h-full object-cover filter saturate-[0.8]"
-                 />
-                 <!-- Gradient Overlays for readability -->
-                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
-                 <div class="absolute inset-0 bg-teal-900/20 mix-blend-multiply"></div>
-             </div>
+             <template #background>
+                 <!-- Full Bleed Image Background -->
+                 <div class="absolute inset-0">
+                     <img
+                         src="https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=1920"
+                         alt="Nossa galera no planejamento"
+                         class="w-full h-full object-cover filter saturate-[0.8]"
+                     />
+                     <!-- Gradient Overlays for readability -->
+                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+                     <div class="absolute inset-0 bg-teal-900/20 mix-blend-multiply"></div>
+                 </div>
+             </template>
             
              <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12">
                  <div class="max-w-3xl">
@@ -123,7 +125,9 @@ const values = [
 
         <!-- Manifesto do Fundador -->
         <MotionSection class="bg-white py-32 border-b border-slate-100 relative overflow-hidden">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-teal-50 to-transparent pointer-events-none"></div>
+            <template #background>
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-teal-50 to-transparent pointer-events-none"></div>
+            </template>
             <div class="mx-auto w-full max-w-[1000px] px-6 md:px-12 relative z-10">
                 <div class="flex flex-col md:flex-row gap-12 md:gap-20 items-start">
                     <div class="w-full md:w-1/3 flex-shrink-0">
@@ -184,13 +188,14 @@ const values = [
 
                 <div class="lg:col-span-7">
                     <div class="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-sm relative overflow-hidden">
-                         <!-- Linha vertical com gradiente (z-index 0 - atrás) -->
-                         <div class="absolute left-[2.75rem] md:left-[3.75rem] top-12 bottom-12 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent z-0"></div>
-
                          <div class="space-y-12 relative">
+                             <!-- Linha vertical com gradiente (z-index 0 - atrás) -->
+                             <!-- Centralizada em 13px para alinhar perfeitamente com o meio da bolinha (que está em left-0 e tem w-7/28px). 13 + 1 = 14px -->
+                             <div class="absolute left-[13px] top-2 bottom-0 w-[2px] bg-gradient-to-b from-teal-500/50 to-transparent z-0"></div>
+
                              <div v-for="(item, index) in timeline" :key="index" class="relative pl-12 md:pl-16 group">
                                   <!-- Circunferência (z-index 10 - na frente) -->
-                                  <div class="absolute left-[0.5rem] md:left-[0.75rem] top-1 h-7 w-7 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform z-10"></div>
+                                  <div class="absolute left-0 top-1 h-7 w-7 rounded-full bg-slate-50 border-4 border-teal-500 shadow-[0_0_15px_theme(colors.teal.500/40)] group-hover:scale-125 transition-transform z-10"></div>
                                   <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-1">{{ item.year }}</p>
                                   <h3 class="text-2xl font-extrabold text-slate-900 mb-2">{{ item.title }}</h3>
                                   <p class="text-base font-medium leading-relaxed text-slate-600">{{ item.text }}</p>
@@ -242,7 +247,9 @@ const values = [
 
         <!-- Values Section -->
         <MotionSection class="relative overflow-hidden bg-slate-950 py-24 text-white">
-            <div class="absolute -left-20 bottom-0 h-96 w-96 rounded-full bg-teal-500/15 blur-[120px]"></div>
+            <template #background>
+                <div class="absolute -left-20 bottom-0 h-96 w-96 rounded-full bg-teal-500/15 blur-[120px]"></div>
+            </template>
             
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative z-10">
                 <div class="text-center mb-16 max-w-4xl mx-auto">

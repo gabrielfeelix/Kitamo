@@ -71,10 +71,12 @@ const guarantees = [
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Ultra Hero Section (Dark & Emotive) -->
         <MotionSection class="relative min-h-[80vh] w-full overflow-hidden bg-slate-950 text-white flex flex-col justify-center items-center py-32 border-b border-white/5">
-            <!-- Noise Overlay -->
-            <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-            
-            <div class="pointer-events-none absolute top-0 inset-x-0 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-slate-950 to-slate-950 opacity-80 blur-3xl"></div>
+            <template #background>
+                <!-- Noise Overlay -->
+                <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+                
+                <div class="pointer-events-none absolute top-0 inset-x-0 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-slate-950 to-slate-950 opacity-80 blur-3xl"></div>
+            </template>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
                 <p class="inline-flex items-center space-x-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-cyan-400 mb-8 px-5 py-2.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm shadow-[0_0_20px_theme(colors.cyan.500/15)]">Transparência Total</p>
@@ -93,12 +95,14 @@ const guarantees = [
             </div>
             
             <!-- Bottom decorative fade -->
-            <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent"></div>
+            <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none z-0"></div>
         </MotionSection>
 
         <!-- Dynamic Pricing Cards Grid -->
         <MotionSection class="bg-slate-50 py-20 pb-40 relative">
-            <div class="absolute top-0 inset-x-0 h-[200px] bg-slate-50 -mt-[200px]"></div>
+            <template #background>
+                <div class="absolute top-0 inset-x-0 h-[200px] bg-slate-50 -mt-[200px] z-0"></div>
+            </template>
             
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative -mt-32 sm:-mt-24 lg:-mt-16 z-20">
                 <div class="grid lg:grid-cols-3 gap-6 xl:gap-10 items-end">
@@ -206,11 +210,13 @@ const guarantees = [
         </MotionSection>
 
         <!-- Staggered Use Cases (Massive Imagery Layout) -->
-        <MotionSection class="bg-slate-950 py-32 rounded-t-[4rem] text-white overflow-hidden relative border-t border-slate-800">
-            <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
-             
-             <!-- Glowing orb background effect -->
-             <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.15)_0,transparent_60%)] pointer-events-none"></div>
+        <MotionSection class="bg-slate-950 py-32 rounded-t-[4rem] text-white overflow-hidden relative border-t border-slate-800 z-10">
+            <template #background>
+                <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+                 
+                 <!-- Glowing orb background effect -->
+                 <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.15)_0,transparent_60%)] pointer-events-none"></div>
+            </template>
 
             <div class="mx-auto w-full max-w-[1440px] px-6 md:px-12 relative z-10 flex flex-col gap-24">
                 <div class="text-center mb-6">

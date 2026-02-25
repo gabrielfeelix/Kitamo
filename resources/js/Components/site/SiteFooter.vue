@@ -17,7 +17,7 @@ defineProps<{
             <div class="grid lg:grid-cols-4 gap-12 lg:gap-8 mb-20">
                 <!-- Brand Column -->
                 <div class="lg:col-span-1 pr-6 flex flex-col gap-6">
-                    <p class="text-3xl font-extrabold tracking-tight text-slate-900">kitamo<span class="text-teal-500">.</span></p>
+                    <p class="text-3xl font-extrabold tracking-tight text-slate-900">kitamo<span class="text-teal-500">!</span></p>
                     <p class="text-base font-medium leading-relaxed text-slate-500">
                         O app que tira a venda dos seus olhos e joga limpo sobre o seu dinheiro. Chega de sofrer no fim do mês.
                     </p>

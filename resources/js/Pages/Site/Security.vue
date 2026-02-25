@@ -65,7 +65,9 @@ const lgpd = [
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
         <MotionSection class="relative min-h-[50vh] w-full overflow-hidden bg-white text-slate-900 flex flex-col justify-center pt-32 pb-20 border-b border-slate-200">
-            <div class="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-teal-500/10 blur-[150px] rounded-full mix-blend-multiply opacity-60"></div>
+            <template #background>
+                <div class="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-teal-500/10 blur-[150px] rounded-full mix-blend-multiply opacity-60"></div>
+            </template>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
                 <p class="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-600 mb-6 drop-shadow-sm bg-teal-50 px-4 py-2 rounded-full border border-teal-100 shadow-sm">Sem Enrolação</p>

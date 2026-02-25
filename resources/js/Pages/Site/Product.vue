@@ -95,7 +95,7 @@ const personas = [
 
     <SiteLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section — Text Left + Video Right (asymmetric, different from Home) -->
-        <MotionSection class="relative min-h-[90vh] w-full bg-slate-950 text-white flex items-center pt-32 pb-24 overflow-hidden">
+        <MotionSection class="relative min-h-[95vh] w-full bg-slate-950 text-white flex flex-col justify-center pt-32 overflow-hidden">
             <!-- Background -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
                 <div class="absolute inset-0 opacity-[0.03] mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
@@ -103,49 +103,45 @@ const personas = [
                 <div class="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[130px] mix-blend-screen opacity-40"></div>
             </div>
 
-            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12">
-                <div class="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                    <!-- Text side — LEFT -->
-                    <div class="flex flex-col items-start text-left">
-                        <p class="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 backdrop-blur shadow-[0_0_15px_theme(colors.teal.500/20)]">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-                            Conheça a Ferramenta
-                        </p>
-                        <h1 class="text-5xl sm:text-6xl md:text-[5.5rem] leading-[0.92] tracking-tighter text-slate-100 font-extrabold max-w-xl">
-                            Projetado pra<br>
-                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-300 font-serif italic pr-2">clareza total.</span>
-                        </h1>
-                        <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-lg">
-                            Sem funcionalidades escondidas, sem menus infinitos. Cada tela resolve um problema real do seu bolso.
-                        </p>
-                        
-                        <div class="mt-12 flex gap-4">
-                            <Link :href="primaryHref" class="inline-flex h-16 items-center justify-center rounded-2xl bg-teal-500 px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(20,184,166,0.4)]">
-                                Criar minha conta
-                            </Link>
-                        </div>
-                    </div>
+            <!-- Centered Header Text -->
+            <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 flex flex-col items-center text-center">
+                <p class="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.25em] text-teal-400 mb-8 px-4 py-2 rounded-full border border-teal-500/20 bg-teal-500/10 backdrop-blur shadow-[0_0_15px_theme(colors.teal.500/20)]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                    Conheça a Ferramenta
+                </p>
+                <h1 class="text-[4.5rem] sm:text-[6rem] lg:text-[7rem] leading-[0.9] tracking-tighter text-slate-100 font-extrabold max-w-4xl mx-auto">
+                    Projetado pra<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-300 font-serif italic pr-2">clareza total.</span>
+                </h1>
+                <p class="mt-8 text-xl leading-relaxed text-slate-400 font-medium max-w-2xl mx-auto">
+                    Sem funcionalidades escondidas, sem menus infinitos. Cada tela resolve um problema real do seu bolso.
+                </p>
+                
+                <div class="mt-12 flex justify-center w-full">
+                    <Link :href="primaryHref" class="inline-flex h-16 items-center justify-center rounded-2xl bg-teal-500 px-10 text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-950 transition-all hover:bg-teal-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(20,184,166,0.4)]">
+                        Criar minha conta
+                    </Link>
+                </div>
+            </div>
 
-                    <!-- Video side — RIGHT (different video from Homepage) -->
-                    <div class="relative flex items-center justify-center">
-                        <div class="absolute inset-0 bg-teal-500/10 rounded-[3rem] blur-3xl transform scale-90"></div>
-                        <div class="relative w-full max-w-[500px] rounded-[2.5rem] overflow-hidden border border-white/[0.08] bg-slate-900/60 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]">
-                            <!-- Using ritmo-radar video which shows the forecast/alert feature -->
-                            <video src="/videos/ritmo-radar.mp4" autoplay loop muted playsinline class="w-full h-auto object-cover pointer-events-none"></video>
-                            <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-950/40 to-transparent pointer-events-none"></div>
-                        </div>
-                        <!-- Floating accent tags -->
-                        <div class="absolute -bottom-4 -left-4 hidden lg:flex items-center gap-2 bg-slate-950/80 backdrop-blur-md border border-white/15 text-white px-4 py-2.5 rounded-2xl text-[10px] font-extrabold uppercase tracking-[0.2em] shadow-lg z-10">
-                            <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
-                            Alerta em tempo real
-                        </div>
-                        <div class="absolute -top-4 -right-4 hidden lg:flex items-center gap-2 bg-teal-500/90 backdrop-blur border border-teal-300 text-teal-950 px-4 py-2.5 rounded-2xl text-[10px] font-extrabold uppercase tracking-[0.2em] shadow-[0_0_20px_theme(colors.teal.500/40)] z-10">
-                            Projeção 90 dias
-                        </div>
+            <!-- Floating Video Preview Below -->
+            <div class="relative mx-auto w-[90%] max-w-[900px] z-20 mt-20 sm:mt-24 lg:mt-32 -mb-20 sm:-mb-24 lg:-mb-32 flex justify-center perspective-1000">
+                <div class="absolute inset-0 bg-teal-500/10 rounded-[4rem] blur-3xl transform -translate-y-10"></div>
+                <div class="relative w-full max-w-[700px] rounded-[2.5rem] overflow-hidden border border-white/[0.08] bg-slate-900/60 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] transition-transform duration-1000 transform hover:-translate-y-4 rotate-x-6 hover:rotate-x-0 group">
+                    <video src="/videos/ritmo-radar.mp4" autoplay loop muted playsinline class="w-full h-auto object-cover pointer-events-none"></video>
+                    <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/60 to-transparent pointer-events-none"></div>
+                    
+                    <!-- Floating accent tags -->
+                    <div class="absolute bottom-4 left-4 hidden md:flex items-center gap-2 bg-slate-950/80 backdrop-blur-md border border-white/15 text-white px-4 py-2.5 rounded-2xl text-[10px] font-extrabold uppercase tracking-[0.2em] shadow-lg">
+                        <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+                        Alerta de Fatura
                     </div>
                 </div>
             </div>
         </MotionSection>
+
+        <!-- Spacer for the intersecting hero video -->
+        <div class="bg-slate-50 h-32 sm:h-40 lg:h-48 border-t border-slate-200"></div>
 
         <!-- Alternating Modules Section (Zig-Zag layout) -->
         <MotionSection class="bg-slate-50 py-24 pb-32 overflow-hidden">

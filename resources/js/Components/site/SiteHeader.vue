@@ -18,7 +18,7 @@ const primaryLabel = computed(() => (props.canRegister ? 'Criar Conta' : 'Acessa
     <header class="fixed inset-x-0 top-0 z-50 py-4 px-4 pointer-events-none transition-all duration-300">
         <div class="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-6 bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg pointer-events-auto transition-all duration-300 hover:bg-slate-900/60">
             <Link :href="route('site.home')" class="text-2xl font-extrabold tracking-[-0.04em] text-white flex items-center gap-1 group">
-                kitamo<span class="text-teal-400 group-hover:animate-pulse">.</span>
+                kitamo<span class="text-teal-400 group-hover:animate-pulse">!</span>
             </Link>
 
             <nav class="hidden items-center gap-2 lg:flex p-1 bg-white/5 rounded-full border border-white/5">

@@ -57,6 +57,7 @@ onUnmounted(() => {
         ref="sectionRef"
         :class="[props.class, 'site-motion-wrap']"
     >
+        <slot name="background" />
         <!-- Inner wrapper that actually animates — background stays visible -->
         <div :class="['site-motion-inner', { 'is-visible': visible }]">
             <slot />
