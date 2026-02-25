@@ -76,13 +76,16 @@ const guarantees = [
                 <div class="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
                 
                 <div class="pointer-events-none absolute top-0 inset-x-0 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-slate-950 to-slate-950 opacity-80 blur-3xl"></div>
+                
+                <!-- Bottom decorative fade -->
+                <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none z-0"></div>
             </template>
             
             <div class="relative z-10 mx-auto w-full max-w-[1440px] px-6 md:px-12 text-center flex flex-col items-center">
-                <p class="inline-flex items-center space-x-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-cyan-400 mb-8 px-5 py-2.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm shadow-[0_0_20px_theme(colors.cyan.500/15)]">Transparência Total</p>
-                <h1 class="text-6xl sm:text-7xl lg:text-[7rem] leading-[0.9] tracking-tighter mix-blend-lighten text-slate-100 font-extrabold max-w-5xl mx-auto drop-shadow-2xl">
+                <p class="inline-flex items-center space-x-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.25em] text-emerald-400 mb-8 px-5 py-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur-sm shadow-[0_0_20px_theme(colors.emerald.500/15)]">Transparência Total</p>
+                <h1 class="text-6xl sm:text-7xl lg:text-[7rem] leading-[0.9] tracking-tighter text-slate-100 font-extrabold max-w-5xl mx-auto drop-shadow-2xl">
                     Planejamento no<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-300 to-emerald-400 font-serif italic pr-2">seu tamanho.</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 font-serif italic pr-2">seu tamanho.</span>
                 </h1>
                 <p class="mt-10 text-xl sm:text-2xl leading-relaxed text-slate-400 font-medium max-w-3xl mx-auto">
                     Escolha a abrangência do seu radar financeiro. Comece de graça, evolua conforme sua necessidade. Sem pegadinhas.
@@ -94,8 +97,6 @@ const guarantees = [
                 </div>
             </div>
             
-            <!-- Bottom decorative fade -->
-            <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none z-0"></div>
         </MotionSection>
 
         <!-- Dynamic Pricing Cards Grid -->
@@ -168,7 +169,7 @@ const guarantees = [
 
                     <!-- Visionary Plan -->
                     <article class="bg-white rounded-[2.5rem] p-10 lg:p-12 border border-slate-200 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col items-start min-h-[500px]">
-                        <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-indigo-500 mb-6 bg-indigo-50 px-4 py-1.5 rounded-lg border border-indigo-100">Visão Longo Prazo</p>
+                        <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-amber-500 mb-6 bg-amber-50 px-4 py-1.5 rounded-lg border border-amber-100">Visão Longo Prazo</p>
                         <h3 class="text-3xl font-extrabold text-slate-900 mb-2">{{ pricingPlans[2].name }}</h3>
                         <p class="text-sm text-slate-500 font-medium leading-relaxed mb-8 min-h-[40px]">{{ pricingPlans[2].subtitle }}</p>
                         
@@ -180,7 +181,7 @@ const guarantees = [
                         
                         <ul class="space-y-5 w-full mb-12">
                             <li v-for="feature in pricingPlans[2].features" :key="feature" class="flex items-center gap-4 text-base font-bold text-slate-700">
-                                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-indigo-400 flex items-center justify-center">
+                                <span class="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-amber-500 flex items-center justify-center">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                 </span>
                                 {{ feature }}
@@ -235,7 +236,7 @@ const guarantees = [
                         class="group bg-slate-900 rounded-[2.5rem] border border-slate-800 overflow-hidden flex flex-col transition-all duration-500 hover:border-slate-700 hover:shadow-2xl hover:-translate-y-2 relative"
                     >
                          <!-- Dynamic Glow per card index logic -->
-                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t" :class="idx === 1 ? 'from-teal-900/40' : (idx === 2 ? 'from-indigo-900/30' : 'from-slate-800/40')"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t" :class="idx === 1 ? 'from-teal-900/40' : (idx === 2 ? 'from-amber-900/30' : 'from-slate-800/40')"></div>
 
                         <div class="h-64 sm:h-80 relative overflow-hidden">
                             <img
@@ -264,7 +265,7 @@ const guarantees = [
         <MotionSection class="bg-white py-32 border-b border-slate-200">
              <div class="mx-auto w-full max-w-[1200px] px-6 md:px-12 flex flex-col">
                 <div class="text-center mb-20">
-                     <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-cyan-600 mb-6 inline-block bg-cyan-50 px-5 py-2.5 border border-cyan-100 rounded-full shadow-sm">Detalhe por detalhe</p>
+                     <p class="text-[12px] font-extrabold uppercase tracking-[0.2em] text-emerald-600 mb-6 inline-block bg-emerald-50 px-5 py-2.5 border border-emerald-100 rounded-full shadow-sm">Detalhe por detalhe</p>
                      <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tighter text-slate-900">A balança de<br><span class="font-serif italic text-teal-600 pr-2">funcionalidades.</span></h2>
                 </div>
                 
@@ -276,7 +277,7 @@ const guarantees = [
                                     <th class="pb-8 pr-4 w-[40%] text-slate-900">Funcionalidade Core</th>
                                     <th class="pb-8 pr-4 w-[20%] text-slate-400">Essencial</th>
                                     <th class="pb-8 pr-4 px-4 w-[20%] text-teal-600 bg-teal-50/50 rounded-t-2xl">Pro</th>
-                                    <th class="pb-8 pl-4 w-[20%] text-indigo-400">Visionário</th>
+                                    <th class="pb-8 pl-4 w-[20%] text-amber-500">Visionário</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100/80">
@@ -297,7 +298,7 @@ const guarantees = [
                                     
                                     <td class="py-6 pl-4 text-slate-500 font-medium">
                                         <span v-if="feature.status[2] !== '-' && feature.status[2] !== 'Ilimitado'">{{ feature.status[2] }}</span>
-                                        <span v-else-if="feature.status[2] === 'Ilimitado'" class="text-indigo-800 font-bold px-3 py-1 bg-indigo-50 rounded-md text-[11px] uppercase tracking-wider border border-indigo-100">Livre</span>
+                                        <span v-else-if="feature.status[2] === 'Ilimitado'" class="text-amber-700 font-bold px-3 py-1 bg-amber-50 rounded-md text-[11px] uppercase tracking-wider border border-amber-100">Livre</span>
                                         <svg v-else class="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg>
                                     </td>
                                 </tr>
