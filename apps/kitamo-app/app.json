@@ -46,10 +46,15 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "http://localhost:8000",
+      "apiUrl": "https://kitamo.com.br",
       "googleWebClientId": "",
       "googleIosClientId": "",
-      "googleAndroidClientId": ""
-    }
+      "googleAndroidClientId": "",
+      "router": {},
+      "eas": {
+        "projectId": "53930bbc-fe6e-44ac-98e0-fa4381377925"
+      }
+    },
+    "owner": "gabfeelix1"
   }
 }
