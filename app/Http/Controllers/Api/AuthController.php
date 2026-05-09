@@ -189,6 +189,20 @@ class AuthController extends Controller
         return response()->json(['user' => $this->shapeUser($user->fresh())]);
     }
 
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = \Illuminate\Support\Facades\Password::sendResetLink(['email' => $data['email']]);
+
+        return response()->json([
+            'ok' => true,
+            'status' => $status,
+        ]);
+    }
+
     public function changePassword(Request $request): JsonResponse
     {
         $data = $request->validate([

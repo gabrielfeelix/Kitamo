@@ -15,12 +15,29 @@ class CategoryController extends Controller
     {
         $userId = $request->user()->id;
 
-        $categories = Category::query()
+        $allCategories = Category::query()
             ->where(function ($q) use ($userId) {
                 $q->whereNull('user_id')->orWhere('user_id', $userId);
             })
             ->orderBy('name')
             ->get();
+
+        // Dedupe: prefer user-owned over default when same (name + type) collides.
+        // Normalize name (trim + lowercase + remove accents) so "Alimentação" and "alimentacao" colide.
+        $byKey = [];
+        foreach ($allCategories as $c) {
+            $key = $c->type . '|' . $this->normalizeName($c->name);
+            $existing = $byKey[$key] ?? null;
+            if (! $existing) {
+                $byKey[$key] = $c;
+                continue;
+            }
+            // Prefer the one owned by the user.
+            if ($existing->user_id === null && $c->user_id !== null) {
+                $byKey[$key] = $c;
+            }
+        }
+        $categories = collect(array_values($byKey))->sortBy('name')->values();
 
         $monthStart = Carbon::today()->startOfMonth()->format('Y-m-d');
         $monthEnd = Carbon::today()->endOfMonth()->format('Y-m-d');
@@ -100,6 +117,18 @@ class CategoryController extends Controller
         if ($category->user_id !== null && $category->user_id !== $request->user()->id) {
             abort(404);
         }
+    }
+
+    private function normalizeName(string $name): string
+    {
+        $normalized = mb_strtolower(trim($name));
+        if (function_exists('iconv')) {
+            $stripped = @iconv('UTF-8', 'ASCII//TRANSLIT', $normalized);
+            if ($stripped !== false) {
+                $normalized = preg_replace('/[^a-z0-9\s]/', '', $stripped);
+            }
+        }
+        return preg_replace('/\s+/', ' ', $normalized);
     }
 
     private function shape(Category $c, ?float $spent): array

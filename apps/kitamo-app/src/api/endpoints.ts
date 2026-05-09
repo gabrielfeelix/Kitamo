@@ -47,6 +47,9 @@ export const authApi = {
     async revokeAllSessions(): Promise<void> {
         await apiClient.post('/auth/sessions/revoke-all');
     },
+    async forgotPassword(email: string): Promise<void> {
+        await apiClient.post('/auth/password/forgot', { email });
+    },
 };
 
 export const dashboardApi = {
