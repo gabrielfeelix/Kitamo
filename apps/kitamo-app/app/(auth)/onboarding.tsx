@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { KITAMO } from '@/theme/tokens';
@@ -68,13 +67,32 @@ export default function Onboarding(): React.JSX.Element {
             </View>
 
             <View style={{ position: 'absolute', left: 24, right: 24, bottom: 36 }}>
-                <Button
+                <Pressable
                     onPress={() => router.push('/(auth)/login')}
-                    trailing={<Icon name="arrow" size={20} color="#fff" />}
+                    style={({ pressed }) => [styles.cta, { opacity: pressed ? 0.9 : 1 }]}
                 >
-                    Bora!
-                </Button>
+                    <Text style={styles.ctaText}>Bora!</Text>
+                    <Icon name="arrow" size={20} color="#fff" />
+                </Pressable>
             </View>
         </Screen>
     );
 }
+
+const styles = StyleSheet.create({
+    cta: {
+        height: 56,
+        borderRadius: 16,
+        backgroundColor: KITAMO.brand,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        shadowColor: KITAMO.brand,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+        elevation: 6,
+    },
+    ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+});

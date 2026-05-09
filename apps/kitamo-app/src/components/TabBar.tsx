@@ -23,22 +23,29 @@ export function TabBar({ active, onTab }: Props): React.JSX.Element {
     const insets = useSafeAreaInsets();
     const bottomPad = Math.max(insets.bottom, 8);
     return (
-        <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: bottomPad }]}>
-            <View style={styles.row}>
-                <TabButton tab={TABS[0]} active={active === TABS[0].id} onPress={() => onTab(TABS[0].id)} />
-                <TabButton tab={TABS[1]} active={active === TABS[1].id} onPress={() => onTab(TABS[1].id)} />
-                <View style={styles.fabSpacer} />
-                <TabButton tab={TABS[2]} active={active === TABS[2].id} onPress={() => onTab(TABS[2].id)} />
-                <TabButton tab={TABS[3]} active={active === TABS[3].id} onPress={() => onTab(TABS[3].id)} />
+        <>
+            <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: bottomPad }]}>
+                <View style={styles.row}>
+                    <TabButton tab={TABS[0]} active={active === TABS[0].id} onPress={() => onTab(TABS[0].id)} />
+                    <TabButton tab={TABS[1]} active={active === TABS[1].id} onPress={() => onTab(TABS[1].id)} />
+                    <View style={styles.fabSpacer} />
+                    <TabButton tab={TABS[2]} active={active === TABS[2].id} onPress={() => onTab(TABS[2].id)} />
+                    <TabButton tab={TABS[3]} active={active === TABS[3].id} onPress={() => onTab(TABS[3].id)} />
+                </View>
             </View>
-            <Pressable
-                onPress={() => onTab('add')}
-                accessibilityLabel="Adicionar"
-                style={({ pressed }) => [styles.fab, { bottom: bottomPad + 28, transform: [{ scale: pressed ? 0.94 : 1 }] }]}
+            <View
+                pointerEvents="box-none"
+                style={[styles.fabAnchor, { bottom: bottomPad + 28 }]}
             >
-                <Icon name="plus" size={30} color="#fff" />
-            </Pressable>
-        </View>
+                <Pressable
+                    onPress={() => onTab('add')}
+                    accessibilityLabel="Adicionar"
+                    style={({ pressed }) => [styles.fab, { transform: [{ scale: pressed ? 0.94 : 1 }] }]}
+                >
+                    <Icon name="plus" size={30} color="#fff" />
+                </Pressable>
+            </View>
+        </>
     );
 }
 
@@ -88,9 +95,13 @@ const styles = StyleSheet.create({
     fabSpacer: {
         width: 76,
     },
-    fab: {
+    fabAnchor: {
         position: 'absolute',
-        alignSelf: 'center',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    fab: {
         width: 64,
         height: 64,
         borderRadius: 32,
