@@ -15,7 +15,7 @@
 
         <!-- Scripts -->
         <script>
-            window.__kitamoUser = @json(auth()->user() ? ['id' => auth()->id(), 'email' => auth()->user()->email] : null);
+            window.__kitamoUser = @json(str_starts_with($page['component'] ?? '', 'Site/') ? null : (auth()->user() ? ['id' => auth()->id(), 'email' => auth()->user()->email] : null));
         </script>
         @routes
         @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])

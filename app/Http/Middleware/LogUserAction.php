@@ -11,14 +11,14 @@ class LogUserAction
 {
     private function shouldLog(Request $request): bool
     {
-        if (! $request->user()) return false;
-
         $method = strtoupper($request->getMethod());
         if (! in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) return false;
 
         $path = '/'.ltrim($request->path(), '/');
         if ($path === '/sanctum/csrf-cookie' || $path === '/csrf-cookie') return false;
         if ($path === '/login' || $path === '/logout') return false;
+
+        if (! $request->user()) return false;
 
         return true;
     }
@@ -87,4 +87,3 @@ class LogUserAction
         return $response;
     }
 }
-

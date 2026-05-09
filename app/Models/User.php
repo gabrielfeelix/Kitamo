@@ -8,11 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +28,10 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'auth_provider',
+        'entry_mode',
+        'plan_slug',
+        'twofa_enabled',
+        'onboarding_completed_at',
     ];
 
     /**
@@ -59,6 +64,7 @@ class User extends Authenticatable
             'last_backup_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
             'disabled_at' => 'datetime',
+            'twofa_enabled' => 'boolean',
         ];
     }
 

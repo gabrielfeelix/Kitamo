@@ -94,7 +94,13 @@ if command -v rsync >/dev/null 2>&1; then
   rsync -a --delete-after --delay-updates \\
     --exclude \".env\" \\
     --exclude \"storage/\" \\
+    --exclude \"public/build/assets/\" \\
     \"\$tmp/\" \"./\"
+
+  if [ -d \"\$tmp/public/build/assets\" ]; then
+    mkdir -p public/build/assets
+    rsync -a --delay-updates \"\$tmp/public/build/assets/\" \"./public/build/assets/\"
+  fi
 else
   echo \"AVISO: rsync não encontrado no servidor; fazendo replace por diretórios (mantendo .env e storage)\"
   for p in app bootstrap config database public resources routes vendor artisan composer.json composer.lock package.json package-lock.json vite.config.* postcss.config.* tailwind.config.* tsconfig.*; do
@@ -107,6 +113,7 @@ fi
 
 mkdir -p storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+chmod 755 . public 2>/dev/null || true
 
 rm -f public/hot || true
 
@@ -117,12 +124,14 @@ if [ ! -x \"\$PHP_BIN\" ]; then
   echo \"Defina PHP_BIN corretamente (ex.: /opt/alt/php83/usr/bin/php)\"
   exit 12
 fi
-if ! \"\$PHP_BIN\" -r 'exit(version_compare(PHP_VERSION, \"8.2.0\", \">=\") ? 0 : 1);'; then
+if ! \"\$PHP_BIN\" -r \"exit(PHP_VERSION_ID >= 80200 ? 0 : 1);\"; then
   echo \"ERRO: PHP em PHP_BIN e menor que 8.2. Ajuste PHP_BIN.\"
   exit 13
 fi
 
-\$PHP_BIN artisan optimize:clear
+\$PHP_BIN artisan config:clear
+\$PHP_BIN artisan route:clear
+\$PHP_BIN artisan view:clear
 \$PHP_BIN artisan config:cache
 \$PHP_BIN artisan route:cache
 \$PHP_BIN artisan view:cache

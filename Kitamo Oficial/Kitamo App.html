@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kitamo · App design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin:0; padding:0; background:#fff; font-family:'Inter', -apple-system, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="kitamo-shared.jsx"></script>
+<script type="text/babel" src="kitamo-screens-1.jsx"></script>
+<script type="text/babel" src="kitamo-screens-2.jsx"></script>
+<script type="text/babel" src="kitamo-screens-3.jsx"></script>
+<script type="text/babel" src="kitamo-screens-4.jsx"></script>
+
+<script type="text/babel">
+// Stack-based router. Any element with data-nav="route" goes; data-back pops.
+const ROUTES = ['splash','login','onboard','onboard-connect','home','contas','add','add-invest','gastos','detail','eu','ia','ia-chat','planos','categorias','metas','seguranca','notif','empty'];
+const TAB_ROUTES = ['home','contas','gastos','eu'];
+
+function App() {
+  const [stack, setStack] = React.useState([{ route: 'home' }]);
+  const [contasTab, setContasTab] = React.useState('bancos');
+  const [addKind, setAddKind] = React.useState('out');
+  const cur = stack[stack.length - 1];
+
+  const nav = {
+    go:      (route, params) => setStack(s => [...s, { route, params }]),
+    replace: (route, params) => setStack([{ route, params }]),
+    back:    () => setStack(s => s.length > 1 ? s.slice(0, -1) : s),
+  };
+
+  // global delegation
+  const onClickCapture = (e) => {
+    const back = e.target.closest('[data-back]');
+    if (back) { nav.back(); e.stopPropagation(); return; }
+    const goTo = e.target.closest('[data-nav]');
+    if (goTo) {
+      const r = goTo.dataset.nav;
+      const k = goTo.dataset.kind;
+      if (k) setAddKind(k);
+      if (TAB_ROUTES.includes(r)) nav.replace(r);
+      else nav.go(r);
+      e.stopPropagation();
+    }
+  };
+
+  const onTab = (id) => {
+    if (id === 'add') nav.go('add');
+    else nav.replace(id);
+  };
+
+  const interactive = (() => {
+    switch (cur.route) {
+      case 'splash':         return <ScreenSplash/>;
+      case 'login':          return <ScreenLogin/>;
+      case 'onboard':        return <ScreenOnboarding/>;
+      case 'onboard-connect':return <ScreenOnboardingConnect/>;
+      case 'home':           return <ScreenHome active="home" onTab={onTab}/>;
+      case 'contas':         return <ScreenContas tab={contasTab} active="contas" onTab={onTab} onSubTab={setContasTab}/>;
+      case 'add':            return <ScreenAdd kind={addKind}/>;
+      case 'add-invest':     return <ScreenAddInvest/>;
+      case 'gastos':         return <ScreenGastos active="gastos" onTab={onTab}/>;
+      case 'detail':         return <ScreenDetail active="gastos" onTab={onTab}/>;
+      case 'eu':             return <ScreenEu active="eu" onTab={onTab}/>;
+      case 'ia':             return <ScreenIA active="eu" onTab={onTab}/>;
+      case 'ia-chat':        return <ScreenIAChat active="eu" onTab={onTab}/>;
+      case 'planos':         return <ScreenPlanos/>;
+      case 'categorias':     return <ScreenCategorias/>;
+      case 'metas':          return <ScreenMetas/>;
+      case 'seguranca':      return <ScreenSeguranca/>;
+      case 'notif':          return <ScreenNotif active="home" onTab={onTab}/>;
+      case 'empty':          return <ScreenEmpty active="gastos" onTab={onTab}/>;
+      default:               return <ScreenHome active="home" onTab={onTab}/>;
+    }
+  })();
+
+  return (
+    <DesignCanvas title="Kitamo · App de organização financeira" subtitle="11 telas + estados — fundo branco, marca #33d6c5, tom de voz simples e acessível">
+
+      <DCSection id="prototype" title="Protótipo interativo" subtitle="Clique nos ícones da navbar pra navegar entre Início, Contas, +, Gastos e Eu.">
+        <DCArtboard id="ab-prototype" label="Protótipo · navegação real" width={375} height={812}>
+          <div onClickCapture={onClickCapture} style={{ width: '100%', height: '100%' }}>
+            {interactive}
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="onboard" title="Entrada — Splash, Login, Onboarding" subtitle="Primeiros 60 segundos. Curva colorida, copy direta, zero jargão.">
+        <DCArtboard id="ab-1" label="01 · Splash" width={375} height={812}><ScreenSplash/></DCArtboard>
+        <DCArtboard id="ab-2" label="02 · Login / Cadastro" width={375} height={812}><ScreenLogin/></DCArtboard>
+        <DCArtboard id="ab-3" label="03 · Onboarding · Boas-vindas" width={375} height={812}><ScreenOnboarding/></DCArtboard>
+        <DCArtboard id="ab-3b" label="04 · Onboarding · Conectar" width={375} height={812}><ScreenOnboardingConnect/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="home" title="Início — a tela mais importante" subtitle='"Vai dar até o fim do mês?" responde antes mesmo da Maria perguntar.'>
+        <DCArtboard id="ab-4" label="05 · Início (Home)" width={375} height={812}><ScreenHome active="home"/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="contas" title="Contas — bancos, cartões, investimentos" subtitle="Três abas, sempre uma resposta de cada vez.">
+        <DCArtboard id="ab-5a" label="06 · Contas · Bancos"        width={375} height={812}><ScreenContas tab="bancos" active="contas"/></DCArtboard>
+        <DCArtboard id="ab-5b" label="06 · Contas · Cartões"       width={375} height={812}><ScreenContas tab="cartoes" active="contas"/></DCArtboard>
+        <DCArtboard id="ab-5c" label="06 · Contas · Investimentos" width={375} height={812}><ScreenContas tab="invest"  active="contas"/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="add" title="Adicionar transação" subtitle="Modal fullscreen. Valor gigante, categoria visual, uma decisão por linha.">
+        <DCArtboard id="ab-6a" label="07 · Saiu (gasto)"      width={375} height={812}><ScreenAdd kind="out"/></DCArtboard>
+        <DCArtboard id="ab-6b" label="07 · Entrou (receita)"  width={375} height={812}><ScreenAdd kind="in"/></DCArtboard>
+        <DCArtboard id="ab-6c" label="07 · Transferiu"        width={375} height={812}><ScreenAdd kind="mov"/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="gastos" title="Gastos — histórico e análise" subtitle="Resumo do mês, pizza por categoria, lista por dia.">
+        <DCArtboard id="ab-7" label="08 · Gastos"             width={375} height={812}><ScreenGastos active="gastos"/></DCArtboard>
+        <DCArtboard id="ab-8" label="09 · Detalhe (drawer)"   width={375} height={812}><ScreenDetail active="gastos"/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="eu" title="Eu — perfil, IA e plano">
+        <DCArtboard id="ab-9"  label="10 · Eu (perfil)"        width={375} height={812}><ScreenEu active="eu"/></DCArtboard>
+        <DCArtboard id="ab-10" label="11 · Kitamo IA · Dicas"  width={375} height={812}><ScreenIA active="eu"/></DCArtboard>
+        <DCArtboard id="ab-10b" label="12 · Kitamo IA · Chat"  width={375} height={812}><ScreenIAChat active="eu"/></DCArtboard>
+        <DCArtboard id="ab-11" label="13 · Planos"             width={375} height={812}><ScreenPlanos/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="settings" title="Configurações — Categorias, Metas, Segurança" subtitle="Toda opção do menu &quot;Eu&quot; abre uma tela inteira, dedicada.">
+        <DCArtboard id="ab-cat"  label="14 · Categorias"  width={375} height={812}><ScreenCategorias/></DCArtboard>
+        <DCArtboard id="ab-meta" label="15 · Metas"       width={375} height={812}><ScreenMetas/></DCArtboard>
+        <DCArtboard id="ab-sec"  label="16 · Segurança"   width={375} height={812}><ScreenSeguranca/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="extras" title="Avisos & lançar investimento">
+        <DCArtboard id="ab-not"   label="17 · Notificações"      width={375} height={812}><ScreenNotif active="home"/></DCArtboard>
+        <DCArtboard id="ab-inv"   label="18 · Novo investimento" width={375} height={812}><ScreenAddInvest/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="states" title="Estados especiais" subtitle="Vazio, erro e loading — sempre com tom de voz amigo.">
+        <DCArtboard id="ab-empty" label="13 · Estado vazio" width={375} height={812}><ScreenEmpty active="gastos"/></DCArtboard>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -11,6 +11,10 @@ class EnsureUserNotDisabled
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->routeIs('site.*')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user && $user->disabled_at) {
@@ -27,4 +31,3 @@ class EnsureUserNotDisabled
         return $next($request);
     }
 }
-

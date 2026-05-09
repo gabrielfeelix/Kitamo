@@ -18,12 +18,14 @@ class Category extends Model
         'color',
         'icon',
         'is_default',
+        'budget_limit',
     ];
 
     protected function casts(): array
     {
         return [
             'is_default' => 'boolean',
+            'budget_limit' => 'decimal:2',
         ];
     }
 
