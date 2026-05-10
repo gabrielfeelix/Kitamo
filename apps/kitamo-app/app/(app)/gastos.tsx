@@ -2,12 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import Svg, { Circle, G, Path } from 'react-native-svg';
 
 import { categoriesApi, dashboardApi, transactionsApi } from '@/api/endpoints';
 import { CatIcon } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { Screen, useBottomTabPadding } from '@/components/Screen';
+import { SpendingDonut } from '@/components/SpendingDonut';
 import { TabBar } from '@/components/TabBar';
 import { monthRange } from '@/lib/format';
 import { navigateToTab } from '@/lib/navigation';
@@ -104,7 +104,10 @@ export default function Gastos(): React.JSX.Element {
                 </View>
 
                 {summary.data?.spending_by_category && summary.data.spending_by_category.length > 0 ? (
-                    <PieCard slices={summary.data.spending_by_category.slice(0, 6)} />
+                    <SpendingDonut
+                        slices={summary.data.spending_by_category.slice(0, 6)}
+                        style={{ marginHorizontal: 16, marginTop: 14 }}
+                    />
                 ) : null}
 
                 <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 18 }}>
@@ -226,93 +229,6 @@ function SumCard({ label, value, color, highlight }: { label: string; value: num
             <Text style={{ fontSize: 18, fontWeight: '800', marginTop: 3, letterSpacing: -0.4, color: highlight ? '#fff' : KITAMO.ink }}>
                 R$ {Math.abs(value).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </Text>
-        </View>
-    );
-}
-
-type Slice = {
-    category_id: number | null;
-    category_name: string;
-    category_color: string | null;
-    total: number;
-    percentage: number;
-};
-
-function PieCard({ slices }: { slices: Slice[] }): React.JSX.Element {
-    const total = slices.reduce((s, x) => s + x.total, 0);
-    const SIZE = 168;
-    const RADIUS = 78;
-    const STROKE = 24;
-    const C = 2 * Math.PI * RADIUS;
-
-    let cumulative = 0;
-    const palette = ['#33D6C5', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#94A3B8'];
-
-    return (
-        <View
-            style={{
-                marginHorizontal: 16,
-                marginTop: 14,
-                paddingVertical: 18,
-                paddingHorizontal: 18,
-                backgroundColor: '#fff',
-                borderRadius: 18,
-                shadowColor: '#0F172A',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.04,
-                shadowRadius: 8,
-                elevation: 1,
-            }}
-        >
-            <Text style={{ fontSize: 13, fontWeight: '700', color: KITAMO.ink, marginBottom: 14 }}>Onde foi sua grana?</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
-                    <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-                        <G rotation={-90} originX={SIZE / 2} originY={SIZE / 2}>
-                            <Circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} stroke={KITAMO.line2} strokeWidth={STROKE} fill="none" />
-                            {slices.map((slice, i) => {
-                                const color = slice.category_color ?? palette[i % palette.length];
-                                const length = total > 0 ? (slice.total / total) * C : 0;
-                                const offset = total > 0 ? (cumulative / total) * C : 0;
-                                cumulative += slice.total;
-                                return (
-                                    <Circle
-                                        key={`${slice.category_id ?? 'none'}-${i}`}
-                                        cx={SIZE / 2}
-                                        cy={SIZE / 2}
-                                        r={RADIUS}
-                                        stroke={color}
-                                        strokeWidth={STROKE}
-                                        strokeDasharray={`${length} ${C - length}`}
-                                        strokeDashoffset={-offset}
-                                        fill="none"
-                                        strokeLinecap="butt"
-                                    />
-                                );
-                            })}
-                        </G>
-                    </Svg>
-                    <View style={{ position: 'absolute', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 11, color: KITAMO.muted, fontWeight: '700' }}>TOTAL GASTO</Text>
-                        <Text style={{ fontSize: 16, fontWeight: '800', color: KITAMO.ink, marginTop: 2 }}>
-                            R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </Text>
-                    </View>
-                </View>
-                <View style={{ flex: 1, marginLeft: 14 }}>
-                    {slices.slice(0, 5).map((s, i) => (
-                        <View key={`legend-${i}`} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: s.category_color ?? palette[i % palette.length], marginRight: 8 }} />
-                            <Text style={{ fontSize: 12, fontWeight: '600', color: KITAMO.ink, flex: 1 }} numberOfLines={1}>
-                                {s.category_name}
-                            </Text>
-                            <Text style={{ fontSize: 11, color: KITAMO.muted, fontWeight: '700', marginLeft: 4 }}>
-                                {Math.round(s.percentage)}%
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
         </View>
     );
 }

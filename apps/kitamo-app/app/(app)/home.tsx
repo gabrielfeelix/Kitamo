@@ -7,6 +7,7 @@ import { accountsApi, dashboardApi } from '@/api/endpoints';
 import { BankAvatar, CatIcon } from '@/components/Avatar';
 import { Icon, type IconName } from '@/components/Icon';
 import { Screen, useBottomTabPadding } from '@/components/Screen';
+import { SpendingDonut } from '@/components/SpendingDonut';
 import { TabBar } from '@/components/TabBar';
 import { formatBRLNumber } from '@/lib/format';
 import { greetingByHour } from '@/lib/format';
@@ -114,6 +115,13 @@ export default function Home(): React.JSX.Element {
                         </Text>
                     </Text>
                 </View>
+
+                {summary.data?.spending_by_category && summary.data.spending_by_category.length > 0 ? (
+                    <SpendingDonut
+                        slices={summary.data.spending_by_category.slice(0, 6)}
+                        style={{ marginHorizontal: 16, marginTop: 16 }}
+                    />
+                ) : null}
 
                 <View style={{ paddingHorizontal: 16, marginTop: 22 }}>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -229,6 +237,37 @@ export default function Home(): React.JSX.Element {
                     </Pressable>
                 </View>
             </ScrollView>
+
+            <Pressable
+                onPress={() => router.push('/ia-chat')}
+                style={({ pressed }) => ({
+                    position: 'absolute',
+                    right: 18,
+                    bottom: bottomPad + 18,
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    backgroundColor: KITAMO.brand,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: KITAMO.brand,
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.45,
+                    shadowRadius: 18,
+                    elevation: 10,
+                    transform: [{ scale: pressed ? 0.94 : 1 }],
+                })}
+                hitSlop={8}
+                accessibilityLabel="Abrir Kit, sua ajudante de finanças"
+            >
+                <View style={{ position: 'absolute', top: -6, right: -6, paddingHorizontal: 7, height: 18, borderRadius: 10, backgroundColor: KITAMO.warn, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: '#fff', fontSize: 9, fontWeight: '800', letterSpacing: 0.4 }}>IA</Text>
+                </View>
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name="bulb" size={26} color="#fff" />
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800', marginTop: 1, letterSpacing: 0.4 }}>KIT</Text>
+                </View>
+            </Pressable>
 
             <TabBar active="home" onTab={navigateToTab} />
         </Screen>
