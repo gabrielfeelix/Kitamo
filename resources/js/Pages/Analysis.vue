@@ -156,8 +156,12 @@ const formatBRL = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
+// Resgate de investimento também não é receita: é dinheiro que já era do
+// usuário voltando para a conta. Simétrico ao aporte no lado da despesa.
 const receitas = computed(() =>
-    scopedEntries.value.filter((e) => e.kind === 'income' && !isTransferencia(e)).reduce((acc, e) => acc + e.amount, 0),
+    scopedEntries.value
+        .filter((e) => e.kind === 'income' && !isTransferencia(e) && !isAporteInvestimento(e))
+        .reduce((acc, e) => acc + e.amount, 0),
 );
 // Quitação de fatura não é gasto novo: as compras que a compõem já foram
 // contadas como despesa. Incluí-la dobrava o total do período.
@@ -174,8 +178,16 @@ const isTransferencia = (entry: { tags?: unknown }) => {
     return tags.includes('transferencia');
 };
 
+// Aporte em investimento não é gasto: o dinheiro continua sendo do usuário,
+// só mudou de lugar — saiu da conta e virou patrimônio. Contá-lo como despesa
+// inventaria um gasto que nunca existiu.
+const isAporteInvestimento = (entry: { tags?: unknown }) => {
+    const tags = Array.isArray(entry.tags) ? (entry.tags as string[]) : [];
+    return tags.includes('aporte-investimento');
+};
+
 const contaComoGasto = (entry: { tags?: unknown; categoryLabel?: string | null }) =>
-    !isQuitacaoFatura(entry) && !isTransferencia(entry);
+    !isQuitacaoFatura(entry) && !isTransferencia(entry) && !isAporteInvestimento(entry);
 
 const despesas = computed(() =>
     scopedEntries.value.filter((e) => e.kind === 'expense' && contaComoGasto(e)).reduce((acc, e) => acc + e.amount, 0),

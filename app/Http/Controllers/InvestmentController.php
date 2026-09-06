@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Investment;
 use App\Models\InvestmentTransaction;
-use App\Models\Tag;
+use App\Models\Account;
 use App\Models\Transaction;
 use App\Support\KitamoBootstrap;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class InvestmentController extends Controller
@@ -125,9 +124,12 @@ class InvestmentController extends Controller
                     'status' => $ehAporte ? 'paid' : 'received',
                     'transaction_date' => $data['occurred_on'],
                     'data_pagamento' => $data['occurred_on'],
+                    // Coluna JSON `tags`, e não a relação `tagsRelation()`: é
+                    // onde `quitacao-fatura` vive e onde os relatórios olham.
+                    'tags' => [self::TAG_APORTE],
                 ]);
 
-                $this->marcarComTagDeAporte($transaction);
+                $this->ajustarSaldoDaConta($data['account_id'], $ehAporte ? -$data['amount'] : $data['amount']);
                 $transactionId = $transaction->id;
             }
 
@@ -153,17 +155,20 @@ class InvestmentController extends Controller
         });
     }
 
-    private function marcarComTagDeAporte(Transaction $transaction): void
+    /**
+     * Aportar tira dinheiro da conta; resgatar devolve. Sem isto o saldo
+     * exibido ignoraria a movimentação que a própria tela acabou de criar.
+     */
+    private function ajustarSaldoDaConta(int $accountId, float $delta): void
     {
-        // O model Tag usa `nome`/`cor` (português), tem chave UUID não
-        // incremental — daí o id explícito — e a relação em Transaction
-        // chama-se `tagsRelation()`, não `tags()`.
-        $tag = Tag::firstOrCreate(
-            ['user_id' => $transaction->user_id, 'nome' => self::TAG_APORTE],
-            ['id' => (string) Str::uuid(), 'cor' => '#8B5CF6'],
-        );
+        $conta = Account::query()->where('id', $accountId)->lockForUpdate()->first();
 
-        $transaction->tagsRelation()->syncWithoutDetaching([$tag->id]);
+        if (!$conta) {
+            return;
+        }
+
+        $conta->current_balance = (float) ($conta->current_balance ?? 0) + $delta;
+        $conta->save();
     }
 
     private function autorizar(Request $request, Investment $investment): void
