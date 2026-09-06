@@ -106,6 +106,13 @@ const faltam = (goal: Goal) => Math.max(0, goal.target - goal.current);
 const concluida = (goal: Goal) => goal.target > 0 && goal.current >= goal.target;
 
 /**
+ * Meta sem valor-alvo definido. Acontece com meta criada pela metade, e sem
+ * tratamento o card dizia "R$ 150 de R$ 0 · Faltam R$ 0" a 0% — três
+ * informações que se contradizem.
+ */
+const semAlvo = (goal: Goal) => !goal.target || goal.target <= 0;
+
+/**
  * Ritmo médio de depósito nos últimos 90 dias, projetado sobre o que falta.
  * É a pergunta que a pessoa realmente faz olhando uma meta — "quando chego?" —
  * e a resposta já estava nos depósitos, só não era mostrada.
@@ -276,11 +283,13 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                 v-for="goal in goals"
                 :key="goal.id"
                 :href="route('goals.show', { goalId: goal.id })"
-                class="group relative overflow-hidden rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-slate-300/80"
+                class="group block rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-lg hover:ring-slate-300/80"
             >
-                <div class="absolute right-0 top-0 -mr-6 -mt-6 h-32 w-32 rounded-full bg-slate-50 transition-transform group-hover:scale-150"></div>
-                
-                <div class="relative flex h-full flex-col justify-between gap-5">
+                <!-- `block` é essencial: <Link> vira <a>, que é inline por
+                     padrão — sem isso o flex interno colapsava no mobile e o
+                     conteúdo se sobrepunha. A bolha decorativa saiu junto:
+                     transbordava por cima dos números em telas estreitas. -->
+                <div class="flex h-full flex-col justify-between gap-5">
                     <div class="flex items-start gap-4">
                         <!-- O anel carrega o progresso e o ícone ao mesmo tempo:
                              o percentual deixa de ser legenda perdida no rodapé. -->
@@ -305,7 +314,8 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                                 class="relative text-sm font-bold tabular-nums"
                                 :class="goal.status === 'late' && !concluida(goal) ? 'text-orange-600' : 'text-slate-900'"
                             >
-                                {{ pct(goal) }}<span class="text-[10px]">%</span>
+                                <span v-if="semAlvo(goal)" class="text-slate-300">—</span>
+                                <template v-else>{{ pct(goal) }}<span class="text-[10px]">%</span></template>
                             </span>
                         </span>
 
@@ -319,6 +329,12 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                                     class="shrink-0 rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white"
                                 >
                                     Conquistada
+                                </span>
+                                <span
+                                    v-else-if="semAlvo(goal)"
+                                    class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500"
+                                >
+                                    Sem alvo
                                 </span>
                                 <span
                                     v-else
@@ -335,14 +351,20 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
 
                     <div>
                         <!-- Guardado é o herói; a meta vira referência ao lado. -->
-                        <div class="flex items-baseline gap-2">
+                        <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                             <span class="text-3xl font-bold tracking-tight tabular-nums text-slate-900">
                                 {{ formatMoney(goal.current) }}
                             </span>
-                            <span class="text-sm font-medium text-slate-400">de {{ formatMoney(goal.target) }}</span>
+                            <span v-if="!semAlvo(goal)" class="text-sm font-medium text-slate-400">
+                                de {{ formatMoney(goal.target) }}
+                            </span>
+                            <span v-else class="text-sm font-medium text-slate-400">guardado</span>
                         </div>
 
-                        <p v-if="concluida(goal)" class="mt-2 text-sm font-semibold text-emerald-600">
+                        <p v-if="semAlvo(goal)" class="mt-2 text-sm text-slate-500">
+                            Defina um valor-alvo para acompanhar o progresso.
+                        </p>
+                        <p v-else-if="concluida(goal)" class="mt-2 text-sm font-semibold text-emerald-600">
                             Meta atingida — você chegou lá.
                         </p>
                         <p v-else class="mt-2 text-sm text-slate-500">
