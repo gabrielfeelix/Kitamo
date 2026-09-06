@@ -41,70 +41,54 @@ O `deploy-dev.yml` **aborta** em dois casos, de propósito:
 O `.env` do dev vive só no servidor e está no `--exclude` do rsync — o
 deploy nunca o sobrescreve.
 
-## Setup (uma vez)
+## Setup — JÁ FEITO (06/09/2026)
 
-> **Os passos 1 e 2 só saem pelo painel.** Foi testado em 06/09/2026, com
-> SSH e as credenciais reais do MySQL em mãos:
->
-> - `CREATE DATABASE u626119115_Kitamo_dev` roda **sem erro e sem efeito** —
->   o `SHOW DATABASES` seguinte não lista o banco. Em hospedagem
->   compartilhada quem registra o banco na conta e concede o GRANT é o
->   painel.
-> - `mkdir ~/domains/dev.kitamo.com.br/public_html` funciona, mas cria só
->   uma pasta. Faltam o registro **DNS** e o **vhost**, que não moram no
->   filesystem — `dev.kitamo.com.br` não resolve (HTTP 000).
-> - Não há CLI do painel na máquina (`hcli`, `hostinger-cli`).
->
-> Os passos 3 e 4 são automatizáveis e podem ser feitos por SSH.
-
-### 1. Criar o subdomínio — painel da Hostinger
-
-`hPanel → Domínios → Subdomínios` → criar `dev` em `kitamo.com.br`.
-Isso cria `~/domains/dev.kitamo.com.br/public_html`.
-
-### 2. Criar o banco — painel da Hostinger
-
-`hPanel → Bancos de dados → MySQL` → criar `u626119115_Kitamo_dev`,
-marcando o usuário **`u626119115_gabriel`** — o mesmo do banco de
-produção, para a senha continuar a mesma.
-
-### 3. Copiar os dados de produção para o dev
-
-Pelo SSH, num comando só (**atenção ao limite de 500 conexões/hora**):
+Tudo montado pela **API oficial da Hostinger**, sem painel. O token está em
+`radar-ofertas/.env` (`HOSTINGER_TOKEN`).
 
 ```bash
-ssh hostinger-kitamo
-cd ~/domains/kitamo.com.br/public_html
-mysqldump -h srv1722.hstgr.io -u USUARIO -p u626119115_Kitamo \
-  | mysql -h srv1722.hstgr.io -u USUARIO -p u626119115_Kitamo_dev
+# criar o subdomínio (cria vhost + DNS automaticamente)
+curl -X POST https://developers.hostinger.com/api/hosting/v1/websites \
+  -H "Authorization: Bearer $HOSTINGER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"domain":"dev.kitamo.com.br","order_id":1008401284}'
 ```
 
-### 4. Criar o `.env` do dev
+`order_id` sai de `GET /api/hosting/v1/websites`. Outros endpoints úteis:
+`GET /api/domains/v1/portfolio`, `GET /api/dns/v1/zones/{dominio}`.
+
+### O banco é SQLite, e por quê
+
+Não há endpoint de banco na API, e o MySQL também não resolve: o usuário
+`u626119115_gabriel` tem `GRANT ALL` só em `u626119115_Kitamo` e `USAGE`
+global — sem `CREATE`. Por isso `CREATE DATABASE` é aceito e descartado em
+silêncio.
+
+SQLite dá o mesmo isolamento sem depender do painel:
+
+```
+DB_CONNECTION=sqlite
+DB_DATABASE=/home/u626119115/domains/dev.kitamo.com.br/public_html/database/dev.sqlite
+```
+
+Verificado em 06/09/2026: dev em `sqlite` (0 registros), produção em `mysql`
+(19 usuários, 606 transações) — intacta.
+
+O banco do dev nasce **vazio**. Para popular, use seeders ou importe um OFX
+pela própria tela.
+
+## Deploy
+
+O GitHub Actions **falha de forma intermitente**: o Hostinger bloqueia o IP
+do runner (`ssh: connect to host 147.79.84.203 port 65002: Connection timed
+out`). Da máquina local o SSH funciona.
 
 ```bash
-cp ~/domains/kitamo.com.br/public_html/.env \
-   ~/domains/dev.kitamo.com.br/public_html/.env
+./scripts/deploy-dev.sh
 ```
 
-E editar **três** linhas:
-
-```
-APP_ENV=staging
-APP_URL=https://dev.kitamo.com.br
-DB_DATABASE=u626119115_Kitamo_dev
-```
-
-`APP_KEY` pode continuar a mesma — as sessões são independentes por domínio.
-
-### 5. Apontar o document root
-
-O Laravel serve de `public/`. Se o subdomínio servir a raiz do projeto,
-o site não sobe. Mesma configuração que já existe em produção
-(`.htaccess` ou o document root no painel).
-
-### 6. Disparar o primeiro deploy
-
-`Actions → Deploy DEV → Run workflow`, ou qualquer push em `quitar`.
+O script preserva `.env` e `database/dev.sqlite` no rsync — sem isso, cada
+deploy apagaria a configuração e o banco do dev.
 
 ## Fluxo de trabalho
 

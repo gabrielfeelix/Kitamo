@@ -42,8 +42,14 @@ jobs:
           chmod 600 ~/.ssh/key
       - name: Abortar se o subdomínio não existir
         run: |
+          # Separa "SSH não conectou" de "pasta não existe" — tratar os dois
+          # como a mesma coisa já mascarou um bloqueio de IP do runner.
+          if ! ssh $SSH_OPTS $REMOTE "echo ok" >/dev/null 2>&1; then
+            echo "::error::SSH não conectou em $REMOTE:65002. O Hostinger costuma bloquear o IP do runner. Faça o deploy manual: scripts/deploy-dev.sh"
+            exit 1
+          fi
           ssh $SSH_OPTS $REMOTE "test -d $PROJECT_DIR" || {
-            echo "::error::$PROJECT_DIR não existe. Crie o subdomínio dev.kitamo.com.br no painel da Hostinger. Ver docs/AMBIENTE-DEV.md"
+            echo "::error::$PROJECT_DIR não existe no servidor. Ver docs/AMBIENTE-DEV.md"
             exit 1
           }
       - name: Deploy
