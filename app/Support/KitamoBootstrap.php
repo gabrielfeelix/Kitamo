@@ -75,7 +75,7 @@ class KitamoBootstrap
             ->orderByDesc('id')
             ->get();
 
-        $goals = Goal::with('deposits')
+        $goals = Goal::with(['deposits', 'investment'])
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
@@ -336,11 +336,18 @@ class KitamoBootstrap
         $due = $goal->due_date ? Carbon::parse($goal->due_date) : null;
         $dueLabel = $due ? sprintf('%s %s', $this->monthShort($due), $due->year) : '';
 
+        // Meta lastreada por investimento acompanha o valor da posição: o
+        // progresso sobe e desce com o mercado, não só com depósitos.
+        $investimento = $goal->investment_id ? $goal->investment : null;
+        $atual = $investimento ? (float) $investimento->current_value : (float) $goal->current_amount;
+
         return [
             'id' => (string) $goal->id,
             'title' => $goal->title,
             'due' => $dueLabel,
-            'current' => (float) $goal->current_amount,
+            'investmentId' => $goal->investment_id ? (string) $goal->investment_id : null,
+            'investmentName' => $investimento?->name,
+            'current' => $atual,
             'target' => (float) $goal->target_amount,
             'status' => $goal->status ?? 'on_track',
             'icon' => $goal->icon ?? 'home',

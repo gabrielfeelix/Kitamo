@@ -346,6 +346,9 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                             </div>
 
                             <p class="mt-1 text-xs font-medium text-slate-400">Prazo: {{ goal.due }}</p>
+                            <p v-if="goal.investmentName" class="mt-1 text-xs font-medium text-emerald-600">
+                                Acompanha {{ goal.investmentName }}
+                            </p>
                         </div>
                     </div>
 

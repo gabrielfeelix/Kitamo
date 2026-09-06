@@ -19,6 +19,7 @@ class GoalController extends Controller
             'due_date' => ['nullable', 'date'],
             'icon' => ['nullable', 'string', 'max:64'],
             'term' => ['nullable', 'string', 'max:16'],
+            'investment_id' => ['nullable', 'integer', 'exists:investments,id'],
         ]);
 
         $goal = Goal::create([
@@ -30,11 +31,12 @@ class GoalController extends Controller
             'status' => 'on_track',
             'icon' => $data['icon'] ?? 'home',
             'term' => $data['term'] ?? null,
+            'investment_id' => $data['investment_id'] ?? null,
             'tags' => [],
         ]);
 
         return response()->json([
-            'goal' => app(KitamoBootstrap::class)->goal($goal->load('deposits')),
+            'goal' => app(KitamoBootstrap::class)->goal($goal->load(['deposits', 'investment'])),
         ]);
     }
 
@@ -51,6 +53,7 @@ class GoalController extends Controller
             'due_date' => ['nullable', 'date'],
             'icon' => ['nullable', 'string', 'max:64'],
             'term' => ['nullable', 'string', 'max:16'],
+            'investment_id' => ['nullable', 'integer', 'exists:investments,id'],
         ]);
 
         $goal->update([
@@ -59,10 +62,13 @@ class GoalController extends Controller
             'due_date' => $data['due_date'] ?? null,
             'icon' => $data['icon'] ?? $goal->icon,
             'term' => $data['term'] ?? $goal->term,
+            // array_key_exists e não ?? : enviar null aqui é como se desfaz o
+            // vínculo com o investimento.
+            'investment_id' => array_key_exists('investment_id', $data) ? $data['investment_id'] : $goal->investment_id,
         ]);
 
         return response()->json([
-            'goal' => app(KitamoBootstrap::class)->goal($goal->load('deposits')),
+            'goal' => app(KitamoBootstrap::class)->goal($goal->load(['deposits', 'investment'])),
         ]);
     }
 

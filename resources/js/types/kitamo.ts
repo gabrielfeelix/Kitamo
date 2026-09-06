@@ -45,6 +45,9 @@ export type Goal = {
     id: string;
     title: string;
     due: string;
+    /** Quando presente, o progresso segue o valor do investimento. */
+    investmentId?: string | null;
+    investmentName?: string | null;
     current: number;
     target: number;
     status: 'on_track' | 'ahead' | 'late' | string;
