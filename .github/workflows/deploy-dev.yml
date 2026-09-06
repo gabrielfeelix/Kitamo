@@ -1,0 +1,88 @@
+name: Deploy DEV
+# Espelha o deploy.yml de produção, mas para a branch `quitar` e o
+# subdomínio dev.kitamo.com.br, com banco próprio.
+#
+# Diferenças que importam:
+#  - PROJECT_DIR aponta para o subdomínio, não para o public_html de produção
+#  - não roda `migrate --force` sem o .env de dev existir no servidor
+#  - o .env do dev vive SÓ no servidor (não passa pelo rsync, ver --exclude)
+on:
+  push:
+    branches: [quitar]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_OPTS: "-i ~/.ssh/key -p 65002 -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=6"
+      REMOTE: "u626119115@147.79.84.203"
+      PROJECT_DIR: "~/domains/dev.kitamo.com.br/public_html"
+      PHP_BIN: "/opt/alt/php83/usr/bin/php"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/key
+          chmod 600 ~/.ssh/key
+      - name: Abortar se o subdomínio não existir
+        run: |
+          ssh $SSH_OPTS $REMOTE "test -d $PROJECT_DIR" || {
+            echo "::error::$PROJECT_DIR não existe. Crie o subdomínio dev.kitamo.com.br no painel da Hostinger. Ver docs/AMBIENTE-DEV.md"
+            exit 1
+          }
+      - name: Deploy
+        run: |
+          for attempt in 1 2 3; do
+            echo "Deploy attempt $attempt/3..."
+            if rsync -avz --timeout=60 -e "ssh $SSH_OPTS" \
+              --exclude='.git' --exclude='node_modules' --exclude='.env' \
+              ./ $REMOTE:$PROJECT_DIR; then
+              echo "Deploy succeeded"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Deploy failed after 3 attempts"
+          exit 1
+      - name: Verify build assets exist
+        run: |
+          ssh $SSH_OPTS $REMOTE \
+            "cd $PROJECT_DIR && test -f public/build/manifest.json && echo 'Assets OK'"
+      - name: Fix permissions and create symlink
+        run: |
+          ssh $SSH_OPTS $REMOTE \
+            "cd $PROJECT_DIR && chmod -R 775 storage bootstrap/cache && mkdir -p storage/app/public/receipts && rm -f public/storage && ln -s ../storage/app/public public/storage && echo 'Permissions OK'"
+      - name: Abortar se o .env de dev não existir
+        run: |
+          ssh $SSH_OPTS $REMOTE "test -f $PROJECT_DIR/.env" || {
+            echo "::error::Falta o .env em $PROJECT_DIR. Sem ele o migrate rodaria no banco de PRODUÇÃO. Ver docs/AMBIENTE-DEV.md"
+            exit 1
+          }
+      - name: Conferir que o banco NÃO é o de produção
+        run: |
+          ssh $SSH_OPTS $REMOTE "grep -q 'DB_DATABASE=u626119115_Kitamo_dev' $PROJECT_DIR/.env" || {
+            echo "::error::O .env do dev não aponta para u626119115_Kitamo_dev. Abortado antes de migrar."
+            exit 1
+          }
+      - name: Run migrations + cache
+        run: |
+          ssh $SSH_OPTS $REMOTE "set -e; cd $PROJECT_DIR; \
+            $PHP_BIN artisan migrate --force; \
+            $PHP_BIN artisan optimize:clear; \
+            $PHP_BIN artisan config:cache; \
+            $PHP_BIN artisan route:cache; \
+            $PHP_BIN artisan view:cache; \
+            echo 'Deploy DEV complete'"

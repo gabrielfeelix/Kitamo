@@ -8,6 +8,7 @@ escreveu só planejou.**
 
 ## Leia nesta ordem
 
+0. `docs/AMBIENTE-DEV.md` — **onde trabalhar.** Branch `quitar`, nunca `main`.
 1. `docs/superpowers/specs/2026-09-06-kitamo-quitar-design.md` — **o spec
    aprovado.** É a fonte da verdade do que construir.
 2. `PROPOSTA-PIERRE.md` — análise do concorrente, identidade, IA sem caixa,
@@ -39,9 +40,20 @@ escreveu só planejou.**
 Personagem e paleta **foram decididos** em 06/09/2026 —
 ver `docs/DESIGN-KITAMO.md`. Não reabrir.
 
+## Onde trabalhar (leia antes de dar push)
+
+**A branch do pivô é `quitar`. Nunca faça push em `main`.**
+
+`main` faz deploy automático em kitamo.com.br, que continua sendo a Kitamo
+antiga, com os dados reais do Gabriel. `quitar` faz deploy em
+dev.kitamo.com.br. Produção só muda por merge deliberado.
+
+Detalhe completo (setup, travas, fluxo): `docs/AMBIENTE-DEV.md`.
+
 ## Estado do código
 
-- `main` em `origin`, tag `v1-gestao` no commit anterior a este handoff.
+- Branch de trabalho: `quitar`. `main` congelada na Kitamo antiga.
+- Tag `v1-gestao` no commit anterior ao início do pivô.
 - Importação OFX/CSV funcional com dedup por `FITID` (`73d7d70`), tela em
   `Settings/Importar` (`777a3e9`).
 - `/api/ai/chat` e `/api/ai/tips` existem no backend, **sem tela**.
@@ -83,4 +95,5 @@ Itens 0–2 são backend puro com teste. Itens 3–8 aplicam a paleta de
 - Quer ver tela, não relatório. Prefere card clicável a aba.
 - Vai testar com 10 pessoas antes de qualquer app nativo.
 - Sem caixa: nada que gere custo mensal antes de receita.
-- Pediu documentação de tudo e commit sempre. Push ao fim de cada bloco.
+- Pediu documentação de tudo e commit sempre. Push ao fim de cada bloco —
+  **em `quitar`**, que publica no dev.
