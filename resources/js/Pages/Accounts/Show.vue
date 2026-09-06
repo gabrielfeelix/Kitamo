@@ -10,6 +10,7 @@ import NewAccountModal from '@/Components/NewAccountModal.vue';
 import WalletEditModal from '@/Components/WalletEditModal.vue';
 import MonthNavigator from '@/Components/MonthNavigator.vue';
 import { requestJson } from '@/lib/kitamoApi';
+import { parseISODate } from '@/lib/dates';
 import InstitutionAvatar from '@/Components/InstitutionAvatar.vue';
 import { getBankSvgPath } from '@/lib/bankLogos';
 import { useIsMobile } from '@/composables/useIsMobile';
@@ -135,7 +136,9 @@ const entriesForMonth = computed(() => {
     if (month == null || year == null) return [];
     const filtered = entriesForAccount.value.filter((e) => {
         if (!e.transactionDate) return true;
-        const d = new Date(e.transactionDate);
+        // parseISODate evita o shift de fuso: new Date('2026-09-01') é UTC
+        // e, no Brasil, volta para 31/08 — transações do dia 1º caíam no mês anterior.
+        const d = parseISODate(e.transactionDate) ?? new Date(e.transactionDate);
         return d.getMonth() === month && d.getFullYear() === year;
     });
     // Sort in descending order (most recent first)

@@ -214,13 +214,11 @@ Route::get('/accounts/my/{accountKey}', function (string $accountKey) {
     ]);
 })->middleware(['auth', 'verified'])->name('accounts.show');
 
-Route::get('/accounts/nubank', function () {
-    return Inertia::render('Accounts/Checking');
-})->middleware(['auth', 'verified'])->name('accounts.checking');
-
-Route::get('/accounts/nubank-card', function () {
-    return Inertia::render('Accounts/CreditCard');
-})->middleware(['auth', 'verified'])->name('accounts.card');
+// Rotas removidas: /accounts/nubank e /accounts/nubank-card serviam
+// protótipos (Accounts/Checking.vue e Accounts/CreditCard.vue) com nome de
+// banco hardcoded na URL, sem link em lugar nenhum do app. A segunda ainda
+// escolhia um cartão arbitrário do usuário e oferecia excluí-lo com todas as
+// transações. As telas reais são /accounts/{account} e /meus-cartoes.
 
 Route::get('/meus-cartoes', function () {
     return Inertia::render('CreditCards/MyCards');

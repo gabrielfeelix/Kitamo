@@ -5,6 +5,8 @@ export interface User {
     email_verified_at?: string;
     phone?: string;
     is_admin?: boolean;
+    plan_slug?: string | null;
+    theme?: string | null;
 }
 
 export type PageProps<

@@ -52,11 +52,43 @@ watch(darkMode, async (enabled, old) => {
     <Head title="Aparência & Moeda" />
 
     <component :is="Shell" v-bind="shellProps">
+        <!-- A lógica de tema e moeda já existia e funcionava (persiste no
+             servidor e no localStorage); só o template era um placeholder
+             dizendo "ainda vamos definir essa tela". -->
         <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
-            <div class="text-sm font-semibold text-slate-900">Aparência & Moeda</div>
-            <div class="mt-2 text-sm text-slate-500">Ainda vamos definir essa tela no mobile.</div>
+            <div class="text-base font-bold text-slate-900">Aparência</div>
+            <p class="mt-1 text-sm text-slate-500">Escolha como o Kitamo aparece para você.</p>
+
+            <label class="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 transition-colors hover:bg-slate-100">
+                <span class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
+                    </span>
+                    <span>
+                        <span class="block text-sm font-semibold text-slate-900">Modo escuro</span>
+                        <span class="block text-xs text-slate-500">Reduz o brilho em ambientes com pouca luz</span>
+                    </span>
+                </span>
+                <ToggleSwitch v-model="darkMode" />
+            </label>
+        </div>
+
+        <div class="mt-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+            <div class="text-base font-bold text-slate-900">Moeda</div>
+            <p class="mt-1 text-sm text-slate-500">Formato usado para exibir os valores.</p>
+
+            <label class="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 transition-colors hover:bg-slate-100">
+                <span class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-sm font-bold text-white">R$</span>
+                    <span>
+                        <span class="block text-sm font-semibold text-slate-900">Real brasileiro</span>
+                        <span class="block text-xs text-slate-500">Exibir valores em BRL</span>
+                    </span>
+                </span>
+                <ToggleSwitch v-model="brl" />
+            </label>
         </div>
     </component>
-
-    
 </template>

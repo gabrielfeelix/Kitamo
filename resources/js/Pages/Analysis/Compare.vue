@@ -207,13 +207,13 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
 
         <div class="mt-6 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200/60">
             <div class="flex items-center justify-between">
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Anterior" @click="shiftMonth(-1)">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 active:scale-95" aria-label="Anterior" @click="shiftMonth(-1)">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 18l-6-6 6-6" />
                     </svg>
                 </button>
                 <div class="text-sm font-semibold text-slate-900">{{ label }}</div>
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-50" aria-label="Próximo" @click="shiftMonth(1)">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 active:scale-95" aria-label="Próximo" @click="shiftMonth(1)">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 18l6-6-6-6" />
                     </svg>
@@ -222,7 +222,7 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
         </div>
 
         <div class="mt-6 grid grid-cols-2 gap-3">
-            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60">
                 <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ left.month }}</div>
                 <div class="mt-3 space-y-2 text-xs font-semibold">
                     <div class="flex items-center justify-between">
@@ -235,11 +235,15 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="text-slate-400">Total</div>
-                        <div class="text-emerald-600">+{{ formatMoney(left.total).replace('R$', 'R$') }}</div>
+                        <!-- Total negativo (mês no vermelho) era exibido com "+"; o sinal e a
+                             cor agora acompanham o valor real -->
+                        <div :class="left.total >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                            {{ left.total >= 0 ? '+' : '-' }}{{ formatMoney(Math.abs(left.total)).replace('R$', 'R$') }}
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60">
                 <div class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ right.month }}</div>
                 <div class="mt-3 space-y-2 text-xs font-semibold">
                     <div class="flex items-center justify-between">
@@ -252,13 +256,15 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="text-slate-400">Total</div>
-                        <div class="text-emerald-600">+{{ formatMoney(right.total).replace('R$', 'R$') }}</div>
+                        <div :class="right.total >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                            {{ right.total >= 0 ? '+' : '-' }}{{ formatMoney(Math.abs(right.total)).replace('R$', 'R$') }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-5 rounded-3xl bg-amber-50 p-5 shadow-sm ring-1 ring-amber-100">
+        <div class="mt-5 rounded-3xl bg-amber-50 p-5 shadow-sm ring-1 ring-amber-100 transition hover:ring-amber-200">
             <div class="flex gap-4">
                 <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -268,9 +274,13 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <div class="text-sm font-semibold text-slate-900">Você gastou {{ diffPct }}% a mais em {{ left.month }}</div>
+                    <!-- diffPct pode ser negativo (gastou menos); o texto dizia sempre
+                         "a mais" e exibia o percentual com sinal, invertendo o sentido -->
+                    <div class="text-sm font-semibold text-slate-900">
+                        Você gastou {{ Math.abs(diffPct) }}% {{ diffPct < 0 ? 'a menos' : 'a mais' }} em {{ left.month }}
+                    </div>
                     <div class="mt-1 text-sm font-semibold text-amber-700">
-                        {{ diffAbs >= 0 ? '+' : '-' }}{{ formatMoney(Math.abs(diffAbs)).replace('R$', 'R$') }} de aumento
+                        {{ diffAbs >= 0 ? '+' : '-' }}{{ formatMoney(Math.abs(diffAbs)).replace('R$', 'R$') }} de {{ diffAbs < 0 ? 'redução' : 'aumento' }}
                     </div>
                 </div>
             </div>
@@ -279,23 +289,25 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
         <div class="mt-7">
             <div class="text-base font-semibold text-slate-900">Despesas por categoria</div>
             <div class="mt-3 flex items-center justify-end gap-4 text-xs font-semibold">
-                <span class="inline-flex items-center gap-2 text-slate-400"><span class="h-2 w-2 rounded-full bg-slate-300"></span> Dez</span>
-                <span class="inline-flex items-center gap-2 text-slate-600"><span class="h-2 w-2 rounded-full bg-[#14B8A6]"></span> Jan</span>
+                <!-- Rótulos vêm dos meses realmente comparados; estavam fixos em Dez/Jan
+                     e mentiam sobre o que as barras representam -->
+                <span class="inline-flex items-center gap-2 text-slate-400"><span class="h-2 w-2 rounded-full bg-slate-300"></span> {{ right.month }}</span>
+                <span class="inline-flex items-center gap-2 text-slate-600"><span class="h-2 w-2 rounded-full bg-[#14B8A6]"></span> {{ left.month }}</span>
             </div>
 
-            <div class="mt-3 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+            <div class="mt-3 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-slate-300/60">
                 <div v-for="c in categories" :key="c.key" class="py-4 first:pt-0 last:pb-0">
                     <div class="text-sm font-semibold text-slate-900">{{ c.label }}</div>
                     <div class="mt-3 space-y-3">
                         <div class="flex items-center gap-3">
                             <div class="h-2 flex-1 rounded-full bg-slate-100">
-                                <div class="h-2 rounded-full bg-slate-300" :style="{ width: `${Math.round((c.b / maxCategory) * 100)}%` }"></div>
+                                <div class="h-2 rounded-full bg-slate-300 transition-all duration-500 ease-out" :style="{ width: `${Math.round((c.b / maxCategory) * 100)}%` }"></div>
                             </div>
                             <div class="w-16 text-right text-xs font-semibold text-slate-400">{{ formatMoney(c.b).replace('R$', 'R$') }}</div>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="h-2 flex-1 rounded-full bg-slate-100">
-                                <div class="h-2 rounded-full bg-[#14B8A6]" :style="{ width: `${Math.round((c.a / maxCategory) * 100)}%` }"></div>
+                                <div class="h-2 rounded-full bg-[#14B8A6] transition-all duration-500 ease-out" :style="{ width: `${Math.round((c.a / maxCategory) * 100)}%` }"></div>
                             </div>
                             <div class="w-16 text-right text-xs font-semibold text-slate-700">{{ formatMoney(c.a).replace('R$', 'R$') }}</div>
                         </div>
@@ -310,7 +322,7 @@ const onDesktopTransactionSave = async (payload: TransactionModalPayload) => {
                 <div
                     v-for="insight in insights"
                     :key="insight.key"
-                    class="flex items-center justify-between rounded-2xl px-4 py-4 text-sm font-semibold ring-1"
+                    class="flex items-center justify-between rounded-2xl px-4 py-4 text-sm font-semibold ring-1 transition duration-300"
                     :class="
                         insight.kind === 'up'
                             ? 'bg-red-50 text-red-500 ring-red-100'

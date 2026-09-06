@@ -93,6 +93,13 @@ const yearKey = (date: Date) => `${date.getFullYear()}`;
 
 const activeMonth = ref(new Date());
 const analysisPeriod = ref<'month' | '3_months' | 'year'>('month');
+// O seletor precisa de uma lista declarativa para o v-for do segmented control;
+// manter os rótulos aqui evita repetir a tipagem literal no template.
+const periodOptions: Array<{ value: 'month' | '3_months' | 'year'; label: string }> = [
+    { value: 'month', label: 'Mês' },
+    { value: '3_months', label: '3 meses' },
+    { value: 'year', label: 'Ano' },
+];
 const monthLabel = computed(() => {
     const month = new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(activeMonth.value).toUpperCase();
     return `${month} ${activeMonth.value.getFullYear()}`;
@@ -291,7 +298,10 @@ const topExpenses = computed(() => {
 
 const maxTopExpense = computed(() => Math.max(...topExpenses.value.map((e) => e.value), 1));
 const hasCategoryData = computed(() => categories.value.length > 0 && totalExpenses.value > 0);
-const hasTrendData = computed(() => lastMonths.value.length > 0);
+// lastMonths tem sempre 3 posições fixas, então checar o length nunca dá falso e
+// o empty state ficava inalcançável: quem não tem lançamentos via um gráfico
+// zerado com "0% vs mês anterior". Só há tendência se algum mês tiver valor.
+const hasTrendData = computed(() => lastMonths.value.some((m) => m.value > 0));
 const hasTopExpenses = computed(() => topExpenses.value.length > 0);
 
 const transactionOpen = ref(false);
@@ -410,6 +420,28 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                                 </svg>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Seletor de período: sem ele o analysisPeriod ficava travado em
+                     'month' e a lógica de 3 meses/ano do scopedEntries era inalcançável -->
+                <div class="rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200/60" :class="[isMobile ? 'mt-4' : '']" role="group" aria-label="Período da análise">
+                    <div class="grid grid-cols-3 gap-1">
+                        <button
+                            v-for="option in periodOptions"
+                            :key="option.value"
+                            type="button"
+                            class="rounded-xl px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition active:scale-95"
+                            :class="
+                                analysisPeriod === option.value
+                                    ? 'bg-[#14B8A6] text-white shadow-sm'
+                                    : 'text-slate-500 hover:bg-slate-50'
+                            "
+                            :aria-pressed="analysisPeriod === option.value"
+                            @click="analysisPeriod = option.value"
+                        >
+                            {{ option.label }}
+                        </button>
                     </div>
                 </div>
 

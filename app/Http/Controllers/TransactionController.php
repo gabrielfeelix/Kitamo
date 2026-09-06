@@ -704,8 +704,32 @@ class TransactionController extends Controller
         }
     }
 
+    /**
+     * Data em que a primeira parcela de uma compra no cartão entra em fatura.
+     *
+     * Era um no-op que devolvia a própria data da compra, ignorando o
+     * fechamento: comprar depois do fechamento jogava a parcela na fatura que
+     * já estava fechada, e o parcelamento inteiro ficava um mês adiantado.
+     */
     private function calcularDataPrimeiraParcela(Account $account, CarbonImmutable $purchaseDate): CarbonImmutable
     {
+        if ($account->type !== 'credit_card') {
+            return $purchaseDate;
+        }
+
+        $closingDay = (int) ($account->closing_day ?? 0);
+        if ($closingDay <= 0) {
+            return $purchaseDate;
+        }
+
+        $fechamentoDoMes = min($closingDay, (int) $purchaseDate->daysInMonth);
+
+        // Compra após o fechamento entra no ciclo seguinte.
+        if ($purchaseDate->day > $fechamentoDoMes) {
+            return $purchaseDate->startOfMonth()->addMonthNoOverflow()
+                ->setDay(min($purchaseDate->day, (int) $purchaseDate->startOfMonth()->addMonthNoOverflow()->daysInMonth));
+        }
+
         return $purchaseDate;
     }
 

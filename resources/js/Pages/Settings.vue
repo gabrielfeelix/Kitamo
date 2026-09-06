@@ -13,6 +13,16 @@ const shellProps = computed(() =>
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? '');
 const userEmail = computed(() => page.props.auth?.user?.email ?? '');
+
+// O selo dizia "Membro PRO" para todo mundo, ignorando o plano real do
+// usuário — uma afirmação falsa para quem está no plano gratuito.
+const planoLabel = computed(() => {
+    const slug = String(page.props.auth?.user?.plan_slug ?? '').toLowerCase();
+    if (slug.includes('pro')) return 'Membro PRO';
+    if (slug.includes('premium')) return 'Premium';
+    if (!slug || slug === 'free' || slug.includes('gratu')) return 'Plano gratuito';
+    return slug.charAt(0).toUpperCase() + slug.slice(1);
+});
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
 const avatarUrl = computed(() => (page.props.auth?.user as any)?.avatar_url ?? (page.props.auth?.user as any)?.profile_photo_url ?? null);
 
@@ -75,7 +85,7 @@ const initials = computed(() => {
                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
                         </svg>
-                        Membro PRO
+                        {{ planoLabel }}
                     </div>
                 </div>
             </div>
@@ -93,7 +103,7 @@ const initials = computed(() => {
                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
                         </svg>
-                        Membro PRO
+                        {{ planoLabel }}
                     </div>
                 </div>
             </div>

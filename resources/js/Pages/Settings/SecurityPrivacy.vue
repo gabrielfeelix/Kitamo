@@ -12,7 +12,11 @@ const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Segurança e privacidade', showSearch: false, showNewAction: false },
 );
-const biometric = ref(true);
+// O toggle de biometria não tem implementação: alterná-lo não habilita nada
+// e o valor nem é persistido. Fica desligado e desabilitado até existir
+// suporte real, em vez de sugerir uma proteção inexistente.
+const biometric = ref(false);
+const biometricDisponivel = false;
 const passwordOpen = ref(false);
 </script>
 
@@ -67,7 +71,8 @@ const passwordOpen = ref(false);
                                     <div class="mt-1 text-xs font-semibold text-slate-400">Impressão digital ou Face ID</div>
                                 </div>
                             </div>
-                            <ToggleSwitch v-model="biometric" />
+                            <ToggleSwitch v-if="biometricDisponivel" v-model="biometric" />
+                            <span v-else class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">Em breve</span>
                         </div>
                     </div>
                 </div>
