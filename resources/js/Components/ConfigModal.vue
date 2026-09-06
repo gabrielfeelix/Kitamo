@@ -44,6 +44,12 @@ const menuItems = computed(() => {
         tone: 'red' as const,
     },
     {
+        label: 'Patrimônio',
+        href: route('patrimonio'),
+        icon: 'piggy',
+        tone: 'emerald' as const,
+    },
+    {
         label: 'Contas Bancárias',
         href: route('accounts.overview'),
         icon: 'wallet',
@@ -125,6 +131,12 @@ const handleSelect = (item: { href: string; action?: 'news' }) => {
                         <circle cx="12" cy="12" r="10" />
                         <circle cx="12" cy="12" r="6" />
                         <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    <!-- Patrimônio Icon (Cofrinho) -->
+                    <svg v-else-if="item.icon === 'piggy'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 11a5 5 0 0 1 5-5h4a6 6 0 0 1 5.5 3.6l2.5.9v4l-2.2.5A6 6 0 0 1 17 17v2h-3v-1.5h-3V19H8v-2a5 5 0 0 1-4-5Z" />
+                        <path d="M9 6V4.5a1.5 1.5 0 0 1 3 0V6" />
+                        <path d="M15 11.5v.01" />
                     </svg>
                     <!-- Contas Icon (Wallet) -->
                     <svg v-else-if="item.icon === 'wallet'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
