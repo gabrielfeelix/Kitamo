@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { requestJson } from '@/lib/kitamoApi';
 import type { BootstrapData, Goal } from '@/types/kitamo';
@@ -38,6 +38,23 @@ const name = ref(initial.value.name);
 const icon = ref<IconKey>(initial.value.icon);
 const target = ref(initial.value.target);
 const due = ref(initial.value.due);
+
+// Os refs capturam `initial` uma única vez, na montagem. Se o bootstrap ainda
+// não tiver a meta nesse instante, o form fica com os placeholders ("Meta",
+// "0,00") e salvar SOBRESCREVE a meta real. Ressincroniza quando ela chega.
+const goalCarregada = computed(() => bootstrap.value.goals.some((g) => g.id === props.goalId));
+
+watch(
+    initial,
+    (novo) => {
+        if (!goalCarregada.value) return;
+        name.value = novo.name;
+        icon.value = novo.icon;
+        target.value = novo.target;
+        due.value = novo.due;
+    },
+    { immediate: true },
+);
 const currentAmount = computed(() => Number(initial.value.current ?? 0));
 const targetNumber = computed(() => moneyInputToNumber(target.value));
 const monthly = computed(() => {
@@ -86,6 +103,12 @@ const parseDueDate = (label: string) => {
 };
 
 const submit = async () => {
+    // Guarda extra: nunca gravar por cima de uma meta que ainda não carregou.
+    if (!goalCarregada.value) {
+        console.warn('Meta ainda não carregada — salvamento cancelado para não sobrescrever os dados.');
+        return;
+    }
+
     const newTarget = moneyInputToNumber(target.value);
     await requestJson(route('goals.update', props.goalId), {
         method: 'PATCH',

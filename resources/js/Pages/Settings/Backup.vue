@@ -1,27 +1,66 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { useIsMobile } from '@/composables/useIsMobile';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import ToggleSwitch from '@/Components/ToggleSwitch.vue';
 import MobileToast from '@/Components/MobileToast.vue';
+import { requestJson } from '@/lib/kitamoApi';
 
 const isMobile = useIsMobile();
 const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
 const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Backup', showSearch: false, showNewAction: false },
 );
-const synced = ref(true);
+// A tela era 100% mockup: histórico fixo e restoreBackup() só exibia um
+// toast, afirmando ao usuário que os dados estavam salvos sem nada acontecer.
+// Agora consome /api/backup/*, que já existia e não tinha consumidor.
+const synced = ref(false);
 const autoBackup = ref(true);
 const frequency = ref<'Diário' | 'Semanal' | 'Mensal'>('Diário');
 const provider = ref<'drive' | 'icloud'>('drive');
 
-const history = ref([
-    { label: 'Hoje 14:30', size: '2,4 MB', ok: true },
-    { label: 'Ontem 14:30', size: '2,3 MB', ok: true },
-    { label: '09 jan 14:30', size: '2,3 MB', ok: true },
-]);
+type BackupItem = { label: string; size: string; ok: boolean; filename?: string };
+const history = ref<BackupItem[]>([]);
+const loading = ref(false);
+
+const formatSize = (bytes: number) => {
+    if (!bytes) return '—';
+    const mb = bytes / (1024 * 1024);
+    return mb >= 1
+        ? `${mb.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB`
+        : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+};
+
+const loadHistory = async () => {
+    loading.value = true;
+    try {
+        // O endpoint retorna o array direto, com size_bytes.
+        const res = await requestJson<Array<{ filename: string; size_bytes: number; created_at: string }>>(
+            '/api/backup/list',
+            { method: 'GET' },
+        );
+        const items = Array.isArray(res) ? res : [];
+        history.value = items.map((b) => {
+            const d = new Date(b.created_at);
+            const label = Number.isFinite(d.getTime())
+                ? `${new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(d).replace('.', '')} ` +
+                  new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(d)
+                : b.filename;
+            return { label, size: formatSize(Number(b.size_bytes ?? 0)), ok: true, filename: b.filename };
+        });
+        synced.value = history.value.length > 0;
+    } catch (error) {
+        console.error('Falha ao carregar backups', error);
+        history.value = [];
+        synced.value = false;
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(loadHistory);
 
 const toastOpen = ref(false);
 const toastMessage = ref('');
@@ -30,17 +69,49 @@ const showToast = (message: string) => {
     toastOpen.value = true;
 };
 
-const runBackup = () => {
-    synced.value = true;
-    const now = new Date();
-    const label = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(now).replace('.', '');
-    const time = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(now);
-    history.value.unshift({ label: `${label} ${time}`, size: '2,4 MB', ok: true });
-    showToast('Backup realizado');
+const runBackup = async () => {
+    loading.value = true;
+    try {
+        await requestJson('/api/backup/create', { method: 'POST' });
+        await loadHistory();
+        showToast('Backup realizado');
+    } catch (error) {
+        console.error('Falha ao criar backup', error);
+        showToast('Não foi possível criar o backup');
+    } finally {
+        loading.value = false;
+    }
 };
 
-const restoreBackup = () => {
-    showToast('Backup restaurado');
+const restoreBackup = async (filename?: string) => {
+    const alvo = filename ?? history.value[0]?.filename;
+    if (!alvo) {
+        showToast('Nenhum backup disponível para restaurar');
+        return;
+    }
+
+    // A restauração apaga contas, transações e metas antes de reimportar,
+    // e não há SoftDeletes: é irreversível. Confirma antes.
+    const ok = window.confirm(
+        'Restaurar este backup vai SUBSTITUIR todos os seus dados atuais ' +
+            '(contas, transações e metas). Esta ação não pode ser desfeita.\n\nContinuar?',
+    );
+    if (!ok) return;
+
+    loading.value = true;
+    try {
+        await requestJson('/api/backup/restore', {
+            method: 'POST',
+            body: JSON.stringify({ filename: alvo, confirm: true }),
+        });
+        showToast('Backup restaurado');
+        window.location.reload();
+    } catch (error) {
+        console.error('Falha ao restaurar backup', error);
+        showToast('Não foi possível restaurar o backup');
+    } finally {
+        loading.value = false;
+    }
 };
 </script>
 
@@ -173,7 +244,7 @@ const restoreBackup = () => {
                 <button
                     type="button"
                     class="flex h-[52px] flex-1 items-center justify-center rounded-2xl bg-[#14B8A6] text-sm font-semibold text-white shadow-[0_2px_8px_rgba(20,184,166,0.25)]"
-                    @click="restoreBackup"
+                    @click="restoreBackup()"
                 >
                     Restaurar
                 </button>

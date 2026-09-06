@@ -11,8 +11,8 @@ const shellProps = computed(() =>
     isMobile.value ? { showNav: false } : { title: 'Configurações', showSearch: false, showNewAction: false },
 );
 const page = usePage();
-const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel Felix');
-const userEmail = computed(() => page.props.auth?.user?.email ?? 'gab.feelix@gmail.com');
+const userName = computed(() => page.props.auth?.user?.name ?? '');
+const userEmail = computed(() => page.props.auth?.user?.email ?? '');
 const userPhone = computed(() => page.props.auth?.user?.phone ?? '');
 const avatarUrl = computed(() => (page.props.auth?.user as any)?.avatar_url ?? (page.props.auth?.user as any)?.profile_photo_url ?? null);
 

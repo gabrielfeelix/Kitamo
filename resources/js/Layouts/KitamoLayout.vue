@@ -9,7 +9,7 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const userName = computed(() => page.props.auth?.user?.name ?? '');
 const isAdmin = computed(() => Boolean(page.props.auth?.user?.is_admin));
 
 const initials = computed(() => {

@@ -170,10 +170,13 @@ const monthEndBalance = computed(() => {
     return monthStartBalance.value + monthIncome.value - monthExpense.value;
 });
 
+// "Gastou mais do que tinha" precisa olhar o SALDO, não só o fluxo do mês.
+// Comparar despesa > receita disparava o alerta mesmo com a conta positiva:
+// quem tem R$ 50.000 e gasta R$ 100 num mês sem receita não está negativo.
 const hasNegativeBalance = computed(() => {
     if (account.value?.type !== 'wallet') return false;
     if (!isCurrentMonth.value) return false;
-    return monthExpense.value > monthIncome.value;
+    return monthEndBalance.value < 0;
 });
 
 const grouped = computed(() => {

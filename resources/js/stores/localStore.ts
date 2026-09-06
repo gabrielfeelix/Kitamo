@@ -57,9 +57,15 @@ const getUserKey = (): string => {
     return 'anon';
 };
 
+// Seed de demonstração não deve depender do e-mail de ninguém em particular:
+// amarrado a um endereço específico, aquele usuário recebia dados falsos que
+// nenhum outro recebe. Desligado por padrão; habilitável em desenvolvimento.
 const shouldSeedDemo = (): boolean => {
-    const email = getUserContext()?.email?.toLowerCase() ?? '';
-    return email.startsWith('gab.feelix');
+    try {
+        return window.localStorage.getItem('kitamo:seed_demo') === '1';
+    } catch {
+        return false;
+    }
 };
 
 const storageKey = (name: string) => `kitamo:${getUserKey()}:${name}`;

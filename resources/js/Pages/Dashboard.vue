@@ -35,7 +35,7 @@ type ProjecaoResponse = {
 };
 
 const page = usePage();
-const userName = computed(() => page.props.auth?.user?.name ?? 'Gabriel');
+const userName = computed(() => page.props.auth?.user?.name ?? '');
 const firstName = computed(() => String(userName.value).trim().split(/\s+/)[0] ?? userName.value);
 const avatarUrl = computed(() => (page.props as any)?.auth?.user?.avatar_url ?? (page.props as any)?.auth?.user?.profile_photo_url ?? null);
 const userEmail = computed(() => String((page.props as any)?.auth?.user?.email ?? '').toLowerCase());

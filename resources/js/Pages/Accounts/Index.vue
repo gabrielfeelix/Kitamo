@@ -190,11 +190,11 @@ const toggleEntryPaid = async (id: string) => {
     const entry = entries.value.find((e) => e.id === id);
     if (!entry) return;
     if (entry.kind !== 'expense') return;
-    const nextStatus: Entry['status'] = entry.status === 'paid' ? 'pending' : 'paid';
-    const payload = { ...entryToRequest({ ...entry, status: nextStatus }), isPaid: nextStatus === 'paid' };
-    const response = await requestJson<{ entry: Entry }>(route('transactions.update', entry.id), {
+    // Endpoint dedicado: transactions.update reenvia o payload inteiro via
+    // entryToRequest, que não preserva os campos de parcelamento — marcar a
+    // parcela 7/12 como paga a renomeava para "Parcela 1/12".
+    const response = await requestJson<{ entry: Entry }>(route('api.transactions.toggle-pago', entry.id), {
         method: 'PATCH',
-        body: JSON.stringify(payload),
     });
     replaceEntry(response.entry);
     if (response.entry.status === 'paid') showToast('Conta marcada como paga');
