@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
@@ -72,35 +72,46 @@ const entriesForCard = computed(() => {
 });
 
 type InvoicePeriod = { start: Date; end: Date };
+
+// O ciclo de fatura é calculado no servidor (App\Support\InvoiceCycle) para
+// evitar duas implementações da mesma regra divergindo — era o que acontecia
+// aqui: esta cópia em TS ficou um mês defasada do backend, então a tela
+// mostrava uma fatura e "Pagar" quitava outra.
+const serverPeriod = ref<{ start: string; end: string } | null>(null);
+
+const loadInvoicePeriod = async () => {
+    const ref_ = selectedMonth.value?.date;
+    if (!ref_ || !props.accountId) return;
+    try {
+        const res = await requestJson<{ cartoes: any[] }>(
+            `/api/cartoes-by-month?year=${ref_.getFullYear()}&month=${ref_.getMonth()}`,
+            { method: 'GET' },
+        );
+        const card = (res?.cartoes ?? []).find((c: any) => String(c.id) === String(props.accountId));
+        serverPeriod.value = card?.periodo_inicio && card?.periodo_fim
+            ? { start: card.periodo_inicio, end: card.periodo_fim }
+            : null;
+    } catch (error) {
+        console.error('Falha ao carregar período da fatura', error);
+        serverPeriod.value = null;
+    }
+};
+
+onMounted(loadInvoicePeriod);
+watch(() => selectedMonthKey.value, loadInvoicePeriod);
+watch(() => props.accountId, loadInvoicePeriod);
+
+const parseServerDate = (iso: string, endOfDay = false) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return endOfDay ? new Date(y, m - 1, d, 23, 59, 59, 999) : new Date(y, m - 1, d);
+};
+
 const invoicePeriod = computed<InvoicePeriod | null>(() => {
-    const ref = selectedMonth.value?.date;
-    if (!ref) return null;
-
-    const closingDayRaw = closingDay.value ?? 0;
-    const year = ref.getFullYear();
-    const monthIndex = ref.getMonth();
-
-    const monthStart = new Date(year, monthIndex, 1);
-    const monthDays = new Date(year, monthIndex + 1, 0).getDate();
-    const closingDayThisMonth = closingDayRaw > 0 ? Math.min(closingDayRaw, monthDays) : 0;
-
-    if (!closingDayThisMonth) {
-        const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
-        return { start: monthStart, end: endOfMonth };
-    }
-
-    const end = new Date(year, monthIndex, closingDayThisMonth, 23, 59, 59, 999);
-    const prevMonthDays = new Date(year, monthIndex, 0).getDate();
-
-    let start: Date;
-    if (closingDayRaw >= prevMonthDays) {
-        start = new Date(year, monthIndex, 1);
-    } else {
-        start = new Date(year, monthIndex - 1, closingDayRaw + 1);
-    }
-    start.setHours(0, 0, 0, 0);
-
-    return { start, end };
+    if (!serverPeriod.value) return null;
+    return {
+        start: parseServerDate(serverPeriod.value.start),
+        end: parseServerDate(serverPeriod.value.end, true),
+    };
 });
 
 const usedLimit = computed(() => {

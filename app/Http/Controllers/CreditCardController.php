@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Support\InvoiceCycle;
 use App\Models\Category;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -51,53 +52,13 @@ class CreditCardController extends Controller
         return $logoMap[$institution] ?? null;
     }
 
+    /**
+     * Delega para App\Support\InvoiceCycle — fonte única do ciclo de fatura,
+     * compartilhada por toda a aplicação e coberta por testes de continuidade.
+     */
     private function invoicePeriod(Account $cartao, int $year, int $monthIndex): array
     {
-        $closingDayRaw = (int) ($cartao->closing_day ?? 0);
-
-        $monthStart = Carbon::create($year, $monthIndex + 1, 1)->startOfDay();
-
-        if ($closingDayRaw <= 0) {
-            return [
-                'start' => $monthStart->copy(),
-                'end' => $monthStart->copy()->endOfMonth()->endOfDay(),
-            ];
-        }
-
-        // A "fatura de <mês>" é o ciclo em que as compras daquele mês caem —
-        // a mesma convenção do extrato do banco. O ciclo fecha no closing_day
-        // do próprio mês (ou do mês seguinte, quando o fechamento é no começo
-        // do mês e as compras do mês ainda pertencem ao ciclo seguinte).
-        $monthDays = (int) $monthStart->daysInMonth;
-        $closingDay = min($closingDayRaw, $monthDays);
-
-        // Escolhe o ciclo cuja maior parte cai dentro do mês. Fechamento no
-        // fim do mês (ex.: dia 28) => ciclo termina no próprio mês. Fechamento
-        // no começo (ex.: dia 2) => as compras do mês só fecham no mês seguinte.
-        $fechaNoProprioMes = $closingDay >= (int) ceil($monthDays / 2);
-
-        if ($fechaNoProprioMes) {
-            $end = Carbon::create($year, $monthIndex + 1, $closingDay)->endOfDay();
-        } else {
-            $next = $monthStart->copy()->addMonthNoOverflow();
-            $end = Carbon::create($next->year, $next->month, min($closingDayRaw, (int) $next->daysInMonth))->endOfDay();
-        }
-
-        // Início do ciclo: dia seguinte ao fechamento anterior.
-        $cycleStart = $end->copy()->subMonthNoOverflow();
-        $cycleStartDays = (int) $cycleStart->daysInMonth;
-        $startDay = min($closingDayRaw, $cycleStartDays) + 1;
-
-        if ($startDay > $cycleStartDays) {
-            $start = $end->copy()->startOfMonth()->startOfDay();
-        } else {
-            $start = Carbon::create($cycleStart->year, $cycleStart->month, $startDay)->startOfDay();
-        }
-
-        return [
-            'start' => $start,
-            'end' => $end,
-        ];
+        return InvoiceCycle::forMonth($cartao->closing_day, $year, $monthIndex);
     }
 
     public function index(Request $request)
@@ -297,6 +258,8 @@ class CreditCardController extends Controller
                 'limite' => (float) ($account->credit_limit ?? 0),
                 'limite_usado' => $balanceUsed,
                 'valor_pendente' => $pendingSum ?? 0.0,
+                'periodo_inicio' => $start->toDateString(),
+                'periodo_fim' => $end->toDateString(),
                 'esta_paga' => ($pendingSum ?? 0.0) <= 0.009 && $balanceUsed > 0,
                 'dia_fechamento' => (int) ($account->closing_day ?? 10),
                 'dia_vencimento' => (int) ($account->due_day ?? 17),
