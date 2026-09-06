@@ -85,6 +85,51 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Cannot delete default categories'], 403);
         }
 
+        // A FK é nullOnDelete: apagar uma categoria em uso orfana todas as
+        // transações históricas (category_id = NULL) e corrompe relatórios
+        // passados de forma irreversível. Exige uma categoria de destino.
+        $emUso = \App\Models\Transaction::query()
+            ->where('user_id', $user->id)
+            ->where('category_id', $category->id)
+            ->count();
+
+        if ($emUso > 0) {
+            $destinoId = request()->input('reassign_to');
+
+            if (! $destinoId) {
+                return response()->json([
+                    'message' => "Esta categoria está em uso por {$emUso} transação(ões). "
+                        . 'Informe reassign_to com a categoria de destino.',
+                    'transactions_count' => $emUso,
+                    'requires_reassign' => true,
+                ], 409);
+            }
+
+            $destino = Category::query()
+                ->where('id', $destinoId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (! $destino || (int) $destino->id === (int) $category->id) {
+                return response()->json(['message' => 'Categoria de destino inválida.'], 422);
+            }
+
+            \DB::transaction(function () use ($category, $destino, $user) {
+                \App\Models\Transaction::query()
+                    ->where('user_id', $user->id)
+                    ->where('category_id', $category->id)
+                    ->update(['category_id' => $destino->id]);
+
+                $category->delete();
+            });
+
+            return response()->json([
+                'message' => 'Category deleted successfully',
+                'reassigned' => $emUso,
+                'reassigned_to' => $destino->name,
+            ]);
+        }
+
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully']);

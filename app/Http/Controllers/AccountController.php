@@ -171,7 +171,52 @@ class AccountController extends Controller
             ->where('conta_destino_id', $account->id)
             ->count();
 
-        $account->delete();
+        // Transferências envolvem duas contas. Apagar uma delas sem desfazer o
+        // lançamento deixava a contraparte com saldo fantasma permanente: o
+        // dinheiro "veio de" ou "foi para" uma conta que não existe mais.
+        \DB::transaction(function () use ($account, $user) {
+            $saidas = Transferencia::query()
+                ->where('user_id', $user->id)
+                ->where('conta_origem_id', $account->id)
+                ->get();
+
+            foreach ($saidas as $transferencia) {
+                $destino = Account::query()
+                    ->where('id', $transferencia->conta_destino_id)
+                    ->where('user_id', $user->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($destino) {
+                    $destino->current_balance = (float) $destino->current_balance - (float) $transferencia->valor;
+                    $destino->save();
+                }
+
+                $transferencia->delete();
+            }
+
+            $entradas = Transferencia::query()
+                ->where('user_id', $user->id)
+                ->where('conta_destino_id', $account->id)
+                ->get();
+
+            foreach ($entradas as $transferencia) {
+                $origem = Account::query()
+                    ->where('id', $transferencia->conta_origem_id)
+                    ->where('user_id', $user->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($origem) {
+                    $origem->current_balance = (float) $origem->current_balance + (float) $transferencia->valor;
+                    $origem->save();
+                }
+
+                $transferencia->delete();
+            }
+
+            $account->delete();
+        });
 
         return response()->json([
             'ok' => true,
@@ -180,6 +225,7 @@ class AccountController extends Controller
                 'transferencias_saida' => $transferenciasSaida,
                 'transferencias_entrada' => $transferenciasEntrada,
             ],
+            'estornadas' => $transferenciasSaida + $transferenciasEntrada,
         ]);
     }
 

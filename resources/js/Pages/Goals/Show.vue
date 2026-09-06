@@ -64,11 +64,15 @@ const showToast = (message: string) => {
 
 const deposits = computed(() => goalData.value?.deposits ?? []);
 
-const onDepositConfirm = async (payload: { amount: string }) => {
+const onDepositConfirm = async (payload: { amount: string; accountId?: string | number | null }) => {
     const value = Number(payload.amount.replace(/\./g, '').replace(',', '.')) || 0;
     const response = await requestJson<{ goal: Goal }>(route('goals.deposits.store', goal.value.id), {
         method: 'POST',
-        body: JSON.stringify({ amount: value, title: 'Depósito manual' }),
+        body: JSON.stringify({
+            amount: value,
+            title: 'Depósito manual',
+            account_id: payload.accountId ?? null,
+        }),
     });
     goalData.value = response.goal;
     showToast('Valor adicionado');
@@ -92,32 +96,16 @@ const pickerAccounts = computed<AccountOption[]>(() => {
 });
 
 const onDepositConfirmWithFrom = async (payload: { amount: string; from: string; repeat: boolean }) => {
-    await onDepositConfirm({ amount: payload.amount });
-
-    const value = Number(payload.amount.replace(/\./g, '').replace(',', '.')) || 0;
-    if (!payload.from || !value) return;
+    // Uma única chamada: o backend credita a meta e debita a conta dentro da
+    // mesma transação. Antes eram duas requisições independentes com catch
+    // vazio — se a segunda falhasse, a meta era creditada sem o dinheiro sair.
+    const accountId = (bootstrap.value.accounts ?? []).find((a) => a.name === payload.from)?.id ?? null;
 
     try {
-        const txPayload = {
-            kind: 'expense',
-            amount: value,
-            description: `Depósito meta: ${goal.value.title}`,
-            category: 'Metas',
-            account: payload.from,
-            dateKind: 'today',
-            dateOther: '',
-            isPaid: true,
-            isInstallment: false,
-            installmentCount: 1,
-            tags: [],
-        };
-
-        await requestJson(route('transactions.store'), {
-            method: 'POST',
-            body: JSON.stringify(txPayload),
-        });
-    } catch {
-        // ignore transaction creation failures, goal deposit already done
+        await onDepositConfirm({ amount: payload.amount, accountId });
+    } catch (error) {
+        console.error('Falha ao registrar depósito', error);
+        showToast('Não foi possível registrar o depósito');
     }
 };
 </script>

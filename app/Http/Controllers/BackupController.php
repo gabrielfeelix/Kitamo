@@ -50,8 +50,12 @@ class BackupController extends Controller
     {
         $user = $request->user();
 
+        // restaurarBackup apaga contas, transações e metas do usuário antes de
+        // reimportar — e as tabelas não usam SoftDeletes, então é irreversível.
+        // Exige confirmação explícita e guarda um backup de segurança antes.
         $data = $request->validate([
             'filename' => ['required', 'string', 'max:255'],
+            'confirm' => ['required', 'accepted'],
         ]);
 
         $safe = basename($data['filename']);
@@ -61,9 +65,22 @@ class BackupController extends Controller
             return response()->json(['error' => 'Backup não encontrado'], 404);
         }
 
+        $seguranca = null;
+        try {
+            $seguranca = $backupService->criarBackup($user->id);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Não foi possível criar o backup de segurança antes de restaurar. '
+                    . 'A restauração foi cancelada para não perder os dados atuais.',
+            ], 500);
+        }
+
         $backupService->restaurarBackup($user->id, $path);
 
-        return response()->json(['message' => 'Backup restaurado com sucesso']);
+        return response()->json([
+            'message' => 'Backup restaurado com sucesso',
+            'backup_seguranca' => $seguranca,
+        ]);
     }
 
     public function status(Request $request): JsonResponse
