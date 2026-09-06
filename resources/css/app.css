@@ -29,6 +29,22 @@
         --kitamo-warning: 245 158 11; /* #F59E0B */
         --kitamo-danger: 239 68 68; /* #EF4444 */
 
+        /* Barro — joão-de-barro. Acento de conquista, nunca parede.
+           Ver docs/DESIGN-KITAMO.md §2 */
+        --kitamo-barro: 180 85 45; /* #B4552D terracota */
+        --kitamo-barro-claro: 232 183 156; /* #E8B79C */
+        --kitamo-barro-escuro: 92 46 26; /* #5C2E1A */
+
+        /* Estados — cada um toma a tela inteira (ref: Freud Score) */
+        --kitamo-tranquilo: 76 140 74; /* #4C8C4A */
+        --kitamo-tranquilo-claro: 234 243 231; /* #EAF3E7 */
+        --kitamo-atencao: 232 163 61; /* #E8A33D */
+        --kitamo-atencao-claro: 253 243 224; /* #FDF3E0 */
+        --kitamo-aperto: 212 86 47; /* #D4562F — vermelho de barro, não de erro */
+        --kitamo-aperto-claro: 251 234 228; /* #FBEAE4 */
+        --kitamo-futuro: 124 107 196; /* #7C6BC4 */
+        --kitamo-futuro-claro: 239 236 250; /* #EFECFA */
+
         --kitamo-ink: 15 23 42; /* #0F172A */
         --kitamo-body: 71 85 105; /* #475569 */
         --kitamo-surface: 255 255 255; /* #FFFFFF */

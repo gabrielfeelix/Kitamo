@@ -13,8 +13,9 @@ escreveu só planejou.**
 2. `PROPOSTA-PIERRE.md` — análise do concorrente, identidade, IA sem caixa,
    bugs conhecidos.
 3. `PLANO-INGESTAO.md` — por que não usar agregador (decisão fechada).
-4. `refs/README.md` — o que são os prints.
-5. `HANDOFF.md` — acesso ao servidor, MySQL (limite de 500 conexões/hora!),
+4. `docs/DESIGN-KITAMO.md` — personagem, paleta, como usar o marrom.
+5. `refs/README.md` (concorrentes) e `refs/apps/README.md` (estilo).
+6. `HANDOFF.md` — acesso ao servidor, MySQL (limite de 500 conexões/hora!),
    deploy manual. Continua válido.
 
 ## Decisões fechadas (não reabrir)
@@ -27,12 +28,16 @@ escreveu só planejou.**
 - **Nav:** Início · Lançamentos · + · Chat · Perfil.
 - **IA:** insights determinísticos; LLM só no chat, Gemini free tier.
 - **Versão antiga preservada:** tag `v1-gestao`.
+- **Identidade:** joão-de-barro + teal da marca + barro/terracota + cores de
+  estado em tela cheia. Detalhe em `docs/DESIGN-KITAMO.md`.
 
 ## Decisões em aberto (perguntar ao Gabriel quando chegar nelas)
 
-- Personagem (joão-de-barro? "Seu Kitamo"? nenhum?)
-- Paleta principal (restrição: quente, sólida, legível; não preto+neon)
+- Desenho do joão-de-barro (traço, se tem olho, quão realista) e ícone do app
 - `ImportInvoiceModal`: ligar no backend real ou remover (ele prefere ligar)
+
+Personagem e paleta **foram decididos** em 06/09/2026 —
+ver `docs/DESIGN-KITAMO.md`. Não reabrir.
 
 ## Estado do código
 
@@ -69,8 +74,8 @@ Cada item é um commit. `git add` por arquivo, nunca `-A`.
 [ ] 12 Parsers por banco — quando os extratos chegarem
 ```
 
-Itens 0–2 são backend puro com teste; dá para fazer sem decidir paleta nem
-personagem. Itens 3–8 precisam da paleta. Item 9 não depende de nada.
+Itens 0–2 são backend puro com teste. Itens 3–8 aplicam a paleta de
+`docs/DESIGN-KITAMO.md`. Item 9 não depende de nada.
 
 ## Como o Gabriel trabalha
 

@@ -42,7 +42,7 @@ espera narrativas. Usa Pluggy por baixo (confirmado na tela de
 consentimento do Mercado Pago). Cobra R$ 39/mês. Detalhe em
 `PROPOSTA-PIERRE.md`.
 
-### Escola do Breno — app + planilha, 22 telas em `refs/`
+### Escola do Breno — app + planilha, 21 telas em `refs/`
 Método materializado numa tela. Três peças:
 
 - **Um número: o diário.** Onboarding de 4 perguntas "no feeling" (comida,
@@ -215,11 +215,13 @@ contas_fixas_estimadas, origem ('feeling' | 'ofx'), atualizado_em
 - Estados de espera com verbos da marca ("somando as parcelas…",
   "conferindo o que falta…") — sensação de feito à mão sem depender de
   ilustração.
-- Personagem: **em aberto**. Candidatos: joão-de-barro (constrói de pouco
-  em pouco), "Seu Kitamo" (quitandeiro nipo-brasileiro). Decisão do
-  Gabriel. Nada do núcleo depende dele.
-- Paleta: **em aberto**. Restrições: quente, sólida, legível a 60 anos.
-  Não preto+neon (Pierre), não pichação.
+- Personagem: **joão-de-barro** (decidido em 06/09/2026). Constrói de pouco
+  em pouco; a casa cresce a cada parcela quitada. Nunca cobre o número.
+- Paleta: **decidida em 06/09/2026**. Mantém o teal da marca (#14B8A6),
+  acrescenta barro/terracota (#B4552D) como acento de conquista, e cores
+  de estado que tomam a tela inteira (referência: Freud Score em
+  `refs/apps/`). Fundo creme (#FAF7F2) no lugar do cinza-azulado.
+- Detalhe completo: `docs/DESIGN-KITAMO.md`.
 
 ---
 

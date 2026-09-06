@@ -2,7 +2,7 @@
 
 Prints usados na análise de 06/09/2026. Não são da Kitamo.
 
-## Escola do Breno (22 imagens `WhatsApp Image 2026-09-06 at 12.21.*.jpeg`)
+## Escola do Breno (21 imagens `WhatsApp Image 2026-09-06 at 12.21.*.jpeg`)
 
 App da "Planilha do Breno" (Breno Nogueira). Ordem aproximada:
 
@@ -24,4 +24,3 @@ Análise em `docs/superpowers/specs/2026-09-06-kitamo-quitar-design.md` §2.
 Prints enviados na conversa, não salvos aqui. Análise em
 `PROPOSTA-PIERRE.md`.
 
-Os arquivos `*:Zone.Identifier` são metadados do Windows; podem ser apagados.
