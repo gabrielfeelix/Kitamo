@@ -70,7 +70,7 @@ Cada item é um commit. `git add` por arquivo, nunca `-A`.
 
 ```
 [x] 0  Migration `dividas` + `perfil_financeiro` + models + factories (e440a7c)
-[ ] 1  DiarioService: cálculo do diário pra quitar + data de quitação
+[x] 1  DiarioService: cálculo do diário pra quitar + data de quitação
        (testes: sobra +/0/−, meses 28/30/31, múltiplas dívidas)
 [ ] 2  ProjecaoService: projeção diária nomeada + motivo de cor
        (testes: 24 meses × vencimento 1–31 × renda 1–31)
