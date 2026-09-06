@@ -487,7 +487,15 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                     <div v-if="hasTrendData">
                         <div class="mt-8 grid grid-cols-3 items-end gap-4 px-2">
                             <div v-for="m in lastMonths" :key="m.key" class="group relative text-center">
-                                <div class="mb-2 text-xs font-bold text-slate-500 opacity-0 transition group-hover:opacity-100">{{ formatBRL(m.value) }}</div>
+                                <!-- Valor sempre visível: um gráfico de 3 barras
+                                     não tem por que esconder 3 números, e no
+                                     celular não existe hover. -->
+                                <div
+                                    class="mb-2 text-xs font-bold tabular-nums"
+                                    :class="m.highlight ? 'text-teal-700' : 'text-slate-500'"
+                                >
+                                    {{ formatBRL(m.value) }}
+                                </div>
                                 <div
                                     class="mx-auto w-full max-w-[60px] rounded-t-xl transition-all duration-500 group-hover:brightness-95"
                                     :class="m.highlight ? 'bg-gradient-to-t from-teal-500 to-teal-400' : 'bg-slate-100'"

@@ -358,9 +358,27 @@ class ProjecaoService
                 $refMonth = $this->invoiceReferenceMonthForDue($cartao, $monthCursor);
                 $period = $this->invoicePeriodForMonth($cartao, $refMonth);
 
+                // A guarda por created_at existe para não inventar faturas de
+                // antes de o cartão existir. Mas created_at é quando a conta
+                // foi cadastrada no Kitamo, não quando o cartão passou a
+                // existir: com dados importados (Open Finance, OFX/CSV) todo o
+                // histórico é anterior ao cadastro, e a guarda descartava
+                // fatura em aberto de verdade.
+                //
+                // Se há lançamento pendente no ciclo, a fatura existe — os
+                // dados provam isso melhor que a data de cadastro.
                 $accountCreatedAt = $cartao->created_at ? CarbonImmutable::parse($cartao->created_at) : null;
                 if ($accountCreatedAt && $accountCreatedAt->greaterThan($period['end'])) {
-                    continue;
+                    $temLancamentoNoCiclo = Transaction::query()
+                        ->where('user_id', $userId)
+                        ->where('account_id', $cartao->id)
+                        ->where('status', 'pending')
+                        ->whereBetween('transaction_date', [$period['start']->toDateString(), $period['end']->toDateString()])
+                        ->exists();
+
+                    if (!$temLancamentoNoCiclo) {
+                        continue;
+                    }
                 }
 
                 $expenseSum = (float) Transaction::query()
