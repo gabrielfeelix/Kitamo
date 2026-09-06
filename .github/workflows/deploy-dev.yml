@@ -6,6 +6,9 @@ name: Deploy DEV
 #  - PROJECT_DIR aponta para o subdomínio, não para o public_html de produção
 #  - não roda `migrate --force` sem o .env de dev existir no servidor
 #  - o .env do dev vive SÓ no servidor (não passa pelo rsync, ver --exclude)
+#  - o banco do dev é SQLite num arquivo, não o MySQL de produção. O usuário
+#    MySQL da conta só tem GRANT no banco de produção, então criar um banco
+#    novo exigiria o painel. SQLite dá o mesmo isolamento sem isso.
 on:
   push:
     branches: [quitar]
@@ -49,6 +52,7 @@ jobs:
             echo "Deploy attempt $attempt/3..."
             if rsync -avz --timeout=60 -e "ssh $SSH_OPTS" \
               --exclude='.git' --exclude='node_modules' --exclude='.env' \
+            --exclude='database/dev.sqlite' \
               ./ $REMOTE:$PROJECT_DIR; then
               echo "Deploy succeeded"
               exit 0
@@ -73,8 +77,8 @@ jobs:
           }
       - name: Conferir que o banco NÃO é o de produção
         run: |
-          ssh $SSH_OPTS $REMOTE "grep -q 'DB_DATABASE=u626119115_Kitamo_dev' $PROJECT_DIR/.env" || {
-            echo "::error::O .env do dev não aponta para u626119115_Kitamo_dev. Abortado antes de migrar."
+          ssh $SSH_OPTS $REMOTE "grep -q '^DB_CONNECTION=sqlite' $PROJECT_DIR/.env" || {
+            echo "::error::O .env do dev não está em sqlite. Abortado antes de migrar — sem isso o migrate cairia no MySQL de PRODUÇÃO."
             exit 1
           }
       - name: Run migrations + cache
