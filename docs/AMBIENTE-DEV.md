@@ -43,6 +43,20 @@ deploy nunca o sobrescreve.
 
 ## Setup (uma vez)
 
+> **Os passos 1 e 2 só saem pelo painel.** Foi testado em 06/09/2026, com
+> SSH e as credenciais reais do MySQL em mãos:
+>
+> - `CREATE DATABASE u626119115_Kitamo_dev` roda **sem erro e sem efeito** —
+>   o `SHOW DATABASES` seguinte não lista o banco. Em hospedagem
+>   compartilhada quem registra o banco na conta e concede o GRANT é o
+>   painel.
+> - `mkdir ~/domains/dev.kitamo.com.br/public_html` funciona, mas cria só
+>   uma pasta. Faltam o registro **DNS** e o **vhost**, que não moram no
+>   filesystem — `dev.kitamo.com.br` não resolve (HTTP 000).
+> - Não há CLI do painel na máquina (`hcli`, `hostinger-cli`).
+>
+> Os passos 3 e 4 são automatizáveis e podem ser feitos por SSH.
+
 ### 1. Criar o subdomínio — painel da Hostinger
 
 `hPanel → Domínios → Subdomínios` → criar `dev` em `kitamo.com.br`.
@@ -51,7 +65,8 @@ Isso cria `~/domains/dev.kitamo.com.br/public_html`.
 ### 2. Criar o banco — painel da Hostinger
 
 `hPanel → Bancos de dados → MySQL` → criar `u626119115_Kitamo_dev`,
-com o mesmo usuário do banco de produção (aí a senha é a mesma).
+marcando o usuário **`u626119115_gabriel`** — o mesmo do banco de
+produção, para a senha continuar a mesma.
 
 ### 3. Copiar os dados de produção para o dev
 
