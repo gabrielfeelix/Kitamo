@@ -19,6 +19,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Chave fixa só para os testes. Sem ela, tudo que faz requisição
+             HTTP quebra com MissingAppKeyException (eram 30 erros). Não é
+             segredo e não vale em nenhum ambiente real. -->
+        <env name="APP_KEY" value="base64:AzoNxBUEmOA5D+k66tHba/KvN0BbvHMDFk7cHn/pGGo="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

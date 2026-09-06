@@ -77,6 +77,17 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// --- Pivô "Quitar" (spec 2026-09-06). Convivem com as rotas antigas até
+// a navegação de 5 itens entrar (item 7 do HANDOFF-QUITAR.md).
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/inicio', \App\Http\Controllers\InicioController::class)->name('inicio');
+
+    Route::get('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'show'])
+        ->name('onboarding');
+    Route::post('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'store'])
+        ->name('onboarding.store');
+});
+
 Route::get('/analysis', function () {
     return Inertia::render('Analysis');
 })->middleware(['auth', 'verified'])->name('analysis');

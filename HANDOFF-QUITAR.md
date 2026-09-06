@@ -60,9 +60,9 @@ Detalhe completo (setup, travas, fluxo): `docs/AMBIENTE-DEV.md`.
 - `ImportInvoiceModal.vue` é fachada (progresso falso, sem API). Está no ar.
 - Outro agente trabalhou no módulo de patrimônio nesta mesma data — commits
   `feat(patrimonio): …`. Working tree deve estar limpo ao começar; confira.
-- Suíte: 30 erros pré-existentes por falta de `APP_KEY` local nos testes de
-  site institucional. Não são regressão. Compare sempre contra a árvore
-  limpa antes de concluir qualquer coisa.
+- Suíte: **verde, 125 testes**. Os 30 erros que este handoff descrevia como
+  "pré-existentes" eram `APP_KEY` ausente no `phpunit.xml` — resolvido em
+  06/09/2026 com uma chave fixa de teste. Qualquer erro agora é regressão.
 
 ## Ordem de execução sugerida
 
@@ -74,7 +74,7 @@ Cada item é um commit. `git add` por arquivo, nunca `-A`.
        (testes: sobra +/0/−, meses 28/30/31, múltiplas dívidas)
 [x] 2  HorizonteService: projeção diária nomeada + motivo de cor
        (testes: 24 meses × vencimento 1–31 × renda 1–31)
-[ ] 3  Onboarding: 6 telas, uma pergunta cada, pulável, voz da marca
+[x] 3  Onboarding: 6 telas, uma pergunta cada, pulável, voz da marca
 [ ] 4  Início: número do dia + horizonte do mês + próxima parcela
 [ ] 5  Horizonte 12 meses
 [ ] 6  "Quitei essa": marcar parcela, carimbo, contagem
