@@ -39,7 +39,7 @@ class GerarProximasRecorrencias extends Command
                 : CarbonImmutable::parse($grupo->data_inicio);
 
             while ($cursor->lessThan($target)) {
-                $cursor = $scheduler->nextDate($cursor, $grupo);
+                $cursor = $scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
                 if (!$scheduler->isActiveOn($grupo, $cursor)) {
                     break;
                 }

@@ -224,7 +224,10 @@ class TransactionController extends Controller
             'recurrence_end_at' => $isRecorrente ? $dataFim : null,
             'recorrencia_grupo_id' => $recorrenciaGrupoId,
             'parcelamento_grupo_id' => null,
-            'data_pagamento' => in_array($status, ['paid', 'received'], true) ? now() : null,
+            // A data de pagamento é a data da transação, não o instante do
+            // cadastro: com now(), todo histórico importado colapsava no mês
+            // atual e distorcia qualquer relatório por período.
+            'data_pagamento' => in_array($status, ['paid', 'received'], true) ? $date : null,
             'tags' => $tags,
         ]);
 
@@ -668,7 +671,7 @@ class TransactionController extends Controller
             : CarbonImmutable::parse($grupo->data_inicio);
 
         while ($cursor->lessThan($target)) {
-            $cursor = $scheduler->nextDate($cursor, $grupo);
+            $cursor = $scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
             if (!$scheduler->isActiveOn($grupo, $cursor)) {
                 break;
             }

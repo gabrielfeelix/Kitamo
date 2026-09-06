@@ -290,7 +290,7 @@ class AccountController extends Controller
                     $cursor = CarbonImmutable::parse($grupo->data_inicio);
                     if ($cursor->lessThan($rangeStart)) {
                         while ($cursor->lessThan($rangeStart)) {
-                            $cursor = $scheduler->nextDate($cursor, $grupo);
+                            $cursor = $scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
                             if (!$scheduler->isActiveOn($grupo, $cursor)) {
                                 break;
                             }
@@ -305,7 +305,7 @@ class AccountController extends Controller
                             $recurringDeltaByAccount[$accountId] = ($recurringDeltaByAccount[$accountId] ?? 0.0) + $delta;
                             $recurringDeltaTotal += $delta;
                         }
-                        $cursor = $scheduler->nextDate($cursor, $grupo);
+                        $cursor = $scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
                     }
                 }
             }

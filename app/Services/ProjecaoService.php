@@ -268,7 +268,7 @@ class ProjecaoService
             $cursor = CarbonImmutable::parse($grupo->data_inicio);
             if ($cursor->lessThan($start)) {
                 while ($cursor->lessThan($start)) {
-                    $cursor = $this->scheduler->nextDate($cursor, $grupo);
+                    $cursor = $this->scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
                     if (!$this->scheduler->isActiveOn($grupo, $cursor)) {
                         break;
                     }
@@ -285,7 +285,7 @@ class ProjecaoService
                         'amount' => (float) $grupo->amount,
                     ];
                 }
-                $cursor = $this->scheduler->nextDate($cursor, $grupo);
+                $cursor = $this->scheduler->nextDate($cursor, $grupo, (int) \Carbon\CarbonImmutable::parse($grupo->data_inicio)->day);
             }
         }
 
