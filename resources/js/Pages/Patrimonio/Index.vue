@@ -1,0 +1,392 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { requestJson } from '@/lib/kitamoApi';
+import type { BootstrapData, Investment, AssetClass } from '@/types/kitamo';
+import MobileShell from '@/Layouts/MobileShell.vue';
+import DesktopShell from '@/Layouts/DesktopShell.vue';
+import MobileToast from '@/Components/MobileToast.vue';
+import InvestmentModal, { type InvestmentModalPayload } from '@/Components/InvestmentModal.vue';
+import AporteModal, { type AportePayload } from '@/Components/AporteModal.vue';
+import { useIsMobile } from '@/composables/useIsMobile';
+
+const isMobile = useIsMobile();
+const Shell = computed(() => (isMobile.value ? MobileShell : DesktopShell));
+const shellProps = computed(() =>
+    isMobile.value ? { showNav: true } : { title: 'Patrimônio', showSearch: false, showNewAction: false },
+);
+
+const page = usePage();
+const bootstrap = computed(
+    () =>
+        (page.props.bootstrap ?? {
+            entries: [],
+            goals: [],
+            accounts: [],
+            investments: [],
+            categories: [],
+            tags: [],
+        }) as BootstrapData,
+);
+
+const investments = ref<Investment[]>(bootstrap.value.investments ?? []);
+
+const formatBRL = (value: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+/**
+ * Cada classe tem cor e rótulo próprios: a composição precisa ser legível sem
+ * legenda, e o nome interno ('caixinha') não é o que a pessoa reconhece.
+ */
+const CLASSES: Record<AssetClass, { label: string; color: string }> = {
+    caixinha: { label: 'Caixinha', color: '#14B8A6' },
+    cdb: { label: 'CDB', color: '#3B82F6' },
+    tesouro: { label: 'Tesouro Direto', color: '#8B5CF6' },
+    acao: { label: 'Ações', color: '#F59E0B' },
+    fii: { label: 'Fundos imobiliários', color: '#EC4899' },
+    cripto: { label: 'Cripto', color: '#F97316' },
+    outro: { label: 'Outro', color: '#64748B' },
+};
+
+const classeDe = (c: AssetClass) => CLASSES[c] ?? CLASSES.outro;
+
+// Saldo em conta: cartão de crédito não entra, é passivo, não reserva.
+const saldoEmContas = computed(() =>
+    (bootstrap.value.accounts ?? [])
+        .filter((a) => a.type !== 'credit_card')
+        .reduce((acc, a) => acc + Number(a.current_balance ?? 0), 0),
+);
+
+const totalInvestido = computed(() => investments.value.reduce((acc, i) => acc + i.currentValue, 0));
+const patrimonioTotal = computed(() => saldoEmContas.value + totalInvestido.value);
+
+const totalAportado = computed(() => investments.value.reduce((acc, i) => acc + i.totalAportado, 0));
+const rendimentoTotal = computed(() => investments.value.reduce((acc, i) => acc + i.rendimento, 0));
+const rentabilidadeTotal = computed(() => {
+    if (totalAportado.value <= 0) return 0;
+    return (rendimentoTotal.value / totalAportado.value) * 100;
+});
+
+/** Fatia de cada classe no total investido, para a barra de composição. */
+const composicao = computed(() => {
+    const porClasse = new Map<AssetClass, number>();
+    for (const i of investments.value) {
+        porClasse.set(i.assetClass, (porClasse.get(i.assetClass) ?? 0) + i.currentValue);
+    }
+
+    const total = totalInvestido.value;
+    if (total <= 0) return [];
+
+    return Array.from(porClasse.entries())
+        .map(([classe, valor]) => ({
+            classe,
+            valor,
+            percent: (valor / total) * 100,
+            ...classeDe(classe),
+        }))
+        .sort((a, b) => b.valor - a.valor);
+});
+
+/**
+ * Idade do dado. Nunca omitir: sync silenciosamente velho é a maior fonte de
+ * desconfiança em apps de investimento.
+ */
+const idadeDoPreco = (investment: Investment) => {
+    if (investment.priceSource === 'manual') return 'Você define o valor';
+    if (!investment.priceUpdatedAt) return 'Nunca atualizado';
+
+    const then = new Date(investment.priceUpdatedAt).getTime();
+    if (Number.isNaN(then)) return 'Nunca atualizado';
+
+    const horas = Math.floor((Date.now() - then) / 3_600_000);
+    if (horas < 1) return 'Atualizado agora';
+    if (horas < 24) return `Atualizado há ${horas}h`;
+
+    const dias = Math.floor(horas / 24);
+    return dias === 1 ? 'Atualizado ontem' : `Atualizado há ${dias} dias`;
+};
+
+const precoDesatualizado = (investment: Investment) => {
+    if (investment.priceSource === 'manual' || !investment.priceUpdatedAt) return false;
+    const then = new Date(investment.priceUpdatedAt).getTime();
+    return !Number.isNaN(then) && Date.now() - then > 3 * 24 * 3_600_000;
+};
+
+const toastOpen = ref(false);
+const toastMessage = ref('');
+const showToast = (message: string) => {
+    toastMessage.value = message;
+    toastOpen.value = true;
+};
+
+const investmentModalOpen = ref(false);
+const editing = ref<Investment | null>(null);
+
+const openNew = () => {
+    editing.value = null;
+    investmentModalOpen.value = true;
+};
+
+const openEdit = (investment: Investment) => {
+    editing.value = investment;
+    investmentModalOpen.value = true;
+};
+
+const replaceInvestment = (investment: Investment | null | undefined) => {
+    if (!investment?.id) return;
+    const idx = investments.value.findIndex((i) => i.id === investment.id);
+    if (idx >= 0) investments.value[idx] = investment;
+    else investments.value.unshift(investment);
+};
+
+const saveInvestment = async (payload: InvestmentModalPayload) => {
+    try {
+        const editingId = editing.value?.id;
+        const response = await requestJson<{ investment?: Investment }>(
+            editingId ? route('api.investments.update', editingId) : route('api.investments.store'),
+            {
+                method: editingId ? 'PATCH' : 'POST',
+                body: JSON.stringify(payload),
+            },
+        );
+
+        replaceInvestment(response?.investment);
+        investmentModalOpen.value = false;
+        showToast(editingId ? 'Investimento atualizado' : 'Investimento cadastrado');
+        router.reload({ only: ['bootstrap'] });
+    } catch {
+        showToast('Não foi possível salvar. Tente novamente.');
+    }
+};
+
+const aporteModalOpen = ref(false);
+const aporteTarget = ref<Investment | null>(null);
+
+const openAporte = (investment: Investment) => {
+    aporteTarget.value = investment;
+    aporteModalOpen.value = true;
+};
+
+const saveAporte = async (payload: AportePayload) => {
+    const target = aporteTarget.value;
+    if (!target) return;
+
+    try {
+        const response = await requestJson<{ investment?: Investment }>(
+            route('api.investments.aporte', target.id),
+            { method: 'POST', body: JSON.stringify(payload) },
+        );
+
+        replaceInvestment(response?.investment);
+        aporteModalOpen.value = false;
+        showToast(payload.kind === 'aporte' ? 'Aporte registrado' : 'Resgate registrado');
+        router.reload({ only: ['bootstrap'] });
+    } catch {
+        showToast('Não foi possível registrar. Tente novamente.');
+    }
+};
+
+const removeInvestment = async (investment: Investment) => {
+    if (!confirm(`Excluir "${investment.name}"? O histórico de aportes vai junto. Os lançamentos já feitos no seu extrato permanecem.`)) {
+        return;
+    }
+
+    try {
+        await requestJson(route('api.investments.destroy', investment.id), { method: 'DELETE' });
+        investments.value = investments.value.filter((i) => i.id !== investment.id);
+        showToast('Investimento excluído');
+        router.reload({ only: ['bootstrap'] });
+    } catch {
+        showToast('Não foi possível excluir. Tente novamente.');
+    }
+};
+
+const contasParaAporte = computed(() =>
+    (bootstrap.value.accounts ?? [])
+        .filter((a) => a.type !== 'credit_card')
+        .map((a) => ({ id: String(a.id), name: a.name, balance: Number(a.current_balance ?? 0) })),
+);
+</script>
+
+<template>
+    <Head title="Patrimônio" />
+
+    <component :is="Shell" v-bind="shellProps" @add="openNew">
+        <header v-if="isMobile" class="flex items-center justify-between pt-2">
+            <div class="text-2xl font-semibold tracking-tight text-slate-900">Patrimônio</div>
+        </header>
+
+        <!-- Herói: o que você guardou vs o que o mercado deu. É a pergunta que
+             motiva a tela; o total sozinho não conta essa história. -->
+        <section class="mt-6 overflow-hidden rounded-3xl bg-slate-900 p-6 text-white shadow-sm sm:p-8">
+            <div class="text-xs font-medium uppercase tracking-wider text-slate-400">Patrimônio total</div>
+            <div class="mt-2 text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
+                {{ formatBRL(patrimonioTotal) }}
+            </div>
+            <div class="mt-1 text-sm text-slate-400">
+                {{ formatBRL(saldoEmContas) }} em conta · {{ formatBRL(totalInvestido) }} investido
+            </div>
+
+            <div v-if="investments.length > 0" class="mt-6 grid grid-cols-2 gap-4 border-t border-white/10 pt-5">
+                <div>
+                    <div class="text-xs font-medium text-slate-400">Você aportou</div>
+                    <div class="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">{{ formatBRL(totalAportado) }}</div>
+                </div>
+                <div>
+                    <div class="text-xs font-medium text-slate-400">Rendimento</div>
+                    <div
+                        class="mt-1 text-xl font-semibold tabular-nums sm:text-2xl"
+                        :class="rendimentoTotal < 0 ? 'text-red-400' : 'text-emerald-400'"
+                    >
+                        {{ rendimentoTotal >= 0 ? '+' : '−' }}{{ formatBRL(Math.abs(rendimentoTotal)) }}
+                        <span class="text-sm font-medium opacity-80">
+                            ({{ rentabilidadeTotal >= 0 ? '+' : '−' }}{{ Math.abs(rentabilidadeTotal).toFixed(1) }}%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Composição: uma barra só, proporcional. Rótulo junto da cor, sem
+             legenda separada obrigando o olho a ir e voltar. -->
+        <section v-if="composicao.length > 0" class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 sm:p-6">
+            <h2 class="text-base font-semibold text-slate-900">Onde está seu dinheiro</h2>
+
+            <div class="mt-4 flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                    v-for="fatia in composicao"
+                    :key="fatia.classe"
+                    class="h-full transition-all duration-700 ease-out first:rounded-l-full last:rounded-r-full"
+                    :style="{ width: `${fatia.percent}%`, backgroundColor: fatia.color }"
+                    :title="`${fatia.label}: ${formatBRL(fatia.valor)}`"
+                ></div>
+            </div>
+
+            <ul class="mt-4 space-y-2">
+                <li v-for="fatia in composicao" :key="fatia.classe" class="flex items-center justify-between gap-3 text-sm">
+                    <span class="flex min-w-0 items-center gap-2">
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: fatia.color }"></span>
+                        <span class="truncate font-medium text-slate-700">{{ fatia.label }}</span>
+                    </span>
+                    <span class="shrink-0 tabular-nums text-slate-500">
+                        {{ formatBRL(fatia.valor) }} · {{ fatia.percent.toFixed(0) }}%
+                    </span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Estado vazio: um convite com o próximo passo explícito. -->
+        <section
+            v-if="investments.length === 0"
+            class="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm"
+        >
+            <h2 class="text-base font-semibold text-slate-900">Nada guardado por aqui ainda</h2>
+            <p class="mx-auto mt-2 max-w-sm text-sm text-slate-500">
+                Cadastre uma caixinha, um CDB ou qualquer reserva para ver quanto você tem — e quanto rendeu.
+            </p>
+            <button
+                type="button"
+                class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+                @click="openNew"
+            >
+                Cadastrar investimento
+            </button>
+        </section>
+
+        <section v-else class="mt-6 space-y-3 pb-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-semibold text-slate-900">Seus investimentos</h2>
+                <button
+                    type="button"
+                    class="rounded-xl px-3 py-1.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
+                    @click="openNew"
+                >
+                    Adicionar
+                </button>
+            </div>
+
+            <article
+                v-for="investment in investments"
+                :key="investment.id"
+                class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60"
+            >
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <span
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
+                            :style="{ backgroundColor: investment.color ?? classeDe(investment.assetClass).color }"
+                        >
+                            {{ investment.name.slice(0, 2).toUpperCase() }}
+                        </span>
+                        <div class="min-w-0">
+                            <h3 class="truncate font-semibold text-slate-900">{{ investment.name }}</h3>
+                            <p class="truncate text-xs text-slate-500">
+                                {{ classeDe(investment.assetClass).label }}
+                                <template v-if="investment.institution"> · {{ investment.institution }}</template>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="shrink-0 text-right">
+                        <div class="font-bold tabular-nums text-slate-900">{{ formatBRL(investment.currentValue) }}</div>
+                        <div
+                            class="text-xs font-semibold tabular-nums"
+                            :class="investment.rendimento < 0 ? 'text-red-500' : 'text-emerald-600'"
+                        >
+                            {{ investment.rendimento >= 0 ? '+' : '−' }}{{ formatBRL(Math.abs(investment.rendimento)) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                    <span
+                        class="text-xs"
+                        :class="precoDesatualizado(investment) ? 'font-semibold text-amber-600' : 'text-slate-400'"
+                    >
+                        {{ idadeDoPreco(investment) }}
+                    </span>
+
+                    <div class="flex items-center gap-1">
+                        <button
+                            type="button"
+                            class="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                            @click="openAporte(investment)"
+                        >
+                            Aportar ou resgatar
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100"
+                            @click="openEdit(investment)"
+                        >
+                            Editar
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-xl px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:bg-red-50"
+                            @click="removeInvestment(investment)"
+                        >
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <InvestmentModal
+            :open="investmentModalOpen"
+            :investment="editing"
+            @close="investmentModalOpen = false"
+            @save="saveInvestment"
+        />
+
+        <AporteModal
+            :open="aporteModalOpen"
+            :investment="aporteTarget"
+            :accounts="contasParaAporte"
+            @close="aporteModalOpen = false"
+            @save="saveAporte"
+        />
+
+        <MobileToast :show="toastOpen" :message="toastMessage" @dismiss="toastOpen = false" />
+    </component>
+</template>

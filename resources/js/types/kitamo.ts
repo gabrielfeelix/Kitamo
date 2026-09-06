@@ -103,10 +103,32 @@ export type Category = {
     is_default?: boolean;
 };
 
+export type AssetClass = 'caixinha' | 'cdb' | 'tesouro' | 'acao' | 'fii' | 'cripto' | 'outro';
+
+export type Investment = {
+    id: string;
+    name: string;
+    assetClass: AssetClass;
+    institution: string | null;
+    ticker: string | null;
+    quantity: number | null;
+    currentValue: number;
+    /** Aportes menos resgates: o que o usuário efetivamente pôs de bolso. */
+    totalAportado: number;
+    /** Valor atual menos aportado. Pode ser negativo — prejuízo é informação. */
+    rendimento: number;
+    rentabilidade: number;
+    priceSource: 'manual' | 'binance' | 'bcb';
+    priceUpdatedAt: string | null;
+    color: string | null;
+    icon: string | null;
+};
+
 export type BootstrapData = {
     entries: Entry[];
     goals: Goal[];
     accounts: Account[];
+    investments: Investment[];
     categories: Category[];
     tags: UserTag[];
 };
