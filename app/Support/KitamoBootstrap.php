@@ -6,6 +6,8 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Goal;
 use App\Models\GoalDeposit;
+use App\Models\Investment;
+use App\Models\InvestmentTransaction;
 use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
@@ -145,8 +147,49 @@ class KitamoBootstrap
             'entries' => $transactions->map(fn (Transaction $t) => $this->entry($t))->values(),
             'goals' => $goals->map(fn (Goal $g) => $this->goal($g))->values(),
             'accounts' => $accounts->map(fn (Account $a) => $this->account($a))->values(),
+            'investments' => Investment::query()
+                ->where('user_id', $user->id)
+                ->ativos()
+                ->with('movimentos')
+                ->orderByDesc('current_value')
+                ->get()
+                ->map(fn (Investment $i) => $this->investment($i))
+                ->values(),
             'categories' => $categories,
             'tags' => $tags,
+        ];
+    }
+
+    /**
+     * Rendimento e rentabilidade são derivados na leitura, nunca persistidos:
+     * campo derivado no banco dessincroniza do histórico que o gerou.
+     */
+    public function investment(Investment $investment): array
+    {
+        $movimentos = $investment->movimentos
+            ->map(fn (InvestmentTransaction $m) => [
+                'kind' => $m->kind,
+                'amount' => (float) $m->amount,
+            ])
+            ->all();
+
+        $valorAtual = (float) $investment->current_value;
+
+        return [
+            'id' => (string) $investment->id,
+            'name' => $investment->name,
+            'assetClass' => $investment->asset_class,
+            'institution' => $investment->institution,
+            'ticker' => $investment->ticker,
+            'quantity' => $investment->quantity !== null ? (float) $investment->quantity : null,
+            'currentValue' => $valorAtual,
+            'totalAportado' => Patrimonio::totalAportado($movimentos),
+            'rendimento' => Patrimonio::rendimento($valorAtual, $movimentos),
+            'rentabilidade' => Patrimonio::rentabilidadePercentual($valorAtual, $movimentos),
+            'priceSource' => $investment->price_source,
+            'priceUpdatedAt' => $investment->price_updated_at?->toISOString(),
+            'color' => $investment->color,
+            'icon' => $investment->icon,
         ];
     }
 

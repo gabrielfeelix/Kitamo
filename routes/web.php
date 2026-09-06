@@ -15,6 +15,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\GoalDepositController;
 use App\Http\Controllers\DashboardApiController;
@@ -107,6 +108,10 @@ Route::get('/goals/{goalId}/edit', function (string $goalId) {
         'goalId' => $goalId,
     ]);
 })->middleware(['auth', 'verified'])->name('goals.edit');
+
+Route::get('/patrimonio', function () {
+    return Inertia::render('Patrimonio/Index');
+})->middleware(['auth', 'verified'])->name('patrimonio');
 
 Route::get('/settings', function () {
     return Inertia::render('Settings');
@@ -257,6 +262,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
     Route::patch('/api/transactions/{transaction}/toggle-pago', [TransactionController::class, 'togglePago'])->name('api.transactions.toggle-pago');
+    Route::post('/api/investments', [InvestmentController::class, 'store'])->name('api.investments.store');
+    Route::patch('/api/investments/{investment}', [InvestmentController::class, 'update'])->name('api.investments.update');
+    Route::delete('/api/investments/{investment}', [InvestmentController::class, 'destroy'])->name('api.investments.destroy');
+    Route::post('/api/investments/{investment}/aporte', [InvestmentController::class, 'aporte'])->name('api.investments.aporte');
     Route::get('/api/dashboard/projecao', [DashboardApiController::class, 'projecao'])->name('api.dashboard.projecao');
     Route::get('/api/dashboard/insights', [DashboardApiController::class, 'insights'])->name('api.dashboard.insights');
     Route::post('/api/transferencias/preview', [TransferenciaController::class, 'preview'])->name('api.transferencias.preview');
