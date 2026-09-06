@@ -5,10 +5,14 @@ import type { Investment } from '@/types/kitamo';
 export type AportePayload = {
     kind: 'aporte' | 'resgate';
     amount: number;
+    quantity: number | null;
     occurred_on: string;
     afeta_caixa: boolean;
     account_id: number | null;
 };
+
+/** Classes com quantidade: é onde preço médio faz sentido. */
+const CLASSES_COM_QUANTIDADE = ['acao', 'fii', 'cripto'];
 
 type ContaOption = { id: string; name: string; balance: number };
 
@@ -25,9 +29,14 @@ const emit = defineEmits<{
 
 const kind = ref<'aporte' | 'resgate'>('aporte');
 const amount = ref('');
+const quantity = ref('');
 const occurredOn = ref('');
 const afetaCaixa = ref(true);
 const accountId = ref<string>('');
+
+const pedeQuantidade = computed(() =>
+    props.investment ? CLASSES_COM_QUANTIDADE.includes(props.investment.assetClass) : false,
+);
 
 const parseMoney = (value: string) => {
     const normalized = value.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
@@ -45,6 +54,7 @@ watch(
 
         kind.value = 'aporte';
         amount.value = '';
+        quantity.value = '';
         occurredOn.value = new Date().toISOString().slice(0, 10);
         afetaCaixa.value = true;
         accountId.value = props.accounts[0]?.id ?? '';
@@ -67,6 +77,7 @@ const submit = () => {
     emit('save', {
         kind: kind.value,
         amount: parseMoney(amount.value),
+        quantity: pedeQuantidade.value && parseMoney(quantity.value) > 0 ? parseMoney(quantity.value) : null,
         occurred_on: occurredOn.value,
         afeta_caixa: afetaCaixa.value && accountId.value !== '',
         account_id: afetaCaixa.value && accountId.value !== '' ? Number(accountId.value) : null,
@@ -114,6 +125,21 @@ const submit = () => {
                             placeholder="500,00"
                             class="mt-1 w-full rounded-2xl border-slate-200 text-sm tabular-nums focus:border-emerald-500 focus:ring-emerald-500"
                         />
+                    </div>
+
+                    <div v-if="pedeQuantidade">
+                        <label for="aporte-qty" class="text-sm font-medium text-slate-700">
+                            Quantidade <span class="font-normal text-slate-400">(opcional)</span>
+                        </label>
+                        <input
+                            id="aporte-qty"
+                            v-model="quantity"
+                            type="text"
+                            inputmode="decimal"
+                            placeholder="0,01"
+                            class="mt-1 w-full rounded-2xl border-slate-200 text-sm tabular-nums focus:border-emerald-500 focus:ring-emerald-500"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">Informe para o app calcular seu preço médio.</p>
                     </div>
 
                     <div>

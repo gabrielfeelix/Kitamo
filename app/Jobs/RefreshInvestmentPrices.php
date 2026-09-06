@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Investment;
 use App\Models\InvestmentPrice;
+use App\Services\Patrimonio\BcbPriceProvider;
 use App\Services\Patrimonio\BinancePriceProvider;
 use App\Services\Patrimonio\PriceProvider;
 use Illuminate\Bus\Queueable;
@@ -30,6 +31,10 @@ class RefreshInvestmentPrices implements ShouldQueue
 
     public function handle(): void
     {
+        // O CDI é buscado sempre, independente de haver posição sincronizada:
+        // ele é o benchmark de toda a carteira, inclusive das manuais.
+        $this->atualizarCdi();
+
         $providers = [
             'binance' => new BinancePriceProvider(),
         ];
@@ -81,6 +86,31 @@ class RefreshInvestmentPrices implements ShouldQueue
 
         $investment->price_updated_at = now();
         $investment->save();
+    }
+
+    /**
+     * Guarda a taxa CDI do dia. Sem ela a tela simplesmente não mostra a
+     * comparação — nunca mostra um benchmark chutado.
+     */
+    private function atualizarCdi(): void
+    {
+        $serie = BcbPriceProvider::SERIE_CDI;
+        $ultimo = $this->ultimoPrecoConhecido($serie, 'bcb');
+
+        $taxa = (new BcbPriceProvider())->precoAtual($serie, $ultimo);
+
+        if ($taxa === null || $taxa <= 0) {
+            return;
+        }
+
+        InvestmentPrice::updateOrCreate(
+            [
+                'ticker' => $serie,
+                'source' => 'bcb',
+                'quoted_on' => Carbon::today()->toDateString(),
+            ],
+            ['price' => $taxa],
+        );
     }
 
     private function ultimoPrecoConhecido(string $ticker, string $fonte): ?float

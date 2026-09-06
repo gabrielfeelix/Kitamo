@@ -7,7 +7,9 @@ use App\Models\Category;
 use App\Models\Goal;
 use App\Models\GoalDeposit;
 use App\Models\Investment;
+use App\Models\InvestmentPrice;
 use App\Models\InvestmentTransaction;
+use App\Services\Patrimonio\BcbPriceProvider;
 use App\Models\Tag;
 use App\Models\Transaction;
 use App\Models\User;
@@ -161,6 +163,56 @@ class KitamoBootstrap
     }
 
     /**
+     * Classes garantidas pelo FGC até R$ 250 mil por CPF/instituição.
+     * Caixinha e CDB são depósitos bancários; Tesouro é risco soberano
+     * (mais seguro ainda, mas por outro mecanismo, então fica de fora).
+     */
+    private const CLASSES_FGC = ['caixinha', 'cdb'];
+
+    /** Teto de cobertura do FGC por instituição. */
+    public const TETO_FGC = 250000.00;
+
+    /**
+     * Última taxa CDI diária conhecida, em cache. Sem cotação disponível
+     * devolve null e a comparação some da tela — melhor ausente do que
+     * inventada.
+     */
+    private static function cdiDiario(): ?float
+    {
+        static $cache = false;
+
+        if ($cache !== false) {
+            return $cache;
+        }
+
+        $registro = InvestmentPrice::query()
+            ->where('ticker', BcbPriceProvider::SERIE_CDI)
+            ->where('source', 'bcb')
+            ->orderByDesc('quoted_on')
+            ->first();
+
+        return $cache = $registro ? (float) $registro->price : null;
+    }
+
+    /**
+     * Preço médio de compra: total aportado dividido pela quantidade
+     * acumulada. Só faz sentido em ativo com quantidade (ação, FII, cripto).
+     */
+    private static function precoMedio(Investment $investment): ?float
+    {
+        $compras = $investment->movimentos->where('kind', 'aporte');
+
+        $quantidade = (float) $compras->sum(fn (InvestmentTransaction $m) => (float) ($m->quantity ?? 0));
+        if ($quantidade <= 0) {
+            return null;
+        }
+
+        $valor = (float) $compras->sum(fn (InvestmentTransaction $m) => (float) $m->amount);
+
+        return round($valor / $quantidade, 8);
+    }
+
+    /**
      * Rendimento e rentabilidade são derivados na leitura, nunca persistidos:
      * campo derivado no banco dessincroniza do histórico que o gerou.
      */
@@ -174,6 +226,29 @@ class KitamoBootstrap
             ->all();
 
         $valorAtual = (float) $investment->current_value;
+        $rentabilidade = Patrimonio::rentabilidadePercentual($valorAtual, $movimentos);
+
+        // Comparação com o CDI no mesmo período em que o dinheiro esteve
+        // aplicado: um rendimento de 2% só significa algo ao lado do que o
+        // CDI fez no mesmo intervalo.
+        $primeiroAporte = $investment->movimentos
+            ->where('kind', 'aporte')
+            ->min('occurred_on');
+
+        $cdiNoPeriodo = null;
+        $percentualDoCdi = null;
+
+        if ($primeiroAporte) {
+            $diasCorridos = (int) Carbon::parse($primeiroAporte)->startOfDay()->diffInDays(Carbon::now()->startOfDay());
+            $taxaDiaria = self::cdiDiario();
+
+            if ($taxaDiaria !== null && $diasCorridos > 0) {
+                $cdiNoPeriodo = round(Benchmark::acumular($taxaDiaria, Benchmark::diasUteis($diasCorridos)), 2);
+                $percentualDoCdi = Benchmark::percentualDoBenchmark($rentabilidade, $cdiNoPeriodo);
+            }
+        }
+
+        $precoMedio = self::precoMedio($investment);
 
         return [
             'id' => (string) $investment->id,
@@ -185,7 +260,11 @@ class KitamoBootstrap
             'currentValue' => $valorAtual,
             'totalAportado' => Patrimonio::totalAportado($movimentos),
             'rendimento' => Patrimonio::rendimento($valorAtual, $movimentos),
-            'rentabilidade' => Patrimonio::rentabilidadePercentual($valorAtual, $movimentos),
+            'rentabilidade' => $rentabilidade,
+            'cdiNoPeriodo' => $cdiNoPeriodo,
+            'percentualDoCdi' => $percentualDoCdi,
+            'precoMedio' => $precoMedio,
+            'cobertoPeloFgc' => in_array($investment->asset_class, self::CLASSES_FGC, true),
             'priceSource' => $investment->price_source,
             'priceUpdatedAt' => $investment->price_updated_at?->toISOString(),
             'color' => $investment->color,

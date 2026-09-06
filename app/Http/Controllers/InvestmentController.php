@@ -146,6 +146,14 @@ class InvestmentController extends Controller
             // O aporte aumenta a posição; o resgate reduz.
             $delta = $data['kind'] === 'aporte' ? $data['amount'] : -$data['amount'];
             $investment->current_value = max(0, (float) $investment->current_value + $delta);
+
+            // A quantidade acompanha o movimento: sem isso o preço médio e a
+            // cotação automática ficariam calculando sobre um estoque parado.
+            if (!empty($data['quantity'])) {
+                $deltaQtd = $data['kind'] === 'aporte' ? $data['quantity'] : -$data['quantity'];
+                $investment->quantity = max(0, (float) ($investment->quantity ?? 0) + $deltaQtd);
+            }
+
             $investment->price_updated_at = now();
             $investment->save();
 

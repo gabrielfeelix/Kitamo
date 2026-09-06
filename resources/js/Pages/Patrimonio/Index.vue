@@ -67,6 +67,49 @@ const rentabilidadeTotal = computed(() => {
     return (rendimentoTotal.value / totalAportado.value) * 100;
 });
 
+const TETO_FGC = 250000;
+
+/**
+ * Comparação da carteira com o CDI. Usa a maior janela entre as posições,
+ * ponderando pelo valor — e some inteira quando não há cotação, em vez de
+ * mostrar um benchmark chutado.
+ */
+const resumoCdi = computed(() => {
+    const comCdi = investments.value.filter((i) => i.cdiNoPeriodo !== null && i.totalAportado > 0);
+    if (comCdi.length === 0) return null;
+
+    const aportado = comCdi.reduce((acc, i) => acc + i.totalAportado, 0);
+    if (aportado <= 0) return null;
+
+    const cdiPonderado = comCdi.reduce((acc, i) => acc + (i.cdiNoPeriodo ?? 0) * i.totalAportado, 0) / aportado;
+    const rendPonderado = comCdi.reduce((acc, i) => acc + i.rentabilidade * i.totalAportado, 0) / aportado;
+
+    if (cdiPonderado <= 0) return null;
+
+    const percentual = (rendPonderado / cdiPonderado) * 100;
+    const cdiTexto = `CDI no período: ${cdiPonderado.toFixed(2)}%`;
+
+    if (percentual >= 100) {
+        return `${cdiTexto} · você rendeu ${percentual.toFixed(0)}% do CDI`;
+    }
+    return `${cdiTexto} · você rendeu ${percentual.toFixed(0)}% do CDI, abaixo do índice`;
+});
+
+/** Instituições onde o saldo garantido passa do teto do FGC. */
+const expostoAcimaDoFgc = computed(() => {
+    const porInstituicao = new Map<string, number>();
+
+    for (const i of investments.value) {
+        if (!i.cobertoPeloFgc) continue;
+        const nome = i.institution?.trim() || 'sua instituição';
+        porInstituicao.set(nome, (porInstituicao.get(nome) ?? 0) + i.currentValue);
+    }
+
+    return Array.from(porInstituicao.entries())
+        .filter(([, total]) => total > TETO_FGC)
+        .map(([institution, total]) => ({ institution, total }));
+});
+
 /** Fatia de cada classe no total investido, para a barra de composição. */
 const composicao = computed(() => {
     const porClasse = new Map<AssetClass, number>();
@@ -77,13 +120,29 @@ const composicao = computed(() => {
     const total = totalInvestido.value;
     if (total <= 0) return [];
 
+    const aportadoPorClasse = new Map<AssetClass, number>();
+    const rendimentoPorClasse = new Map<AssetClass, number>();
+    for (const i of investments.value) {
+        aportadoPorClasse.set(i.assetClass, (aportadoPorClasse.get(i.assetClass) ?? 0) + i.totalAportado);
+        rendimentoPorClasse.set(i.assetClass, (rendimentoPorClasse.get(i.assetClass) ?? 0) + i.rendimento);
+    }
+
     return Array.from(porClasse.entries())
-        .map(([classe, valor]) => ({
-            classe,
-            valor,
-            percent: (valor / total) * 100,
-            ...classeDe(classe),
-        }))
+        .map(([classe, valor]) => {
+            const aportado = aportadoPorClasse.get(classe) ?? 0;
+            const rendimento = rendimentoPorClasse.get(classe) ?? 0;
+
+            return {
+                classe,
+                valor,
+                percent: (valor / total) * 100,
+                rendimento,
+                // Rentabilidade da classe: null quando não há capital aportado,
+                // porque dividir por zero não produz percentual nenhum.
+                rentabilidade: aportado > 0 ? (rendimento / aportado) * 100 : null,
+                ...classeDe(classe),
+            };
+        })
         .sort((a, b) => b.valor - a.valor);
 });
 
@@ -245,6 +304,22 @@ const contasParaAporte = computed(() =>
                     </div>
                 </div>
             </div>
+
+            <!-- A comparação com o CDI é o que transforma "rendeu 2%" em
+                 "rendeu bem" ou "rendeu mal". Some quando não há cotação. -->
+            <p v-if="resumoCdi" class="mt-4 text-sm text-slate-300">{{ resumoCdi }}</p>
+        </section>
+
+        <section
+            v-if="expostoAcimaDoFgc.length > 0"
+            class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4"
+        >
+            <h2 class="text-sm font-semibold text-amber-900">Acima da cobertura do FGC</h2>
+            <p class="mt-1 text-xs text-amber-800">
+                O FGC garante até {{ formatBRL(TETO_FGC) }} por instituição. Em
+                {{ expostoAcimaDoFgc.map((e) => e.institution).join(', ') }} você tem mais que isso — o excedente não
+                está garantido.
+            </p>
         </section>
 
         <!-- Composição: uma barra só, proporcional. Rótulo junto da cor, sem
@@ -268,8 +343,15 @@ const contasParaAporte = computed(() =>
                         <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: fatia.color }"></span>
                         <span class="truncate font-medium text-slate-700">{{ fatia.label }}</span>
                     </span>
-                    <span class="shrink-0 tabular-nums text-slate-500">
-                        {{ formatBRL(fatia.valor) }} · {{ fatia.percent.toFixed(0) }}%
+                    <span class="shrink-0 text-right tabular-nums">
+                        <span class="text-slate-500">{{ formatBRL(fatia.valor) }} · {{ fatia.percent.toFixed(0) }}%</span>
+                        <span
+                            v-if="fatia.rentabilidade !== null"
+                            class="ml-2 text-xs font-semibold"
+                            :class="fatia.rentabilidade < 0 ? 'text-red-500' : 'text-emerald-600'"
+                        >
+                            {{ fatia.rentabilidade >= 0 ? '+' : '−' }}{{ Math.abs(fatia.rentabilidade).toFixed(1) }}%
+                        </span>
                     </span>
                 </li>
             </ul>
@@ -324,6 +406,28 @@ const contasParaAporte = computed(() =>
                                 {{ classeDe(investment.assetClass).label }}
                                 <template v-if="investment.institution"> · {{ investment.institution }}</template>
                             </p>
+                            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                <span
+                                    v-if="investment.cobertoPeloFgc"
+                                    class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
+                                    title="Garantido pelo FGC até R$ 250 mil por instituição"
+                                >
+                                    FGC
+                                </span>
+                                <span
+                                    v-if="investment.percentualDoCdi !== null"
+                                    class="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                    :class="investment.percentualDoCdi >= 100 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
+                                >
+                                    {{ investment.percentualDoCdi.toFixed(0) }}% do CDI
+                                </span>
+                                <span
+                                    v-if="investment.precoMedio !== null"
+                                    class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600"
+                                >
+                                    PM {{ formatBRL(investment.precoMedio) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="shrink-0 text-right">

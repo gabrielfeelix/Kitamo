@@ -118,6 +118,13 @@ export type Investment = {
     /** Valor atual menos aportado. Pode ser negativo — prejuízo é informação. */
     rendimento: number;
     rentabilidade: number;
+    /** Quanto o CDI rendeu no mesmo período. null quando não há cotação. */
+    cdiNoPeriodo: number | null;
+    /** 200 = rendeu o dobro do CDI. null quando não dá para comparar. */
+    percentualDoCdi: number | null;
+    /** Só em ativo com quantidade (ação, FII, cripto). */
+    precoMedio: number | null;
+    cobertoPeloFgc: boolean;
     priceSource: 'manual' | 'binance' | 'bcb';
     priceUpdatedAt: string | null;
     color: string | null;
