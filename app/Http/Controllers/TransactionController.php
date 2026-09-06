@@ -630,6 +630,7 @@ class TransactionController extends Controller
         }
 
         return response()->json([
+            'entry' => app(KitamoBootstrap::class)->entry($transaction->load(['category', 'account', 'recorrenciaGrupo'])),
             'status' => $transaction->status,
             'data_pagamento' => $transaction->data_pagamento?->toISOString(),
         ]);

@@ -166,7 +166,8 @@ const showToast = (message: string) => {
 
 const isRecurringEntry = (entry: Entry) => Boolean(entry.isRecurring) && !Boolean(entry.installment);
 
-const replaceEntry = (entry: Entry) => {
+const replaceEntry = (entry: Entry | null | undefined) => {
+    if (!entry?.id) return;
     const idx = entries.value.findIndex((item) => item.id === entry.id);
     if (idx >= 0) entries.value[idx] = entry;
     else entries.value.unshift(entry);
@@ -186,20 +187,43 @@ const entryToRequest = (entry: Entry) => ({
     tags: entry.tags ?? [],
 });
 
+const togglingEntries = ref<Set<string>>(new Set());
+
 const toggleEntryPaid = async (id: string) => {
     const entry = entries.value.find((e) => e.id === id);
     if (!entry) return;
     if (entry.kind !== 'expense') return;
-    // Endpoint dedicado: transactions.update reenvia o payload inteiro via
-    // entryToRequest, que não preserva os campos de parcelamento — marcar a
-    // parcela 7/12 como paga a renomeava para "Parcela 1/12".
-    const response = await requestJson<{ entry: Entry }>(route('api.transactions.toggle-pago', entry.id), {
-        method: 'PATCH',
-    });
-    replaceEntry(response.entry);
-    if (response.entry.status === 'paid') showToast('Conta marcada como paga');
-    router.reload({ only: ['bootstrap'] });
-    void loadMonthCashBalance(selectedMonthKey.value);
+    // Um clique por transação de cada vez: dois PATCH concorrentes se anulam
+    // no servidor e a UI acaba fora de sincronia com o saldo.
+    if (togglingEntries.value.has(id)) return;
+    togglingEntries.value.add(id);
+
+    // Otimista: o check vira na hora e só volta atrás se o servidor recusar.
+    // Antes a UI esperava o round-trip inteiro e parecia travada.
+    const previousStatus = entry.status;
+    const nextStatus: Entry['status'] = previousStatus === 'paid' ? 'pending' : 'paid';
+    replaceEntry({ ...entry, status: nextStatus });
+
+    try {
+        // Endpoint dedicado: transactions.update reenvia o payload inteiro via
+        // entryToRequest, que não preserva os campos de parcelamento — marcar a
+        // parcela 7/12 como paga a renomeava para "Parcela 1/12".
+        const response = await requestJson<{ entry?: Entry; status?: string }>(
+            route('api.transactions.toggle-pago', entry.id),
+            { method: 'PATCH' },
+        );
+        const confirmed = response?.entry;
+        if (confirmed?.id) replaceEntry(confirmed);
+        const finalStatus = confirmed?.status ?? response?.status ?? nextStatus;
+        if (finalStatus === 'paid') showToast('Conta marcada como paga');
+        router.reload({ only: ['bootstrap'] });
+        void loadMonthCashBalance(selectedMonthKey.value);
+    } catch (error) {
+        replaceEntry({ ...entry, status: previousStatus });
+        showToast('Não foi possível atualizar. Tente novamente.');
+    } finally {
+        togglingEntries.value.delete(id);
+    }
 };
 
 const filteredEntries = computed(() => {

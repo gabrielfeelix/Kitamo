@@ -646,9 +646,13 @@ const projectionSeries = computed(() => {
     const negMin = Math.min(0, ...saldos);
 
     const chartHeight = 96;
-    const baselinePx = posMax === 0 && negMin === 0 ? Math.round(chartHeight / 2) : Math.round((posMax / (posMax - negMin)) * chartHeight);
-    const posScale = posMax > 0 ? baselinePx / posMax : 0;
-    const negScale = negMin < 0 ? (chartHeight - baselinePx) / Math.abs(negMin) : 0;
+    // Quando todo o período projetado é ~zero (saldo atual zerado), posMax e
+    // negMin colapsam: as escalas viravam 0, toda barra caía no mínimo de 2px
+    // e a linha "Saldo zero" pousava exatamente em cima delas.
+    const isFlat = posMax - negMin < 0.01;
+    const baselinePx = isFlat ? Math.round(chartHeight / 2) : Math.round((posMax / (posMax - negMin)) * chartHeight);
+    const posScale = !isFlat && posMax > 0 ? baselinePx / posMax : 0;
+    const negScale = !isFlat && negMin < 0 ? (chartHeight - baselinePx) / Math.abs(negMin) : 0;
 
     const criticalDDMM = projecao.value.primeiro_dia_negativo;
 
@@ -676,6 +680,7 @@ const projectionSeries = computed(() => {
         bars,
         baselinePx,
         chartHeight,
+        isFlat,
     };
 });
 
@@ -1349,9 +1354,13 @@ onMounted(() => {
 	            </div>
 
 	            <div v-if="hasProjection && projectionSeries" class="mt-4">
-	                <div class="relative mx-auto h-24">
+	                <p v-if="projectionSeries.isFlat" class="mb-3 text-xs text-slate-500">
+	                    Sem variação projetada no período — cadastre contas e lançamentos futuros para ver a projeção.
+	                </p>
+	                <!-- pr-16: reserva a calha do rótulo "Saldo zero", que antes ficava por cima das barras -->
+	                <div class="relative mx-auto h-24 pr-16">
 	                    <div
-	                        class="pointer-events-none absolute left-0 right-0 border-t-2 border-dashed border-[#EF4444]"
+	                        class="pointer-events-none absolute left-0 right-16 border-t-2 border-dashed border-[#EF4444]"
 	                        :style="{ top: `${projectionSeries.baselinePx}px` }"
 	                    ></div>
 	                    <div class="pointer-events-none absolute right-0 -translate-y-1/2 text-[10px] font-semibold text-[#EF4444]" :style="{ top: `${projectionSeries.baselinePx}px` }">
@@ -1446,103 +1455,6 @@ onMounted(() => {
                     </button>
                 </div>
             </section>
-
-            <section v-if="topExpenseCategories.length > 0 && showExpenseCategoriesSection" class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-                <div class="flex items-center gap-3 mb-4">
-                     <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-                            <path d="M12 6v6l4 2" />
-                        </svg>
-                    </span>
-                    <div class="text-base font-semibold text-slate-900">Onde você mais gastou</div>
-                </div>
-
-                <div class="space-y-5">
-                    <div v-for="cat in topExpenseCategories" :key="cat.label" class="group">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-3">
-                                <div 
-                                    class="flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md"
-                                    :style="{ backgroundColor: cat.color }"
-                                >
-                                    <CategoryIcon :icon="cat.icon" class="h-5 w-5" />
-                                </div>
-                                <span class="text-sm font-semibold text-slate-700">{{ cat.label }}</span>
-                            </div>
-                            <div class="text-sm font-bold text-slate-900 tabular-nums">{{ hideValues ? '••••' : formatBRL(cat.amount).replace('R$', '') }}</div>
-                        </div>
-                        <div class="flex items-center gap-3 pl-1">
-                            <div class="h-2.5 w-full rounded-full bg-slate-100/80 overflow-hidden ring-1 ring-slate-200/50">
-                                <div 
-                                    class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm" 
-                                    :style="{ width: `${cat.percent}%`, backgroundColor: cat.color }"
-                                ></div>
-                            </div>
-                            <div class="text-[11px] font-bold text-slate-400 w-9 text-right tabular-nums">{{ Math.round(cat.percent) }}%</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-                </div>
-                <div :class="[isMobile ? 'contents' : 'lg:col-span-4 flex flex-col']">
-
-		        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
-		            <div class="flex items-center justify-between">
-		                <div>
-                            <div class="text-lg font-semibold text-slate-900">Contas</div>
-                            <div class="mt-0.5 text-xs font-semibold text-slate-400">{{ accountsCountLabel }}</div>
-                        </div>
-                        <Link :href="route('accounts.overview')" class="rounded-2xl px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-slate-50">
-                            Ver todas
-                        </Link>
-		            </div>
-
-	            <div v-if="bankAccounts.length === 0" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
-	                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
-	                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-	                        <path d="M3 10h18" />
-	                        <path d="M5 10V8l7-5 7 5v2" />
-	                        <path d="M6 10v9" />
-	                        <path d="M18 10v9" />
-	                    </svg>
-	                </div>
-	                <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui contas cadastradas.</div>
-	                <div class="mt-1 text-xs text-slate-500">Adicione uma conta para começar a planejar seu mês.</div>
-	                <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white" @click="createAccountOpen = true">
-	                    Adicionar contas
-	                </button>
-	            </div>
-
-	            <div v-else class="mt-4 space-y-3">
-	                <Link
-	                    v-for="account in bankAccounts"
-	                    :key="account.id"
-	                    :href="route('accounts.show', { accountKey: account.id })"
-	                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
-	                >
-	                    <div class="flex items-center gap-3">
-		                        <InstitutionAvatar
-		                            :institution="account.institution ?? account.label"
-		                            :svg-path="account.svgPath"
-		                            :is-wallet="account.type === 'wallet' || account.icon === 'wallet'"
-		                            :fallback-icon="account.type === 'wallet' || account.icon === 'wallet' ? 'wallet' : 'account'"
-		                            container-class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white"
-		                            img-class="h-8 w-8 object-contain"
-	                            fallback-icon-class="h-5 w-5 text-white"
-	                            :style="account.svgPath ? undefined : { backgroundColor: account.color }"
-	                        />
-	                        <div>
-	                            <div class="text-sm font-semibold text-slate-900">{{ account.label }}</div>
-	                            <div class="text-xs text-slate-500">{{ account.subtitle }}</div>
-	                        </div>
-	                    </div>
-	                    <div class="text-sm font-semibold text-slate-900">
-	                        {{ hideValues ? 'R$ ••••' : `R$ ${account.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` }}
-	                    </div>
-	                </Link>
-	            </div>
-	        </section>
 
 		        <section v-if="showCreditCardsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
 		            <div class="flex items-center justify-between">
@@ -1678,6 +1590,103 @@ onMounted(() => {
                     </div>
 	            </div>
 		        </section>
+                </div>
+                <div :class="[isMobile ? 'contents' : 'lg:col-span-4 flex flex-col']">
+
+		        <section v-if="showAccountsSection" class="mt-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60">
+		            <div class="flex items-center justify-between">
+		                <div>
+                            <div class="text-lg font-semibold text-slate-900">Contas</div>
+                            <div class="mt-0.5 text-xs font-semibold text-slate-400">{{ accountsCountLabel }}</div>
+                        </div>
+                        <Link :href="route('accounts.overview')" class="rounded-2xl px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-slate-50">
+                            Ver todas
+                        </Link>
+		            </div>
+
+	            <div v-if="bankAccounts.length === 0" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
+	                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400">
+	                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                        <path d="M3 10h18" />
+	                        <path d="M5 10V8l7-5 7 5v2" />
+	                        <path d="M6 10v9" />
+	                        <path d="M18 10v9" />
+	                    </svg>
+	                </div>
+	                <div class="mt-3 text-sm font-semibold text-slate-900">Você ainda não possui contas cadastradas.</div>
+	                <div class="mt-1 text-xs text-slate-500">Adicione uma conta para começar a planejar seu mês.</div>
+	                <button type="button" class="mt-4 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white" @click="createAccountOpen = true">
+	                    Adicionar contas
+	                </button>
+	            </div>
+
+	            <div v-else class="mt-4 space-y-3">
+	                <Link
+	                    v-for="account in bankAccounts"
+	                    :key="account.id"
+	                    :href="route('accounts.show', { accountKey: account.id })"
+	                    class="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm ring-1 ring-slate-200/60"
+	                >
+	                    <div class="flex items-center gap-3">
+		                        <InstitutionAvatar
+		                            :institution="account.institution ?? account.label"
+		                            :svg-path="account.svgPath"
+		                            :is-wallet="account.type === 'wallet' || account.icon === 'wallet'"
+		                            :fallback-icon="account.type === 'wallet' || account.icon === 'wallet' ? 'wallet' : 'account'"
+		                            container-class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white"
+		                            img-class="h-8 w-8 object-contain"
+	                            fallback-icon-class="h-5 w-5 text-white"
+	                            :style="account.svgPath ? undefined : { backgroundColor: account.color }"
+	                        />
+	                        <div>
+	                            <div class="text-sm font-semibold text-slate-900">{{ account.label }}</div>
+	                            <div class="text-xs text-slate-500">{{ account.subtitle }}</div>
+	                        </div>
+	                    </div>
+	                    <div class="text-sm font-semibold text-slate-900">
+	                        {{ hideValues ? 'R$ ••••' : `R$ ${account.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` }}
+	                    </div>
+	                </Link>
+	            </div>
+	        </section>
+
+            <section v-if="topExpenseCategories.length > 0 && showExpenseCategoriesSection" class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
+                <div class="flex items-center gap-3 mb-4">
+                     <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </span>
+                    <div class="text-base font-semibold text-slate-900">Onde você mais gastou</div>
+                </div>
+
+                <div class="space-y-5">
+                    <div v-for="cat in topExpenseCategories" :key="cat.label" class="group">
+                        <div class="flex items-center justify-between gap-3 mb-2">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md"
+                                    :style="{ backgroundColor: cat.color }"
+                                >
+                                    <CategoryIcon :icon="cat.icon" class="h-5 w-5" />
+                                </div>
+                                <span class="truncate text-sm font-semibold text-slate-700" :title="cat.label">{{ cat.label }}</span>
+                            </div>
+                            <div class="shrink-0 text-sm font-bold text-slate-900 tabular-nums">{{ hideValues ? '••••' : formatBRL(cat.amount).replace('R$', '') }}</div>
+                        </div>
+                        <div class="flex items-center gap-3 pl-1">
+                            <div class="h-2.5 w-full rounded-full bg-slate-100/80 overflow-hidden ring-1 ring-slate-200/50">
+                                <div 
+                                    class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm" 
+                                    :style="{ width: `${cat.percent}%`, backgroundColor: cat.color }"
+                                ></div>
+                            </div>
+                            <div class="text-[11px] font-bold text-slate-400 w-9 text-right tabular-nums">{{ Math.round(cat.percent) }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
 		        <section v-if="showUpcomingBillsSection" class="mt-6">
 	            <div class="flex items-center justify-between">
