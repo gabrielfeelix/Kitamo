@@ -128,7 +128,7 @@ class TransferenciaController extends Controller
             $contaDestino->current_balance = (float) $contaDestino->current_balance + $valor;
             $contaDestino->save();
 
-            return Transferencia::create([
+            $transferencia = Transferencia::create([
                 'user_id' => $user->id,
                 'conta_origem_id' => $contaOrigem->id,
                 'conta_destino_id' => $contaDestino->id,
@@ -136,6 +136,51 @@ class TransferenciaController extends Controller
                 'descricao' => $data['descricao'] ?? 'Transferência',
                 'transferido_em' => now(),
             ]);
+
+            // Materializa as duas pontas como Transaction. Sem isso a
+            // transferência mexia no saldo mas não aparecia em extrato nenhum:
+            // do ponto de vista do usuário o saldo mudava sozinho, e não havia
+            // como revisar nem auditar o lançamento.
+            //
+            // A tag 'transferencia' marca o par para que relatórios de receita
+            // e despesa possam excluí-lo — dinheiro que troca de conta não é
+            // ganho nem gasto.
+            $descricao = $data['descricao'] ?? 'Transferência';
+            $hoje = now();
+
+            \App\Models\Transaction::create([
+                'user_id' => $user->id,
+                'account_id' => $contaOrigem->id,
+                'kind' => 'expense',
+                'status' => 'paid',
+                'amount' => $valor,
+                'moeda' => $contaOrigem->moeda ?? 'BRL',
+                'description' => sprintf('%s → %s', $descricao, $contaDestino->name),
+                'transaction_date' => $hoje->toDateString(),
+                'data_pagamento' => $hoje,
+                'priority' => false,
+                'is_recurring' => false,
+                'is_parcelado' => false,
+                'tags' => ['transferencia', 'transferencia:' . $transferencia->id],
+            ]);
+
+            \App\Models\Transaction::create([
+                'user_id' => $user->id,
+                'account_id' => $contaDestino->id,
+                'kind' => 'income',
+                'status' => 'received',
+                'amount' => $valor,
+                'moeda' => $contaDestino->moeda ?? 'BRL',
+                'description' => sprintf('%s ← %s', $descricao, $contaOrigem->name),
+                'transaction_date' => $hoje->toDateString(),
+                'data_pagamento' => $hoje,
+                'priority' => false,
+                'is_recurring' => false,
+                'is_parcelado' => false,
+                'tags' => ['transferencia', 'transferencia:' . $transferencia->id],
+            ]);
+
+            return $transferencia;
         });
 
         return response()->json([

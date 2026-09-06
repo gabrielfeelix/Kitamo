@@ -149,7 +149,9 @@ const formatBRL = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
-const receitas = computed(() => scopedEntries.value.filter((e) => e.kind === 'income').reduce((acc, e) => acc + e.amount, 0));
+const receitas = computed(() =>
+    scopedEntries.value.filter((e) => e.kind === 'income' && !isTransferencia(e)).reduce((acc, e) => acc + e.amount, 0),
+);
 // Quitação de fatura não é gasto novo: as compras que a compõem já foram
 // contadas como despesa. Incluí-la dobrava o total do período.
 const isQuitacaoFatura = (entry: { tags?: unknown; categoryLabel?: string | null }) => {
@@ -158,8 +160,18 @@ const isQuitacaoFatura = (entry: { tags?: unknown; categoryLabel?: string | null
     return (entry.categoryLabel ?? '') === 'Pagamento de fatura';
 };
 
+// Transferência entre contas próprias não é receita nem despesa: o dinheiro
+// só mudou de lugar. Contá-la inflava os dois lados do relatório.
+const isTransferencia = (entry: { tags?: unknown }) => {
+    const tags = Array.isArray(entry.tags) ? (entry.tags as string[]) : [];
+    return tags.includes('transferencia');
+};
+
+const contaComoGasto = (entry: { tags?: unknown; categoryLabel?: string | null }) =>
+    !isQuitacaoFatura(entry) && !isTransferencia(entry);
+
 const despesas = computed(() =>
-    scopedEntries.value.filter((e) => e.kind === 'expense' && !isQuitacaoFatura(e)).reduce((acc, e) => acc + e.amount, 0),
+    scopedEntries.value.filter((e) => e.kind === 'expense' && contaComoGasto(e)).reduce((acc, e) => acc + e.amount, 0),
 );
 const balanco = computed(() => receitas.value - despesas.value);
 
@@ -248,7 +260,7 @@ const lastMonths = computed(() => {
         const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
         const target = months.find((m) => m.key === key);
         if (!target) continue;
-        target.value += entry.kind === 'expense' && !isQuitacaoFatura(entry) ? entry.amount : 0;
+        target.value += entry.kind === 'expense' && contaComoGasto(entry) ? entry.amount : 0;
     }
 
     return months;
@@ -265,7 +277,7 @@ const increasePct = computed(() => {
 const topExpenses = computed(() => {
     const palette = ['#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#10B981'];
     return scopedEntries.value
-        .filter((entry) => entry.kind === 'expense' && !isQuitacaoFatura(entry))
+        .filter((entry) => entry.kind === 'expense' && contaComoGasto(entry))
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 5)
         .map((entry, idx) => ({
