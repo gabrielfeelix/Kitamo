@@ -54,7 +54,6 @@ class CreditCardController extends Controller
     private function invoicePeriod(Account $cartao, int $year, int $monthIndex): array
     {
         $closingDayRaw = (int) ($cartao->closing_day ?? 0);
-        $dueDayRaw = (int) ($cartao->due_day ?? 0);
 
         $monthStart = Carbon::create($year, $monthIndex + 1, 1)->startOfDay();
 
@@ -65,29 +64,34 @@ class CreditCardController extends Controller
             ];
         }
 
-        // A fatura mostrada no mês é a que VENCE nesse mês.
-        // O fechamento é a data de fechamento mais recente ANTES do vencimento.
-        $dueDays = (int) $monthStart->daysInMonth;
-        $dueDay = $dueDayRaw > 0 ? min($dueDayRaw, $dueDays) : $dueDays;
-        $due = Carbon::create($year, $monthIndex + 1, $dueDay)->endOfDay();
+        // A "fatura de <mês>" é o ciclo em que as compras daquele mês caem —
+        // a mesma convenção do extrato do banco. O ciclo fecha no closing_day
+        // do próprio mês (ou do mês seguinte, quando o fechamento é no começo
+        // do mês e as compras do mês ainda pertencem ao ciclo seguinte).
+        $monthDays = (int) $monthStart->daysInMonth;
+        $closingDay = min($closingDayRaw, $monthDays);
 
-        $closingThisMonth = Carbon::create($year, $monthIndex + 1, min($closingDayRaw, $dueDays))->endOfDay();
+        // Escolhe o ciclo cuja maior parte cai dentro do mês. Fechamento no
+        // fim do mês (ex.: dia 28) => ciclo termina no próprio mês. Fechamento
+        // no começo (ex.: dia 2) => as compras do mês só fecham no mês seguinte.
+        $fechaNoProprioMes = $closingDay >= (int) ceil($monthDays / 2);
 
-        if ($closingThisMonth->lessThan($due)) {
-            $end = $closingThisMonth;
+        if ($fechaNoProprioMes) {
+            $end = Carbon::create($year, $monthIndex + 1, $closingDay)->endOfDay();
         } else {
-            $prev = $monthStart->copy()->subMonthNoOverflow();
-            $end = Carbon::create($prev->year, $prev->month, min($closingDayRaw, (int) $prev->daysInMonth))->endOfDay();
+            $next = $monthStart->copy()->addMonthNoOverflow();
+            $end = Carbon::create($next->year, $next->month, min($closingDayRaw, (int) $next->daysInMonth))->endOfDay();
         }
 
-        $cycleStartMonth = $end->copy()->subMonthNoOverflow();
-        $startDay = $closingDayRaw + 1;
-        $cycleDays = (int) $cycleStartMonth->daysInMonth;
+        // Início do ciclo: dia seguinte ao fechamento anterior.
+        $cycleStart = $end->copy()->subMonthNoOverflow();
+        $cycleStartDays = (int) $cycleStart->daysInMonth;
+        $startDay = min($closingDayRaw, $cycleStartDays) + 1;
 
-        if ($startDay > $cycleDays) {
+        if ($startDay > $cycleStartDays) {
             $start = $end->copy()->startOfMonth()->startOfDay();
         } else {
-            $start = Carbon::create($cycleStartMonth->year, $cycleStartMonth->month, $startDay)->startOfDay();
+            $start = Carbon::create($cycleStart->year, $cycleStart->month, $startDay)->startOfDay();
         }
 
         return [

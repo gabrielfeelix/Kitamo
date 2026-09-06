@@ -393,7 +393,7 @@ const handleCreateCreditCardFlowSave = () => {
                 <div v-if="!isMobile" class="mt-6 rounded-3xl bg-slate-50 p-6 border border-slate-100">
                     <h3 class="font-bold text-slate-900">Sobre Faturas</h3>
                     <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                        Os valores apresentados referem-se às faturas com vencimento no mês selecionado.
+                        Os valores apresentados referem-se às compras feitas no mês selecionado — o mesmo critério do extrato do banco.
                     </p>
                 </div>
             </div>
