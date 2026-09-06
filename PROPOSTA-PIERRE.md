@@ -249,3 +249,127 @@ Fases 1, 3 e 5 não dependem do personagem. Fase 2 e 6 dependem.
 2. **Dark-first ou light-first** como paleta principal.
 3. **Fase 0**: ligar o modal no backend real (recomendado) ou remover.
 4. **Nav mobile de 4 itens** com chat no centro — aprova?
+
+---
+
+## 9. Identidade — partir do nome, não do gato
+
+Decisão do Gabriel em 06/09: sem copiar o Pierre (gato, preto, neon de IA)
+e sem estilo rua/pichação (parece pouco confiável para dinheiro). Público:
+população geral — dona Eusira e José incluídos, mas não só eles. Informal,
+sem gíria pesada, fácil.
+
+### A semente já existe: KITAMO = "quitamo(s)"
+
+O nome é um verbo conjugado. **A promessa está no nome: a gente quita.**
+Isso resolve três coisas de uma vez:
+
+| Pierre precisou de | Kitamo já tem |
+|---|---|
+| Um gato para ter rosto | Um verbo para ter atitude |
+| "Inteligência" como diferencial | "Quitar" como diferencial — dívida é a dor nº 1 do público |
+| Tom de assistente de IA | Tom de quem tá junto: "a gente" |
+
+O S que falta é a piada interna da marca: informal de propósito, como se
+fala. Pode virar assinatura visual (o S riscado, o S que "sobrou").
+
+### Voz proposta (rascunho para validar)
+
+- **Pessoa**: "a gente", nunca "nós" nem "o sistema". Fala com você, não sobre você.
+- **Frase curta, número na frente.** "Faltam R$ 320 pra fechar o mês." Não:
+  "Sua projeção indica um déficit de R$ 320."
+- **Palavra do dia a dia.** Fatura, conta, sobra, dívida, parcela. Nunca
+  "obrigação financeira", "fluxo", "ativo".
+- **Direto sem ser seco.** "Essa fatura vence sexta. Tá tudo certo pra pagar?"
+- **Comemora o que quitou.** Cada parcela paga é um evento, não uma linha.
+  É onde o nome vira produto.
+- **Sem gíria regional, sem emoji em excesso, sem "hein".** Informal é
+  ritmo, não vocabulário.
+
+### Visual — direção, não decisão
+
+Dark neon lê como "IA". Pichação lê como "risco". Para o público-alvo, o que
+lê como **confiança + proximidade** é:
+
+- **Cores quentes e sólidas** (uma cor forte de marca + neutros claros), não
+  preto com acento fluorescente. Referência de tom: Nubank 2015, PicPay, Inter
+  — despojados e bancários ao mesmo tempo.
+- **Tipografia grande e redonda** nos números. Legível para quem tem 60 anos.
+- **Ilustração simples e humana**, não pet. Pessoas, mãos, objetos do dia a dia
+  (carteira, boleto rasgado, cofrinho). Flat, poucas cores, mesmo estilo em
+  todas.
+- **Personagem: opcional.** Se houver, é uma pessoa ou objeto, não animal —
+  e nasce depois da voz, não antes.
+
+Nenhuma dessas é decisão final. São restrições para quem for desenhar.
+
+---
+
+## 10. IA sem caixa — o que custa e o que não custa
+
+Preocupação: o Pierre tem caixa para pagar LLM; a Kitamo não.
+
+### A maior parte da "inteligência" do Pierre não é LLM
+
+| O que aparece no Pierre | O que é por baixo | Custo |
+|---|---|---|
+| "Transferências subiram 324%" | `SUM` de dois períodos + `%` | zero |
+| "Assinaturas: R$ 647/mês, 4 ativas" | agrupamento por descrição+valor recorrente | zero |
+| "Maior gasto: dia 4, R$ 1.205" | `GROUP BY` dia | zero |
+| "Top estabelecimentos" | `GROUP BY` descrição normalizada | zero |
+| Card "seu dinheiro tem algo a dizer" | regra escolhe o insight + **template de frase** | zero |
+| Logo do iFood na transação | tabela local marca ↔ padrão de descrição | zero |
+| Agente "Julius reclama de gasto absurdo" | regra: gasto > 3× média da categoria → notificação | zero |
+| **Chat livre** | LLM | **paga** |
+| "Novo agente" em texto livre | LLM traduz frase em regra (1 chamada, uma vez) | quase zero |
+
+**Conclusão**: 90% do valor percebido é SQL + frases bem escritas. O LLM é
+necessário só no chat. Construir os insights determinísticos primeiro — eles
+são o produto; o chat é a cereja.
+
+### Para o chat, em ordem de custo
+
+1. **Gemini tier gratuito.** A Kitamo já tem `GeminiClient`. O Google AI
+   Studio oferece cota gratuita com limite de requisições/minuto e /dia —
+   suficiente para desenvolvimento e beta fechado. Verificar limite vigente na
+   hora de ligar.
+2. **Cachear, não regenerar.** O insight do dia é gerado uma vez por
+   usuário/dia, não a cada abertura de tela. `/api/ai/tips` já existe; adicionar
+   cache diário.
+3. **Modelo barato + contexto mínimo.** Mandar o resumo (totais, top 5, últimas
+   10) em vez do extrato inteiro. Flash/Haiku-classe. Custo por conversa cai
+   10–20×.
+4. **Cota por usuário.** N mensagens/dia no plano grátis; ilimitado no pago.
+   O chat vira o motivo de assinar — o Pierre faz exatamente isso (Pro R$ 39).
+5. **Quando houver receita**: custo do LLM entra na assinatura como variável.
+
+Não existe "LLM público de graça em produção". Existe cota grátis para
+começar e repasse ao cliente depois. O plano acima faz a Kitamo chegar em
+receita sem pagar antes.
+
+---
+
+## 11. Modo de execução
+
+Esta sessão (Fable 5.1) faz só planejamento — custo alto. A execução fica
+para uma sessão com modelo mais barato, usando este documento como
+especificação. Ordem sugerida para ela:
+
+```
+[ ] 0. Ligar ImportInvoiceModal no /api/import real (fachada no ar)
+[ ] 1. Insights determinísticos: serviço InsightService com 5 regras
+       (ritmo vs mês passado, maior gasto, assinaturas, fatura próxima,
+       parcela quitada) → cada uma devolve {titulo, frase, valor, link}
+[ ] 2. Card de destaque no dashboard consumindo InsightService (sem LLM)
+[ ] 3. Tela de chat consumindo /api/ai/chat (Gemini free tier) com cache
+       diário em /api/ai/tips e cota por usuário
+[ ] 4. Assinaturas: detecção por recorrência + tabela de marcas + tela
+[ ] 5. Copy: reescrever vazios/erros/toasts/loading na voz da seção 9
+[ ] 6. Navegação: quebrar Dashboard.vue, nav de 4 itens, cards clicáveis
+[ ] 7. Mapa de calor, top estabelecimentos, ritmo (SVG, sem lib)
+[ ] 8. Parsers por banco — quando os extratos chegarem
+```
+
+Cada item é um commit. Antes de cada um: `git status` limpo e `git add`
+por arquivo — há outro agente trabalhando no módulo de patrimônio no mesmo
+repositório.
