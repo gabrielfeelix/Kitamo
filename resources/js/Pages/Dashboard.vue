@@ -128,10 +128,18 @@ const formatBRL = (value: number) =>
 const desktopEntries = ref<Entry[]>(bootstrap.value.entries ?? []);
 const desktopGoals = ref<Goal[]>(bootstrap.value.goals ?? []);
 
+// "Entrou"/"Saiu" do mês corrente. Antes somava TODAS as transações de todos
+// os tempos, exibido ao lado de um "Saldo Total" que é caixa de hoje — três
+// escopos diferentes no mesmo card.
 const computeTotals = (items: Entry[]) => {
+    const hoje = new Date();
+    const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+
     let income = 0;
     let expense = 0;
     for (const entry of items) {
+        if (!entry.transactionDate) continue;
+        if (String(entry.transactionDate).slice(0, 7) !== anoMes) continue;
         if (entry.kind === 'income') income += entry.amount;
         else expense += entry.amount;
     }
@@ -241,11 +249,25 @@ const cashflowSeries = computed(() => {
     return months.map((month) => {
         const ratio = Math.abs(month.total) / maxValue;
         const height = Math.round(70 + ratio * 90);
-        const tone = ratio > 0.66 ? 'bg-[#14B8A6]' : ratio > 0.33 ? 'bg-[#34D399]' : 'bg-[#A7F3D0]';
+        const negativo = month.total < 0;
+        // Meses negativos precisam ser visualmente distintos: com Math.abs e
+        // paleta só-verde, -R$ 5.000 ficava idêntico a +R$ 5.000.
+        const tone = negativo
+            ? ratio > 0.66
+                ? 'bg-[#DC2626]'
+                : ratio > 0.33
+                  ? 'bg-[#F87171]'
+                  : 'bg-[#FECACA]'
+            : ratio > 0.66
+              ? 'bg-[#14B8A6]'
+              : ratio > 0.33
+                ? 'bg-[#34D399]'
+                : 'bg-[#A7F3D0]';
         return {
             label: month.label,
             height,
-            amount: Math.abs(month.total),
+            amount: month.total,
+            negativo,
             tone,
             highlight: month.highlight,
         };
@@ -264,6 +286,8 @@ type UpcomingBill = {
 
 const buildUpcomingBills = (entries: Entry[]): UpcomingBill[] => {
     const formatter = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
+    const hoje = new Date();
+    const inicioDeHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
 
     return entries
         .filter((entry) => entry.kind === 'expense')
@@ -285,6 +309,9 @@ const buildUpcomingBills = (entries: Entry[]): UpcomingBill[] => {
                 _date: date,
             };
         })
+        // "Próximas" significa a partir de hoje. Ordenar tudo em ordem
+        // ascendente mostrava as 3 contas MAIS ATRASADAS do histórico.
+        .filter((item) => ((item as any)._date as Date).getTime() >= inicioDeHoje)
         .sort((a, b) => ((a as any)._date as Date).getTime() - ((b as any)._date as Date).getTime())
         .slice(0, 3);
 };
@@ -509,7 +536,27 @@ const mobileAccounts = computed(() =>
     })),
 );
 
-const projecao = computed(() => ((page.props as unknown as { projecao?: ProjecaoResponse }).projecao ?? null) as ProjecaoResponse | null);
+// A projeção nunca era enviada pelo Inertia, então `projecao` era sempre null
+// e o widget "Projeção 30 dias" caía num fallback de histórico. O endpoint
+// /api/dashboard/projecao e o ProjecaoService já existiam e estavam corretos —
+// faltava alguém chamá-los.
+const projecaoData = ref<ProjecaoResponse | null>(null);
+
+const loadProjecao = async () => {
+    try {
+        const res = await requestJson<ProjecaoResponse>('/api/dashboard/projecao', { method: 'GET' });
+        projecaoData.value = res ?? null;
+    } catch (error) {
+        console.error('Falha ao carregar projeção', error);
+        projecaoData.value = null;
+    }
+};
+
+onMounted(loadProjecao);
+
+const projecao = computed<ProjecaoResponse | null>(
+    () => projecaoData.value ?? ((page.props as unknown as { projecao?: ProjecaoResponse }).projecao ?? null),
+);
 
 const hasProjection = computed(() => Boolean(projecao.value?.projecao_diaria?.length));
 
