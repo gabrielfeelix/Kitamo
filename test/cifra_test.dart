@@ -20,7 +20,7 @@ void main() {
 
   test('a build tem suporte a cifra', () {
     final db = sqlite3.openInMemory();
-    addTearDown(db.dispose);
+    addTearDown(db.close);
 
     // SQLite3MultipleCiphers responde `PRAGMA cipher` com o algoritmo
     // ativo. `cipher_version` é do SQLCipher e volta vazio nesta build.
@@ -38,7 +38,7 @@ void main() {
     db.execute("PRAGMA key = 'chave-secreta-de-teste'");
     db.execute('CREATE TABLE dividas (nome TEXT, saldo INTEGER)');
     db.execute("INSERT INTO dividas VALUES ('Nubank', 613624)");
-    db.dispose();
+    db.close();
 
     final bytes = File(caminho).readAsBytesSync();
     final texto = String.fromCharCodes(bytes);
@@ -59,7 +59,7 @@ void main() {
     certo.execute("PRAGMA key = 'chave-certa'");
     certo.execute('CREATE TABLE dividas (nome TEXT)');
     certo.execute("INSERT INTO dividas VALUES ('Nubank')");
-    certo.dispose();
+    certo.close();
 
     final errado = sqlite3.open(caminho);
     errado.execute("PRAGMA key = 'chave-errada'");
@@ -70,7 +70,7 @@ void main() {
       reason: 'Chave errada conseguiu ler os dados.',
     );
 
-    errado.dispose();
+    errado.close();
   });
 
   test('sem chave nenhuma também não abre', () {
@@ -79,7 +79,7 @@ void main() {
     final certo = sqlite3.open(caminho);
     certo.execute("PRAGMA key = 'chave-certa'");
     certo.execute('CREATE TABLE dividas (nome TEXT)');
-    certo.dispose();
+    certo.close();
 
     final semChave = sqlite3.open(caminho);
 
@@ -88,6 +88,6 @@ void main() {
       throwsA(isA<SqliteException>()),
     );
 
-    semChave.dispose();
+    semChave.close();
   });
 }
