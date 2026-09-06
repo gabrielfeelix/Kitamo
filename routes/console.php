@@ -18,3 +18,4 @@ Artisan::command('inspire', function () {
 Schedule::job(new \App\Jobs\ApplyRecurringTransactions())->dailyAt('02:00');
 Schedule::job(new \App\Jobs\RecalculateAccountBalances())->hourly();
 Schedule::job(new \App\Jobs\SyncGoalProgress())->dailyAt('02:30');
+Schedule::job(new \App\Jobs\RefreshInvestmentPrices())->dailyAt("06:30");
