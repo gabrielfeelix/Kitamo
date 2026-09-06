@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Account;
+use App\Support\InvoiceCycle;
 use App\Models\Transferencia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,5 +52,18 @@ class RecalculateAccountBalances implements ShouldQueue
                 ])->save();
             }
         });
+
+        // cashLike() exclui cartões de crédito, então eles nunca eram
+        // recalculados: qualquer divergência no saldo ficava permanente.
+        // Para cartão, o saldo é a dívida em aberto derivada das transações.
+        Account::query()
+            ->where('type', 'credit_card')
+            ->chunkById(100, function ($accounts) {
+                foreach ($accounts as $account) {
+                    $account->forceFill([
+                        'current_balance' => InvoiceCycle::outstandingDebt((int) $account->id),
+                    ])->save();
+                }
+            });
     }
 }

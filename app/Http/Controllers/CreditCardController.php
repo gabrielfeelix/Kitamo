@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CreditCardController extends Controller
 {
@@ -327,47 +328,74 @@ class CreditCardController extends Controller
             return response()->json(['message' => 'Saldo insuficiente.'], 422);
         }
 
+        // O pagamento da fatura NÃO é uma despesa nova: as compras que a
+        // compõem já são despesas. Registrá-lo como 'expense' fazia uma fatura
+        // de R$ 1.000 contar como R$ 2.000 em qualquer relatório de gastos.
+        // Fica na categoria dedicada 'Pagamento de fatura', marcada com a tag
+        // 'quitacao-fatura' para que relatórios possam excluí-la.
         $category = Category::query()->firstOrCreate(
             [
                 'user_id' => $user->id,
-                'name' => 'Fatura do cartão',
+                'name' => 'Pagamento de fatura',
                 'type' => 'expense',
             ],
             [
                 'is_default' => false,
-                'color' => '#EF4444',
+                'color' => '#64748B',
                 'icon' => 'card',
             ],
         );
 
-        Transaction::create([
-            'user_id' => $user->id,
-            'account_id' => $payAccount->id,
-            'category_id' => $category->id,
-            'kind' => 'expense',
-            'status' => 'paid',
-            'amount' => $invoiceTotal,
-            'moeda' => $payAccount->moeda ?? 'BRL',
-            'description' => sprintf('Pagamento de fatura - %s', $cartao->name),
-            'transaction_date' => now()->toDateString(),
-            'priority' => false,
-            'is_recurring' => false,
-            'is_parcelado' => false,
-            'data_pagamento' => now(),
-            'tags' => [],
-        ]);
+        DB::transaction(function () use ($user, $payAccount, $category, $cartao, $invoiceTotal, $invoiceQuery) {
+            $conta = Account::query()
+                ->where('id', $payAccount->id)
+                ->lockForUpdate()
+                ->first();
 
-        $payAccount->current_balance = (float) ($payAccount->current_balance ?? 0) - $invoiceTotal;
-        $payAccount->save();
+            Transaction::create([
+                'user_id' => $user->id,
+                'account_id' => $conta->id,
+                'category_id' => $category->id,
+                'kind' => 'expense',
+                'status' => 'paid',
+                'amount' => $invoiceTotal,
+                'moeda' => $conta->moeda ?? 'BRL',
+                'description' => sprintf('Pagamento de fatura - %s', $cartao->name),
+                'transaction_date' => now()->toDateString(),
+                'priority' => false,
+                'is_recurring' => false,
+                'is_parcelado' => false,
+                'data_pagamento' => now(),
+                'tags' => ['quitacao-fatura'],
+            ]);
 
-        $invoiceQuery->update([
-            'status' => 'paid',
-            'data_pagamento' => now(),
-        ]);
+            $conta->current_balance = (float) ($conta->current_balance ?? 0) - $invoiceTotal;
+            $conta->save();
+
+            $invoiceQuery->update([
+                'status' => 'paid',
+                'data_pagamento' => now(),
+            ]);
+
+            // A dívida do cartão é derivada das transações pendentes
+            // (InvoiceCycle::outstandingDebt), então quitar a fatura já reduz
+            // o limite usado. Mantém current_balance coerente para as telas
+            // que ainda o leem.
+            $cartaoLock = Account::query()
+                ->where('id', $cartao->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($cartaoLock) {
+                $cartaoLock->current_balance = InvoiceCycle::outstandingDebt((int) $cartaoLock->id);
+                $cartaoLock->save();
+            }
+        });
 
         return response()->json([
             'paid' => true,
             'amount' => $invoiceTotal,
+            'limite_usado' => InvoiceCycle::outstandingDebt((int) $cartao->id),
         ]);
     }
 }
