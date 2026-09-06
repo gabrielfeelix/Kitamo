@@ -425,6 +425,32 @@ const creditCards = computed(() =>
 );
 
 const creditCardsApi = ref<CreditCard[]>([]);
+// Faturas do mês corrente, por cartão. O card do dashboard diz "FATURA
+// ATUAL", mas /api/cartoes devolve a DÍVIDA TOTAL (todas as parcelas em
+// aberto, inclusive as de meses futuros). Para o Nubank isso mostrava
+// R$ 6.136,24 — as 4 parcelas restantes — em vez da fatura de R$ 1.534,06.
+// O valor da fatura do ciclo vem de cartoes-by-month, o mesmo endpoint que
+// a tela de cartões usa.
+const faturaDoMesPorCartao = ref<Map<string, number>>(new Map());
+
+const loadFaturasDoMes = async () => {
+    const agora = new Date();
+    try {
+        const res = await requestJson<{ cartoes: Array<{ id: string; limite_usado: number }> }>(
+            `/api/cartoes-by-month?year=${agora.getFullYear()}&month=${agora.getMonth()}`,
+            { method: 'GET' },
+        );
+        const mapa = new Map<string, number>();
+        for (const c of res?.cartoes ?? []) mapa.set(String(c.id), Number(c.limite_usado) || 0);
+        faturaDoMesPorCartao.value = mapa;
+    } catch (error) {
+        console.error('Falha ao carregar faturas do mês', error);
+        faturaDoMesPorCartao.value = new Map();
+    }
+};
+
+onMounted(loadFaturasDoMes);
+
 const loadCreditCardsApi = async () => {
     // Se já veio via bootstrap.accounts, não precisa
     if (creditCards.value.length > 0) return;
@@ -470,7 +496,8 @@ const creditCardsDisplay = computed(() => {
                   brand: c.brand,
                   color: c.color,
                   limit: c.limit,
-                  used: c.used,
+                  // fatura do ciclo, não a dívida total acumulada
+                  used: faturaDoMesPorCartao.value.get(String(c.id)) ?? c.used,
                   closingDay: c.closingDay,
                   dueDay: c.dueDay,
                   institution: (c as any).institution ?? null,
@@ -483,7 +510,7 @@ const creditCardsDisplay = computed(() => {
                   brand: c.bandeira,
                   color: c.cor,
                   limit: c.limite,
-                  used: c.limite_usado ?? 0,
+                  used: faturaDoMesPorCartao.value.get(String(c.id)) ?? c.limite_usado ?? 0,
                   closingDay: c.dia_fechamento ?? null,
                   dueDay: c.dia_vencimento ?? null,
                   institution: (c as any).banco ?? null,
