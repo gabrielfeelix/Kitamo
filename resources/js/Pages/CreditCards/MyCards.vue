@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import MobileShell from '@/Layouts/MobileShell.vue';
 import DesktopShell from '@/Layouts/DesktopShell.vue';
 import { useIsMobile } from '@/composables/useIsMobile';
@@ -24,13 +24,39 @@ const formatPercentage = (value: number) => {
 };
 
 // Month selection logic
+const page = usePage();
+
+// Intervalo de meses navegável: cobre desde o lançamento mais antigo até
+// 12 meses à frente (parcelamentos futuros), com um mínimo de 24 meses para
+// trás mesmo sem histórico. Antes era uma janela fixa de 5 meses, o que
+// impedia ver faturas antigas e compromissos futuros.
+const oldestEntryDate = computed(() => {
+    const entries = (page.props.bootstrap as any)?.entries ?? [];
+    let oldest: Date | null = null;
+    for (const entry of entries) {
+        const raw = entry?.transactionDate;
+        if (!raw) continue;
+        const match = String(raw).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) continue;
+        const d = new Date(Number(match[1]), Number(match[2]) - 1, 1);
+        if (!oldest || d < oldest) oldest = d;
+    }
+    return oldest;
+});
+
 const monthItems = computed(() => {
     const base = new Date();
+    const start = new Date(base.getFullYear(), base.getMonth() - 24, 1);
+    const oldest = oldestEntryDate.value;
+    const from = oldest && oldest < start ? oldest : start;
+    const to = new Date(base.getFullYear(), base.getMonth() + 12, 1);
+
     const items: Array<{ key: string; label: string; date: Date }> = [];
-    for (let i = -2; i <= 2; i += 1) {
-        const d = new Date(base.getFullYear(), base.getMonth() + i, 1);
-        const label = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(d).replace('.', '').toUpperCase();
-        items.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label, date: d });
+    const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+    while (cursor <= to) {
+        const label = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(cursor).replace('.', '').toUpperCase();
+        items.push({ key: `${cursor.getFullYear()}-${cursor.getMonth()}`, label, date: new Date(cursor) });
+        cursor.setMonth(cursor.getMonth() + 1);
     }
     return items;
 });
@@ -40,7 +66,11 @@ const cardsDataByMonth = ref<Map<string, any[]>>(new Map());
 const loadingMonthKeys = ref<Set<string>>(new Set());
 
 onMounted(() => {
-    selectedMonthKey.value = monthItems.value[2]?.key ?? monthItems.value[0]?.key ?? '';
+    // abre no mês corrente
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${now.getMonth()}`;
+    const found = monthItems.value.find((m) => m.key === currentKey);
+    selectedMonthKey.value = found?.key ?? monthItems.value[0]?.key ?? '';
 });
 
 // Watch for month changes and load data
