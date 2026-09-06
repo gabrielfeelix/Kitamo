@@ -97,4 +97,28 @@ class InvoiceCycleTest extends TestCase
         $this->assertSame('2026-09-03', $mp['start']->toDateString());
         $this->assertSame('2026-10-02', $mp['end']->toDateString());
     }
+
+    /**
+     * O deslocamento precisa ser constante: se dependesse do tamanho do mês,
+     * fevereiro mudaria a decisão e criaria a lacuna do bug original.
+     */
+    public function test_offset_e_constante_atraves_de_fevereiro(): void
+    {
+        foreach ([1, 2, 5, 6, 13, 14, 15, 16] as $closingDay) {
+            $jan = InvoiceCycle::forMonth($closingDay, 2026, 0);
+            $fev = InvoiceCycle::forMonth($closingDay, 2026, 1);
+            $mar = InvoiceCycle::forMonth($closingDay, 2026, 2);
+
+            $this->assertSame(
+                $jan['end']->copy()->addDay()->toDateString(),
+                $fev['start']->toDateString(),
+                "closing_day $closingDay: lacuna entre janeiro e fevereiro"
+            );
+            $this->assertSame(
+                $fev['end']->copy()->addDay()->toDateString(),
+                $mar['start']->toDateString(),
+                "closing_day $closingDay: lacuna entre fevereiro e março"
+            );
+        }
+    }
 }

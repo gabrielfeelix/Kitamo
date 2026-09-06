@@ -73,4 +73,29 @@ class InvoiceCycle
 
         return Carbon::create($year, $month, $day)->endOfDay();
     }
+
+    /**
+     * Dívida atual de um cartão de crédito: total de despesas ainda não pagas.
+     *
+     * Não usar `current_balance` para isso. Esse campo é um acumulador de
+     * caixa — despesas o decrementam, deixando-o negativo — então lê-lo como
+     * "limite usado" devolve zero ou negativo e o disponível ultrapassa o
+     * limite. A dívida é sempre derivada das transações.
+     */
+    public static function outstandingDebt(int $accountId): float
+    {
+        $pendente = (float) \App\Models\Transaction::query()
+            ->where('account_id', $accountId)
+            ->where('kind', 'expense')
+            ->where('status', 'pending')
+            ->sum('amount');
+
+        $creditos = (float) \App\Models\Transaction::query()
+            ->where('account_id', $accountId)
+            ->where('kind', 'income')
+            ->where('status', 'pending')
+            ->sum('amount');
+
+        return max(0.0, $pendente - $creditos);
+    }
 }

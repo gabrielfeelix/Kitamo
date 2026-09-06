@@ -78,7 +78,9 @@ class CreditCardController extends Controller
                     'nome' => $account->name,
                     'bandeira' => ($account->card_brand ?: 'visa'),
                     'limite' => (float) ($account->credit_limit ?? 0),
-                    'limite_usado' => (float) ($account->current_balance ?? 0),
+                    // Dívida derivada das transações. `current_balance` é
+                    // acumulador de caixa e fica negativo em cartões (C3).
+                    'limite_usado' => InvoiceCycle::outstandingDebt((int) $account->id),
                     'dia_fechamento' => (int) ($account->closing_day ?? 10),
                     'dia_vencimento' => (int) ($account->due_day ?? 17),
                     'cor' => ($account->color ?: '#8B5CF6'),
