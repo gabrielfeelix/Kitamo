@@ -33,6 +33,10 @@ class BankImportParser
                     'amount' => abs($amount),
                     'kind' => $amount >= 0 ? 'income' : 'expense',
                     'suggested_category_id' => null,
+                    // Identificador único do lançamento no padrão OFX. É o que
+                    // permite reimportar o mesmo extrato sem duplicar nem
+                    // colapsar duas compras legitimamente iguais no mesmo dia.
+                    'origem_id' => $this->pickTag($block, 'FITID'),
                 ];
             }
         }
@@ -95,6 +99,10 @@ class BankImportParser
                 'amount' => abs($amount),
                 'kind' => $kind,
                 'suggested_category_id' => null,
+                // CSV não tem identificador padronizado. O commit cai no
+                // fallback por conteúdo, que considera a ordem de ocorrência
+                // para não colapsar duplicatas legítimas.
+                'origem_id' => null,
             ];
         }
 

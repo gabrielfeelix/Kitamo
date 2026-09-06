@@ -15,6 +15,8 @@ class Transaction extends Model
         'user_id',
         'account_id',
         'category_id',
+        'origem',
+        'origem_id',
         'kind',
         'status',
         'amount',
