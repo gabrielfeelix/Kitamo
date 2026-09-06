@@ -12,13 +12,24 @@ use App\Support\KitamoBootstrap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
 {
+    /**
+     * Saldo de conta e transações precisam mudar juntos. Sem transação, uma
+     * falha no meio deixava o saldo alterado sem o lançamento correspondente
+     * (ou o inverso).
+     */
     public function store(Request $request, RecorrenciaScheduler $scheduler): JsonResponse
+    {
+        return DB::transaction(fn () => $this->storeInner($request, $scheduler));
+    }
+
+    private function storeInner(Request $request, RecorrenciaScheduler $scheduler): JsonResponse
     {
         $user = $request->user();
 
@@ -259,6 +270,11 @@ class TransactionController extends Controller
 
     public function update(Request $request, Transaction $transaction, RecorrenciaScheduler $scheduler): JsonResponse
     {
+        return DB::transaction(fn () => $this->updateInner($request, $transaction, $scheduler));
+    }
+
+    private function updateInner(Request $request, Transaction $transaction, RecorrenciaScheduler $scheduler): JsonResponse
+    {
         $user = $request->user();
         if ($transaction->user_id !== $user->id) {
             abort(404);
@@ -291,6 +307,16 @@ class TransactionController extends Controller
         ]);
 
         $tags = $this->sanitizeTags($data['tags'] ?? []);
+
+        // Validação mutuamente exclusiva ANTES de qualquer escrita. Este mesmo
+        // check existia mais abaixo, depois do update em massa e do estorno de
+        // saldo já terem sido aplicados: o 422 rejeitava a operação mas as
+        // mutações permaneciam, perdendo dinheiro de forma determinística.
+        if ((bool) ($data['despesa_fixa'] ?? false) && (bool) ($data['repetir'] ?? false)) {
+            return response()->json([
+                'message' => 'Não é possível usar repetição e despesa fixa ao mesmo tempo.',
+            ], 422);
+        }
 
         $editarEscopo = $data['editar_escopo'] ?? null;
         $isRecorrenteEdit = !empty($transaction->recorrencia_grupo_id) && $editarEscopo !== null;
@@ -432,12 +458,8 @@ class TransactionController extends Controller
 
             $isFixa = (bool) ($data['despesa_fixa'] ?? false);
             $isRepetir = (bool) ($data['repetir'] ?? false);
-
-            if ($isFixa && $isRepetir) {
-                return response()->json([
-                    'message' => 'Não é possível usar repetição e despesa fixa ao mesmo tempo.',
-                ], 422);
-            }
+            // A combinação inválida já foi rejeitada no início do método,
+            // antes de qualquer escrita.
 
             if ($isFixa) {
                 $grupoUpdate['periodicidade'] = 'a_cada_x_meses';
@@ -508,6 +530,11 @@ class TransactionController extends Controller
 
     public function destroy(Request $request, Transaction $transaction): JsonResponse
     {
+        return DB::transaction(fn () => $this->destroyInner($request, $transaction));
+    }
+
+    private function destroyInner(Request $request, Transaction $transaction): JsonResponse
+    {
         $user = $request->user();
         if ($transaction->user_id !== $user->id) {
             abort(404);
@@ -573,6 +600,11 @@ class TransactionController extends Controller
     }
 
     public function togglePago(Request $request, Transaction $transaction): JsonResponse
+    {
+        return DB::transaction(fn () => $this->togglePagoInner($request, $transaction));
+    }
+
+    private function togglePagoInner(Request $request, Transaction $transaction): JsonResponse
     {
         $user = $request->user();
         if ($transaction->user_id !== $user->id) {
