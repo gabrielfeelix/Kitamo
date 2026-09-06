@@ -110,6 +110,16 @@ class User extends Authenticatable
         return $this->hasMany(Account::class);
     }
 
+    public function dividas()
+    {
+        return $this->hasMany(Divida::class);
+    }
+
+    public function perfilFinanceiro()
+    {
+        return $this->hasOne(PerfilFinanceiro::class);
+    }
+
     public function categories()
     {
         return $this->hasMany(Category::class);
