@@ -150,6 +150,15 @@ const saldoAtual = ref(0);
 const receitas = ref(0);
 const despesas = ref(0);
 const hideValues = ref(false);
+
+// Patrimônio investido: fica fora do saldo (que é caixa) e ganha uma linha
+// própria, porque dinheiro guardado não é dinheiro disponível.
+const totalInvestido = computed(() =>
+    ((bootstrap.value.investments ?? []) as { currentValue: number }[]).reduce(
+        (acc, i) => acc + Number(i.currentValue ?? 0),
+        0,
+    ),
+);
 const homeWidgetsModalOpen = ref(false);
 const accountMenuOpen = ref(false);
 const shouldShowOnboarding = computed(() => {
@@ -1226,6 +1235,16 @@ onMounted(() => {
                             <span v-if="hideValues">R$ ••••</span>
                             <CountUp v-else :value="saldoAtual" :format="formatBRL" />
                         </div>
+                        <Link
+                            v-if="totalInvestido > 0"
+                            :href="route('patrimonio')"
+                            class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-300 transition-colors hover:text-white"
+                        >
+                            <span v-if="hideValues">+ R$ •••• investido</span>
+                            <span v-else>+ {{ formatBRL(totalInvestido) }} investido</span>
+                            <span class="text-slate-500">·</span>
+                            <span class="text-slate-400">ver patrimônio</span>
+                        </Link>
                     </div>
                     <div class="flex items-center gap-2">
                         <button

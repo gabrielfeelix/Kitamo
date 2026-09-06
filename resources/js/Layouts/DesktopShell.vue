@@ -107,6 +107,12 @@ const navItems = computed(() => [
         icon: 'target' as const,
     },
     {
+        label: 'Patrimônio',
+        href: route('patrimonio'),
+        active: route().current('patrimonio'),
+        icon: 'wallet' as const,
+    },
+    {
         label: 'Relatórios',
         href: route('analysis'),
         active: route().current('analysis*'),
@@ -214,6 +220,10 @@ onUnmounted(() => {
                                 <path d="M22 12h-3" />
                                 <path d="M12 22v-3" />
                                 <path d="M2 12h3" />
+                            </svg>
+                            <svg v-else-if="item.icon === 'wallet'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8H7a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12V5H5a2 2 0 0 0-2 2Z" />
+                                <circle cx="17" cy="15" r="1.2" />
                             </svg>
                             <svg v-else-if="item.icon === 'accounts'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
