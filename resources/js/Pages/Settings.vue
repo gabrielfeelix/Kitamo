@@ -142,6 +142,20 @@ const initials = computed(() => {
                 <div v-else class="col-span-full mt-4 mb-1 text-sm font-bold text-slate-900">Preferências</div>
 
                 <div :class="[isMobile ? 'space-y-2.5 pb-6' : 'contents']">
+                    <Link :href="route('settings.importar')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 group-hover:bg-emerald-100 transition">
+                            <svg class="h-5 w-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <path d="M7 10l5 5 5-5" />
+                                <path d="M12 15V3" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0 flex-1 text-sm font-bold text-slate-900">Importar extrato</div>
+                        <svg class="h-4 w-4 flex-shrink-0 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </Link>
+
                     <Link :href="route('settings.notifications')" class="group flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200/60 transition hover:ring-emerald-500/50">
                         <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50 group-hover:bg-amber-100 transition">
                             <svg class="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

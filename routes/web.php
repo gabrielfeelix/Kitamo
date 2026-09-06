@@ -184,6 +184,10 @@ Route::get('/settings/backup', function () {
     return Inertia::render('Settings/Backup');
 })->middleware(['auth', 'verified'])->name('settings.backup');
 
+Route::get('/settings/importar', function () {
+    return Inertia::render('Settings/Importar');
+})->middleware(['auth', 'verified'])->name('settings.importar');
+
 Route::get('/settings/support', function () {
     return Inertia::render('Settings/Support');
 })->middleware(['auth', 'verified'])->name('settings.support');
