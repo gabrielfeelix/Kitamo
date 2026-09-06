@@ -54,28 +54,40 @@ class CreditCardController extends Controller
     private function invoicePeriod(Account $cartao, int $year, int $monthIndex): array
     {
         $closingDayRaw = (int) ($cartao->closing_day ?? 0);
+        $dueDayRaw = (int) ($cartao->due_day ?? 0);
 
         $monthStart = Carbon::create($year, $monthIndex + 1, 1)->startOfDay();
-        $monthDays = (int) $monthStart->daysInMonth;
-        $closingDayThisMonth = $closingDayRaw > 0 ? min($closingDayRaw, $monthDays) : 0;
 
-        if ($closingDayThisMonth <= 0) {
+        if ($closingDayRaw <= 0) {
             return [
                 'start' => $monthStart->copy(),
                 'end' => $monthStart->copy()->endOfMonth()->endOfDay(),
             ];
         }
 
-        $end = Carbon::create($year, $monthIndex + 1, $closingDayThisMonth)->endOfDay();
+        // A fatura mostrada no mês é a que VENCE nesse mês.
+        // O fechamento é a data de fechamento mais recente ANTES do vencimento.
+        $dueDays = (int) $monthStart->daysInMonth;
+        $dueDay = $dueDayRaw > 0 ? min($dueDayRaw, $dueDays) : $dueDays;
+        $due = Carbon::create($year, $monthIndex + 1, $dueDay)->endOfDay();
 
-        $prevMonth = $monthStart->copy()->subMonthNoOverflow();
-        $prevMonthDays = (int) $prevMonth->daysInMonth;
+        $closingThisMonth = Carbon::create($year, $monthIndex + 1, min($closingDayRaw, $dueDays))->endOfDay();
 
-        if ($closingDayRaw >= $prevMonthDays) {
-            $start = $monthStart->copy();
+        if ($closingThisMonth->lessThan($due)) {
+            $end = $closingThisMonth;
         } else {
-            $startDay = $closingDayRaw + 1;
-            $start = Carbon::create($prevMonth->year, $prevMonth->month, $startDay)->startOfDay();
+            $prev = $monthStart->copy()->subMonthNoOverflow();
+            $end = Carbon::create($prev->year, $prev->month, min($closingDayRaw, (int) $prev->daysInMonth))->endOfDay();
+        }
+
+        $cycleStartMonth = $end->copy()->subMonthNoOverflow();
+        $startDay = $closingDayRaw + 1;
+        $cycleDays = (int) $cycleStartMonth->daysInMonth;
+
+        if ($startDay > $cycleDays) {
+            $start = $end->copy()->startOfMonth()->startOfDay();
+        } else {
+            $start = Carbon::create($cycleStartMonth->year, $cycleStartMonth->month, $startDay)->startOfDay();
         }
 
         return [

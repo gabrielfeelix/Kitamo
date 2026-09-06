@@ -31,7 +31,19 @@ const parseISODateLocal = (iso: string) => {
     return Number.isFinite(date.getTime()) ? date : null;
 };
 
-const anchorMonth = ref(new Date());
+// Ancora no último mês que realmente tem lançamentos. Usar new Date() fazia a
+// tela abrir comparando o mês corrente (quase sempre incompleto) e escondia
+// os meses com dados.
+const latestEntryMonth = () => {
+    const dates = (bootstrap.value.entries ?? [])
+        .map((e) => e.transactionDate)
+        .filter(Boolean)
+        .sort();
+    if (!dates.length) return new Date();
+    const last = parseISODateLocal(dates[dates.length - 1] as string);
+    return last ?? new Date();
+};
+const anchorMonth = ref(latestEntryMonth());
 const shiftMonth = (delta: number) => {
     const next = new Date(anchorMonth.value);
     next.setMonth(next.getMonth() + delta);

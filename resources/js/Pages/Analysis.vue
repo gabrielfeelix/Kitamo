@@ -230,7 +230,9 @@ const lastMonths = computed(() => {
         return { key, label: labels[date.getMonth()], value: 0, highlight: idx === 2 };
     });
 
-    for (const entry of scopedEntries.value) {
+    // usa TODAS as transações, não as do período selecionado — senão os meses
+    // anteriores do gráfico de tendência ficam sempre zerados
+    for (const entry of entries.value) {
         if (!entry.transactionDate) continue;
         const date = parseISODateLocal(entry.transactionDate) ?? new Date(entry.transactionDate);
         const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
