@@ -256,16 +256,14 @@ class CreditCardController extends Controller
             $start = $period['start'];
             $end = $period['end'];
 
-            $accountCreatedAt = $account->created_at ? Carbon::parse($account->created_at) : null;
-            if ($accountCreatedAt && $accountCreatedAt->greaterThan($end)) {
-                $balanceUsed = 0.0;
-            } else {
+            // Não zerar por data de criação da conta: transações importadas de
+            // histórico são anteriores ao cadastro e ficariam invisíveis.
+            {
                 $expenseSum = (float) Transaction::query()
                     ->where('user_id', $user->id)
                     ->where('account_id', $account->id)
                     ->where('kind', 'expense')
                     ->whereBetween('transaction_date', [$start, $end])
-                    ->where('status', 'pending')
                     ->sum('amount');
 
                 $incomeSum = (float) Transaction::query()
@@ -273,10 +271,17 @@ class CreditCardController extends Controller
                     ->where('account_id', $account->id)
                     ->where('kind', 'income')
                     ->whereBetween('transaction_date', [$start, $end])
-                    ->whereIn('status', ['received'])
                     ->sum('amount');
-
                 $balanceUsed = max(0.0, $expenseSum - $incomeSum);
+
+                // Fatura em aberto = ainda existe algo pendente no ciclo.
+                $pendingSum = (float) Transaction::query()
+                    ->where('user_id', $user->id)
+                    ->where('account_id', $account->id)
+                    ->where('kind', 'expense')
+                    ->whereBetween('transaction_date', [$start, $end])
+                    ->where('status', 'pending')
+                    ->sum('amount');
             }
 
             $svgPath = $this->getBankLogoPath($account->institution);
@@ -287,6 +292,8 @@ class CreditCardController extends Controller
                 'bandeira' => $account->card_brand ?: 'visa',
                 'limite' => (float) ($account->credit_limit ?? 0),
                 'limite_usado' => $balanceUsed,
+                'valor_pendente' => $pendingSum ?? 0.0,
+                'esta_paga' => ($pendingSum ?? 0.0) <= 0.009 && $balanceUsed > 0,
                 'dia_fechamento' => (int) ($account->closing_day ?? 10),
                 'dia_vencimento' => (int) ($account->due_day ?? 17),
                 'cor' => $account->color ?: '#8B5CF6',
