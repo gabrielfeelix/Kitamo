@@ -57,7 +57,7 @@ ver `docs/DESIGN-KITAMO.md`. Não reabrir.
 Cada item é um commit. `git add` por arquivo, nunca `-A`.
 
 ```
-[ ] 0  Migration `dividas` + `perfil_financeiro` + models + factories
+[x] 0  Migration `dividas` + `perfil_financeiro` + models + factories (e440a7c)
 [ ] 1  DiarioService: cálculo do diário pra quitar + data de quitação
        (testes: sobra +/0/−, meses 28/30/31, múltiplas dívidas)
 [ ] 2  ProjecaoService: projeção diária nomeada + motivo de cor
