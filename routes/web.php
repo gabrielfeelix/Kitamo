@@ -277,8 +277,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/notifications', [NotificationsController::class, 'index'])->name('api.notifications.index');
     Route::patch('/api/notifications/{notification}/marcar-lida', [NotificationsController::class, 'marcarLida'])->name('api.notifications.read');
     Route::post('/api/notifications/marcar-todas-lidas', [NotificationsController::class, 'marcarTodasLidas'])->name('api.notifications.read-all');
-    Route::delete('/api/notifications/{notification}', [NotificationsController::class, 'destroy'])->name('api.notifications.delete');
     Route::delete('/api/notifications/limpar-lidas', [NotificationsController::class, 'limparLidas'])->name('api.notifications.clear-read');
+    Route::delete('/api/notifications/{notification}', [NotificationsController::class, 'destroy'])->name('api.notifications.delete');
 	    Route::get('/api/notifications/count-unread', [NotificationsController::class, 'countUnread'])->name('api.notifications.count-unread');
 	    Route::get('/api/news', [NewsApiController::class, 'index'])->name('api.news.index');
 	    Route::post('/api/news/{newsItem}/reaction', [NewsApiController::class, 'react'])->name('api.news.react');

@@ -38,7 +38,11 @@ const goal = computed(() => {
     return { id: g.id, title: g.title, color, icon, target: g.target, current: g.current, due: g.due };
 });
 
-const pct = computed(() => Math.min(100, Math.round((goal.value.current / goal.value.target) * 100)));
+const pct = computed(() => {
+    const target = Number(goal.value.target) || 0;
+    if (target <= 0) return 0; // meta sem valor alvo renderizava "NaN%"
+    return Math.min(100, Math.max(0, Math.round((Number(goal.value.current) / target) * 100)));
+});
 const remaining = computed(() => Math.max(0, goal.value.target - goal.value.current));
 
 const formatMoney0 = (value: number) =>

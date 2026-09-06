@@ -32,6 +32,18 @@ class User extends Authenticatable
         'plan_slug',
         'twofa_enabled',
         'onboarding_completed_at',
+        // Preferências de notificação. Sem estes campos aqui, o fill() do
+        // NotificationPreferencesController descartava tudo em silêncio e
+        // ainda respondia 200 "Preferências atualizadas".
+        'notif_vencimento',
+        'notif_alerta_saldo',
+        'notif_resumo_semanal',
+        'notif_antecedencia_dias',
+        'notif_meta_atingida',
+        'notif_gasto_anomalo',
+        'notif_limite_categoria',
+        'notif_conquistas',
+        'notif_fatura_fechada',
     ];
 
     /**
