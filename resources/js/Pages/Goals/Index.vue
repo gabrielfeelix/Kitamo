@@ -101,6 +101,44 @@ const statusPill = {
 
 const statusFor = (status: string) => statusPill[status as keyof typeof statusPill] ?? statusPill.on_track;
 
+const faltam = (goal: Goal) => Math.max(0, goal.target - goal.current);
+
+const concluida = (goal: Goal) => goal.target > 0 && goal.current >= goal.target;
+
+/**
+ * Ritmo médio de depósito nos últimos 90 dias, projetado sobre o que falta.
+ * É a pergunta que a pessoa realmente faz olhando uma meta — "quando chego?" —
+ * e a resposta já estava nos depósitos, só não era mostrada.
+ *
+ * Só estima com 2+ depósitos: com um só não há intervalo para medir ritmo.
+ */
+const previsao = (goal: Goal): string | null => {
+    if (concluida(goal)) return null;
+
+    const deposits = (goal.deposits ?? []).filter((d) => d.amount > 0).slice().sort((a, b) => a.createdAt - b.createdAt);
+    if (deposits.length < 2) return null;
+
+    const primeiro = deposits[0]!.createdAt;
+    const ultimo = deposits[deposits.length - 1]!.createdAt;
+    const meses = Math.max(1, (ultimo - primeiro) / (1000 * 60 * 60 * 24 * 30));
+
+    const totalDepositado = deposits.reduce((acc, d) => acc + d.amount, 0);
+    const porMes = totalDepositado / meses;
+    if (porMes <= 0) return null;
+
+    const mesesRestantes = Math.ceil(faltam(goal) / porMes);
+    if (!Number.isFinite(mesesRestantes) || mesesRestantes <= 0) return null;
+    if (mesesRestantes > 120) return 'nesse ritmo, ainda longe';
+
+    return mesesRestantes === 1 ? 'cerca de 1 mês nesse ritmo' : `cerca de ${mesesRestantes} meses nesse ritmo`;
+};
+
+/** Circunferência do anel de progresso (r=26). */
+const RING = 2 * Math.PI * 26;
+const ringOffset = (goal: Goal) => RING - (pct(goal) / 100) * RING;
+
+const metasConcluidas = computed(() => goals.value.filter((g) => concluida(g)).length);
+
 const totalSaved = computed(() => goals.value.reduce((acc, g) => acc + g.current, 0));
 const totalTarget = computed(() => goals.value.reduce((acc, g) => acc + g.target, 0));
 const totalPct = computed(() => {
@@ -220,19 +258,17 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             <!-- Left Column -->
             <div :class="[isMobile ? 'contents' : 'lg:col-span-8']">
 
-        <div v-if="goals.length === 0" class="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center shadow-sm">
+        <div v-if="goals.length === 0" class="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-900">Nenhuma meta ainda</h2>
+            <p class="mx-auto mt-2 max-w-sm text-sm text-slate-500">
+                Uma viagem, uma reserva de emergência, a entrada de um carro. Defina o valor e acompanhe o quanto falta.
+            </p>
             <Link
                 :href="route('goals.create')"
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-400"
-                aria-label="Nova meta"
+                class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
             >
-                <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 5v14" />
-                    <path d="M5 12h14" />
-                </svg>
+                Criar primeira meta
             </Link>
-            <div class="mt-4 text-base font-semibold text-slate-900">Nova meta</div>
-            <div class="mt-2 text-sm text-slate-500">Crie um objetivo financeiro e acompanhe o progresso.</div>
         </div>
 
         <div v-else :class="[isMobile ? 'mt-6 space-y-4 pb-4' : 'mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 pb-8']">
@@ -244,68 +280,75 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
             >
                 <div class="absolute right-0 top-0 -mr-6 -mt-6 h-32 w-32 rounded-full bg-slate-50 transition-transform group-hover:scale-150"></div>
                 
-                <div class="relative flex h-full flex-col justify-between gap-6">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-4">
+                <div class="relative flex h-full flex-col justify-between gap-5">
+                    <div class="flex items-start gap-4">
+                        <!-- O anel carrega o progresso e o ícone ao mesmo tempo:
+                             o percentual deixa de ser legenda perdida no rodapé. -->
+                        <span class="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                            <svg class="absolute inset-0 h-16 w-16 -rotate-90" viewBox="0 0 60 60">
+                                <circle cx="30" cy="30" r="26" fill="none" stroke="currentColor" stroke-width="5" class="text-slate-100" />
+                                <circle
+                                    cx="30"
+                                    cy="30"
+                                    r="26"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="5"
+                                    stroke-linecap="round"
+                                    :stroke-dasharray="RING"
+                                    :stroke-dashoffset="ringOffset(goal)"
+                                    class="transition-[stroke-dashoffset] duration-1000 ease-out"
+                                    :class="concluida(goal) ? 'text-emerald-500' : goal.status === 'late' ? 'text-orange-500' : 'text-emerald-500'"
+                                />
+                            </svg>
                             <span
-                                class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110"
-                                :class="goal.icon === 'home' ? 'bg-emerald-100/50 text-emerald-600' : goal.icon === 'plane' ? 'bg-blue-100/50 text-blue-600' : 'bg-orange-100/50 text-orange-500'"
+                                class="relative text-sm font-bold tabular-nums"
+                                :class="goal.status === 'late' && !concluida(goal) ? 'text-orange-600' : 'text-slate-900'"
                             >
-                                <svg v-if="goal.icon === 'home'" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 10.5L12 3l9 7.5" />
-                                    <path d="M5 10v10h14V10" />
-                                </svg>
-                                <svg v-else-if="goal.icon === 'plane'" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M2 16l20-8-20-8 6 8-6 8Z" />
-                                    <path d="M6 16v6l4-4" />
-                                </svg>
-                                <svg v-else class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M5 16l1-5 1-3h10l1 3 1 5" />
-                                    <path d="M7 16h10" />
-                                    <circle cx="8" cy="17" r="1.5" />
-                                    <circle cx="16" cy="17" r="1.5" />
-                                </svg>
+                                {{ pct(goal) }}<span class="text-[10px]">%</span>
                             </span>
-                            <div>
-                                <div class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">{{ goal.title }}</div>
-                                <div class="text-xs font-semibold text-slate-400">Prazo: {{ goal.due }}</div>
-                            </div>
-                        </div>
-
-                         <span v-if="!isMobile" class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500 shadow-sm ring-1 ring-slate-100">
-                             {{ statusFor(goal.status).label }}
                         </span>
-                    </div>
 
-                    <div class="space-y-3">
-                         <div class="flex items-baseline justify-between">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Guardado</span>
-                                <span class="text-2xl font-bold tracking-tight" :class="goal.status === 'late' ? 'text-orange-500' : 'text-slate-900'">
-                                    {{ formatMoney(goal.current).replace('R$', 'R$ ') }}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-2">
+                                <h3 class="line-clamp-1 text-lg font-bold text-slate-900 transition-colors group-hover:text-emerald-700">
+                                    {{ goal.title }}
+                                </h3>
+                                <span
+                                    v-if="concluida(goal)"
+                                    class="shrink-0 rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white"
+                                >
+                                    Conquistada
+                                </span>
+                                <span
+                                    v-else
+                                    class="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                                    :class="statusFor(goal.status).cls"
+                                >
+                                    {{ statusFor(goal.status).label }}
                                 </span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meta</span>
-                                <div class="text-sm font-semibold text-slate-600">{{ formatMoney(goal.target).replace('R$', 'R$ ') }}</div>
-                            </div>
+
+                            <p class="mt-1 text-xs font-medium text-slate-400">Prazo: {{ goal.due }}</p>
                         </div>
-                        
-                        <div class="relative h-3 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
-                            <div
-                                class="h-full rounded-full transition-all duration-1000 ease-out shadow-sm"
-                                :class="goal.status === 'late' ? 'bg-gradient-to-r from-orange-400 to-orange-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'"
-                                :style="{ width: `${pct(goal)}%` }"
-                            ></div>
+                    </div>
+
+                    <div>
+                        <!-- Guardado é o herói; a meta vira referência ao lado. -->
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-3xl font-bold tracking-tight tabular-nums text-slate-900">
+                                {{ formatMoney(goal.current) }}
+                            </span>
+                            <span class="text-sm font-medium text-slate-400">de {{ formatMoney(goal.target) }}</span>
                         </div>
-                        
-                        <div class="flex justify-between items-center pt-1">
-                             <span v-if="isMobile" class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-500">
-                                {{ statusFor(goal.status).label }}
-                             </span>
-                             <span v-else></span>
-                             <span class="text-xs font-bold text-slate-400">{{ pct(goal) }}% concluído</span>
-                        </div>
+
+                        <p v-if="concluida(goal)" class="mt-2 text-sm font-semibold text-emerald-600">
+                            Meta atingida — você chegou lá.
+                        </p>
+                        <p v-else class="mt-2 text-sm text-slate-500">
+                            Faltam <span class="font-semibold text-slate-700">{{ formatMoney(faltam(goal)) }}</span>
+                            <template v-if="previsao(goal)"> · {{ previsao(goal) }}</template>
+                        </p>
                     </div>
                 </div>
             </Link>
@@ -356,11 +399,12 @@ const onTransactionSave = async (payload: TransactionModalPayload) => {
                     </Link>
                 </div>
 
-                <!-- Dica / Motivacional -->
-                <div class="rounded-3xl bg-emerald-50 p-6 border border-emerald-100">
-                    <h4 class="text-sm font-bold text-emerald-900 mb-2">Dica Financeira</h4>
-                    <p class="text-xs text-emerald-700 leading-relaxed">
-                        Manter depósitos regulares, mesmo que pequenos, é o segredo para atingir suas metas. Tente automatizar suas economias.
+                <!-- Metas conquistadas: só aparece quando há o que celebrar.
+                     Um card fixo com texto genérico não diz nada sobre você. -->
+                <div v-if="metasConcluidas > 0" class="rounded-3xl border border-emerald-100 bg-emerald-50 p-6">
+                    <div class="text-3xl font-bold tabular-nums text-emerald-700">{{ metasConcluidas }}</div>
+                    <p class="mt-1 text-sm font-medium text-emerald-800">
+                        {{ metasConcluidas === 1 ? 'meta conquistada' : 'metas conquistadas' }}
                     </p>
                 </div>
             </div>
