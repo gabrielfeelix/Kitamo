@@ -303,7 +303,7 @@ class _Carregando extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/joao-avatar.png', height: 96),
+              Image.asset('assets/images/joao.png', height: 110),
               const SizedBox(height: 16),
               Text('somando as parcelas…', style: Tipo.corpo),
             ],
@@ -326,7 +326,7 @@ class _Trancado extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/joao-avatar.png', height: 96),
+              Image.asset('assets/images/joao.png', height: 110),
               const SizedBox(height: 16),
               Text('a Kitamo está trancada', style: Tipo.corpo),
               const SizedBox(height: 16),

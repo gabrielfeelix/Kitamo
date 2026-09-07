@@ -67,11 +67,13 @@ class _ChatPageState extends State<ChatPage> {
           foregroundColor: Cores.branco,
           title: Row(
             children: [
+              // O bicho inteiro, não o close do rosto: o joao-avatar.png
+              // é um recorte de 330px na cabeça, e esticado vira zoom
+              // estranho. Foi o Gabriel que pegou, em 07/09.
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Cores.branco,
-                backgroundImage:
-                    const AssetImage('assets/images/joao-avatar.png'),
+                backgroundImage: const AssetImage('assets/images/joao.png'),
               ),
               const SizedBox(width: 10),
               Text('Kitamo',
@@ -83,7 +85,7 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             Expanded(
               child: _conversa.isEmpty
-                  ? const _Inicio()
+                  ? _Inicio(nome: widget.perfil?.nome, aoTocar: _perguntar)
                   : ListView.builder(
                       controller: _rolagem,
                       padding: const EdgeInsets.all(Medidas.margem),
@@ -97,29 +99,94 @@ class _ChatPageState extends State<ChatPage> {
       );
 }
 
+/// O chat abria com "pergunta aí" e uma caixa vazia: quem chega não
+/// descobre sozinho que ele sabe responder, e caixa de texto em branco
+/// ninguém digita.
+///
+/// Agora ele começa falando, e as perguntas que ele sabe responder ficam
+/// à vista, não só na tirinha do rodapé.
 class _Inicio extends StatelessWidget {
-  const _Inicio();
+  const _Inicio({required this.nome, required this.aoTocar});
+
+  final String? nome;
+  final void Function(Pergunta) aoTocar;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(Medidas.margem),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+  Widget build(BuildContext context) => ListView(
+        padding: const EdgeInsets.all(Medidas.margem),
+        children: [
+          const SizedBox(height: Medidas.espaco),
+          Center(
+            child: Image.asset(
+              // O bicho inteiro (897x937), não o recorte da cabeça.
+              'assets/images/joao.png',
+              height: 132,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+          const SizedBox(height: Medidas.espacoGrande),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Cores.barroClaro,
+              borderRadius: BorderRadius.circular(Medidas.raioCartao),
+              border: Border.all(color: Cores.borda, width: 1.5),
+            ),
+            child: Text(
+              nome == null
+                  ? 'oi. eu sei os seus números de cor. '
+                      'pode perguntar do seu diário, das parcelas '
+                      'ou de quanto ainda falta.'
+                  : 'oi, $nome. eu sei os seus números de cor. '
+                      'pode perguntar do seu diário, das parcelas '
+                      'ou de quanto ainda falta.',
+              style: Tipo.corpo.copyWith(height: 1.5),
+            ),
+          ),
+          const SizedBox(height: Medidas.espacoGrande),
+          Text('O QUE EU SEI RESPONDER', style: Tipo.rotulo),
+          const SizedBox(height: Medidas.espaco),
+          for (final p in Respostas.sugestoes) ...[
+            _PerguntaPronta(pergunta: p, aoTocar: () => aoTocar(p)),
+            const SizedBox(height: 8),
+          ],
+        ],
+      );
+}
+
+class _PerguntaPronta extends StatelessWidget {
+  const _PerguntaPronta({required this.pergunta, required this.aoTocar});
+
+  final Pergunta pergunta;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: aoTocar,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: Medidas.alvoMinimo),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+          decoration: BoxDecoration(
+            color: Cores.branco,
+            borderRadius: BorderRadius.circular(Medidas.raioLinha),
+            boxShadow: Medidas.sombraCartao,
+          ),
+          child: Row(
             children: [
-              Image.asset('assets/images/joao-avatar.png', height: 96),
-              const SizedBox(height: Medidas.espaco),
-              Text('pergunta aí', style: Tipo.subtitulo),
-              const SizedBox(height: 4),
-              Text(
-                'eu falo do seu diário, das suas parcelas e de quanto falta',
-                style: Tipo.apoio,
-                textAlign: TextAlign.center,
+              Expanded(
+                child: Text(pergunta.texto, style: Tipo.corpoForte),
               ),
+              const Icon(Icons.chevron_right, size: 20, color: Cores.apoio),
             ],
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _BalaoWidget extends StatelessWidget {
