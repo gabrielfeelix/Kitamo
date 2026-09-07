@@ -1,4 +1,4 @@
-@Tags(['retrato'])
+@Skip('gera PNG das telas; rode com: flutter test test/retrato_test.dart -x nada')
 library;
 
 import 'dart:io';
