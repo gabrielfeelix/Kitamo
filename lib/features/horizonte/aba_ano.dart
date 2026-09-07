@@ -30,12 +30,23 @@ class AbaAno extends StatelessWidget {
     return null;
   }
 
-  /// O que sobra por mês depois que a última parcela cair.
+  /// O que sobra **por mês** depois que a última parcela cair.
+  ///
+  /// Não é o `saldoFinal`: aquele é acumulado, e vem negativo por meses
+  /// depois da quitação em quem passou o ano no vermelho. A promessa do
+  /// design é outra — quanto passa a sobrar todo mês quando a parcela
+  /// deixa de sair — e essa é a diferença entre dois meses seguidos já
+  /// sem dívida.
   double get _sobraDepois {
     final q = _quitacao;
     if (q == null) return 0;
+
     final i = meses.indexOf(q);
-    return i + 1 < meses.length ? meses[i + 1].saldoFinal : q.saldoFinal;
+    if (i + 2 >= meses.length) return 0;
+
+    // Dois meses depois da quitação, ambos sem parcela: a diferença entre
+    // eles é o que entra menos o que sai, limpo.
+    return meses[i + 2].saldoFinal - meses[i + 1].saldoFinal;
   }
 
   static const _porExtenso = [

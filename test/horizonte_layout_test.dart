@@ -124,6 +124,48 @@ void main() {
     });
   });
 
+  group('aba meses', () {
+    testWidgets('os três meses são encadeados, não três cópias',
+        (tester) async {
+      await em(tester, tamanhos.first, tela(aba: AbaDoHorizonte.meses));
+
+      // Cada coluna começa onde a anterior fechou. Recomeçar do zero
+      // faria as três saírem idênticas, e a tela existe para mostrar o
+      // contrário: o vermelho anda pra frente e some.
+      final dia1 = find.text(dinheiro(-23.33));
+      expect(dia1, findsOneWidget,
+          reason: 'só o primeiro mês começa do zero');
+    });
+
+    testWidgets('mostra as abas de período com os três meses',
+        (tester) async {
+      await em(tester, tamanhos.first, tela(aba: AbaDoHorizonte.meses));
+
+      expect(find.text('set/26'), findsOneWidget);
+      expect(find.text('out/26'), findsOneWidget);
+      expect(find.text('nov/26'), findsOneWidget);
+    });
+  });
+
+  group('aba ano', () {
+    testWidgets('a sobra prometida é a do mês, não o acumulado',
+        (tester) async {
+      await em(tester, tamanhos.first, tela(aba: AbaDoHorizonte.ano));
+
+      expect(find.text('SUA ÚLTIMA PARCELA CAI EM'), findsOneWidget);
+
+      // O saldo acumulado segue negativo por meses depois da quitação em
+      // quem passou o ano no vermelho. Prometer isso como "sobra" seria
+      // dizer que ela sobra menos zero.
+      final texto = find.textContaining('depois dela sobram');
+      if (texto.evaluate().isNotEmpty) {
+        final w = tester.widget<Text>(texto.first);
+        expect(w.data, isNot(contains('-')),
+            reason: 'sobra prometida nunca é negativa');
+      }
+    });
+  });
+
   group('aba dias', () {
     testWidgets('mostra as quatro colunas do design', (tester) async {
       await em(tester, tamanhos.first, tela());

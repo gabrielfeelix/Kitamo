@@ -65,14 +65,37 @@ class _HorizontePageState extends State<HorizontePage> {
   DateTime get _mesAtual =>
       DateTime(_base.year, _base.month + _deslocamento, 1);
 
-  MesProjetado _mes(DateTime quando) => _servico.mes(
+  MesProjetado _mes(DateTime quando, {double saldoInicial = 0}) =>
+      _servico.mes(
         perfil: widget.perfil,
         dividas: widget.dividas,
-        saldoInicial: 0,
+        saldoInicial: saldoInicial,
         entradas: widget.entradas,
         contasFixas: widget.contasFixas,
         referencia: quando,
       );
+
+  /// Os três meses da aba "meses", **encadeados**: cada um começa onde o
+  /// anterior fechou.
+  ///
+  /// Recomeçar do zero a cada mês faria as três colunas saírem idênticas,
+  /// e a tela existe justamente para mostrar o contrário — *"o vermelho
+  /// anda pra frente até janeiro, e some"*.
+  List<MesProjetado> get _tresMeses {
+    final meses = <MesProjetado>[];
+    var saldo = 0.0;
+
+    for (var i = 0; i < 3; i++) {
+      final mes = _mes(
+        DateTime(_base.year, _base.month + i, 1),
+        saldoInicial: saldo,
+      );
+      meses.add(mes);
+      saldo = mes.saldoFinal;
+    }
+
+    return meses;
+  }
 
   List<MesResumo> get _doze => _servico.doze(
         perfil: widget.perfil,
@@ -139,12 +162,7 @@ class _HorizontePageState extends State<HorizontePage> {
             lancamentos: widget.lancamentos,
             diario: widget.perfil?.gastoDiarioEstimado ?? 0,
           ),
-        AbaDoHorizonte.meses => AbaMeses(
-            meses: [
-              for (var i = 0; i < 3; i++)
-                _mes(DateTime(_base.year, _base.month + i, 1)),
-            ],
-          ),
+        AbaDoHorizonte.meses => AbaMeses(meses: _tresMeses),
         AbaDoHorizonte.ano => AbaAno(meses: _doze),
       };
 
