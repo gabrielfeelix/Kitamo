@@ -44,38 +44,42 @@ enum PassoOnboarding {
   divida(
     cor: Color(0xFF0B5F59),
     ilustracao: 'ob-divida.png',
-    pergunta: 'quanto você deve hoje?',
-    apoio: 'pode ser chute. a gente ajusta depois com o extrato.',
+    pergunta: 'qual o total das suas dívidas?',
+    apoio: 'cartão, empréstimo, crediário. tudo somado. '
+        'pode ser chute: a gente ajusta depois com o extrato.',
   ),
   renda(
     cor: Color(0xFF3F7A3D),
     ilustracao: 'ob-entrada.png',
-    pergunta: 'quanto entra por mês?',
+    pergunta: 'quanto você recebe por mês?',
     apoio: 'salário, bico, pensão, aluguel que você recebe. tudo que entra.',
   ),
   diaRenda(
     cor: Color(0xFF6B58B0),
     ilustracao: 'ob-calendario.png',
-    pergunta: 'que dia cai?',
-    apoio: 'o dia do mês em que o dinheiro entra na conta.',
+    pergunta: 'qual o dia do seu pagamento?',
+    apoio: 'o dia do mês em que o salário cai na sua conta.',
   ),
   gasto(
     cor: Color(0xFFE8A33D),
     ilustracao: 'ob-mercado.png',
-    pergunta: 'quanto sai com o dia a dia?',
-    apoio: 'vai no feeling: mercado, padaria, iFood, transporte.',
+    pergunta: 'qual o seu gasto por mês?',
+    apoio: 'mercado, padaria, iFood, transporte. vai no feeling: '
+        'a gente confere no extrato depois.',
   ),
   fixas(
     cor: Color(0xFFA34A24),
     ilustracao: 'ob-fixas.png',
-    pergunta: 'tem conta fixa?',
-    apoio: 'marque o que sai todo mês no mesmo dia.',
+    pergunta: 'quanto somam suas contas fixas?',
+    apoio: 'aluguel, luz, água, internet, assinatura. '
+        'o que sai todo mês no mesmo dia.',
   ),
   extrato(
     cor: Color(0xFF9E4522),
     ilustracao: 'ob-extrato.png',
-    pergunta: 'quer que a gente confira no seu extrato?',
-    apoio: 'o arquivo do seu banco, lido aqui no celular. nada sai daqui.',
+    pergunta: 'quer conferir com o seu extrato?',
+    apoio: 'o arquivo do seu banco, lido aqui dentro do celular. '
+        'a gente não pede senha e nada sai daqui.',
   );
 
   const PassoOnboarding({

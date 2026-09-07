@@ -18,9 +18,10 @@ class AberturaPage extends StatefulWidget {
 
   final VoidCallback aoTerminar;
 
-  /// O ciclo inteiro dura 6s no design, mas quem abre o app todo dia não
-  /// quer esperar: 2,4s dá pra ver a casa subir sem virar pedágio.
-  static const duracao = Duration(milliseconds: 2400);
+  /// O design pede 6s. Quem abre o app todo dia não quer esse pedágio,
+  /// mas o GIF tem cinco quadros e cortar antes do fim mostra casa pela
+  /// metade: 3,2s deixa a construção terminar.
+  static const duracao = Duration(milliseconds: 3200);
 
   @override
   State<AberturaPage> createState() => _AberturaPageState();
@@ -65,8 +66,6 @@ class _AberturaPageState extends State<AberturaPage>
           animation: _c,
           builder: (context, _) {
             final t = _c.value;
-            // 5 fases da casa, distribuídas no tempo da abertura.
-            final fase = (t * 5).clamp(0, 4).floor() + 1;
             final verbo = _verbos[(t * 3).clamp(0, 2).floor()];
 
             return Column(
@@ -81,30 +80,15 @@ class _AberturaPageState extends State<AberturaPage>
                   ),
                 ),
                 const SizedBox(height: 40),
-                // A casa sobe um degrau por fase, e o joão balança em cima.
+                // O GIF que veio com o design: cinco quadros da casa sendo
+                // construída. Antes daqui eu animava isso em código, o que
+                // era invenção minha — o arquivo do designer já existia.
                 SizedBox(
                   height: 200,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Image.asset(
-                        'assets/images/casa-$fase.png',
-                        height: 96,
-                        fit: BoxFit.contain,
-                      ),
-                      Positioned(
-                        bottom: 76,
-                        child: Transform.translate(
-                          // o balanço do joão: sobe 7px no meio do ciclo
-                          offset: Offset(0, -7 * _balanco(t)),
-                          child: Image.asset(
-                            'assets/images/joao-voando.png',
-                            height: 86,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Image.asset(
+                    'assets/images/kitamo-carregando.gif',
+                    height: 200,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -143,11 +127,5 @@ class _AberturaPageState extends State<AberturaPage>
         ),
       ),
     );
-  }
-
-  /// Vai de 0 a 1 e volta, duas vezes — o "kt-bob" do design.
-  double _balanco(double t) {
-    final ciclo = (t * 2) % 1;
-    return ciclo < 0.5 ? ciclo * 2 : (1 - ciclo) * 2;
   }
 }

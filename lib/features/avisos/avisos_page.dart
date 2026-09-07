@@ -71,7 +71,10 @@ class _Vazio extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/joao-avatar.png', height: 96),
+            // O joão inteiro, em pé — é a pose que o design system manda no
+            // estado vazio. O arquivo de avatar é um recorte fechado no
+            // rosto, e ampliado vira zoom na cara do bicho.
+            Image.asset('assets/images/joao.png', height: 150),
             const SizedBox(height: Medidas.espaco),
             Text('só isso. Você está em dia.', style: Tipo.corpo),
           ],

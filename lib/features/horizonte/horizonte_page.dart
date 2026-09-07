@@ -88,7 +88,7 @@ class _BlocoMes extends StatelessWidget {
         : Cores.branco;
 
     return Semantics(
-      label: '${mes.rotulo}, saldo ${dinheiroRedondo(mes.saldoFinal)}',
+      label: '${mes.rotulo}, saldo ${dinheiro(mes.saldoFinal)}',
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -101,7 +101,7 @@ class _BlocoMes extends StatelessWidget {
           children: [
             Text(mes.rotulo, style: Tipo.rotulo.copyWith(color: sobre)),
             Text(
-              dinheiroRedondo(mes.saldoFinal),
+              dinheiro(mes.saldoFinal),
               style: Tipo.corpoForte.copyWith(color: sobre),
             ),
             if (mes.temDivida)

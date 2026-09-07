@@ -111,7 +111,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        expect(find.text('quanto você deve hoje?'), findsOneWidget);
+        expect(find.text('qual o total das suas dívidas?'), findsOneWidget);
       });
     }
 
@@ -164,5 +164,76 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(chamou, isTrue, reason: 'o toque real não chegou no botão');
+  });
+
+  group('dá pra voltar', () {
+    late Banco banco;
+    late OnboardingController c;
+
+    setUp(() {
+      banco = Banco.memoria();
+      c = OnboardingController(
+        perfis: PerfilRepositoryDrift(banco),
+        dividas: DividaRepositoryDrift(banco),
+      );
+    });
+
+    tearDown(() => banco.close());
+
+    testWidgets('a primeira pergunta não tem voltar', (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(MaterialApp(
+        home: OnboardingPage(controller: c, aoConcluir: () {}),
+      ));
+
+      expect(find.byTooltip('voltar'), findsNothing);
+    });
+
+    testWidgets('da segunda em diante, voltar retrocede um passo',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(MaterialApp(
+        home: OnboardingPage(controller: c, aoConcluir: () {}),
+      ));
+
+      await tester.tap(find.text('continuar'));
+      await tester.pumpAndSettle();
+      expect(c.passo, PassoOnboarding.renda);
+
+      await tester.tap(find.byTooltip('voltar'));
+      await tester.pumpAndSettle();
+
+      expect(c.passo, PassoOnboarding.divida,
+          reason: 'sem voltar, quem errou fica preso até o fim');
+    });
+
+    testWidgets('dá pra voltar de qualquer passo até o começo',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(MaterialApp(
+        home: OnboardingPage(controller: c, aoConcluir: () {}),
+      ));
+
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.text('continuar'));
+        await tester.pumpAndSettle();
+      }
+
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.byTooltip('voltar'));
+        await tester.pumpAndSettle();
+      }
+
+      expect(c.passo, PassoOnboarding.divida);
+    });
   });
 }

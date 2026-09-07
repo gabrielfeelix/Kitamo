@@ -83,7 +83,7 @@ class Respostas {
         (a, b) => a.valorParcela <= b.valorParcela ? a : b);
 
     return 'sobra ${dinheiro(r.sobraMensal)} no mês. A menor parcela é a do '
-        '${menor.nome}, ${dinheiro(menor.valorParcela)} — se der pra pagar '
+        '${menor.nome}, ${dinheiro(menor.valorParcela)}. se der pra pagar '
         'uma a mais, sua quitação anda um mês.';
   }
 

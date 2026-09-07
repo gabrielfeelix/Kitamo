@@ -58,6 +58,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (mounted) widget.aoConcluir();
   }
 
+  void _voltar() {
+    _valor.clear();
+    c.voltar();
+  }
+
   Future<void> _pular() async {
     if (!c.ehUltimo) {
       _valor.clear();
@@ -82,6 +87,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               total: PassoOnboarding.values.length,
               cor: passo.sobre,
               aoPular: _pular,
+              aoVoltar: c.indice == 0 ? null : _voltar,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -176,8 +182,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   String? _leituraDoGasto() {
     final mes = c.gastoDiario;
     if (mes == null || mes <= 0) return null;
-    return 'isso dá ${dinheiroRedondo(mes / 30)} por dia. '
-        'a gente confere no seu extrato depois.';
+    return 'isso dá ${dinheiro(mes / 30)} por dia.';
   }
 }
 
@@ -188,6 +193,7 @@ class _TopoDoPasso extends StatelessWidget {
     required this.total,
     required this.cor,
     required this.aoPular,
+    this.aoVoltar,
   });
 
   final int passo;
@@ -195,12 +201,31 @@ class _TopoDoPasso extends StatelessWidget {
   final Color cor;
   final VoidCallback aoPular;
 
+  /// Null na primeira pergunta: não há pra onde voltar.
+  final VoidCallback? aoVoltar;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 8, 28, 0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 28, 0),
       child: Row(
         children: [
+          // Voltar à esquerda, espelhando o pular. Sem isto a pessoa que
+          // errou uma resposta ficava presa até o fim do onboarding.
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: aoVoltar == null
+                ? null
+                : IconButton(
+                    onPressed: aoVoltar,
+                    icon: const Icon(Icons.arrow_back_rounded, size: 22),
+                    color: cor,
+                    tooltip: 'voltar',
+                    padding: EdgeInsets.zero,
+                  ),
+          ),
+          const SizedBox(width: 4),
           Expanded(
             child: kt.ProgressoDoOnboarding(passo: passo, total: total),
           ),
@@ -277,7 +302,11 @@ class _ValorSobreAcento extends StatelessWidget {
                   controller: campo,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (t) => aoMudar(_lerNumero(t)),
+                  // Formata enquanto digita: 3500 vira "3.500,00". Sem
+                  // isto a pessoa via "3500" e não sabia se era três mil e
+                  // quinhentos ou trinta e cinco reais.
+                  inputFormatters: const [FormatadorDeDinheiro()],
+                  onChanged: (t) => aoMudar(lerDinheiro(t)),
                   cursorColor: tinta,
                   cursorWidth: 2,
                   style: Tipo.numero.copyWith(
@@ -290,7 +319,7 @@ class _ValorSobreAcento extends StatelessWidget {
                     isDense: true,
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
-                    hintText: '0',
+                    hintText: '0,00',
                     hintStyle: Tipo.numero.copyWith(
                       fontSize: 38,
                       height: 1,
@@ -536,11 +565,4 @@ class _Oferta extends StatelessWidget {
       ),
     );
   }
-}
-
-/// "1.234,56" ou "1234.56" viram 1234.56. Vírgula é decimal aqui.
-double? _lerNumero(String t) {
-  final limpo = t.replaceAll('.', '').replaceAll(',', '.').trim();
-  if (limpo.isEmpty) return null;
-  return double.tryParse(limpo);
 }

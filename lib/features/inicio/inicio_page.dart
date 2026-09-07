@@ -31,6 +31,7 @@ class InicioPage extends StatelessWidget {
     required this.dividas,
     this.aoQuitar,
     this.lancamentosDeHoje = const [],
+    this.aoAbrirPerfil,
   });
 
   final PerfilFinanceiro? perfil;
@@ -42,6 +43,10 @@ class InicioPage extends StatelessWidget {
 
   /// Alimenta o "você passou R$ X do dia".
   final List<LancamentoRegistro> lancamentosDeHoje;
+
+  /// Tocar no avatar do cabeçalho leva ao perfil. Sem isto o avatar era
+  /// só desenho, e a pessoa tocava nele esperando ir pra algum lugar.
+  final VoidCallback? aoAbrirPerfil;
 
   @override
   Widget build(BuildContext context) {
@@ -64,16 +69,17 @@ class InicioPage extends StatelessWidget {
             rotulo: r.fecha
                 ? 'você pode gastar hoje'
                 : 'falta por mês pra conta fechar',
-            numero: dinheiroRedondo(r.fecha ? r.diario : -r.faltaPorMes),
+            numero: dinheiro(r.fecha ? r.diario : -r.faltaPorMes),
             frase: _frase(r, hoje),
             chipSecundario: r.fecha
-                ? 'sobra no mês: ${dinheiroRedondo(r.sobraMensal)}'
+                ? 'sobra no mês: ${dinheiro(r.sobraMensal)}'
                 : '3 caminhos pra resolver',
             nome: perfil?.nome ?? '',
             temAviso: avisos.isNotEmpty,
             aoTocarAvisos: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => AvisosPage(avisos: avisos)),
             ),
+            aoTocarPerfil: aoAbrirPerfil,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(

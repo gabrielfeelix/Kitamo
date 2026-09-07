@@ -105,6 +105,7 @@ class _CascaState extends State<Casca> {
         dividas: widget.dividas,
         aoQuitar: widget.aoQuitar,
         lancamentosDeHoje: _deHoje,
+        aoAbrirPerfil: () => _trocar(AbaDaKitamo.perfil),
       ),
       LancamentosPage(repositorio: widget.lancamentos),
       ChatPage(perfil: widget.perfil, dividas: widget.dividas),

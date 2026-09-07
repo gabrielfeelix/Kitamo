@@ -43,7 +43,7 @@ class ApertoPage extends StatelessWidget {
           Text(
             'faltam R\$ ${faltaPorMes.toStringAsFixed(2).replaceAll('.', ',')} '
             'por mês pra conta fechar. Nenhum desses caminhos resolve '
-            'sozinho — mas algum encurta o caminho.',
+            'sozinho, mas algum encurta o caminho.',
             style: Tipo.corpo,
           ),
           const SizedBox(height: Medidas.espacoGrande),
