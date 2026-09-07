@@ -11,6 +11,7 @@ import '../../repositories/lancamento_repository.dart';
 import '../backup/backup_service.dart';
 import '../chat/chat_page.dart';
 import '../inicio/inicio_page.dart';
+import '../primeira_vez/primeira_vez.dart';
 import '../horizonte/horizonte_page.dart';
 import '../lancamentos/lancamentos_page.dart';
 import '../lancamentos/lancar_sheet.dart';
@@ -34,6 +35,8 @@ class Casca extends StatefulWidget {
     this.aoQuitar,
     this.aoSalvarDivida,
     this.aoSalvarPerfil,
+    this.ensinarAUsar = false,
+    this.aoTerminarDeEnsinar,
   });
 
   final PerfilFinanceiro? perfil;
@@ -48,6 +51,13 @@ class Casca extends StatefulWidget {
   /// edição indisponível, o que serve para teste de tela.
   final Future<void> Function(PerfilFinanceiro)? aoSalvarPerfil;
 
+  /// true na primeira vez que a pessoa chega no app depois de responder
+  /// tudo: mostra a #32 por cima do Início já preenchido.
+  final bool ensinarAUsar;
+
+  /// Chamado quando ela termina ou pula, para não mostrar de novo.
+  final VoidCallback? aoTerminarDeEnsinar;
+
   @override
   State<Casca> createState() => _CascaState();
 }
@@ -55,6 +65,7 @@ class Casca extends StatefulWidget {
 class _CascaState extends State<Casca> {
   int _aba = 0;
   List<LancamentoRegistro> _deHoje = const [];
+  late bool _ensinando = widget.ensinarAUsar;
 
   @override
   void initState() {
@@ -136,7 +147,7 @@ class _CascaState extends State<Casca> {
       ),
     ];
 
-    return Scaffold(
+    final app = Scaffold(
       backgroundColor: Cores.creme,
       body: IndexedStack(index: _aba, children: telas),
       bottomNavigationBar: SafeArea(
@@ -146,6 +157,22 @@ class _CascaState extends State<Casca> {
           aoTrocar: _trocar,
         ),
       ),
+    );
+
+    if (!_ensinando) return app;
+
+    // O véu vai POR CIMA do app de verdade, não de um desenho dele: a
+    // pessoa aprende olhando o próprio número.
+    return Stack(
+      children: [
+        app,
+        PrimeiraVez(
+          aoTerminar: () {
+            setState(() => _ensinando = false);
+            widget.aoTerminarDeEnsinar?.call();
+          },
+        ),
+      ],
     );
   }
 

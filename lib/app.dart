@@ -91,6 +91,10 @@ class _RaizState extends State<Raiz> {
   /// A abertura aparece sempre; as boas-vindas, só pra quem nunca entrou.
   _Entrada _entrada = _Entrada.abertura;
 
+  /// Liga a #32 quando a pessoa chega no app pela primeira vez, logo
+  /// depois de ver o resultado. Some quando ela termina ou pula.
+  bool _ensinarAUsar = false;
+
   /// O controller vive aqui pra não reiniciar a cada rebuild — senão o que
   /// a pessoa digitou some quando ela troca de passo.
   late final _onboarding = OnboardingController(
@@ -180,6 +184,7 @@ class _RaizState extends State<Raiz> {
             setState(() {
               _precisaOnboarding = false;
               _entrada = _Entrada.dentro;
+              _ensinarAUsar = true;
             });
           },
           aoRevisar: () => setState(() => _entrada = _Entrada.perguntas),
@@ -196,6 +201,10 @@ class _RaizState extends State<Raiz> {
       perfis: widget.perfis,
       dividas: widget.dividas,
       lancamentos: widget.lancamentos,
+      // Só na primeira vez, logo depois do resultado: é a #32, que ensina
+      // a usar o que já está preenchido na tela.
+      ensinarAUsar: _ensinarAUsar,
+      aoTerminarDeEnsinar: () => setState(() => _ensinarAUsar = false),
     );
   }
 }
@@ -242,11 +251,15 @@ class _CarregarInicio extends StatelessWidget {
     required this.perfis,
     required this.dividas,
     required this.lancamentos,
+    this.ensinarAUsar = false,
+    this.aoTerminarDeEnsinar,
   });
 
   final PerfilRepository perfis;
   final DividaRepository dividas;
   final LancamentoRepository lancamentos;
+  final bool ensinarAUsar;
+  final VoidCallback? aoTerminarDeEnsinar;
 
   /// Marca a parcela como paga e leva para a tela de conquista.
   Future<void> _quitar(
@@ -278,6 +291,8 @@ class _CarregarInicio extends StatelessWidget {
             }
 
             return Casca(
+              ensinarAUsar: ensinarAUsar,
+              aoTerminarDeEnsinar: aoTerminarDeEnsinar,
               perfil: snapPerfil.data,
               dividas: snapDividas.data ?? const [],
               lancamentos: lancamentos,

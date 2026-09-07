@@ -35,10 +35,10 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 11 | Horizonte | sim | aba "ano" · `horizonte/aba_ano.dart` |
 | 12 | Última parcela | **não** | `quitar/` |
 | 13 | Conta não fecha | **não** | `aperto/` inventada |
-| 14 | Lançamentos | **não** | `lancamentos/` |
-| 15 | Chat | **não** | `chat/` |
+| 14 | Lançamentos | **não** | `lancamentos/` · alcançada de dentro do histórico |
+| 15 | Chat | sim | `chat/chat_page.dart` |
 | 16 | Perfil | sim | `perfil/perfil_page.dart` |
-| 17 | O número | **não** | — · **é a tela de RESULTADO das perguntas** |
+| 17 | O número | sim | `resultado/resultado_page.dart` |
 | 18 | Lançar | **não** | `lancamentos/lancar_sheet.dart` |
 | 19 | Gastei | **não** | idem |
 | 20 | Notificações | sim | `avisos/avisos_page.dart` |
@@ -48,12 +48,12 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 24 | Editar perfil | sim | `perfil/editar_perfil_page.dart` |
 | 25 | Categorias | **não** | — |
 | 26 | Contas conectadas | **não** | — |
-| 27 | Importar extrato | **não** | `importar/` |
+| 27 | Importar extrato | sim | `importar/importar_page.dart` |
 | 28 | Aparência | **não** | — |
 | 29 | Sobre a Kitamo | **não** | — |
 | 30 | Extrato aplicado | **não** | — |
 | 31 | Barro escuro | **não** | — |
-| 32 | Primeira vez | **não** | — · **é o onboarding de verdade, 1 de 3** |
+| 32 | Primeira vez | sim | `primeira_vez/primeira_vez.dart` |
 | 33 | Nova dívida | **não** | — |
 | 34 | Gasto salvo | **não** | — |
 | 35 | Como a conta é feita | **não** | — |
@@ -103,8 +103,12 @@ Abertura (#00)
                       └─ ONBOARDING · "Primeira vez" (#32)  ← FALTA
 ```
 
-Hoje o app pula do fim das perguntas direto pro Início: seco, sem o
-número e sem ensinar nada. As duas telas que faltam são as marcadas.
+**Feito em 07/09.** O caminho inteiro existe: as perguntas terminam no
+resultado (#17), e o Início abre com a #32 por cima, ensinando a usar.
+
+A ordem das perguntas mudou: a primeira agora é o **nome**, porque o
+Início dava "bom dia, Gabriel" a alguém que o app nunca perguntou como se
+chama. E a última virou **como trazer os gastos**, com os três caminhos.
 
 ## Telas que o design não tem
 
