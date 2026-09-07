@@ -13,7 +13,31 @@ definidos, em `/home/gabfelix/dev/finance/design-joao/Kitamo App.dc.html`.
 
 Estado: 12 de 36 telas feitas do HTML, 198 testes passando.
 
+**A seção 4 do handoff ("A REALIDADE da pessoa") vale mais que a fila de
+telas.** O modelo de dados de hoje não cabe a vida de quem vai usar:
+supõe uma dívida plana e um salário só, num dia só. Isso faz o diário
+sair errado, não é enfeite. Comece por lá.
+
 ## O que fazer, nesta ordem
+
+**0. O modelo de dados, antes das telas.** Duas decisões do Gabriel em
+07/09, detalhadas na seção 4 do handoff:
+
+- **Cartão por fora, compras por dentro.** Hoje 3 cartões viram 3
+  dívidas soltas e não dá pra saber o que tem dentro de cada fatura. O
+  cartão vira uma caixa com as compras parceladas dentro, e ela marca
+  **"paguei a fatura"** uma vez pra baixar as parcelas do mês juntas.
+  Uma fatura paga = um toque.
+- **Várias entradas, cada uma com seu dia.** Hoje é `rendaMensal` +
+  `diaRenda`: um valor, um dia. Quem recebe R$ 600 dia 5 e R$ 400 dia 20
+  não consegue dizer isso, e o app promete folga em dia sem dinheiro na
+  conta. Vira uma lista de entradas (valor, dia, nome), com migration
+  que preserva quem já usa.
+
+`DiarioService` e `HorizonteService` passam a ler a lista. **Os testes
+de `test/` são a rede: leia antes, e não afrouxe nenhuma regra da seção
+7 do handoff** (sobra negativa, dia 31 em fevereiro, centavos em int,
+idempotência).
 
 **1. Horizonte numa tela só.** Hoje o app tem duas telas soltas
 (`horizonte/mes_page.dart` e `horizonte/horizonte_page.dart`, as duas
@@ -52,7 +76,16 @@ respostas".
 app, depois do resultado: o Início já preenchido, véu escuro por cima e
 balões "1 DE 3 · ESSE NÚMERO". Três passos.
 
-**5. O resto das telas**, pelo método da seção 1 do handoff.
+**5. A entrada, a primeira vez que a pessoa abre.** Antes das perguntas,
+umas frases com a arte do joão pra acalmar: *"uma dívida não é o fim, na
+verdade, é só o começo. Assim como o João, que constrói sua casa de
+pouco em pouco"*. **Decisão dele: rola sozinho, como um vídeo** — as
+frases sobem com a animação e ela assiste sem tocar. **Com "pular"
+visível**, porque nada pode prender a pessoa. Feito em Dart com as artes
+que já existem; ele quer tentar criar um vídeo de verdade depois, então
+deixe fácil de trocar. Seção 5 do handoff.
+
+**6. O resto das telas**, pelo método da seção 1 do handoff.
 
 ## Vocabulário (ele corrigiu em 07/09, não erre)
 
@@ -63,6 +96,7 @@ balões "1 DE 3 · ESSE NÚMERO". Três passos.
   tela**.
 - **resultado** = a #17, que fecha as perguntas com o número.
 - **onboarding** = a #32, que ensina a usar, *depois* de tudo respondido.
+- **entrada** = as frases do joão que rolam sozinhas, *antes* de tudo.
 
 ## Antes de dizer que terminou
 
@@ -73,7 +107,7 @@ flutter test && flutter analyze
 
 E **rode no emulador**, sempre. Teste verde não pega overflow, fonte que
 não carrega, nem botão que não responde — os quatro bugs mais caros
-desta semana só apareceram no aparelho. A seção 7 do handoff lista todos,
+desta semana só apareceram no aparelho. A seção 9 do handoff lista todos,
 inclusive o de 07/09: campo público em ChangeNotifier não redesenha a
 tela, e o toque parece quebrado.
 

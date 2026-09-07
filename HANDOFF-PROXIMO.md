@@ -1,7 +1,8 @@
 # Handoff — Kitamo (Flutter)
 
-Escrito em 07/09/2026, fim do segundo dia. **Leia as seções 1 e 2 e o
-`TELAS.md` antes de escrever qualquer linha.**
+Escrito em 07/09/2026, fim do segundo dia. **Leia as seções 1, 2 e 4 e o
+`TELAS.md` antes de escrever qualquer linha.** A seção 4 é a que muda o
+modelo de dados: ela vale mais que qualquer tela da fila.
 
 ---
 
@@ -95,7 +96,107 @@ casa em 5 fases.
 
 ---
 
-## 4. O que o Gabriel pediu e ainda não foi feito
+---
+
+## 4. A REALIDADE da pessoa (o assunto mais importante, 07/09)
+
+O Gabriel parou tudo pra dizer isto, e é a maior dívida técnica do
+projeto. **O modelo de dados de hoje não cabe a vida de quem vai usar.**
+
+Palavras dele: *"ela está endividada, mas e se a dívida é nos 3 cartões?
+e se ela recebe em varios dias diferentes um pouquinho cada? como vou
+marcar que paguei cada divida de cada cartão diferente?"*
+
+### O que não cabe hoje
+
+| a vida real | o que o app assume |
+|---|---|
+| dívida em 3 cartões, cada um com várias compras parceladas | `Divida` é plana: nome, parcela, um dia. 3 cartões viram 3 dívidas soltas, sem saber o que tem dentro |
+| recebe R$ 600 dia 5, R$ 400 dia 20, bico dia 28 | `rendaMensal` + `diaRenda`: **um valor, um dia só** |
+| "paguei a fatura do Nubank" | `quitarParcela(id)` baixa uma parcela da dívida inteira; não existe "esta compra dentro desta fatura" |
+
+Isso não é detalhe de tela: **o diário sai errado.** O
+`DiarioService` divide o mês supondo que todo o dinheiro entra num dia
+só. Pra quem recebe partido, o app promete folga em dia que ainda não
+tem dinheiro na conta.
+
+### As duas decisões dele, em 07/09
+
+**1. Cartão por fora, compras por dentro.** O cartão é uma caixa; as
+compras parceladas moram dentro. Ela marca **"paguei a fatura"** uma vez
+e todas as parcelas daquele mês baixam juntas — é como a fatura chega na
+vida real, e é o que ela entende sem explicação.
+
+```
+Nubank · vence dia 4
+  R$ 1.534,06   [paguei a fatura]
+  ├─ geladeira   4/10
+  ├─ notebook    2/12
+  └─ mercado     1/3
+```
+
+Precisa de: uma entidade **cartão/credor** com dívidas dentro, e um
+`quitarFatura(cartaoId, mes)` que baixe as parcelas do mês em transação
+(idempotente, como o `quitarParcela` já é — não deixe meio caminho).
+A tela #26 "Contas conectadas" e a #21 "Dívidas" do design são o lugar
+disso.
+
+**2. Várias entradas, cada uma com seu dia.** Ela cadastra quantas
+quiser: salário dia 5, bico dia 20, pensão dia 15. O diário passa a
+considerar **quando cada dinheiro entra**, não um dia só.
+
+```
+o que entra no seu mês
+  salário   R$ 1.800   dia 5
+  bico      R$ 600     dia 20
+  pensão    R$ 400     dia 15
+  [+ adicionar entrada]
+```
+
+Precisa de: tabela de **entradas** (valor, dia, nome), migration v5
+mantendo `rendaMensal`/`diaRenda` de quem já usa (vira uma entrada só), e
+o `DiarioService` e o `HorizonteService` lendo a lista em vez do par.
+**Os testes que guardam o diário são a rede de segurança — leia
+`test/` antes de mexer, e não afrouxe nenhuma regra da seção 5.**
+
+A pergunta "que dia cai" (#04) vira uma tela de lista, não um número só.
+
+### A interface tem que ser fácil nesse sentido
+
+Palavras dele: *"a interface tem que ser fácil pra ele entender nesse
+sentido"*. Quem está endividado não vai montar planilha: se marcar o que
+pagou der trabalho, ela para de marcar e o app morre em duas semanas.
+Uma fatura paga = **um toque**.
+
+---
+
+## 5. A primeira vez que a pessoa abre (07/09)
+
+Antes das perguntas, ele quer acalmar. Palavras dele: *"seria legal
+fazermos algo bem legal... talvez verticalmente umas frases bacanas com
+imagens (...) uma dívida não é o fim, na verdade, é só o começo. Assim
+como o João, que constrói sua casa de pouco em pouco"*.
+
+**Decisão dele: rola sozinho, como um vídeo.** As frases sobem com a
+animação e ela assiste sem tocar. **Ponha um "pular" visível** — quem já
+quer começar não pode ficar preso, e isso é regra do design system
+(nada que prenda a pessoa).
+
+- Escrito em Dart, com as artes que já existem (`joao*.png`, `casa-1..5`)
+- A casa subindo de fase é a metáfora inteira: dívida não é o fim, é o
+  começo, e a casa se levanta de pouco em pouco
+- Termina apresentando as perguntas: "pra montar seu plano, a gente
+  precisa saber três coisas"
+- Ele se ofereceu pra criar um vídeo de verdade depois. Deixe a versão
+  em Dart pronta e fácil de trocar; vídeo pesa no APK e depende dele
+
+Isto é a **entrada**, e vem antes das perguntas iniciais. Não confunda
+com o **onboarding** (#32), que ensina a usar o app depois de tudo
+respondido.
+
+---
+
+## 6. O que o Gabriel pediu e ainda não foi feito
 
 Em ordem de prioridade, tudo dito por ele nesta sessão:
 
@@ -167,7 +268,7 @@ Em ordem de prioridade, tudo dito por ele nesta sessão:
 
 ---
 
-## 5. O que presta e não se toca
+## 7. O que presta e não se toca
 
 A lógica está testada e correta. `lib/services/` e `lib/repositories/`
 ficam como estão:
@@ -193,7 +294,7 @@ Regras que os testes guardam (não quebre):
 
 ---
 
-## 6. Como ver a tela (o emulador já está pronto)
+## 8. Como ver a tela (o emulador já está pronto)
 
 ```bash
 export ANDROID_HOME=$HOME/.local/opt/android-sdk
@@ -236,7 +337,7 @@ de verdade (texto vira caixinha). Serve pra estrutura, não pra tipografia.
 
 ---
 
-## 7. Bugs que só apareceram rodando no aparelho
+## 9. Bugs que só apareceram rodando no aparelho
 
 Teste verde não pega nada disso. **Rode no emulador antes de dizer que
 terminou.**
@@ -268,7 +369,7 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 8. Decisões fechadas (não reabrir sozinho)
+## 10. Decisões fechadas (não reabrir sozinho)
 
 - **O design é a fonte da verdade**, incluindo a paleta escurecida
   (`barro #A34A24`, `teal #0C7468`, `verde #3F7A3D`) — mais escura de
@@ -292,7 +393,7 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 9. Como o Gabriel trabalha
+## 11. Como o Gabriel trabalha
 
 - Quer **ver tela**, não relatório. Instala no celular e olha
 - **Não crie pasta nova.** APKs vão em `kitamo-app/apks/`, e ele pega em
@@ -306,7 +407,7 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 10. Onde está cada coisa
+## 12. Onde está cada coisa
 
 ```
 /home/gabfelix/dev/kitamo-app/           o app
