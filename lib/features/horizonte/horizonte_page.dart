@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design/cores.dart';
+import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
 import '../../models/conta_fixa.dart';
 import '../../models/divida.dart';
@@ -30,6 +31,8 @@ class HorizontePage extends StatefulWidget {
     this.lancamentos = const [],
     this.abaInicial = AbaDoHorizonte.dias,
     this.referencia,
+    this.semVoltar = false,
+    this.aoVerLancamentos,
   });
 
   final PerfilFinanceiro? perfil;
@@ -44,6 +47,14 @@ class HorizontePage extends StatefulWidget {
 
   /// Só para teste: fixa o mês de referência.
   final DateTime? referencia;
+
+  /// true quando a tela é uma aba da barra, não uma tela empilhada: aí
+  /// não há para onde voltar.
+  final bool semVoltar;
+
+  /// Abre a lista de lançamentos soltos. É o caminho que sobrou depois de
+  /// o histórico tomar o lugar dela na barra.
+  final VoidCallback? aoVerLancamentos;
 
   @override
   State<HorizontePage> createState() => _HorizontePageState();
@@ -135,9 +146,9 @@ class _HorizontePageState extends State<HorizontePage> {
             _CabecalhoVerde(
               mes: _mesAtual,
               diario: widget.perfil?.gastoDiarioEstimado ?? 0,
-              aoVoltar: () => Navigator.of(context).maybePop(),
               aoTrocarMes: (passo) => setState(() => _deslocamento += passo),
               segmentado: _segmentado(sobreAcento: true),
+              aoVerLancamentos: widget.aoVerLancamentos,
             )
           else
             _CabecalhoClaro(
@@ -150,8 +161,11 @@ class _HorizontePageState extends State<HorizontePage> {
               explicacao: _aba == AbaDoHorizonte.meses
                   ? 'o saldo de cada dia, mês ao lado de mês.'
                   : null,
-              aoVoltar: () => Navigator.of(context).maybePop(),
+              aoVoltar: widget.semVoltar
+                  ? null
+                  : () => Navigator.of(context).maybePop(),
               segmentado: _segmentado(sobreAcento: false),
+              aoVerLancamentos: widget.aoVerLancamentos,
             ),
           Expanded(child: _corpo()),
         ],
@@ -206,16 +220,16 @@ class _CabecalhoVerde extends StatelessWidget {
   const _CabecalhoVerde({
     required this.mes,
     required this.diario,
-    required this.aoVoltar,
     required this.aoTrocarMes,
     required this.segmentado,
+    this.aoVerLancamentos,
   });
 
   final DateTime mes;
   final double diario;
-  final VoidCallback aoVoltar;
   final ValueChanged<int> aoTrocarMes;
   final Widget segmentado;
+  final VoidCallback? aoVerLancamentos;
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +243,14 @@ class _CabecalhoVerde extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
+            if (aoVerLancamentos != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _LinkDeLancamentos(
+                  aoTocar: aoVerLancamentos!,
+                  sobreAcento: true,
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -302,16 +324,21 @@ class _CabecalhoClaro extends StatelessWidget {
   const _CabecalhoClaro({
     required this.titulo,
     required this.periodo,
-    required this.aoVoltar,
     required this.segmentado,
+    this.aoVoltar,
     this.explicacao,
+    this.aoVerLancamentos,
   });
 
   final String titulo;
   final String periodo;
   final String? explicacao;
-  final VoidCallback aoVoltar;
+
+  /// Null quando a tela é aba da barra: não há para onde voltar.
+  final VoidCallback? aoVoltar;
+
   final Widget segmentado;
+  final VoidCallback? aoVerLancamentos;
 
   @override
   Widget build(BuildContext context) {
@@ -324,6 +351,7 @@ class _CabecalhoClaro extends StatelessWidget {
           children: [
             Row(
               children: [
+                if (aoVoltar != null)
                 Semantics(
                   button: true,
                   label: 'voltar',
@@ -349,8 +377,12 @@ class _CabecalhoClaro extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                if (aoVoltar != null) const SizedBox(width: 12),
                 Expanded(child: Text(titulo, style: Tipo.titulo)),
+                if (aoVerLancamentos != null) ...[
+                  _LinkDeLancamentos(aoTocar: aoVerLancamentos!),
+                  const SizedBox(width: 10),
+                ],
                 Text(
                   periodo,
                   style: const TextStyle(
@@ -376,6 +408,44 @@ class _CabecalhoClaro extends StatelessWidget {
             const SizedBox(height: 8),
             segmentado,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// O caminho para os lançamentos soltos.
+///
+/// Existe porque o histórico tomou o lugar deles na barra: sem este link
+/// a lista some, e o toque que a pessoa já aprendeu deixa de funcionar.
+class _LinkDeLancamentos extends StatelessWidget {
+  const _LinkDeLancamentos({
+    required this.aoTocar,
+    this.sobreAcento = false,
+  });
+
+  final VoidCallback aoTocar;
+  final bool sobreAcento;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: aoTocar,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: Medidas.alvoMinimo),
+          alignment: Alignment.center,
+          child: Text(
+            'lançamentos',
+            style: TextStyle(
+              fontFamily: Tipo.figtree,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: sobreAcento ? Cores.branco : Cores.teal,
+            ),
+          ),
         ),
       ),
     );

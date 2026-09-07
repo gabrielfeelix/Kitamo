@@ -5,7 +5,16 @@ import '../design/medidas.dart';
 import '../design/tipografia.dart';
 
 /// Os cinco itens da barra, na ordem do design.
-enum AbaDaKitamo { inicio, lancamentos, chat, lancar, perfil }
+/// As abas da barra.
+///
+/// A segunda é o **histórico**, não a lista de lançamentos: é a tela onde
+/// a pessoa passa o tempo em qualquer app de dívida, e ficava escondida
+/// atrás de um "ver o mês" no cartão do Início. Palavras do Gabriel:
+/// *"essa tela é a tela principal da maioria dos sistemas de gestão de
+/// dívida, e a gente está tratando ela como secundária"*.
+///
+/// Os lançamentos soltos viram um caminho de dentro do histórico.
+enum AbaDaKitamo { inicio, historico, chat, lancar, perfil }
 
 /// A barra de navegação, montada a partir do NavBar.dc.html.
 ///
@@ -54,10 +63,10 @@ class BarraDeNavegacao extends StatelessWidget {
             aoTocar: () => aoTrocar(AbaDaKitamo.inicio),
           ),
           _Item(
-            rotulo: 'Lançamentos',
-            icone: _ListaIcone(cor: _cor(AbaDaKitamo.lancamentos)),
-            cor: _cor(AbaDaKitamo.lancamentos),
-            aoTocar: () => aoTrocar(AbaDaKitamo.lancamentos),
+            rotulo: 'Histórico',
+            icone: _ListaIcone(cor: _cor(AbaDaKitamo.historico)),
+            cor: _cor(AbaDaKitamo.historico),
+            aoTocar: () => aoTrocar(AbaDaKitamo.historico),
           ),
           _Falar(
             ativa: ativa == AbaDaKitamo.chat,

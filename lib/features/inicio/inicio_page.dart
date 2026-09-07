@@ -31,10 +31,14 @@ class InicioPage extends StatelessWidget {
     this.aoQuitar,
     this.lancamentosDeHoje = const [],
     this.aoAbrirPerfil,
+    this.aoAbrirHistorico,
   });
 
   final PerfilFinanceiro? perfil;
   final List<Divida> dividas;
+
+  /// Leva para a aba do histórico. Null empilha a tela, como antes.
+  final VoidCallback? aoAbrirHistorico;
 
   /// Chamado ao tocar em "quitei essa". Null deixa o botão inerte, o que
   /// serve para teste de tela.
@@ -156,6 +160,13 @@ class InicioPage extends StatelessWidget {
   /// Antes eram duas telas soltas, e o mensal abria tocando no cartão da
   /// casa — nada no cartão avisava, e ninguém adivinhava o caminho.
   void _abrirHorizonte(BuildContext context, AbaDoHorizonte aba) {
+    // O histórico agora é aba: trocar de aba é melhor que empilhar uma
+    // segunda cópia da mesma tela por cima da barra.
+    if (aoAbrirHistorico != null) {
+      aoAbrirHistorico!();
+      return;
+    }
+
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => HorizontePage(
         perfil: perfil,

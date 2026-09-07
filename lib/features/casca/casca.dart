@@ -11,6 +11,7 @@ import '../../repositories/lancamento_repository.dart';
 import '../backup/backup_service.dart';
 import '../chat/chat_page.dart';
 import '../inicio/inicio_page.dart';
+import '../horizonte/horizonte_page.dart';
 import '../lancamentos/lancamentos_page.dart';
 import '../lancamentos/lancar_sheet.dart';
 import '../perfil/perfil_page.dart';
@@ -111,8 +112,19 @@ class _CascaState extends State<Casca> {
         aoQuitar: widget.aoQuitar,
         lancamentosDeHoje: _deHoje,
         aoAbrirPerfil: () => _trocar(AbaDaKitamo.perfil),
+        aoAbrirHistorico: () => _trocar(AbaDaKitamo.historico),
       ),
-      LancamentosPage(repositorio: widget.lancamentos),
+      // A segunda aba é o histórico. Os lançamentos soltos ficam a um
+      // toque de dentro dele, no lugar de disputar a barra.
+      HorizontePage(
+        perfil: widget.perfil,
+        dividas: widget.dividas,
+        lancamentos: _deHoje,
+        semVoltar: true,
+        aoVerLancamentos: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => LancamentosPage(repositorio: widget.lancamentos),
+        )),
+      ),
       ChatPage(perfil: widget.perfil, dividas: widget.dividas),
       PerfilPage(
         perfil: widget.perfil,
@@ -140,7 +152,7 @@ class _CascaState extends State<Casca> {
   /// "Lançar" não é tela: abre a folha por cima e a aba não muda.
   AbaDaKitamo get _abaAtual => switch (_aba) {
         0 => AbaDaKitamo.inicio,
-        1 => AbaDaKitamo.lancamentos,
+        1 => AbaDaKitamo.historico,
         2 => AbaDaKitamo.chat,
         _ => AbaDaKitamo.perfil,
       };
@@ -152,7 +164,7 @@ class _CascaState extends State<Casca> {
     }
     setState(() => _aba = switch (aba) {
           AbaDaKitamo.inicio => 0,
-          AbaDaKitamo.lancamentos => 1,
+          AbaDaKitamo.historico => 1,
           AbaDaKitamo.chat => 2,
           AbaDaKitamo.perfil => 3,
           AbaDaKitamo.lancar => _aba,
