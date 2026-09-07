@@ -27,7 +27,10 @@ class BaixarController extends Controller
 
         return Inertia::render('Site/Baixar', [
             'apk' => $existe ? [
-                'url' => '/' . self::ARQUIVO,
+                // A versão vai na URL para o navegador não reaproveitar um
+                // APK antigo do cache. Sem isso o Gabriel baixou três
+                // vezes e recebeu o arquivo velho, e o app "não mudava".
+                'url' => '/' . self::ARQUIVO . '?v=' . File::lastModified($caminho),
                 // Em MB com uma casa: "28,5 MB" diz mais que "29869056".
                 'tamanho' => $this->emMegas(File::size($caminho)),
                 'atualizado' => File::lastModified($caminho),

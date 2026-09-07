@@ -88,7 +88,7 @@ const passos = [
                 <div v-if="apk" class="mt-10">
                     <a
                         :href="apk.url"
-                        download
+                        :download="`kitamo-${(apk.versao || '').replace(/[^0-9.]/g, '') || 'app'}.apk`"
                         class="inline-flex h-14 items-center justify-center gap-3 rounded-xl bg-slate-950 px-8 text-[13px] font-extrabold uppercase tracking-[0.15em] text-white hover:bg-teal-500 hover:text-slate-950 transition-all active:scale-95"
                     >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
