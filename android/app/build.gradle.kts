@@ -33,6 +33,13 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
+
+        // x86_64 só existe em emulador. Tirar corta ~1/3 do APK
+        // universal, o que reduz o risco de download truncado — que é
+        // uma das causas de "app não foi instalado".
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
         // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
@@ -48,6 +55,13 @@ android {
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
+
+                // v1 (JAR signing) junto com v2/v3: sem v1, alguns
+                // aparelhos e alguns instaladores de fabricante recusam
+                // com "app não instalado", sem dizer o motivo.
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
