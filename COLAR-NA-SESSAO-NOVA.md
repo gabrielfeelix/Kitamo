@@ -20,8 +20,9 @@ sair errado, não é enfeite. Comece por lá.
 
 ## O que fazer, nesta ordem
 
-**0. O modelo de dados, antes das telas.** Duas decisões do Gabriel em
-07/09, detalhadas na seção 4 do handoff:
+**0. O modelo de dados, antes das telas.** Três decisões do Gabriel em
+07/09, detalhadas na seção 4 do handoff. O fio que liga as três: **o app
+pergunta, a pessoa responde — o app não decide pela pessoa.**
 
 - **Cartão por fora, compras por dentro.** Hoje 3 cartões viram 3
   dívidas soltas e não dá pra saber o que tem dentro de cada fatura. O
@@ -33,8 +34,16 @@ sair errado, não é enfeite. Comece por lá.
   não consegue dizer isso, e o app promete folga em dia sem dinheiro na
   conta. Vira uma lista de entradas (valor, dia, nome), com migration
   que preserva quem já usa.
+- **Contas fixas que ela cadastra, não que a gente escolhe.** Hoje é um
+  campo só: ela digita "R$ 900" e ninguém sabe do que é feito. O design
+  manda lista com chave (aluguel, luz, internet), mas **lista fixa não
+  basta** — quem tem consórcio ou mensalidade de escola fica de fora.
+  Sugestões comuns como atalho **mais "+ adicionar conta"** sempre
+  visível, com nome, valor e dia que ela quiser. O total é a soma do que
+  ela cadastrou, nunca um número digitado solto. Palavras dele: *"n
+  podemos só setar por ela"*.
 
-`DiarioService` e `HorizonteService` passam a ler a lista. **Os testes
+`DiarioService` e `HorizonteService` passam a ler as listas. **Os testes
 de `test/` são a rede: leia antes, e não afrouxe nenhuma regra da seção
 7 do handoff** (sobra negativa, dia 31 em fevereiro, centavos em int,
 idempotência).

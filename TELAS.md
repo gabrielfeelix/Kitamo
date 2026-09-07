@@ -27,7 +27,7 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 03 | Quanto entra | sim | idem |
 | 04 | Que dia cai | sim | idem |
 | 05 | Dia a dia | sim | idem |
-| 06 | Contas fixas | sim | idem |
+| 06 | Contas fixas | **refazer** | idem · virou campo único, o design pede lista |
 | 07 | Oferta extrato | sim | idem |
 | 08 | Início | sim | `inicio/` |
 | 09 | Mês dia a dia | **não** | aba "dias" do horizonte · `mes_page.dart` inventada |
@@ -57,6 +57,21 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 33 | Nova dívida | **não** | — |
 | 34 | Gasto salvo | **não** | — |
 | 35 | Como a conta é feita | **não** | — |
+
+## A #06 está feita, mas está errada
+
+A tela existe e passa nos testes, mas **não é a do design**. O design
+manda lista com chave (aluguel, luz, internet), cada linha com nome, dia
+e valor. O app tem **um campo de valor único**: a pessoa digita "R$ 900"
+e ninguém sabe do que aquilo é feito.
+
+E não basta copiar a lista do design, que é fixa: o Gabriel foi claro em
+07/09 que **a pessoa é quem adiciona** — sugestões comuns como atalho,
+mais "+ adicionar conta" com nome, valor e dia. Ver a seção 4 do
+handoff.
+
+O mesmo vale pra pergunta #04 ("que dia cai"), que hoje aceita **um dia
+só** e precisa virar lista de entradas.
 
 ## As três que são uma só
 

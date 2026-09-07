@@ -114,13 +114,14 @@ marcar que paguei cada divida de cada cartão diferente?"*
 | dívida em 3 cartões, cada um com várias compras parceladas | `Divida` é plana: nome, parcela, um dia. 3 cartões viram 3 dívidas soltas, sem saber o que tem dentro |
 | recebe R$ 600 dia 5, R$ 400 dia 20, bico dia 28 | `rendaMensal` + `diaRenda`: **um valor, um dia só** |
 | "paguei a fatura do Nubank" | `quitarParcela(id)` baixa uma parcela da dívida inteira; não existe "esta compra dentro desta fatura" |
+| aluguel, luz, internet, consórcio, cada um com seu dia | `contasFixasEstimadas`: **um número só**, digitado de cabeça |
 
 Isso não é detalhe de tela: **o diário sai errado.** O
 `DiarioService` divide o mês supondo que todo o dinheiro entra num dia
 só. Pra quem recebe partido, o app promete folga em dia que ainda não
 tem dinheiro na conta.
 
-### As duas decisões dele, em 07/09
+### As três decisões dele, em 07/09
 
 **1. Cartão por fora, compras por dentro.** O cartão é uma caixa; as
 compras parceladas moram dentro. Ela marca **"paguei a fatura"** uma vez
@@ -160,6 +161,40 @@ o `DiarioService` e o `HorizonteService` lendo a lista em vez do par.
 `test/` antes de mexer, e não afrouxe nenhuma regra da seção 5.**
 
 A pergunta "que dia cai" (#04) vira uma tela de lista, não um número só.
+
+**3. As contas fixas são dela, não da lista.** Ele foi direto:
+*"n podemos só escolher pela pessoa, ela que vai escolhendo e
+adicionando e colocando o valor do fixo (...) n podemos só setar por ela
+ok?"*.
+
+Hoje a pergunta #06 é **um campo de valor único**: ela digita "R$ 900" e
+acabou. Não escolhe nada, não lista nada, e ninguém (nem ela) sabe do
+que aquele número é feito. Quando o valor muda, ela tem que recalcular
+de cabeça e digitar de novo.
+
+O design manda **lista com chave**: aluguel, luz, internet, cada linha
+com nome, dia e valor, ligando e desligando. *"marque o que sai todo mês
+no mesmo dia."*
+
+**Mas a lista do design é fixa, e só isso não basta.** Se as opções são
+prontas, o app continua escolhendo por ela: quem tem consórcio, pensão,
+mensalidade de escola ou plano de saúde fica de fora e volta a chutar um
+total. Então:
+
+- as sugestões comuns aparecem como atalho (aluguel, luz, água,
+  internet, telefone) — **sugestão, não catálogo fechado**
+- **"+ adicionar conta"** sempre visível, onde ela põe **nome, valor e
+  dia** que quiser
+- cada conta é uma linha editável e apagável depois, no Perfil
+- o total é **soma do que ela cadastrou**, nunca um número digitado solto
+
+Precisa de: tabela de **contas fixas** (nome, valor em centavos, dia),
+migration preservando o `contasFixasEstimadas` de quem já usa (vira uma
+conta só, "contas fixas", com o valor atual), e o `DiarioService`
+somando a lista.
+
+É o mesmo princípio das entradas e dos cartões: **o app pergunta, a
+pessoa responde. O app não decide pela pessoa.**
 
 ### A interface tem que ser fácil nesse sentido
 
