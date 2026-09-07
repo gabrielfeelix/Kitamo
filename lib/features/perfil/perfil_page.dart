@@ -6,6 +6,7 @@ import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
 import '../../models/divida.dart';
 import '../backup/backup_service.dart';
+import '../dividas/editar_divida_page.dart';
 import '../seguranca/bloqueio_service.dart';
 
 /// Perfil. Sem tela intermediária de "configurações": o perfil já é a
@@ -16,11 +17,15 @@ class PerfilPage extends StatefulWidget {
     required this.dividas,
     required this.backup,
     required this.bloqueio,
+    this.aoSalvarDivida,
   });
 
   final List<Divida> dividas;
   final BackupService backup;
   final BloqueioService bloqueio;
+
+  /// Null deixa o cadastro indisponível (usado em teste de tela).
+  final Future<void> Function(Divida)? aoSalvarDivida;
 
   @override
   State<PerfilPage> createState() => _PerfilPageState();
@@ -71,6 +76,14 @@ class _PerfilPageState extends State<PerfilPage> {
     _avisar('Backup copiado. ${BackupService.avisoDeExportacao}');
   }
 
+  Future<void> _editarDivida([Divida? original]) async {
+    final salvar = widget.aoSalvarDivida;
+    if (salvar == null) return;
+
+    final nova = await EditarDividaPage.abrir(context, original: original);
+    if (nova != null) await salvar(nova);
+  }
+
   void _avisar(String texto) => ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(texto, style: Tipo.corpo)));
 
@@ -108,9 +121,18 @@ class _PerfilPageState extends State<PerfilPage> {
               titulo: d.nome,
               apoio: '${d.parcelasPagas} de ${d.parcelasTotal} · '
                   'vence dia ${d.diaVencimento}',
+              aoTocar: widget.aoSalvarDivida == null
+                  ? null
+                  : () => _editarDivida(d),
             ),
           if (abertas.isEmpty)
             const _Linha(titulo: 'Nenhuma dívida', apoio: 'você está livre'),
+          if (widget.aoSalvarDivida != null)
+            _Linha(
+              titulo: '+ Nova dívida',
+              apoio: 'cartão, empréstimo, crediário',
+              aoTocar: _editarDivida,
+            ),
 
           const _Grupo('Dados'),
           _Linha(

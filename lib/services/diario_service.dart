@@ -7,6 +7,7 @@ class ResultadoDiario {
     required this.diario,
     required this.sobraMensal,
     required this.parcelasDoMes,
+    required this.contasFixas,
     required this.diasNoMes,
     required this.fecha,
     required this.faltaPorMes,
@@ -18,6 +19,7 @@ class ResultadoDiario {
   final double diario;
   final double sobraMensal;
   final double parcelasDoMes;
+  final double contasFixas;
   final int diasNoMes;
 
   /// false quando a sobra é zero ou negativa.
@@ -71,6 +73,7 @@ class DiarioService {
       diario: fecha ? _duasCasas(sobra / diasNoMes) : 0,
       sobraMensal: sobra,
       parcelasDoMes: _duasCasas(parcelas),
+      contasFixas: _duasCasas(fixas),
       diasNoMes: diasNoMes,
       fecha: fecha,
       faltaPorMes: fecha ? 0 : _duasCasas(sobra.abs()),

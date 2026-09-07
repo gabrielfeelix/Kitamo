@@ -169,6 +169,7 @@ class _CarregarInicio extends StatelessWidget {
               backup: BackupService(perfis, dividas),
               bloqueio: BloqueioService(),
               aoQuitar: (d) => _quitar(context, d, snapPerfil.data),
+              aoSalvarDivida: dividas.salvar,
             );
           },
         ),

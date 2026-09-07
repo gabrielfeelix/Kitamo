@@ -214,6 +214,24 @@ Fase 1 é justamente onde mora a decisão de segurança mais séria do app
 
 ---
 
+## 5.2 Depois das 6 fases (06/09/2026)
+
+Feito além do plano, para o app fechar de ponta a ponta:
+
+- **Nova dívida / editar** — sem isso o app era via de mão única: a pessoa
+  cadastrava no onboarding e nunca mais corrigia. Bloqueava o teste com 10
+  pessoas
+- **Importar OFX** — a oferta do passo 6 do onboarding apontava para uma
+  tela que não existia
+- **Chat** — determinístico, sem LLM. As perguntas que importam são sobre os
+  números da própria pessoa, e para essas o cálculo exato é melhor que um
+  modelo que pode errar
+- **Nav com 5 itens** (Início · Lançamentos · + · Chat · Perfil)
+
+Falta ainda: notificações ("vence amanhã"), "pra onde vai" (mosaico de
+categorias) e **rodar em aparelho real** — minify quebra em runtime, não no
+build.
+
 ## 5.0 Nota sobre a Fase 5 (06/09/2026)
 
 Implementado **backup por arquivo**, não sincronização em nuvem. É a opção

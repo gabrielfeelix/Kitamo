@@ -55,10 +55,24 @@ flutter build apk --release --obfuscate --split-debug-info=build/simbolos
   preservando o que entra por JNI/reflexão — SQLite e biometria quebrariam
   só no release, onde é mais caro descobrir
 
-**Pendência conhecida:** o build avisa que a lib ELF ainda carrega
-informação DWARF. A flag `--strip` não existe em `build apk` (é de
-`build aar`). Resolver antes da loja, provavelmente via `--split-per-abi`
-ou App Bundle.
+Para a loja, use App Bundle:
+
+```bash
+flutter build appbundle --release --obfuscate --split-debug-info=build/simbolos
+```
+
+**Sobre o aviso de DWARF:** o Flutter avisa que a lib ELF conteria
+informação de debug e sugere `--strip`, que não existe em `build apk`/
+`appbundle` (é de `build aar`). O aviso é genérico — verificado no artefato
+gerado em 06/09/2026:
+
+```
+readelf -S base/lib/arm64-v8a/libapp.so | grep -c debug   →  0
+```
+
+Zero seções de debug. Os símbolos ficam em `build/simbolos/` (um arquivo por
+ABI), fora do pacote. **Guarde essa pasta a cada release**: sem ela, crash
+report de produção é ilegível.
 
 ## Bloqueio por biometria
 
@@ -84,7 +98,6 @@ Quando ativo, roda **antes de qualquer dado aparecer**.
 
 ## Antes da loja
 
-- [ ] Resolver o DWARF no APK de release
 - [ ] Auditar dependências (`flutter pub outdated`, CVEs)
 - [ ] Testar o release ofuscado em aparelho real — minify quebra em
       runtime, não no build

@@ -8,6 +8,7 @@ import '../../models/lancamento_registro.dart';
 import '../../models/perfil_financeiro.dart';
 import '../../repositories/lancamento_repository.dart';
 import '../backup/backup_service.dart';
+import '../chat/chat_page.dart';
 import '../inicio/inicio_page.dart';
 import '../lancamentos/lancamentos_page.dart';
 import '../lancamentos/lancar_sheet.dart';
@@ -27,6 +28,7 @@ class Casca extends StatefulWidget {
     required this.backup,
     required this.bloqueio,
     this.aoQuitar,
+    this.aoSalvarDivida,
   });
 
   final PerfilFinanceiro? perfil;
@@ -35,6 +37,7 @@ class Casca extends StatefulWidget {
   final BackupService backup;
   final BloqueioService bloqueio;
   final void Function(Divida)? aoQuitar;
+  final Future<void> Function(Divida)? aoSalvarDivida;
 
   @override
   State<Casca> createState() => _CascaState();
@@ -85,10 +88,12 @@ class _CascaState extends State<Casca> {
         aoQuitar: widget.aoQuitar,
       ),
       LancamentosPage(repositorio: widget.lancamentos),
+      ChatPage(perfil: widget.perfil, dividas: widget.dividas),
       PerfilPage(
         dividas: widget.dividas,
         backup: widget.backup,
         bloqueio: widget.bloqueio,
+        aoSalvarDivida: widget.aoSalvarDivida,
       ),
     ];
 
@@ -124,10 +129,16 @@ class _CascaState extends State<Casca> {
             ),
             const SizedBox(width: 48), // espaço do +
             _Item(
-              icone: Icons.person_outline,
-              rotulo: 'Perfil',
+              icone: Icons.chat_bubble_outline,
+              rotulo: 'Chat',
               ativo: _aba == 2,
               aoTocar: () => setState(() => _aba = 2),
+            ),
+            _Item(
+              icone: Icons.person_outline,
+              rotulo: 'Perfil',
+              ativo: _aba == 3,
+              aoTocar: () => setState(() => _aba = 3),
             ),
           ],
         ),
