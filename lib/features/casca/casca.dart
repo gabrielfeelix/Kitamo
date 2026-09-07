@@ -45,6 +45,18 @@ class Casca extends StatefulWidget {
 
 class _CascaState extends State<Casca> {
   int _aba = 0;
+  List<LancamentoRegistro> _deHoje = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarHoje();
+  }
+
+  Future<void> _carregarHoje() async {
+    final todos = await widget.lancamentos.listar();
+    if (mounted) setState(() => _deHoje = todos);
+  }
 
   Future<void> _lancar() async {
     final tipo = await showModalBottomSheet<TipoLancamento>(
@@ -76,7 +88,10 @@ class _CascaState extends State<Casca> {
     if (tipo == null || !mounted) return;
 
     final novo = await LancarSheet.abrir(context, tipo);
-    if (novo != null) await widget.lancamentos.salvar(novo);
+    if (novo != null) {
+      await widget.lancamentos.salvar(novo);
+      await _carregarHoje();
+    }
   }
 
   @override
@@ -86,6 +101,7 @@ class _CascaState extends State<Casca> {
         perfil: widget.perfil,
         dividas: widget.dividas,
         aoQuitar: widget.aoQuitar,
+        lancamentosDeHoje: _deHoje,
       ),
       LancamentosPage(repositorio: widget.lancamentos),
       ChatPage(perfil: widget.perfil, dividas: widget.dividas),

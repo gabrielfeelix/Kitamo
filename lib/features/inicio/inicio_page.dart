@@ -5,9 +5,14 @@ import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
 import '../../models/divida.dart';
 import '../../models/perfil_financeiro.dart';
+import '../../models/lancamento_registro.dart';
+import '../../services/dia_de_hoje.dart';
 import '../../services/diario_service.dart';
 import '../../services/horizonte_service.dart';
 import '../../widgets/moeda.dart';
+import '../aperto/aperto_page.dart';
+import '../avisos/avisos.dart';
+import '../avisos/avisos_page.dart';
 import '../horizonte/horizonte_page.dart';
 import '../horizonte/mes_page.dart';
 
@@ -21,6 +26,7 @@ class InicioPage extends StatelessWidget {
     required this.perfil,
     required this.dividas,
     this.aoQuitar,
+    this.lancamentosDeHoje = const [],
   });
 
   final PerfilFinanceiro? perfil;
@@ -30,27 +36,57 @@ class InicioPage extends StatelessWidget {
   /// serve para teste de tela.
   final void Function(Divida divida)? aoQuitar;
 
+  /// Alimenta o "você passou R$ X do dia".
+  final List<LancamentoRegistro> lancamentosDeHoje;
+
   @override
   Widget build(BuildContext context) {
     final r = const DiarioService().calcular(perfil: perfil, dividas: dividas);
     final proxima = _proximaParcela();
+    final hoje = DiaDeHoje.calcular(
+      diario: r.diario,
+      lancamentos: lancamentosDeHoje,
+    );
+    final avisos =
+        const Avisos().montar(perfil: perfil, dividas: dividas);
 
     return Scaffold(
       backgroundColor: Cores.creme,
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          _Topo(resultado: r),
-          if (proxima != null)
+          _Topo(resultado: r, avisos: avisos),
+          if (r.fecha && r.diario > 0)
             Transform.translate(
               offset: const Offset(0, -28),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
-                child: _CartaoProximaParcela(
+                child: _CartaoHoje(hoje: hoje),
+              ),
+            ),
+          if (!r.fecha)
+            Transform.translate(
+              offset: const Offset(0, -28),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
+                child: _CartaoCaminhos(
+                  perfil: perfil,
+                  dividas: dividas,
+                  falta: r.faltaPorMes,
+                ),
+              ),
+            ),
+          if (proxima != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: Medidas.margem,
+                right: Medidas.margem,
+                bottom: Medidas.espaco,
+              ),
+              child: _CartaoProximaParcela(
                   divida: proxima,
                   perfil: perfil,
-                  aoQuitar: aoQuitar == null ? null : () => aoQuitar!(proxima),
-                ),
+                aoQuitar: aoQuitar == null ? null : () => aoQuitar!(proxima),
               ),
             ),
           Padding(
@@ -80,9 +116,10 @@ class InicioPage extends StatelessWidget {
 }
 
 class _Topo extends StatelessWidget {
-  const _Topo({required this.resultado});
+  const _Topo({required this.resultado, required this.avisos});
 
   final ResultadoDiario resultado;
+  final List<Aviso> avisos;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +152,26 @@ class _Topo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Semantics(
+              label: avisos.isEmpty
+                  ? 'avisos'
+                  : '${avisos.length} avisos',
+              button: true,
+              child: IconButton(
+                icon: Badge(
+                  isLabelVisible: avisos.isNotEmpty,
+                  label: Text('${avisos.length}'),
+                  child: const Icon(Icons.notifications_none),
+                ),
+                color: Cores.branco,
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => AvisosPage(avisos: avisos)),
+                ),
+              ),
+            ),
+          ),
           Text(
             rotulo,
             style: Tipo.corpo.copyWith(color: Cores.branco.withValues(alpha: 0.9)),
@@ -296,6 +353,115 @@ class _Atalho extends StatelessWidget {
               Text(titulo, style: Tipo.corpoForte),
               const SizedBox(height: 2),
               Text(apoio, style: Tipo.apoio),
+            ],
+          ),
+        ),
+      );
+}
+
+
+/// "Hoje · você passou R$ 14,56 do dia" — o real contra o planejado.
+class _CartaoHoje extends StatelessWidget {
+  const _CartaoHoje({required this.hoje});
+
+  final DiaDeHoje hoje;
+
+  @override
+  Widget build(BuildContext context) {
+    final passou = hoje.passou;
+
+    return Container(
+      padding: const EdgeInsets.all(Medidas.margem),
+      decoration: BoxDecoration(
+        color: Cores.branco,
+        borderRadius: BorderRadius.circular(Medidas.raioCartao),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x145C2E1A),
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('HOJE', style: Tipo.rotulo.copyWith(color: Cores.apoio)),
+          const SizedBox(height: 8),
+          Text(
+            passou
+                ? 'você passou ${dinheiro(hoje.quantoPassou)} do dia'
+                : 'ainda dá pra gastar ${dinheiro(hoje.sobra)}',
+            style: Tipo.corpoForte.copyWith(
+              color: passou ? Cores.vermelho : Cores.tinta,
+            ),
+          ),
+          const SizedBox(height: Medidas.espaco),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(Medidas.raioBarra),
+            child: LinearProgressIndicator(
+              // Estourou passa de 1: a barra mostra o excesso cheia, não
+              // some com ele.
+              value: hoje.proporcao.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: Cores.bege,
+              valueColor: AlwaysStoppedAnimation(
+                passou ? Cores.vermelho : Cores.verde,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'gastou ${dinheiro(hoje.jaGastou)} de ${dinheiro(hoje.podeGastar)}',
+            style: Tipo.apoio,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Quando a conta não fecha: leva para os caminhos, sem sermão.
+class _CartaoCaminhos extends StatelessWidget {
+  const _CartaoCaminhos({
+    required this.perfil,
+    required this.dividas,
+    required this.falta,
+  });
+
+  final PerfilFinanceiro? perfil;
+  final List<Divida> dividas;
+  final double falta;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        borderRadius: BorderRadius.circular(Medidas.raioCartao),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => ApertoPage(
+            perfil: perfil,
+            dividas: dividas,
+            faltaPorMes: falta,
+          ),
+        )),
+        child: Container(
+          padding: const EdgeInsets.all(Medidas.margem),
+          decoration: BoxDecoration(
+            color: Cores.branco,
+            borderRadius: BorderRadius.circular(Medidas.raioCartao),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Escolher um caminho', style: Tipo.corpoForte),
+                    const SizedBox(height: 4),
+                    Text('o que dá pra fazer sobre isso', style: Tipo.apoio),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Cores.apoio),
             ],
           ),
         ),

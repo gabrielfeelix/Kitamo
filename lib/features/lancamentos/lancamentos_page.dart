@@ -6,6 +6,7 @@ import '../../design/tipografia.dart';
 import '../../models/lancamento_registro.dart';
 import '../../repositories/lancamento_repository.dart';
 import '../../widgets/moeda.dart';
+import 'pra_onde_vai.dart';
 
 /// A lista do que entrou e saiu, com os chips do design.
 class LancamentosPage extends StatefulWidget {
@@ -72,11 +73,19 @@ class _LancamentosPageState extends State<LancamentosPage> {
                   final itens = snap.data!;
                   if (itens.isEmpty) return const _Vazio();
 
-                  return ListView.separated(
+                  return ListView(
                     padding: const EdgeInsets.all(Medidas.margem),
-                    itemCount: itens.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 6),
-                    itemBuilder: (_, i) => _Item(lancamento: itens[i]),
+                    children: [
+                      if (_filtro != FiltroLancamento.entradas) ...[
+                        PraOndeVai(lancamentos: itens),
+                        const SizedBox(height: Medidas.espacoGrande),
+                      ],
+                      for (final l in itens)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: _Item(lancamento: l),
+                        ),
+                    ],
                   );
                 },
               ),

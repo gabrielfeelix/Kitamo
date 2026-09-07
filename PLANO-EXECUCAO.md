@@ -228,9 +228,18 @@ Feito além do plano, para o app fechar de ponta a ponta:
   modelo que pode errar
 - **Nav com 5 itens** (Início · Lançamentos · + · Chat · Perfil)
 
-Falta ainda: notificações ("vence amanhã"), "pra onde vai" (mosaico de
-categorias) e **rodar em aparelho real** — minify quebra em runtime, não no
-build.
+Depois disso, as 4 telas que ainda faltavam do design:
+
+- **Hoje** — "você passou R$ 14,56 do dia": o real contra o planejado. Sem
+  isso o app previa mas não acompanhava
+- **Pra onde vai** — barras por categoria, sem pizza
+- **A conta não fecha** — caminhos de saída, cada um com número concreto,
+  sem o joão-de-barro na tela
+- **Avisos** — sino com "vence amanhã", calculado na hora
+
+**Todas as telas do design estão implementadas.** O que falta é uma coisa
+só: **rodar em aparelho real.** Minify quebra em runtime, não no build —
+"compila" não é "funciona".
 
 ## 5.0 Nota sobre a Fase 5 (06/09/2026)
 
