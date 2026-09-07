@@ -23,6 +23,43 @@ enum FaixaDeDivida {
   final double? meio;
 }
 
+/// Os três jeitos de trazer o que ela gasta pra dentro do app.
+///
+/// Decisão do Gabriel em 07/09: *"a gente tem que permitir essas três,
+/// tem que ficar fácil de entender"*.
+enum ComoTrazerGastos {
+  naMao(
+    titulo: 'eu lanço na hora',
+    apoio: 'você anota o gasto quando acontece. leva 5 segundos.',
+    pronto: true,
+  ),
+  extrato(
+    titulo: 'importar o extrato',
+    apoio: 'o arquivo OFX do seu banco, lido aqui dentro do celular.',
+    pronto: true,
+  ),
+  banco(
+    titulo: 'conectar meu banco',
+    apoio: 'os gastos entram sozinhos, sem você digitar.',
+    // Open Finance de verdade precisa de servidor e conta paga. A tela
+    // existe pra mostrar às 10 pessoas do teste; prometer que funciona
+    // seria pior que dizer que ainda falta.
+    pronto: false,
+  );
+
+  const ComoTrazerGastos({
+    required this.titulo,
+    required this.apoio,
+    required this.pronto,
+  });
+
+  final String titulo;
+  final String apoio;
+
+  /// false quando ainda não funciona de verdade.
+  final bool pronto;
+}
+
 /// Uma dívida sendo digitada. Só vira registro se tiver nome.
 class RascunhoDivida {
   RascunhoDivida();
@@ -89,9 +126,9 @@ enum PassoOnboarding {
   extrato(
     cor: Color(0xFF9E4522),
     ilustracao: 'ob-extrato.png',
-    pergunta: 'quer conferir com o seu extrato?',
-    apoio: 'o arquivo do seu banco, lido aqui dentro do celular. '
-        'a gente não pede senha e nada sai daqui.',
+    pergunta: 'como você quer trazer seus gastos?',
+    apoio: 'dá pra fazer de três jeitos. escolhe o que for mais fácil '
+        'pra você, e dá pra mudar depois.',
   );
 
   const PassoOnboarding({
@@ -192,6 +229,21 @@ class OnboardingController extends ChangeNotifier {
   }
 
   int? _parcelasDoTotal;
+
+  /// Como ela quer trazer os gastos pra dentro do app.
+  ///
+  /// A tela #07 perguntava "quer conferir com o seu extrato?" e **não
+  /// tinha botão nenhum** — perguntava e não oferecia ação. São três
+  /// caminhos, e a pessoa escolhe: na mão, importando o extrato, ou
+  /// conectando o banco.
+  ComoTrazerGastos? get comoTrazer => _comoTrazer;
+  set comoTrazer(ComoTrazerGastos? v) {
+    if (_comoTrazer == v) return;
+    _comoTrazer = v;
+    notifyListeners();
+  }
+
+  ComoTrazerGastos? _comoTrazer;
 
   /// Por onde a pessoa entrou, quando ela veio pelo "já tenho conta".
   /// Null é o caminho normal: sem conta, tudo no aparelho.

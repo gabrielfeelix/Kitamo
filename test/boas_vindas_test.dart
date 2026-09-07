@@ -173,6 +173,33 @@ void main() {
       expect(c.parcelasDoTotal, 6);
     });
 
+    testWidgets('a última pergunta oferece os três jeitos, com botão',
+        (tester) async {
+      await em(tester, const Size(390, 844),
+          OnboardingPage(controller: c, aoConcluir: () {}));
+
+      // Vai até a última.
+      for (var i = 0; i < PassoOnboarding.values.length - 1; i++) {
+        await tester.tap(find.text('continuar'));
+        await tester.pumpAndSettle();
+      }
+
+      expect(c.passo, PassoOnboarding.extrato);
+
+      // Antes esta tela perguntava "quer conferir com o seu extrato?" e
+      // não tinha botão nenhum: perguntava e não oferecia ação.
+      expect(find.text('eu lanço na hora'), findsOneWidget);
+      expect(find.text('importar o extrato'), findsOneWidget);
+      expect(find.text('conectar meu banco'), findsOneWidget);
+
+      // O que ainda não funciona diz que não funciona.
+      expect(find.text('EM BREVE'), findsOneWidget);
+
+      await tester.tap(find.text('importar o extrato'));
+      await tester.pump();
+      expect(c.comoTrazer, ComoTrazerGastos.extrato);
+    });
+
     testWidgets('continuar anda por todas as perguntas sem estourar',
         (tester) async {
       await em(tester, const Size(360, 640),

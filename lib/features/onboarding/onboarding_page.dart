@@ -169,7 +169,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             sufixo: '/mês',
             aoMudar: (v) => setState(() => c.contasFixas = v),
           ),
-        PassoOnboarding.extrato => _Oferta(passo: passo),
+        PassoOnboarding.extrato => _Oferta(passo: passo, controller: c),
       };
 
   /// "com o que você deve, dá pra quitar em 10 meses" — o design mostra a
@@ -682,23 +682,129 @@ class _DiaDoMes extends StatelessWidget {
 }
 
 /// A última tela: a oferta de ler o extrato.
+/// Os três jeitos de trazer os gastos. A tela perguntava e não oferecia
+/// nada: era uma pergunta sem botão.
 class _Oferta extends StatelessWidget {
-  const _Oferta({required this.passo});
+  const _Oferta({required this.passo, required this.controller});
 
   final PassoOnboarding passo;
+  final OnboardingController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Cores.branco.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        'o arquivo fica no seu celular. a Kitamo não pede senha de banco, '
-        'não pede cartão e não manda nada pra nuvem.',
-        style: Tipo.corpo.copyWith(height: 1.55, color: passo.sobre),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final modo in ComoTrazerGastos.values) ...[
+          _EscolhaDeModo(
+            modo: modo,
+            marcada: controller.comoTrazer == modo,
+            cor: passo.cor,
+            aoTocar: () => controller.comoTrazer =
+                controller.comoTrazer == modo ? null : modo,
+          ),
+          const SizedBox(height: 10),
+        ],
+        const SizedBox(height: 6),
+        Text(
+          'a Kitamo não pede senha de banco, não pede cartão e não manda '
+          'nada pra nuvem.',
+          style: Tipo.corpoMiudo.copyWith(color: passo.sobreFraco),
+        ),
+      ],
+    );
+  }
+}
+
+class _EscolhaDeModo extends StatelessWidget {
+  const _EscolhaDeModo({
+    required this.modo,
+    required this.marcada,
+    required this.cor,
+    required this.aoTocar,
+  });
+
+  final ComoTrazerGastos modo;
+  final bool marcada;
+  final Color cor;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      selected: marcada,
+      button: true,
+      child: GestureDetector(
+        onTap: aoTocar,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: Medidas.alvoMinimo),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+          decoration: BoxDecoration(
+            color: marcada ? Cores.branco : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: marcada ? Cores.branco : const Color(0x66FFFFFF),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            modo.titulo,
+                            style: Tipo.corpoForte.copyWith(
+                              color: marcada ? cor : Cores.branco,
+                            ),
+                          ),
+                        ),
+                        if (!modo.pronto) ...[
+                          const SizedBox(width: 8),
+                          // Dizer que ainda não funciona é melhor que
+                          // deixar a pessoa tocar e não acontecer nada.
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: marcada
+                                  ? cor.withValues(alpha: 0.12)
+                                  : const Color(0x33FFFFFF),
+                              borderRadius:
+                                  BorderRadius.circular(Medidas.raioPilula),
+                            ),
+                            child: Text(
+                              'EM BREVE',
+                              style: Tipo.rotulo.copyWith(
+                                fontSize: 9.5,
+                                color: marcada ? cor : Cores.branco,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      modo.apoio,
+                      style: Tipo.corpoMiudo.copyWith(
+                        color: marcada
+                            ? Cores.apoio
+                            : const Color(0xCCFFFFFF),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'features/backup/backup_service.dart';
 import 'features/casca/casca.dart';
 import 'features/conta/entrar_page.dart';
 import 'features/onboarding/onboarding_controller.dart';
+import 'features/importar/importar_page.dart';
 import 'features/onboarding/abertura_page.dart';
 import 'features/resultado/resultado_page.dart';
 import 'features/onboarding/boas_vindas_page.dart';
@@ -164,10 +165,23 @@ class _RaizState extends State<Raiz> {
         return _CarregarResultado(
           perfis: widget.perfis,
           dividas: widget.dividas,
-          aoVerMeuMes: () => setState(() {
-            _precisaOnboarding = false;
-            _entrada = _Entrada.dentro;
-          }),
+          aoVerMeuMes: () async {
+            // Ela escolheu importar o extrato lá nas perguntas: abre a
+            // tela agora, que é quando ela tem o arquivo em mente. Sem
+            // isso a escolha não levava a lugar nenhum.
+            if (_onboarding.comoTrazer == ComoTrazerGastos.extrato &&
+                mounted) {
+              await Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => ImportarPage(lancamentos: widget.lancamentos),
+              ));
+            }
+
+            if (!mounted) return;
+            setState(() {
+              _precisaOnboarding = false;
+              _entrada = _Entrada.dentro;
+            });
+          },
           aoRevisar: () => setState(() => _entrada = _Entrada.perguntas),
         );
       }
