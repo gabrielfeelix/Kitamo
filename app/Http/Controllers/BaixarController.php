@@ -31,6 +31,7 @@ class BaixarController extends Controller
                 // Em MB com uma casa: "28,5 MB" diz mais que "29869056".
                 'tamanho' => $this->emMegas(File::size($caminho)),
                 'atualizado' => File::lastModified($caminho),
+                'versao' => $this->versao(),
             ] : null,
         ]);
     }
@@ -38,5 +39,22 @@ class BaixarController extends Controller
     private function emMegas(int $bytes): string
     {
         return number_format($bytes / 1048576, 1, ',', '.') . ' MB';
+    }
+
+    /**
+     * A versão publicada, escrita num arquivo ao lado do APK.
+     *
+     * Existe porque em 07/09/2026 o versionCode ficou travado em 1: o
+     * Android ignora em silêncio a instalação de um APK com o mesmo
+     * versionCode e mantém o app antigo, sem erro nenhum. Quem baixou
+     * jurou que a versão nova era idêntica, e não tinha como conferir.
+     * Agora dá pra comparar o que está no site com o que está em
+     * Ajustes > Apps > Kitamo.
+     */
+    private function versao(): ?string
+    {
+        $arquivo = public_path('downloads/versao.txt');
+
+        return File::exists($arquivo) ? trim(File::get($arquivo)) : null;
     }
 }

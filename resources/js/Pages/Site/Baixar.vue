@@ -10,6 +10,7 @@ const props = defineProps<{
         url: string;
         tamanho: string;
         atualizado: number;
+        versao?: string | null;
     } | null;
 }>();
 
@@ -97,7 +98,16 @@ const passos = [
                     </a>
 
                     <p class="mt-4 text-sm text-slate-500">
-                        {{ apk.tamanho }} · Android 8 ou mais novo · atualizado em {{ atualizadoEm }}
+                        <template v-if="apk.versao">versão {{ apk.versao }} · </template>{{ apk.tamanho }} · Android 8 ou mais novo · atualizado em {{ atualizadoEm }}
+                    </p>
+
+                    <!-- Sem isso não dá pra saber se a instalação pegou: o
+                         Android ignora em silêncio um APK com a mesma
+                         versão e mantém o app antigo. -->
+                    <p v-if="apk.versao" class="mt-2 text-sm text-slate-500">
+                        Já instalou e continua igual? Veja a versão em
+                        Ajustes &rsaquo; Apps &rsaquo; Kitamo. Se não for
+                        {{ apk.versao }}, desinstale antes e instale de novo.
                     </p>
                     <p class="mt-2 text-sm text-slate-500">
                         É um arquivo grande porque serve qualquer celular

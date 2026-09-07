@@ -33,3 +33,6 @@ __pycache__/
 
 # O APK do app, que sobe por SSH e não pelo Git (ver docs/APK-NO-SITE.md)
 /public/downloads/*.apk
+
+# A versão publicada, escrita junto com o APK (ver docs/APK-NO-SITE.md)
+/public/downloads/versao.txt
