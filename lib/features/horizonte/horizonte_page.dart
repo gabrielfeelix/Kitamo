@@ -65,11 +65,26 @@ class _HorizontePageState extends State<HorizontePage> {
   DateTime get _mesAtual =>
       DateTime(_base.year, _base.month + _deslocamento, 1);
 
+  /// O que ela lançou naquele mês, somado por dia.
+  ///
+  /// Sem isto o serviço não tem como saber o que aconteceu, e cairia de
+  /// volta em supor que ela gastou o diário todo dia.
+  Map<int, double> _gastosDe(DateTime quando) {
+    final mapa = <int, double>{};
+    for (final l in widget.lancamentos) {
+      if (l.ehEntrada) continue;
+      if (l.data.year != quando.year || l.data.month != quando.month) continue;
+      mapa[l.data.day] = (mapa[l.data.day] ?? 0) + l.valor;
+    }
+    return mapa;
+  }
+
   MesProjetado _mes(DateTime quando, {double saldoInicial = 0}) =>
       _servico.mes(
         perfil: widget.perfil,
         dividas: widget.dividas,
         saldoInicial: saldoInicial,
+        gastos: _gastosDe(quando),
         entradas: widget.entradas,
         contasFixas: widget.contasFixas,
         referencia: quando,

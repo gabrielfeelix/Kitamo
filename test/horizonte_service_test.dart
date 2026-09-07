@@ -30,6 +30,93 @@ void main() {
         parcelasTotal: total,
       );
 
+  group('o saldo não desconta o que ela não gastou', () {
+    // O bug que o Gabriel achou usando o app: o diário é quanto ela PODE
+    // gastar, e era subtraído todo dia como se tivesse gastado. Com
+    // R$ 1.000 de limite o saldo caía R$ 1.000 por dia, e o mês inteiro
+    // ficava vermelho sem ela lançar nada.
+    test('dia passado sem lançamento não consome nada', () {
+      final m = service.mes(
+        perfil: const PerfilFinanceiro(gastoDiarioEstimado: 1000),
+        dividas: const [],
+        saldoInicial: 5000,
+        referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 9, 30),
+      );
+
+      expect(m.dias.first.saldo, 5000, reason: 'nada lançado, nada gasto');
+      expect(m.dias[9].saldo, 5000);
+      expect(m.saldoFinal, 5000);
+    });
+
+    test('dia passado desconta o que ela lançou, não o limite', () {
+      final m = service.mes(
+        perfil: const PerfilFinanceiro(gastoDiarioEstimado: 1000),
+        dividas: const [],
+        saldoInicial: 5000,
+        gastos: const {1: 40, 2: 25.50},
+        referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 9, 30),
+      );
+
+      expect(m.dias[0].saldo, 4960);
+      expect(m.dias[0].gasto, 40);
+      expect(m.dias[1].saldo, 4934.50);
+      expect(m.dias[2].saldo, 4934.50, reason: 'dia 3 não teve gasto');
+    });
+
+    test('dia futuro usa o diário, e sai marcado como previsão', () {
+      final m = service.mes(
+        perfil: const PerfilFinanceiro(gastoDiarioEstimado: 100),
+        dividas: const [],
+        saldoInicial: 1000,
+        referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 9, 2),
+      );
+
+      // Dias 1 e 2 já passaram: sem lançamento, não consomem.
+      expect(m.dias[0].saldo, 1000);
+      expect(m.dias[0].ehPrevisao, isFalse);
+      expect(m.dias[1].saldo, 1000);
+
+      // Dia 3 em diante é palpite, e a tela precisa poder dizer isso.
+      expect(m.dias[2].ehPrevisao, isTrue);
+      expect(m.dias[2].saldo, 900);
+      expect(m.dias[3].saldo, 800);
+    });
+
+    test('hoje conta como passado: o resto do dia ela ainda vai lançar', () {
+      final m = service.mes(
+        perfil: const PerfilFinanceiro(gastoDiarioEstimado: 100),
+        dividas: const [],
+        saldoInicial: 1000,
+        gastos: const {5: 30},
+        referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 9, 5),
+      );
+
+      expect(m.dias[4].gasto, 30);
+      expect(m.dias[4].ehPrevisao, isFalse);
+    });
+
+    test('a entrada continua entrando no dia dela', () {
+      final m = service.mes(
+        perfil: const PerfilFinanceiro(
+          rendaMensal: 2000,
+          diaRenda: 5,
+          gastoDiarioEstimado: 1000,
+        ),
+        dividas: const [],
+        saldoInicial: 0,
+        referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 9, 30),
+      );
+
+      expect(m.dias[3].saldo, 0);
+      expect(m.dias[4].saldo, 2000, reason: 'o salário cai e nada consome');
+    });
+  });
+
   group('mês', () {
     test('cada linha tem nome e valor', () {
       final m = service.mes(
@@ -99,17 +186,22 @@ void main() {
       expect(comLancamento.first.dia, 28);
     });
 
-    test('gasto diário consome o saldo', () {
+    test('no futuro o diário vira previsão de gasto', () {
+      // Mês inteiro à frente de hoje: aí o diário é o melhor palpite que
+      // existe. O que ele NÃO pode fazer é descontar assim em dia que já
+      // passou sem ela lançar nada — ver o grupo do saldo, acima.
       final m = service.mes(
         perfil: const PerfilFinanceiro(gastoDiarioEstimado: 10),
         dividas: [],
         saldoInicial: 1000,
         referencia: DateTime(2026, 9, 1),
+        hoje: DateTime(2026, 8, 31),
       );
 
       expect(m.dias[0].saldo, 990);
       expect(m.dias[1].saldo, 980);
       expect(m.saldoFinal, 700); // 30 dias × 10
+      expect(m.dias.every((d) => d.ehPrevisao), isTrue);
     });
 
     test('marca o primeiro dia apertado', () {

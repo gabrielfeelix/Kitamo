@@ -6,6 +6,7 @@ import 'package:kitamo/models/divida.dart';
 import 'package:kitamo/models/entrada.dart';
 import 'package:kitamo/models/lancamento_registro.dart';
 import 'package:kitamo/models/perfil_financeiro.dart';
+import 'package:kitamo/widgets/celula_de_saldo.dart';
 import 'package:kitamo/widgets/moeda.dart';
 
 /// O horizonte numa tela só (#09, #10 e #11 do design).
@@ -132,9 +133,18 @@ void main() {
       // Cada coluna começa onde a anterior fechou. Recomeçar do zero
       // faria as três saírem idênticas, e a tela existe para mostrar o
       // contrário: o vermelho anda pra frente e some.
-      final dia1 = find.text(dinheiro(-23.33));
-      expect(dia1, findsOneWidget,
-          reason: 'só o primeiro mês começa do zero');
+      //
+      // Os três meses são futuros, então o diário entra como previsão e
+      // as colunas divergem. Se saíssem iguais, o encadeamento sumiu.
+      final celulas = find.byType(CelulaDeSaldo);
+      expect(celulas, findsWidgets);
+
+      final valores = tester
+          .widgetList<CelulaDeSaldo>(celulas)
+          .map((c) => c.valor)
+          .toSet();
+      expect(valores.length, greaterThan(1),
+          reason: 'três colunas idênticas = encadeamento perdido');
     });
 
     testWidgets('mostra as abas de período com os três meses',

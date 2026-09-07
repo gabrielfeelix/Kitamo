@@ -124,10 +124,19 @@ class InicioPage extends StatelessWidget {
   /// O gráfico do Início: o saldo projetado dia a dia deste mês.
   Widget _cartaoDoMes(BuildContext context) {
     const horizonte = HorizonteService();
+    final gastos = <int, double>{};
+    final agora = DateTime.now();
+    for (final l in lancamentosDeHoje) {
+      if (l.ehEntrada) continue;
+      if (l.data.year != agora.year || l.data.month != agora.month) continue;
+      gastos[l.data.day] = (gastos[l.data.day] ?? 0) + l.valor;
+    }
+
     final mes = horizonte.mes(
       perfil: perfil,
       dividas: dividas,
       saldoInicial: 0,
+      gastos: gastos,
     );
     final saldos = mes.dias.map((d) => d.saldo).toList();
     final fundo = mes.primeiroDiaApertado;

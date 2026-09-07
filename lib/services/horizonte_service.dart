@@ -25,6 +25,8 @@ class DiaProjetado {
     required this.saldo,
     required this.estado,
     required this.lancamentos,
+    required this.gasto,
+    required this.ehPrevisao,
     this.motivo,
   });
 
@@ -32,6 +34,19 @@ class DiaProjetado {
   final double saldo;
   final EstadoFinanceiro estado;
   final List<Lancamento> lancamentos;
+
+  /// O que saiu neste dia para o dia a dia.
+  ///
+  /// Em dia que já passou é **o que ela lançou** — zero se não lançou
+  /// nada, porque o app não sabe o que não foi dito. Em dia futuro é o
+  /// planejado, e aí [ehPrevisao] é true.
+  final double gasto;
+
+  /// true quando o número é palpite, não fato.
+  ///
+  /// A tela precisa dizer isso. Misturar previsão com o que aconteceu,
+  /// sem marcar qual é qual, é o que fazia o saldo parecer real.
+  final bool ehPrevisao;
 
   /// A frase que acompanha a cor. Null em dia tranquilo — vermelho e
   /// amarelo explicam, verde não precisa.
@@ -84,15 +99,32 @@ class HorizonteService {
   const HorizonteService();
 
   /// Um mês, dia a dia.
+  ///
+  /// [gastos] é o que a pessoa **lançou**, por dia. É o que separa o que
+  /// aconteceu do que a gente supõe:
+  ///
+  /// - **dia que já passou** usa o gasto lançado. Nada lançado é zero,
+  ///   não o diário: o app não sabe o que ela não disse, e supor o pior
+  ///   afundava o saldo de quem só não anotou.
+  /// - **dia que ainda vem** usa o diário como previsão, e o dia sai
+  ///   marcado com `ehPrevisao`.
+  ///
+  /// Antes o diário era subtraído **todo dia**, inclusive nos que já
+  /// passaram sem gasto nenhum. Quem tinha R$ 1.000 por dia de limite via
+  /// o saldo cair R$ 1.000 por dia e o mês inteiro no vermelho sem ter
+  /// gasto um centavo. O diário é o combinado, não uma cobrança.
   MesProjetado mes({
     required PerfilFinanceiro? perfil,
     required List<Divida> dividas,
     required double saldoInicial,
+    Map<int, double> gastos = const {},
     List<Entrada> entradas = const [],
     List<ContaFixa> contasFixas = const [],
     DateTime? referencia,
+    DateTime? hoje,
   }) {
     final ref = referencia ?? DateTime.now();
+    final agora = hoje ?? DateTime.now();
     final diasNoMes = DateTime(ref.year, ref.month + 1, 0).day;
     final abertas = dividas.where((d) => !d.estaQuitada).toList();
 
@@ -111,9 +143,13 @@ class HorizonteService {
         saldo += l.entrada ? l.valor : -l.valor;
       }
 
-      // O gasto do dia a dia também consome saldo, senão a projeção
-      // mostraria um mês folgado que não existe.
-      saldo = _duasCasas(saldo - diario);
+      // Passado é fato; futuro é palpite. O dia de hoje conta como
+      // passado: o que ela já lançou hoje é real, e o que falta do dia
+      // ela ainda vai lançar.
+      final passou = !dia.isAfter(DateTime(agora.year, agora.month, agora.day));
+      final gasto = passou ? (gastos[d] ?? 0) : diario;
+
+      saldo = _duasCasas(saldo - gasto);
 
       final estado = _estado(saldo);
       if (estado == EstadoFinanceiro.aperto && primeiroApertado == null) {
@@ -125,6 +161,8 @@ class HorizonteService {
         saldo: saldo,
         estado: estado,
         lancamentos: lancamentos,
+        gasto: gasto,
+        ehPrevisao: !passou,
         motivo: _motivo(estado, lancamentos, dia, perfil, entradas),
       ));
     }

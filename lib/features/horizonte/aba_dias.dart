@@ -61,21 +61,25 @@ class AbaDias extends StatelessWidget {
             separatorBuilder: (_, _) => const SizedBox(height: 3),
             itemBuilder: (_, i) {
               final dia = mes.dias[i];
-              final ehHoje = dia.data.year == hoje.year &&
+              final ehHoje =
+                  dia.data.year == hoje.year &&
                   dia.data.month == hoje.month &&
                   dia.data.day == hoje.day;
 
               return _Linha(
                 dia: dia,
-                gastou: gastos[dia.dia],
+                // O gasto vem do serviço, que já sabe separar o que ela
+                // lançou do que é previsão. Recalcular aqui daria duas
+                // fontes para o mesmo número.
+                gastou: dia.ehPrevisao ? null : gastos[dia.dia],
                 podeGastar: diario,
                 ehHoje: ehHoje,
+                ehPrevisao: dia.ehPrevisao,
               );
             },
           ),
         ),
-        if (diasComGasto > 0)
-          _RodapeBarro(media: media, diasAcima: acima),
+        if (diasComGasto > 0) _RodapeBarro(media: media, diasAcima: acima),
       ],
     );
   }
@@ -121,12 +125,17 @@ class _Linha extends StatelessWidget {
     required this.gastou,
     required this.podeGastar,
     required this.ehHoje,
+    required this.ehPrevisao,
   });
 
   final DiaProjetado dia;
   final double? gastou;
   final double podeGastar;
   final bool ehHoje;
+
+  /// Dia que ainda não chegou: o saldo é palpite, e a linha fica mais
+  /// apagada para dizer isso sem precisar de legenda.
+  final bool ehPrevisao;
 
   @override
   Widget build(BuildContext context) {
@@ -140,68 +149,73 @@ class _Linha extends StatelessWidget {
     // informação que ela precisa para entender o saldo da direita.
     final estourou = gastou != null && gastou! > podeGastar;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Cores.branco,
-        borderRadius: BorderRadius.circular(Medidas.raioCelula),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D5C2E1A),
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 26,
-            child: Container(
-              height: 24,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: ehHoje ? Cores.tinta : Cores.bege,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${dia.dia}',
-                style: TextStyle(
-                  fontFamily: Tipo.dmMono,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w500,
-                  color: ehHoje ? Cores.branco : Cores.tinta,
+    return Opacity(
+      // Previsão não some, mas também não se confunde com o que
+      // aconteceu: misturar os dois foi o que deixou o saldo parecer real.
+      opacity: ehPrevisao ? 0.55 : 1,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Cores.branco,
+          borderRadius: BorderRadius.circular(Medidas.raioCelula),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D5C2E1A),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 26,
+              child: Container(
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ehHoje ? Cores.tinta : Cores.bege,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${dia.dia}',
+                  style: TextStyle(
+                    fontFamily: Tipo.dmMono,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: ehHoje ? Cores.branco : Cores.tinta,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 4,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(dinheiro(podeGastar), style: mono),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 4,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(dinheiro(podeGastar), style: mono),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 3,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                gastou == null ? '—' : dinheiro(gastou!),
-                style: mono.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: estourou ? Cores.vermelho : Cores.tinta,
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  gastou == null ? '—' : dinheiro(gastou!),
+                  style: mono.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: estourou ? Cores.vermelho : Cores.tinta,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(flex: 5, child: CelulaDeSaldo(valor: dia.saldo)),
-        ],
+            const SizedBox(width: 8),
+            Expanded(flex: 5, child: CelulaDeSaldo(valor: dia.saldo)),
+          ],
+        ),
       ),
     );
   }
