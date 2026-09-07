@@ -191,7 +191,33 @@ os 10 testadores.
 
 ---
 
-## A ordem de execução
+## O que foi feito (07/09, tudo commitado)
+
+**Os oito itens saíram.** Cada um com teste, e conferido no aparelho.
+
+| # | o quê | como ficou |
+|---|---|---|
+| 1 | saldo diário | passado usa o lançado, futuro é previsão marcada |
+| 2 | parcelas inventadas | "em quantas vezes?", com "não sei" válido |
+| 3 | nome | virou a primeira pergunta |
+| 4 | RESULTADO #17 | existe, e não promete quitação a quem não fecha |
+| 5 | três formas | na mão, extrato (#27 feita), banco "EM BREVE" |
+| 6 | ONBOARDING #32 | véu sobre o Início real, 1 de 3 |
+| 7 | navegação | histórico virou a segunda aba |
+| 8 | chat | joão inteiro, abre falando e mostra o que sabe |
+
+Bugs que só o aparelho pegou, no caminho: as pílulas de parcela
+empilhavam uma por linha e sumiam sob o botão; os três meses da aba
+"meses" saíam idênticos; a sobra prometida na quitação vinha do saldo
+acumulado, que segue negativo.
+
+**Falta o login social simulado** (item 4.3 abaixo): ele foi o único que
+não entrou, porque o nome já resolveu o problema que ele resolveria
+junto. A tela de entrar continua guardando só o provedor.
+
+243 -> 285 testes.
+
+## A ordem de execução (feita)
 
 Primeiro o que faz o app **mentir**, depois o que faz ele **sumir com a
 informação**, depois o resto.
