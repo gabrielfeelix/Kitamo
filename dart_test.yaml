@@ -1,5 +1,0 @@
-# O retrato gera PNG da tela e é lento — não entra na suíte normal.
-# Rode de propósito: flutter test --tags retrato
-tags:
-  retrato:
-    skip: "gera PNG; rode com --tags retrato"
