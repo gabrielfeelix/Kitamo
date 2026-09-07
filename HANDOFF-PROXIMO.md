@@ -58,15 +58,16 @@ ensinar a usar o app"*.
 
 ---
 
-## 3. Estado: 12 de 36 telas
+## 3. Estado: 15 de 36 telas
 
 **Prontas do HTML:** abertura, boas-vindas, as 6 perguntas iniciais,
-Início, **Perfil (#16), Editar perfil (#24), avisos (#20)**. Mais a barra
-de navegação e a tela de **entrar**, que o design não tem.
+Início, Perfil (#16), Editar perfil (#24), avisos (#20) e o **horizonte
+(#09, #10 e #11) numa tela só**. Mais a barra de navegação e a tela de
+**entrar**, que o design não tem.
 
-**Faltam 24.** `TELAS.md` tem a lista com o arquivo de cada uma.
+**Faltam 21.** `TELAS.md` tem a lista com o arquivo de cada uma.
 
-**198 testes passando.** Rode antes e depois de tudo:
+**235 testes passando.** Rode antes e depois de tudo:
 
 ```bash
 export PATH="$HOME/flutter/bin:$PATH"
@@ -98,7 +99,30 @@ casa em 5 fases.
 
 ---
 
-## 4. A REALIDADE da pessoa (o assunto mais importante, 07/09)
+## 4. A REALIDADE da pessoa — **O MODELO FOI FEITO em 07/09**
+
+**As três decisões desta seção já estão no banco (migration v5).** O que
+falta agora é a **tela** de cada uma; a lógica e os testes existem.
+
+| decisão | modelo | tela |
+|---|---|---|
+| cartão com compras dentro | `models/cartao.dart`, `quitarFatura` idempotente | **falta** (#21 e #26) |
+| várias entradas com seu dia | `models/entrada.dart`, o diário lê a lista | **falta** (a #04 vira lista) |
+| contas fixas que ela cadastra | `models/conta_fixa.dart`, total é soma | **falta** (a #06 vira lista) |
+
+A migration converte o valor único de quem já usa na primeira linha de
+cada lista. Lista vazia continua lendo o `rendaMensal`/`contasFixasEstimadas`
+antigo, então ninguém vê app zerado.
+
+**Atenção ao montar a #21:** o design desenhou a dívida como cartão
+**plano** (nome, "7 de 10", parcela, vence dia X, saldo). Não há compra
+dentro nem botão "paguei a fatura" no HTML. O modelo aguenta o aninhado,
+mas o visual do cartão aberto **não existe no design** — perguntar antes
+de inventar.
+
+O texto original da decisão, que continua valendo:
+
+---
 
 O Gabriel parou tudo pra dizer isto, e é a maior dívida técnica do
 projeto. **O modelo de dados de hoje não cabe a vida de quem vai usar.**
@@ -258,9 +282,13 @@ Em ordem de prioridade, tudo dito por ele nesta sessão:
    mesma (calculada na abertura, nunca guardada); ela só ganhou o que a
    tela precisa: faixa, quando, ícone e ação.
 
-4. **O horizonte numa tela só.** Ele perguntou como chega nas telas de
-   diário/mensal/anual, e tinha razão em estranhar. **Elas existem e estão
-   ligadas, mas por caminhos que ninguém adivinha:**
+4. ~~**O horizonte numa tela só.**~~ **FEITO em 07/09.** `HorizontePage`
+   segura o segmentado e troca o corpo entre `aba_dias.dart`,
+   `aba_meses.dart` e `aba_ano.dart`. As duas telas inventadas sumiram.
+   O cartão do mês abre a aba "dias" ("ver o mês", que antes mentia "ver
+   12 meses"); o cartão da casa abre a aba "ano".
+
+   O que era antes, e por que estava errado:
 
    | tela | como se chega hoje |
    |---|---|
