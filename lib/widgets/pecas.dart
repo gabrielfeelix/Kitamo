@@ -131,12 +131,18 @@ class FalaDaKitamo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (comAvatar) ...[
-            ClipOval(
+            Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                color: Cores.branco,
+                shape: BoxShape.circle,
+              ),
+              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(3),
               child: Image.asset(
-                'assets/images/joao-avatar-2.png',
-                width: 34,
-                height: 34,
-                fit: BoxFit.cover,
+                'assets/images/joao-voando.png',
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(width: 11),

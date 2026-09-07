@@ -160,12 +160,23 @@ class CabecalhoDoInicio extends StatelessWidget {
           label: 'perfil',
           child: GestureDetector(
             onTap: aoTocarPerfil,
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/joao-avatar-2.png',
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
+            // Os arquivos de avatar são recortes apertados — bico e asa
+            // cortados pela borda. Num círculo de 48px fica pior ainda, então
+            // uso o joão inteiro com um fundo creme e respiro.
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                color: Cores.barroClaro,
+                shape: BoxShape.circle,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Transform.scale(
+                scale: 1.2,
+                child: Image.asset(
+                  'assets/images/joao-voando.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),

@@ -262,9 +262,11 @@ class _LinhaDeSaldo extends CustomPainter {
     double px(int i) => i * (size.width / (serie.length - 1));
     double py(double v) => size.height - ((v - min) / span) * (size.height - 9) - 4.5;
 
-    // A cor da linha segue o pior ponto: verde só quando nada fica negativo.
-    final negativo = min < 0;
-    final cor = negativo ? Cores.vermelho : Cores.verde;
+    // A linha é sempre verde, inclusive quando o mês afunda: no design a
+    // série vai a −964 e o traço continua verde. O vermelho mora só no
+    // ponto do fundo do mês, que é o que a pessoa precisa enxergar. Pintar
+    // o mês inteiro de vermelho é o sermão que a Kitamo não dá.
+    const cor = Cores.verde;
 
     final caminho = Path()..moveTo(px(0), py(serie[0]));
     for (var i = 1; i < serie.length; i++) {
