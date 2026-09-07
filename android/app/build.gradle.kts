@@ -37,8 +37,14 @@ android {
         // x86_64 só existe em emulador. Tirar corta ~1/3 do APK
         // universal, o que reduz o risco de download truncado — que é
         // uma das causas de "app não foi instalado".
-        ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        //
+        // Mas o Gradle recusa abiFilters junto com --split-per-abi, e o
+        // APK separado por arquitetura é justamente o mais leve pra mandar
+        // por WhatsApp. Então o filtro só vale quando não está splitando.
+        if (project.findProperty("split-per-abi") != "true") {
+            ndk {
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            }
         }
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
