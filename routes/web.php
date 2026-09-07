@@ -32,6 +32,7 @@ use App\Http\Controllers\MoedasController;
 use App\Http\Controllers\RelatoriosController;
 use App\Http\Controllers\CreditCardController;
 use App\Http\Controllers\CreditCardPageController;
+use App\Http\Controllers\BaixarController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NewsApiController;
 use App\Http\Controllers\SiteContactController;
@@ -61,6 +62,10 @@ Route::get('/empresa', fn () => Inertia::render('Site/Company', $sitePageProps()
 Route::get('/contato', fn () => Inertia::render('Site/Contact', $sitePageProps()))->name('site.contact');
 Route::get('/privacidade', fn () => Inertia::render('Site/Privacy', $sitePageProps()))->name('site.privacy');
 Route::get('/termos', fn () => Inertia::render('Site/Terms', $sitePageProps()))->name('site.terms');
+
+// A página de download do app. Fora do menu de propósito: o app está em
+// teste com um punhado de pessoas, e quem chega é por link direto.
+Route::get('/baixar', BaixarController::class)->name('site.baixar');
 
 // Fallback to refresh XSRF-TOKEN cookie (works even without Sanctum route).
 Route::get('/csrf-cookie', fn () => response()->noContent())->name('csrf-cookie');

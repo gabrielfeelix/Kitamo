@@ -1,0 +1,6 @@
+# O APK não vai pro Git: 66MB por versão incharia o repositório e deixaria
+# o rsync do deploy lento. Ele sobe direto pro servidor por SSH, e o
+# rsync do deploy não usa --delete, então sobrevive às publicações.
+#
+# Ver docs/APK-NO-SITE.md.
+*.apk

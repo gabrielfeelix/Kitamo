@@ -30,3 +30,6 @@ Thumbs.db
 /public_html/
 *:Zone.Identifier
 __pycache__/
+
+# O APK do app, que sobe por SSH e não pelo Git (ver docs/APK-NO-SITE.md)
+/public/downloads/*.apk
