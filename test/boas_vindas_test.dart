@@ -111,6 +111,15 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
+
+        // A primeira agora é o nome: o app dava "bom dia, Gabriel" sem
+        // nunca ter perguntado como a pessoa se chama.
+        expect(find.text('como a gente te chama?'), findsOneWidget);
+
+        await tester.tap(find.text('continuar'));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
         expect(find.text('qual o total das suas dívidas?'), findsOneWidget);
       });
     }
@@ -118,6 +127,10 @@ void main() {
     testWidgets('as faixas do design aparecem e marcam', (tester) async {
       await em(tester, const Size(390, 844),
           OnboardingPage(controller: c, aoConcluir: () {}));
+
+      // Passa o nome para chegar na pergunta da dívida.
+      await tester.tap(find.text('continuar'));
+      await tester.pumpAndSettle();
 
       expect(find.text('até R\$ 5 mil'), findsOneWidget);
       expect(find.text('não sei, quero descobrir'), findsOneWidget);
@@ -129,7 +142,7 @@ void main() {
       expect(find.text('É O MEU CASO'), findsOneWidget);
     });
 
-    testWidgets('continuar anda pelas seis perguntas sem estourar',
+    testWidgets('continuar anda por todas as perguntas sem estourar',
         (tester) async {
       await em(tester, const Size(360, 640),
           OnboardingPage(controller: c, aoConcluir: () {}));
@@ -204,12 +217,12 @@ void main() {
 
       await tester.tap(find.text('continuar'));
       await tester.pumpAndSettle();
-      expect(c.passo, PassoOnboarding.renda);
+      expect(c.passo, PassoOnboarding.divida);
 
       await tester.tap(find.byTooltip('voltar'));
       await tester.pumpAndSettle();
 
-      expect(c.passo, PassoOnboarding.divida,
+      expect(c.passo, PassoOnboarding.nome,
           reason: 'sem voltar, quem errou fica preso até o fim');
     });
 
@@ -233,7 +246,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      expect(c.passo, PassoOnboarding.divida);
+      expect(c.passo, PassoOnboarding.nome);
     });
   });
 }

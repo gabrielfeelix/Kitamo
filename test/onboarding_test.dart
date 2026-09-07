@@ -56,7 +56,7 @@ void main() {
   group('navegação', () {
     test('começa no primeiro passo e anda até o último', () {
       expect(c.indice, 0);
-      expect(c.passo, PassoOnboarding.divida);
+      expect(c.passo, PassoOnboarding.nome);
 
       for (var i = 0; i < PassoOnboarding.values.length - 1; i++) {
         c.avancar();
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('progresso vai de uma fração até 1', () {
-      expect(c.progresso, closeTo(1 / 6, 0.001));
+      expect(c.progresso, closeTo(1 / PassoOnboarding.values.length, 0.001));
 
       while (!c.ehUltimo) {
         c.avancar();
@@ -239,15 +239,56 @@ void main() {
       expect(c.totalDevido, 8300);
     });
 
-    test('só o total vira uma dívida espalhada em 12 meses', () async {
+    test('sem saber em quantas vezes, não inventa parcela', () async {
+      // O bug que o Gabriel pegou: o app espalhava o total em 12 meses e
+      // mostrava "0 de 12" numa dívida de 4. Palpite com cara de fato.
       c.digitarTotal(12000);
       await c.concluir();
 
       final salvas = await dividas.todas();
       expect(salvas, hasLength(1));
       expect(salvas.first.saldoAtual, 12000);
-      expect(salvas.first.parcelasTotal, 12);
-      expect(salvas.first.valorParcela, 1000);
+      expect(salvas.first.parcelasTotal, 0,
+          reason: 'campo vazio é melhor que número falso');
+      expect(salvas.first.valorParcela, 0);
+    });
+
+    test('sem parcela, a dívida não pesa no diário como se tivesse', () async {
+      // parcelasRestantes zero significa "não sei", não "acabou". O que
+      // não pode é o app inventar uma parcela mensal que ninguém informou.
+      c.digitarTotal(12000);
+      await c.concluir();
+
+      final salvas = await dividas.todas();
+      expect(salvas.first.valorParcela, 0);
+      expect(salvas.first.estaQuitada, isFalse,
+          reason: 'a dívida existe, só não se sabe em quantas vezes');
+    });
+
+    test('quando ela diz em quantas vezes, a parcela sai daí', () async {
+      c.digitarTotal(12000);
+      c.parcelasDoTotal = 4;
+      await c.concluir();
+
+      final salvas = await dividas.todas();
+      expect(salvas.first.parcelasTotal, 4);
+      expect(salvas.first.parcelasRestantes, 4);
+      expect(salvas.first.valorParcela, 3000);
+    });
+
+    test('o nome que ela deu vai pro perfil', () async {
+      // Sem isso o Início dava "bom dia" a alguém que o app não conhecia.
+      c.nome = '  Gabriel  ';
+      await c.concluir();
+
+      expect((await perfis.carregar())!.nome, 'Gabriel');
+    });
+
+    test('nome em branco não vira nome vazio', () async {
+      c.nome = '   ';
+      await c.concluir();
+
+      expect((await perfis.carregar())!.nome, equals(null));
     });
 
     test('"não sei quanto devo" não grava dívida nem com total digitado',

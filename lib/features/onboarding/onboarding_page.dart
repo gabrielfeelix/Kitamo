@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design/cores.dart';
+import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
 import '../../widgets/campos.dart' as kt;
 import '../../widgets/moeda.dart';
@@ -32,6 +33,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   OnboardingController get c => widget.controller;
 
   final _valor = TextEditingController();
+  final _nome = TextEditingController();
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   void dispose() {
     c.removeListener(_atualizar);
     _valor.dispose();
+    _nome.dispose();
     super.dispose();
   }
 
@@ -141,6 +144,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _campo(PassoOnboarding passo) => switch (passo) {
+        PassoOnboarding.nome => _ComoTeChama(controller: c, campo: _nome),
         PassoOnboarding.divida => _QuantoDeve(controller: c, campo: _valor),
         PassoOnboarding.renda => _ValorSobreAcento(
             campo: _valor,
@@ -373,6 +377,18 @@ class _QuantoDeve extends StatelessWidget {
           valor: controller.totalDevido,
           aoMudar: controller.digitarTotal,
         ),
+        // "em quantas vezes" mora aqui, e não numa tela própria: é a
+        // continuação natural do valor, e o app precisa dela para não
+        // inventar 12 parcelas numa dívida de 4 meses.
+        if ((controller.totalDevido ?? 0) > 0) ...[
+          const SizedBox(height: 18),
+          Text(
+            'EM QUANTAS VEZES?',
+            style: Tipo.rotulo.copyWith(fontSize: 10.5, color: Cores.branco),
+          ),
+          const SizedBox(height: 8),
+          _EmQuantasVezes(controller: controller, cor: passo.cor),
+        ],
         const SizedBox(height: 16),
         Text(
           'OU ESCOLHA UMA FAIXA',
@@ -392,6 +408,118 @@ class _QuantoDeve extends StatelessWidget {
           const SizedBox(height: 8),
         ],
       ],
+    );
+  }
+}
+
+/// "como a gente te chama?" — a primeira pergunta, e a mais fácil.
+class _ComoTeChama extends StatelessWidget {
+  const _ComoTeChama({required this.controller, required this.campo});
+
+  final OnboardingController controller;
+  final TextEditingController campo;
+
+  @override
+  Widget build(BuildContext context) {
+    const passo = PassoOnboarding.nome;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        kt.CampoDeTexto(
+          rotulo: 'seu nome',
+          controlador: campo,
+          dica: 'como prefere ser chamado',
+          aoMudar: (v) => controller.nome = v,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'pode ser apelido. é assim que a gente vai te chamar todo dia.',
+          style: Tipo.corpoMiudo.copyWith(color: passo.sobreFraco),
+        ),
+      ],
+    );
+  }
+}
+
+/// "em quantas vezes?" — atalhos comuns mais "não sei".
+///
+/// **"não sei" é resposta legítima**, e é o normal de quem tem crediário
+/// antigo. Quando ela responde isso, o app não grava parcela nenhuma e a
+/// tela não mostra contagem: melhor campo vazio que "0 de 12" inventado.
+class _EmQuantasVezes extends StatelessWidget {
+  const _EmQuantasVezes({required this.controller, required this.cor});
+
+  final OnboardingController controller;
+  final Color cor;
+
+  static const _atalhos = [3, 6, 10, 12, 18, 24];
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final n in _atalhos)
+          _Pilula(
+            texto: '${n}x',
+            marcada: controller.parcelasDoTotal == n,
+            cor: cor,
+            aoTocar: () => controller.parcelasDoTotal =
+                controller.parcelasDoTotal == n ? null : n,
+          ),
+        _Pilula(
+          texto: 'não sei',
+          marcada: controller.parcelasDoTotal == null,
+          cor: cor,
+          aoTocar: () => controller.parcelasDoTotal = null,
+        ),
+      ],
+    );
+  }
+}
+
+class _Pilula extends StatelessWidget {
+  const _Pilula({
+    required this.texto,
+    required this.marcada,
+    required this.cor,
+    required this.aoTocar,
+  });
+
+  final String texto;
+  final bool marcada;
+  final Color cor;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: marcada,
+      child: GestureDetector(
+        onTap: aoTocar,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: marcada ? Cores.branco : Colors.transparent,
+            borderRadius: BorderRadius.circular(Medidas.raioPilula),
+            border: Border.all(
+              color: marcada ? Cores.branco : const Color(0x66FFFFFF),
+              width: 1.5,
+            ),
+          ),
+          child: Text(
+            texto,
+            style: Tipo.corpoForte.copyWith(
+              color: marcada ? cor : Cores.branco,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

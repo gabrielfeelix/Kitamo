@@ -41,6 +41,18 @@ class RascunhoDivida {
 /// telas 02 a 07. Não invente pergunta nova nem troque a cor: a sequência
 /// de cores é o que dá ritmo ao onboarding.
 enum PassoOnboarding {
+  /// A primeira, e de propósito a mais fácil.
+  ///
+  /// O Início abre com "bom dia, Gabriel" e o app nunca perguntava o
+  /// nome — dava bom dia para alguém que ele não conhecia. Começar por
+  /// aqui também aquece: responder o próprio nome é mais fácil que
+  /// encarar "quanto você deve".
+  nome(
+    cor: Color(0xFF0C7468),
+    ilustracao: 'joao.png',
+    pergunta: 'como a gente te chama?',
+    apoio: 'só pra deixar seu, nada sai daqui do celular.',
+  ),
   divida(
     cor: Color(0xFF0B5F59),
     ilustracao: 'ob-divida.png',
@@ -151,6 +163,36 @@ class OnboardingController extends ChangeNotifier {
   double? gastoDiario;
   double? contasFixas;
 
+  /// Como a pessoa quer ser chamada.
+  ///
+  /// O Início abre com "bom dia, Gabriel", e até 07/09 o app **nunca
+  /// perguntava** — só dava pra editar no Perfil, depois. Dar bom dia com
+  /// um nome que ninguém informou é o app fingindo que conhece a pessoa.
+  String? get nome => _nome;
+  set nome(String? v) {
+    if (_nome == v) return;
+    _nome = v;
+    notifyListeners();
+  }
+
+  String? _nome;
+
+  /// Em quantas vezes a dívida está dividida. **Null é "não sei"**, e é
+  /// resposta legítima.
+  ///
+  /// Até 07/09 o app inventava 12 parcelas para quem só informou o total,
+  /// e a tela mostrava "0 de 12" numa dívida de 4 meses — palpite com cara
+  /// de fato conferido. Sem esta resposta, o app não mostra contagem
+  /// nenhuma.
+  int? get parcelasDoTotal => _parcelasDoTotal;
+  set parcelasDoTotal(int? v) {
+    if (_parcelasDoTotal == v) return;
+    _parcelasDoTotal = v;
+    notifyListeners();
+  }
+
+  int? _parcelasDoTotal;
+
   /// Por onde a pessoa entrou, quando ela veio pelo "já tenho conta".
   /// Null é o caminho normal: sem conta, tudo no aparelho.
   ProvedorDeLogin? provedor;
@@ -226,6 +268,7 @@ class OnboardingController extends ChangeNotifier {
 
     try {
       await _perfis.salvar(PerfilFinanceiro(
+        nome: (nome?.trim().isEmpty ?? true) ? null : nome!.trim(),
         rendaMensal: rendaMensal,
         diaRenda: diaRenda,
         gastoDiarioEstimado: gastoDiario,
@@ -238,16 +281,21 @@ class OnboardingController extends ChangeNotifier {
       // banco: o número dela é o que faz a conta fechar na tela de Início.
       final semDetalhe = !rascunhos.any((r) => r.preenchida);
       if (!naoSeiQuantoDevo && semDetalhe && (totalDevido ?? 0) > 0) {
+        // **Não inventa parcela.** Até 07/09 isto espalhava o total em 12
+        // meses e a tela mostrava "0 de 12" numa dívida de 4 — palpite com
+        // cara de fato. Quando ela não sabe em quantas vezes, o app grava
+        // zero parcelas e a tela não mostra contagem nenhuma: campo vazio
+        // é melhor que número falso.
+        final vezes = parcelasDoTotal ?? 0;
+
         await _dividas.salvar(Divida(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
           nome: 'o que eu devo',
           saldoAtual: totalDevido!,
-          // Sem parcela informada, espalha em 12 meses: é chute honesto e
-          // a pessoa corrige no Perfil.
-          valorParcela: totalDevido! / 12,
+          valorParcela: vezes > 0 ? totalDevido! / vezes : 0,
           diaVencimento: 1,
-          parcelasRestantes: 12,
-          parcelasTotal: 12,
+          parcelasRestantes: vezes,
+          parcelasTotal: vezes,
         ));
       }
 
