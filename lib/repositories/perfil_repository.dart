@@ -49,6 +49,9 @@ class PerfilRepositoryDrift implements PerfilRepository {
               contasFixasCentavos:
                   Value(Dinheiro.paraCentavosNulo(p.contasFixasEstimadas)),
               origem: Value(p.origem.name),
+              avatar: Value(p.avatar),
+              provedor: Value(p.provedor?.name),
+              email: Value(p.email),
               atualizadoEm: Value(DateTime.now()),
             ),
           );
@@ -66,5 +69,12 @@ class PerfilRepositoryDrift implements PerfilRepository {
           (o) => o.name == linha.origem,
           orElse: () => OrigemPerfil.feeling,
         ),
+        avatar: linha.avatar,
+        provedor: linha.provedor == null
+            ? null
+            : ProvedorDeLogin.values
+                .where((v) => v.name == linha.provedor)
+                .firstOrNull,
+        email: linha.email,
       );
 }

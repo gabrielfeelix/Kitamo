@@ -1,6 +1,10 @@
+import 'package:flutter/widgets.dart';
+
+import '../../design/cores.dart';
 import '../../models/divida.dart';
 import '../../models/perfil_financeiro.dart';
 import '../../services/diario_service.dart';
+import '../../widgets/moeda.dart';
 
 enum TipoAviso { vencimento, descasamento, conquista, aperto }
 
@@ -9,11 +13,38 @@ class Aviso {
     required this.tipo,
     required this.titulo,
     required this.detalhe,
+    this.quando = 'agora',
+    this.deHoje = true,
+    this.icone,
+    this.acao,
   });
 
   final TipoAviso tipo;
   final String titulo;
   final String detalhe;
+
+  /// O carimbo mono da direita: "1h", "ter", "2 set". Aqui tudo é
+  /// calculado na abertura, então o que existe é "agora".
+  final String quando;
+
+  /// Separa as duas seções da tela: HOJE e ANTES.
+  final bool deHoje;
+
+  /// Arquivo de imagem do tile de 38px, quando faz sentido mostrar um: o
+  /// logo do banco, a casa, o joão. Null cai no ícone do tipo.
+  final String? icone;
+
+  /// O botão de largura cheia dentro do cartão. Só alguns avisos têm.
+  final String? acao;
+
+  /// A cor da faixa de 3px. É a única cor do cartão, diz o design system:
+  /// a anatomia é idêntica, o que muda é o estado.
+  Color get faixa => switch (tipo) {
+        TipoAviso.vencimento => Cores.vermelho,
+        TipoAviso.descasamento => Cores.ambar,
+        TipoAviso.conquista => Cores.barro,
+        TipoAviso.aperto => Cores.vermelho,
+      };
 }
 
 /// Os avisos do sino.
@@ -42,13 +73,17 @@ class Avisos {
         lista.add(Aviso(
           tipo: TipoAviso.vencimento,
           titulo: 'a parcela do ${d.nome} vence hoje',
-          detalhe: _real(d.valorParcela),
+          detalhe: '${dinheiro(d.valorParcela)} · dia ${d.diaVencimento}',
+          icone: _logo(d.nome),
+          acao: 'quitei essa',
         ));
       } else if (faltam == 1) {
         lista.add(Aviso(
           tipo: TipoAviso.vencimento,
           titulo: 'a parcela do ${d.nome} vence amanhã',
-          detalhe: _real(d.valorParcela),
+          detalhe: '${dinheiro(d.valorParcela)} · dia ${d.diaVencimento}',
+          icone: _logo(d.nome),
+          acao: 'quitei essa',
         ));
       }
 
@@ -57,8 +92,8 @@ class Avisos {
         lista.add(Aviso(
           tipo: TipoAviso.descasamento,
           titulo: 'essa parcela cai antes do seu salário',
-          detalhe: 'vence dia ${d.diaVencimento}, o salário entra dia '
-              '$diaRenda. Vale pedir para mudar o vencimento.',
+          detalhe: 'dia ${d.diaVencimento} sai, dia $diaRenda entra',
+          acao: 'pedir pra mudar o vencimento',
         ));
       }
     }
@@ -72,7 +107,10 @@ class Avisos {
         titulo: faltamParcelas == 1
             ? 'falta uma parcela'
             : 'faltam $faltamParcelas parcelas',
-        detalhe: 'a casa está quase de pé.',
+        detalhe: 'a casa está quase de pé',
+        deHoje: false,
+        quando: 'esta semana',
+        icone: 'casa-3.png',
       ));
     }
 
@@ -81,7 +119,7 @@ class Avisos {
       lista.add(Aviso(
         tipo: TipoAviso.aperto,
         titulo: 'esse mês a conta não fecha',
-        detalhe: 'faltam ${_real(r.faltaPorMes)}. Veja os caminhos.',
+        detalhe: 'faltam ${dinheiro(r.faltaPorMes)}. Veja os caminhos.',
       ));
     }
 
@@ -104,5 +142,14 @@ class Avisos {
     return (ultimoDia - hoje.day) + alvoProx;
   }
 
-  String _real(double v) => 'R\$ ${v.toStringAsFixed(2).replaceAll('.', ',')}';
+  /// O logo do banco quando o nome da dívida diz qual é. Sem chute: se não
+  /// bate, o cartão fica com o ícone do tipo.
+  String? _logo(String nome) {
+    final n = nome.toLowerCase();
+    if (n.contains('nubank') || n.contains('nu ')) return 'bank-nubank.png';
+    if (n.contains('itau') || n.contains('itaú')) return 'bank-itau.png';
+    if (n.contains('mercado')) return 'bank-mp.png';
+    return null;
+  }
+
 }

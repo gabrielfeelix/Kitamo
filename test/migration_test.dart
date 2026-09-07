@@ -3,7 +3,9 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kitamo/data/banco.dart' show Banco;
 import 'package:kitamo/models/divida.dart';
+import 'package:kitamo/models/perfil_financeiro.dart';
 import 'package:kitamo/repositories/divida_repository.dart';
+import 'package:kitamo/repositories/perfil_repository.dart';
 
 /// A migration v1 → v2 (que criou a tabela de lançamentos).
 ///
@@ -11,11 +13,11 @@ import 'package:kitamo/repositories/divida_repository.dart';
 /// apaga isso na atualização, e a pessoa perde o registro do que deve —
 /// exatamente o dado que ela confiou ao app.
 void main() {
-  test('o schema declarado é a v3', () {
+  test('o schema declarado é a v4', () {
     final banco = Banco.memoria();
     addTearDown(banco.close);
 
-    expect(banco.schemaVersion, 3);
+    expect(banco.schemaVersion, 4);
   });
 
   test('a tabela de lançamentos existe em banco novo', () async {
@@ -55,5 +57,61 @@ void main() {
     expect(salvas.first.saldoAtual, 6136.24);
 
     expect(await banco.select(banco.lancamentos).get(), isEmpty);
+  });
+
+  test('v4 guarda passarinho, provedor e e-mail no perfil', () async {
+    final banco = Banco.memoria();
+    addTearDown(banco.close);
+
+    final perfis = PerfilRepositoryDrift(banco);
+    await perfis.salvar(const PerfilFinanceiro(
+      nome: 'Gabriel',
+      rendaMensal: 3200,
+      diaRenda: 6,
+      avatar: 'av-3',
+      provedor: ProvedorDeLogin.google,
+      email: 'gabriel@email.com',
+    ));
+
+    final lido = await perfis.carregar();
+    expect(lido!.nome, 'Gabriel');
+    expect(lido.avatar, 'av-3');
+    expect(lido.provedor, ProvedorDeLogin.google);
+    expect(lido.email, 'gabriel@email.com');
+  });
+
+  test('perfil sem conta continua válido: as colunas novas são anuláveis',
+      () async {
+    final banco = Banco.memoria();
+    addTearDown(banco.close);
+
+    final perfis = PerfilRepositoryDrift(banco);
+    await perfis.salvar(const PerfilFinanceiro(rendaMensal: 2000, diaRenda: 5));
+
+    final lido = await perfis.carregar();
+    expect(lido!.provedor, equals(null));
+    expect(lido.email, equals(null));
+    expect(lido.avatar, equals(null));
+
+    // Sem escolha, o acervo entrega o primeiro passarinho.
+    expect(lido.avatarOuPadrao, 'av-1');
+  });
+
+  test('atualizar da v3 acrescenta as colunas sem apagar o perfil', () async {
+    final executor = NativeDatabase.memory();
+    final banco = Banco(executor);
+    addTearDown(banco.close);
+
+    // Banco na v3: tinha nome, não tinha passarinho nem login.
+    await banco.customStatement('PRAGMA user_version = 3');
+    await banco.migration.onCreate(Migrator(banco));
+
+    final perfis = PerfilRepositoryDrift(banco);
+    await perfis.salvar(const PerfilFinanceiro(nome: 'Gabriel', diaRenda: 6));
+
+    final lido = await perfis.carregar();
+    expect(lido!.nome, 'Gabriel', reason: 'a v4 não pode perder o nome');
+    expect(lido.diaRenda, 6);
+    expect(lido.provedor, equals(null));
   });
 }

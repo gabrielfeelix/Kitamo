@@ -661,6 +661,38 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
     requiredDuringInsert: false,
     defaultValue: const Constant('feeling'),
   );
+  static const VerificationMeta _avatarMeta = const VerificationMeta('avatar');
+  @override
+  late final GeneratedColumn<String> avatar = GeneratedColumn<String>(
+    'avatar',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 20),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _provedorMeta = const VerificationMeta(
+    'provedor',
+  );
+  @override
+  late final GeneratedColumn<String> provedor = GeneratedColumn<String>(
+    'provedor',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 20),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 160),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
     'atualizadoEm',
   );
@@ -682,6 +714,9 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
     gastoDiarioCentavos,
     contasFixasCentavos,
     origem,
+    avatar,
+    provedor,
+    email,
     atualizadoEm,
   ];
   @override
@@ -744,6 +779,24 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
         origem.isAcceptableOrUnknown(data['origem']!, _origemMeta),
       );
     }
+    if (data.containsKey('avatar')) {
+      context.handle(
+        _avatarMeta,
+        avatar.isAcceptableOrUnknown(data['avatar']!, _avatarMeta),
+      );
+    }
+    if (data.containsKey('provedor')) {
+      context.handle(
+        _provedorMeta,
+        provedor.isAcceptableOrUnknown(data['provedor']!, _provedorMeta),
+      );
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
     if (data.containsKey('atualizado_em')) {
       context.handle(
         _atualizadoEmMeta,
@@ -790,6 +843,18 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
         DriftSqlType.string,
         data['${effectivePrefix}origem'],
       )!,
+      avatar: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar'],
+      ),
+      provedor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provedor'],
+      ),
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
       atualizadoEm: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
@@ -815,6 +880,20 @@ class Perfi extends DataClass implements Insertable<Perfi> {
 
   /// 'feeling' (chute do onboarding) ou 'ofx' (extrato importado).
   final String origem;
+
+  /// O passarinho escolhido em "Editar perfil": 'av-1' a 'av-8'. Nulo usa
+  /// o primeiro do acervo.
+  final String? avatar;
+
+  /// Como a pessoa entrou: 'google', 'facebook' ou nulo (sem conta).
+  ///
+  /// Guardado só para a tela saber o que mostrar. **Não há servidor**: o
+  /// login é visual, decisão do Gabriel em 07/09/2026, e nada sai do
+  /// aparelho enquanto não existir backend.
+  final String? provedor;
+
+  /// O e-mail que veio do login social, para a linha de "Editar perfil".
+  final String? email;
   final DateTime atualizadoEm;
   const Perfi({
     required this.id,
@@ -824,6 +903,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     this.gastoDiarioCentavos,
     this.contasFixasCentavos,
     required this.origem,
+    this.avatar,
+    this.provedor,
+    this.email,
     required this.atualizadoEm,
   });
   @override
@@ -846,6 +928,15 @@ class Perfi extends DataClass implements Insertable<Perfi> {
       map['contas_fixas_centavos'] = Variable<int>(contasFixasCentavos);
     }
     map['origem'] = Variable<String>(origem);
+    if (!nullToAbsent || avatar != null) {
+      map['avatar'] = Variable<String>(avatar);
+    }
+    if (!nullToAbsent || provedor != null) {
+      map['provedor'] = Variable<String>(provedor);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
     return map;
   }
@@ -867,6 +958,15 @@ class Perfi extends DataClass implements Insertable<Perfi> {
           ? const Value.absent()
           : Value(contasFixasCentavos),
       origem: Value(origem),
+      avatar: avatar == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avatar),
+      provedor: provedor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(provedor),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
       atualizadoEm: Value(atualizadoEm),
     );
   }
@@ -888,6 +988,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
         json['contasFixasCentavos'],
       ),
       origem: serializer.fromJson<String>(json['origem']),
+      avatar: serializer.fromJson<String?>(json['avatar']),
+      provedor: serializer.fromJson<String?>(json['provedor']),
+      email: serializer.fromJson<String?>(json['email']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
     );
   }
@@ -902,6 +1005,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
       'gastoDiarioCentavos': serializer.toJson<int?>(gastoDiarioCentavos),
       'contasFixasCentavos': serializer.toJson<int?>(contasFixasCentavos),
       'origem': serializer.toJson<String>(origem),
+      'avatar': serializer.toJson<String?>(avatar),
+      'provedor': serializer.toJson<String?>(provedor),
+      'email': serializer.toJson<String?>(email),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
     };
   }
@@ -914,6 +1020,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     Value<int?> gastoDiarioCentavos = const Value.absent(),
     Value<int?> contasFixasCentavos = const Value.absent(),
     String? origem,
+    Value<String?> avatar = const Value.absent(),
+    Value<String?> provedor = const Value.absent(),
+    Value<String?> email = const Value.absent(),
     DateTime? atualizadoEm,
   }) => Perfi(
     id: id ?? this.id,
@@ -929,6 +1038,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
         ? contasFixasCentavos.value
         : this.contasFixasCentavos,
     origem: origem ?? this.origem,
+    avatar: avatar.present ? avatar.value : this.avatar,
+    provedor: provedor.present ? provedor.value : this.provedor,
+    email: email.present ? email.value : this.email,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
   );
   Perfi copyWithCompanion(PerfisCompanion data) {
@@ -946,6 +1058,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
           ? data.contasFixasCentavos.value
           : this.contasFixasCentavos,
       origem: data.origem.present ? data.origem.value : this.origem,
+      avatar: data.avatar.present ? data.avatar.value : this.avatar,
+      provedor: data.provedor.present ? data.provedor.value : this.provedor,
+      email: data.email.present ? data.email.value : this.email,
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
@@ -962,6 +1077,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
           ..write('gastoDiarioCentavos: $gastoDiarioCentavos, ')
           ..write('contasFixasCentavos: $contasFixasCentavos, ')
           ..write('origem: $origem, ')
+          ..write('avatar: $avatar, ')
+          ..write('provedor: $provedor, ')
+          ..write('email: $email, ')
           ..write('atualizadoEm: $atualizadoEm')
           ..write(')'))
         .toString();
@@ -976,6 +1094,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     gastoDiarioCentavos,
     contasFixasCentavos,
     origem,
+    avatar,
+    provedor,
+    email,
     atualizadoEm,
   );
   @override
@@ -989,6 +1110,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
           other.gastoDiarioCentavos == this.gastoDiarioCentavos &&
           other.contasFixasCentavos == this.contasFixasCentavos &&
           other.origem == this.origem &&
+          other.avatar == this.avatar &&
+          other.provedor == this.provedor &&
+          other.email == this.email &&
           other.atualizadoEm == this.atualizadoEm);
 }
 
@@ -1000,6 +1124,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   final Value<int?> gastoDiarioCentavos;
   final Value<int?> contasFixasCentavos;
   final Value<String> origem;
+  final Value<String?> avatar;
+  final Value<String?> provedor;
+  final Value<String?> email;
   final Value<DateTime> atualizadoEm;
   const PerfisCompanion({
     this.id = const Value.absent(),
@@ -1009,6 +1136,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     this.gastoDiarioCentavos = const Value.absent(),
     this.contasFixasCentavos = const Value.absent(),
     this.origem = const Value.absent(),
+    this.avatar = const Value.absent(),
+    this.provedor = const Value.absent(),
+    this.email = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
   });
   PerfisCompanion.insert({
@@ -1019,6 +1149,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     this.gastoDiarioCentavos = const Value.absent(),
     this.contasFixasCentavos = const Value.absent(),
     this.origem = const Value.absent(),
+    this.avatar = const Value.absent(),
+    this.provedor = const Value.absent(),
+    this.email = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
   });
   static Insertable<Perfi> custom({
@@ -1029,6 +1162,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     Expression<int>? gastoDiarioCentavos,
     Expression<int>? contasFixasCentavos,
     Expression<String>? origem,
+    Expression<String>? avatar,
+    Expression<String>? provedor,
+    Expression<String>? email,
     Expression<DateTime>? atualizadoEm,
   }) {
     return RawValuesInsertable({
@@ -1041,6 +1177,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
       if (contasFixasCentavos != null)
         'contas_fixas_centavos': contasFixasCentavos,
       if (origem != null) 'origem': origem,
+      if (avatar != null) 'avatar': avatar,
+      if (provedor != null) 'provedor': provedor,
+      if (email != null) 'email': email,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
     });
   }
@@ -1053,6 +1192,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     Value<int?>? gastoDiarioCentavos,
     Value<int?>? contasFixasCentavos,
     Value<String>? origem,
+    Value<String?>? avatar,
+    Value<String?>? provedor,
+    Value<String?>? email,
     Value<DateTime>? atualizadoEm,
   }) {
     return PerfisCompanion(
@@ -1063,6 +1205,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
       gastoDiarioCentavos: gastoDiarioCentavos ?? this.gastoDiarioCentavos,
       contasFixasCentavos: contasFixasCentavos ?? this.contasFixasCentavos,
       origem: origem ?? this.origem,
+      avatar: avatar ?? this.avatar,
+      provedor: provedor ?? this.provedor,
+      email: email ?? this.email,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
     );
   }
@@ -1091,6 +1236,15 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     if (origem.present) {
       map['origem'] = Variable<String>(origem.value);
     }
+    if (avatar.present) {
+      map['avatar'] = Variable<String>(avatar.value);
+    }
+    if (provedor.present) {
+      map['provedor'] = Variable<String>(provedor.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
@@ -1107,6 +1261,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
           ..write('gastoDiarioCentavos: $gastoDiarioCentavos, ')
           ..write('contasFixasCentavos: $contasFixasCentavos, ')
           ..write('origem: $origem, ')
+          ..write('avatar: $avatar, ')
+          ..write('provedor: $provedor, ')
+          ..write('email: $email, ')
           ..write('atualizadoEm: $atualizadoEm')
           ..write(')'))
         .toString();
@@ -1839,6 +1996,9 @@ typedef $$PerfisTableCreateCompanionBuilder = PerfisCompanion Function({
   Value<int?> gastoDiarioCentavos,
   Value<int?> contasFixasCentavos,
   Value<String> origem,
+  Value<String?> avatar,
+  Value<String?> provedor,
+  Value<String?> email,
   Value<DateTime> atualizadoEm,
 });
 typedef $$PerfisTableUpdateCompanionBuilder = PerfisCompanion Function({
@@ -1849,6 +2009,9 @@ typedef $$PerfisTableUpdateCompanionBuilder = PerfisCompanion Function({
   Value<int?> gastoDiarioCentavos,
   Value<int?> contasFixasCentavos,
   Value<String> origem,
+  Value<String?> avatar,
+  Value<String?> provedor,
+  Value<String?> email,
   Value<DateTime> atualizadoEm,
 });
 
@@ -1892,6 +2055,21 @@ class $$PerfisTableFilterComposer extends Composer<_$Banco, $PerfisTable> {
 
   ColumnFilters<String> get origem => $composableBuilder(
     column: $table.origem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatar => $composableBuilder(
+    column: $table.avatar,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provedor => $composableBuilder(
+    column: $table.provedor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1944,6 +2122,21 @@ class $$PerfisTableOrderingComposer extends Composer<_$Banco, $PerfisTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get avatar => $composableBuilder(
+    column: $table.avatar,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provedor => $composableBuilder(
+    column: $table.provedor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
     builder: (column) => ColumnOrderings(column),
@@ -1984,6 +2177,15 @@ class $$PerfisTableAnnotationComposer extends Composer<_$Banco, $PerfisTable> {
 
   GeneratedColumn<String> get origem =>
       $composableBuilder(column: $table.origem, builder: (column) => column);
+
+  GeneratedColumn<String> get avatar =>
+      $composableBuilder(column: $table.avatar, builder: (column) => column);
+
+  GeneratedColumn<String> get provedor =>
+      $composableBuilder(column: $table.provedor, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
 
   GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
@@ -2026,6 +2228,9 @@ class $$PerfisTableTableManager
                 Value<int?> gastoDiarioCentavos = const Value.absent(),
                 Value<int?> contasFixasCentavos = const Value.absent(),
                 Value<String> origem = const Value.absent(),
+                Value<String?> avatar = const Value.absent(),
+                Value<String?> provedor = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
               }) => PerfisCompanion(
                 id: id,
@@ -2035,6 +2240,9 @@ class $$PerfisTableTableManager
                 gastoDiarioCentavos: gastoDiarioCentavos,
                 contasFixasCentavos: contasFixasCentavos,
                 origem: origem,
+                avatar: avatar,
+                provedor: provedor,
+                email: email,
                 atualizadoEm: atualizadoEm,
               ),
           createCompanionCallback:
@@ -2046,6 +2254,9 @@ class $$PerfisTableTableManager
                 Value<int?> gastoDiarioCentavos = const Value.absent(),
                 Value<int?> contasFixasCentavos = const Value.absent(),
                 Value<String> origem = const Value.absent(),
+                Value<String?> avatar = const Value.absent(),
+                Value<String?> provedor = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
               }) => PerfisCompanion.insert(
                 id: id,
@@ -2055,6 +2266,9 @@ class $$PerfisTableTableManager
                 gastoDiarioCentavos: gastoDiarioCentavos,
                 contasFixasCentavos: contasFixasCentavos,
                 origem: origem,
+                avatar: avatar,
+                provedor: provedor,
+                email: email,
                 atualizadoEm: atualizadoEm,
               ),
           withReferenceMapper: (p0) => p0

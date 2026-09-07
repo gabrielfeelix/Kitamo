@@ -24,7 +24,7 @@ class Banco extends _$Banco {
   Banco.memoria() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -41,6 +41,14 @@ class Banco extends _$Banco {
           // nada, só continua sem nome até dizer qual é.
           if (from < 3) {
             await m.addColumn(perfis, perfis.nome);
+          }
+          // v4: o perfil ganhou passarinho e login social. As três colunas
+          // são anuláveis pelo mesmo motivo do nome: quem já usava o app
+          // continua sem nada disso até escolher.
+          if (from < 4) {
+            await m.addColumn(perfis, perfis.avatar);
+            await m.addColumn(perfis, perfis.provedor);
+            await m.addColumn(perfis, perfis.email);
           }
         },
         beforeOpen: (details) async {

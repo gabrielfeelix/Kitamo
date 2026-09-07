@@ -32,6 +32,7 @@ class Casca extends StatefulWidget {
     required this.bloqueio,
     this.aoQuitar,
     this.aoSalvarDivida,
+    this.aoSalvarPerfil,
   });
 
   final PerfilFinanceiro? perfil;
@@ -41,6 +42,10 @@ class Casca extends StatefulWidget {
   final BloqueioService bloqueio;
   final void Function(Divida)? aoQuitar;
   final Future<void> Function(Divida)? aoSalvarDivida;
+
+  /// Grava nome e passarinho vindos de "Editar perfil". Null deixa a
+  /// edição indisponível, o que serve para teste de tela.
+  final Future<void> Function(PerfilFinanceiro)? aoSalvarPerfil;
 
   @override
   State<Casca> createState() => _CascaState();
@@ -110,10 +115,12 @@ class _CascaState extends State<Casca> {
       LancamentosPage(repositorio: widget.lancamentos),
       ChatPage(perfil: widget.perfil, dividas: widget.dividas),
       PerfilPage(
+        perfil: widget.perfil,
         dividas: widget.dividas,
         backup: widget.backup,
         bloqueio: widget.bloqueio,
         aoSalvarDivida: widget.aoSalvarDivida,
+        aoSalvarPerfil: widget.aoSalvarPerfil,
       ),
     ];
 

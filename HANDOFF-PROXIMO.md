@@ -36,14 +36,15 @@ Leia inteiros, uma vez, antes de começar:
 
 ---
 
-## 2. Estado: 9 de 36 telas
+## 2. Estado: 12 de 36 telas
 
 **Prontas do HTML:** abertura, boas-vindas, as 6 perguntas do onboarding,
-Início. Mais a barra de navegação.
+Início, **Perfil (#16), Editar perfil (#24), avisos (#20)**. Mais a barra
+de navegação e a tela de **entrar**, que o design não tem.
 
-**Faltam 27.** `TELAS.md` tem a lista com o arquivo de cada uma.
+**Faltam 24.** `TELAS.md` tem a lista com o arquivo de cada uma.
 
-**164 testes passando.** Rode antes e depois de tudo:
+**196 testes passando.** Rode antes e depois de tudo:
 
 ```bash
 export PATH="$HOME/flutter/bin:$PATH"
@@ -60,11 +61,16 @@ BotaoSobreAcento, BotaoDeContorno, ProgressoDoOnboarding
 `lib/widgets/barra_de_navegacao.dart` — a barra com o joão no centro
 `lib/widgets/moeda.dart` — dinheiro(), FormatadorDeDinheiro, lerDinheiro
 
+`lib/widgets/listas.dart` — AvisoComFaixa (a faixa de 3px), Chave,
+LinhaDeLista, GrupoDeLinhas, SetaDeLinha
+`lib/widgets/topo_de_tela.dart` — o voltar de 36px com título, das telas
+internas
+
 **Se o design system deu nome a um componente, ele vira widget em
 `lib/widgets/` — nunca desenhado dentro da tela.** Ainda faltam: célula de
-saldo, linha de lançamento, aviso com faixa de 3px, segmentado e aba,
-chave, teclado numérico, folha de ação, esqueleto, faixa de erro, carimbo
-QUITADO, progresso de dívida, a casa em 5 fases.
+saldo, linha de lançamento, segmentado e aba, teclado numérico, folha de
+ação, esqueleto, faixa de erro, carimbo QUITADO, progresso de dívida, a
+casa em 5 fases.
 
 ---
 
@@ -72,14 +78,16 @@ QUITADO, progresso de dívida, a casa em 5 fases.
 
 Em ordem de prioridade, tudo dito por ele nesta sessão:
 
-1. **Login social + editar perfil.** Ele quer construir comunidade, não um
-   app avulso: *"é interessante porque daí a gente guarda no banco de
-   dados os dados de todos eles. se eles precisarem mudar de celular, não
-   precisam ficar importando fatura"*.
-   **Decisão dele em 07/09: só a tela, sem backend.** Login com Google (e
-   talvez Facebook), tela de perfil com trocar nome e foto — visual, dado
-   local. Servidor só depois que as 10 pessoas testarem.
-   Existe no design: "Perfil" (#16) e "Editar perfil" (#24).
+1. ~~**Login social + editar perfil.**~~ **FEITO em 07/09.** A tela de
+   entrar (`features/conta/entrar_page.dart`) sai do "já tenho conta" da
+   boas-vindas, com Google e Facebook e o caminho "entrar sem conta". O
+   Perfil (#16) e o Editar perfil (#24) vieram do HTML.
+   **Não há backend, como ele decidiu.** O provedor, o e-mail e o
+   passarinho ficam no banco local (migration v4, colunas anuláveis).
+   As marcas do Google e do Facebook são desenhadas em `CustomPainter`,
+   não baixadas: sem rede o app não pode perder o botão.
+   Quando o servidor existir, o gancho é `OnboardingController.entrouCom`
+   e `PerfilRepository.salvar`.
 
 2. **Conectar bancos.** O design **não tem** esse fluxo — só a tela de
    gerenciar contas já conectadas (#26 "Contas conectadas"). Faltam:
@@ -87,8 +95,11 @@ Em ordem de prioridade, tudo dito por ele nesta sessão:
    **Mesma decisão: só o visual.** Open Finance de verdade precisa de
    servidor e conta paga, e a regra é não gerar custo antes de receita.
 
-3. **Tela de avisos.** Ele tocou no sino e disse: *"a telinha que tem que
-   aparecer é outra"*. Refazer a partir de "Notificações" (#20).
+3. ~~**Tela de avisos.**~~ **FEITA em 07/09**, do "Notificações" (#20):
+   seções HOJE e ANTES, cartão com faixa de 3px, "marcar lidos" e o fecho
+   "SÓ ISSO. VOCÊ ESTÁ EM DIA.". A lógica de `avisos.dart` continua a
+   mesma (calculada na abertura, nunca guardada); ela só ganhou o que a
+   tela precisa: faixa, quando, ícone e ação.
 
 4. **As outras 24 telas**, pelo método da seção 1.
 
@@ -105,7 +116,7 @@ ficam como estão:
 | `horizonte_service.dart` | projeção diária e 12 meses |
 | `dia_de_hoje.dart` | gasto real × diário planejado |
 | `divida_repository.dart` | CRUD + `quitarParcela` idempotente |
-| `banco.dart` | SQLite cifrado, migrations v1→v3 |
+| `banco.dart` | SQLite cifrado, migrations v1→v4 |
 
 Regras que os testes guardam (não quebre):
 
@@ -141,6 +152,19 @@ elemento visto na imagem, **multiplique o y por 1,2**. Um botão em y=1720
 da imagem está em y=2064 no aparelho. Eu achei que o botão estava quebrado
 por causa disso.
 
+**Não faça essa conta na mão.** Em 07/09 ela me fez tocar em "começar"
+achando que era "já tenho conta", e eu quase saí caçando bug que não
+existia. Pergunte a posição ao aparelho:
+
+```bash
+adb shell uiautomator dump /sdcard/ui.xml
+adb shell cat /sdcard/ui.xml | tr '>' '\n' \
+  | grep -oE 'content-desc="[^"]+"[^/]*bounds="[^"]+"'
+```
+
+Sai `bounds="[74,2127][1006,2253]"` — toque no centro. Se o dump devolver
+`null root node`, o app está em transição: espere e repita.
+
 Para pular o onboarding e olhar uma tela direto, crie um
 `lib/seed_main.dart` com dados fixos e
 `flutter build apk --debug --target=lib/seed_main.dart`. **Apague depois.**
@@ -162,7 +186,14 @@ terminou.**
    `initializeDateFormatting`. A data do cabeçalho é escrita à mão.
 3. **Overflow de 12px deixou um botão intocável.** O app abria e não
    deixava a pessoa sair da primeira tela. Todo layout novo tem teste em
-   390×844, 360×640 e 320×568 (`test/boas_vindas_test.dart`).
+   390×844, 360×640 e 320×568 (`test/boas_vindas_test.dart` e
+   `test/perfil_avisos_layout_test.dart`).
+4. **`copyWith` com `??` não apaga campo.** Esvaziar o nome em "Editar
+   perfil" não apagava nada: `nome: null` caía no valor antigo. Por isso
+   existe `PerfilFinanceiro.copyWith(limparNome: true)`.
+5. **Dinheiro formatado na mão sai errado.** O aviso mostrava
+   "R$ 1534,06" sem o ponto de milhar. Use sempre `dinheiro()` de
+   `widgets/moeda.dart`, nunca `toStringAsFixed`.
 
 Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
@@ -183,6 +214,12 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 - **Sem caixa:** nada que gere custo mensal antes de receita
 - "sem servidor, sem login, sem nuvem" era decisão fechada, mas o Gabriel
   **reabriu** em 07/09 pedindo login social. Por ora, só a tela
+- **O ícone do app** sai de `assets/images/capa-app.png` (pedido dele em
+  07/09): o joão no teal. As densidades em
+  `android/app/src/main/res/mipmap-*` e o adaptativo em
+  `mipmap-anydpi-v26/ic_launcher.xml`, com o fundo chapado `#04827F` e o
+  bicho na camada da frente, porque o Android recorta a máscara sozinho.
+  O nome sob o ícone é **Kitamo**, com maiúscula
 
 ---
 

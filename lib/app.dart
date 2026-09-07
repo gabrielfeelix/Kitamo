@@ -4,6 +4,7 @@ import 'design/cores.dart';
 import 'design/tipografia.dart';
 import 'features/backup/backup_service.dart';
 import 'features/casca/casca.dart';
+import 'features/conta/entrar_page.dart';
 import 'features/onboarding/onboarding_controller.dart';
 import 'features/onboarding/abertura_page.dart';
 import 'features/onboarding/boas_vindas_page.dart';
@@ -74,7 +75,7 @@ class Raiz extends StatefulWidget {
 }
 
 /// Onde a pessoa está no caminho de entrada.
-enum _Entrada { abertura, boasVindas, perguntas, dentro }
+enum _Entrada { abertura, boasVindas, entrar, perguntas, dentro }
 
 class _RaizState extends State<Raiz> {
   bool? _precisaOnboarding;
@@ -133,7 +134,22 @@ class _RaizState extends State<Raiz> {
       if (_entrada == _Entrada.boasVindas) {
         return BoasVindasPage(
           aoComecar: () => setState(() => _entrada = _Entrada.perguntas),
-          aoEntrar: () => setState(() => _entrada = _Entrada.perguntas),
+          aoEntrar: () => setState(() => _entrada = _Entrada.entrar),
+        );
+      }
+
+      // "já tenho conta". Não há servidor: guardar o provedor é tudo que
+      // acontece, e o onboarding continua igual — o plano ainda se monta
+      // aqui no aparelho.
+      if (_entrada == _Entrada.entrar) {
+        return EntrarPage(
+          aoEntrar: (provedor) {
+            _onboarding.entrouCom(provedor);
+            setState(() => _entrada = _Entrada.perguntas);
+          },
+          aoVoltar: () => setState(() => _entrada = _Entrada.boasVindas),
+          aoSeguirSemConta: () =>
+              setState(() => _entrada = _Entrada.perguntas),
         );
       }
 
@@ -202,6 +218,7 @@ class _CarregarInicio extends StatelessWidget {
               bloqueio: BloqueioService(),
               aoQuitar: (d) => _quitar(context, d, snapPerfil.data),
               aoSalvarDivida: dividas.salvar,
+              aoSalvarPerfil: perfis.salvar,
             );
           },
         ),

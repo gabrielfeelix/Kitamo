@@ -137,6 +137,11 @@ class OnboardingController extends ChangeNotifier {
   double? gastoDiario;
   double? contasFixas;
 
+  /// Por onde a pessoa entrou, quando ela veio pelo "já tenho conta".
+  /// Null é o caminho normal: sem conta, tudo no aparelho.
+  ProvedorDeLogin? provedor;
+  String? email;
+
   final List<RascunhoDivida> rascunhos = [RascunhoDivida()];
 
   int get indice => _indice;
@@ -144,6 +149,15 @@ class OnboardingController extends ChangeNotifier {
   PassoOnboarding get passo => PassoOnboarding.values[_indice];
   bool get ehUltimo => _indice == PassoOnboarding.values.length - 1;
   double get progresso => (_indice + 1) / PassoOnboarding.values.length;
+
+  /// Guarda o login social escolhido, para gravar junto com o perfil no
+  /// fim do onboarding. **Não há servidor** — isto é só o que a tela do
+  /// perfil mostra depois.
+  void entrouCom(ProvedorDeLogin p, {String? email}) {
+    provedor = p;
+    this.email = email;
+    notifyListeners();
+  }
 
   void adicionarDivida() {
     rascunhos.add(RascunhoDivida());
@@ -202,6 +216,8 @@ class OnboardingController extends ChangeNotifier {
         diaRenda: diaRenda,
         gastoDiarioEstimado: gastoDiario,
         contasFixasEstimadas: contasFixas,
+        provedor: provedor,
+        email: email,
       ));
 
       // Quem respondeu só o total ganha uma dívida única, sem nome de

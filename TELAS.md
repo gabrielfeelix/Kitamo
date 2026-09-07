@@ -37,15 +37,15 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 13 | Conta não fecha | **não** | `aperto/` inventada |
 | 14 | Lançamentos | **não** | `lancamentos/` |
 | 15 | Chat | **não** | `chat/` |
-| 16 | Perfil | **não** | `perfil/` |
+| 16 | Perfil | sim | `perfil/perfil_page.dart` |
 | 17 | O número | **não** | — |
 | 18 | Lançar | **não** | `lancamentos/lancar_sheet.dart` |
 | 19 | Gastei | **não** | idem |
-| 20 | Notificações | **não** | `avisos/` |
+| 20 | Notificações | sim | `avisos/avisos_page.dart` |
 | 21 | Dívidas | **não** | `dividas/` |
 | 22 | Pra onde vai | **não** | `lancamentos/pra_onde_vai.dart` |
 | 23 | Vazio | **não** | — |
-| 24 | Editar perfil | **não** | — |
+| 24 | Editar perfil | sim | `perfil/editar_perfil_page.dart` |
 | 25 | Categorias | **não** | — |
 | 26 | Contas conectadas | **não** | — |
 | 27 | Importar extrato | **não** | `importar/` |
@@ -68,6 +68,12 @@ gerenciar as contas já conectadas (#26). Falta:
 - esperando / lendo
 - deu certo / deu errado
 
+A tela de **entrar** (login social) também não existe no design. Foi
+montada com o vocabulário da "01 Boas-vindas" (teal escuro, joão grande,
+botão de 52px): `features/conta/entrar_page.dart`. O design já previa o
+gancho, o "já tenho conta" da boas-vindas, que antes não levava a lugar
+nenhum.
+
 Decisão do Gabriel em 07/09/2026: **fazer só o visual, sem integração.**
 Open Finance de verdade precisa de servidor e conta paga, e a regra do
 projeto é não gerar custo mensal antes de receita. As telas servem pra
@@ -82,11 +88,12 @@ Prontos, em `lib/widgets/`:
 
 Cartao · CartaoDeAcento · FalaDaKitamo · Rotulo · Tile · BotaoPrincipal ·
 CampoDeValor · CampoDeTexto · Radio · Checkbox · BotaoSobreAcento ·
-BotaoDeContorno · ProgressoDoOnboarding · BarraDeNavegacao
+BotaoDeContorno · ProgressoDoOnboarding · BarraDeNavegacao ·
+**AvisoComFaixa · Chave · LinhaDeLista · GrupoDeLinhas · SetaDeLinha ·
+TopoDeTela**
 
 Faltam, nomeados no design system:
 
-célula de saldo · linha de lançamento · aviso com faixa de 3px ·
-segmentado e aba · chave · teclado numérico · folha de ação · esqueleto ·
-faixa de erro e offline · carimbo QUITADO · progresso de dívida · a casa
-em 5 fases
+célula de saldo · linha de lançamento · segmentado e aba · teclado
+numérico · folha de ação · esqueleto · faixa de erro e offline · carimbo
+QUITADO · progresso de dívida · a casa em 5 fases

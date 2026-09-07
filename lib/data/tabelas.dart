@@ -42,6 +42,20 @@ class Perfis extends Table {
   /// 'feeling' (chute do onboarding) ou 'ofx' (extrato importado).
   TextColumn get origem => text().withDefault(const Constant('feeling'))();
 
+  /// O passarinho escolhido em "Editar perfil": 'av-1' a 'av-8'. Nulo usa
+  /// o primeiro do acervo.
+  TextColumn get avatar => text().nullable().withLength(max: 20)();
+
+  /// Como a pessoa entrou: 'google', 'facebook' ou nulo (sem conta).
+  ///
+  /// Guardado só para a tela saber o que mostrar. **Não há servidor**: o
+  /// login é visual, decisão do Gabriel em 07/09/2026, e nada sai do
+  /// aparelho enquanto não existir backend.
+  TextColumn get provedor => text().nullable().withLength(max: 20)();
+
+  /// O e-mail que veio do login social, para a linha de "Editar perfil".
+  TextColumn get email => text().nullable().withLength(max: 160)();
+
   DateTimeColumn get atualizadoEm => dateTime().withDefault(currentDateAndTime)();
 
   @override
