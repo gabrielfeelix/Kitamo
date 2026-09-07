@@ -7,6 +7,7 @@ import 'features/casca/casca.dart';
 import 'features/conta/entrar_page.dart';
 import 'features/onboarding/onboarding_controller.dart';
 import 'features/onboarding/abertura_page.dart';
+import 'features/resultado/resultado_page.dart';
 import 'features/onboarding/boas_vindas_page.dart';
 import 'features/onboarding/onboarding_page.dart';
 import 'features/quitar/quitar_service.dart';
@@ -75,7 +76,11 @@ class Raiz extends StatefulWidget {
 }
 
 /// Onde a pessoa está no caminho de entrada.
-enum _Entrada { abertura, boasVindas, entrar, perguntas, dentro }
+/// Por onde a pessoa passa até chegar no app.
+///
+/// O `resultado` existe porque, respondida a última pergunta, o app caía
+/// **seco** no Início: seis respostas e nada de volta. Ver a #17.
+enum _Entrada { abertura, boasVindas, entrar, perguntas, resultado, dentro }
 
 class _RaizState extends State<Raiz> {
   bool? _precisaOnboarding;
@@ -153,12 +158,23 @@ class _RaizState extends State<Raiz> {
         );
       }
 
+      // Respondeu tudo: o número aparece antes do app. É o RESULTADO
+      // (#17), não o onboarding — aquele ensina a usar, e vem depois.
+      if (_entrada == _Entrada.resultado) {
+        return _CarregarResultado(
+          perfis: widget.perfis,
+          dividas: widget.dividas,
+          aoVerMeuMes: () => setState(() {
+            _precisaOnboarding = false;
+            _entrada = _Entrada.dentro;
+          }),
+          aoRevisar: () => setState(() => _entrada = _Entrada.perguntas),
+        );
+      }
+
       return OnboardingPage(
         controller: _onboarding,
-        aoConcluir: () => setState(() {
-          _precisaOnboarding = false;
-          _entrada = _Entrada.dentro;
-        }),
+        aoConcluir: () => setState(() => _entrada = _Entrada.resultado),
       );
     }
 
@@ -166,6 +182,43 @@ class _RaizState extends State<Raiz> {
       perfis: widget.perfis,
       dividas: widget.dividas,
       lancamentos: widget.lancamentos,
+    );
+  }
+}
+
+/// Lê o que acabou de ser gravado e mostra o número.
+///
+/// Não dá para reaproveitar o controller: ele guarda o que foi digitado,
+/// e o que vale aqui é o que o banco tem — inclusive as regras que o
+/// `concluir` aplicou (dívida sem parcela, nome em branco virando nulo).
+class _CarregarResultado extends StatelessWidget {
+  const _CarregarResultado({
+    required this.perfis,
+    required this.dividas,
+    required this.aoVerMeuMes,
+    required this.aoRevisar,
+  });
+
+  final PerfilRepository perfis;
+  final DividaRepository dividas;
+  final VoidCallback aoVerMeuMes;
+  final VoidCallback aoRevisar;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<(PerfilFinanceiro?, List<Divida>)>(
+      future: (() async => (await perfis.carregar(), await dividas.emAberto()))(),
+      builder: (context, snap) {
+        if (!snap.hasData) return const _Carregando();
+
+        final (perfil, lista) = snap.data!;
+        return ResultadoPage(
+          perfil: perfil,
+          dividas: lista,
+          aoVerMeuMes: aoVerMeuMes,
+          aoRevisar: aoRevisar,
+        );
+      },
     );
   }
 }
