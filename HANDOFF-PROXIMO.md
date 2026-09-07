@@ -1,6 +1,6 @@
 # Handoff — Kitamo (Flutter)
 
-Escrito em 07/09/2026, fim do segundo dia. **Leia a seção 1 e o
+Escrito em 07/09/2026, fim do segundo dia. **Leia as seções 1 e 2 e o
 `TELAS.md` antes de escrever qualquer linha.**
 
 ---
@@ -36,15 +36,36 @@ Leia inteiros, uma vez, antes de começar:
 
 ---
 
-## 2. Estado: 12 de 36 telas
+## 2. Como chamar as coisas (o Gabriel corrigiu em 07/09)
 
-**Prontas do HTML:** abertura, boas-vindas, as 6 perguntas do onboarding,
+**O que a gente vinha chamando de "onboarding" não é onboarding.**
+
+- **perguntas iniciais** — as 6 telas que perguntam dívida, renda, dia,
+  gasto, contas fixas, extrato. É o que existe hoje em
+  `features/onboarding/`. O nome da pasta e a classe `OnboardingController`
+  ficaram errados; **não renomeie no meio de outra tarefa**, mas saiba que
+  o texto de tela nunca deve chamar isso de onboarding.
+- **resultado** — a tela que fecha as perguntas mostrando o número. É a
+  **#17 "O número"** do design. **Não existe no app.**
+- **onboarding de verdade** — o que ensina a usar o app *depois* de tudo
+  respondido. É a **#32 "Primeira vez"**: véu escuro sobre o Início já
+  preenchido, com balões "1 DE 3". **Não existe no app.**
+
+Palavras dele: *"isso q a gente tá chamando de onboarding n é onboarding.
+são as perguntas iniciais, onboarding é dps q eu respondi tudo oq vai me
+ensinar a usar o app"*.
+
+---
+
+## 3. Estado: 12 de 36 telas
+
+**Prontas do HTML:** abertura, boas-vindas, as 6 perguntas iniciais,
 Início, **Perfil (#16), Editar perfil (#24), avisos (#20)**. Mais a barra
 de navegação e a tela de **entrar**, que o design não tem.
 
 **Faltam 24.** `TELAS.md` tem a lista com o arquivo de cada uma.
 
-**196 testes passando.** Rode antes e depois de tudo:
+**198 testes passando.** Rode antes e depois de tudo:
 
 ```bash
 export PATH="$HOME/flutter/bin:$PATH"
@@ -74,7 +95,7 @@ casa em 5 fases.
 
 ---
 
-## 3. O que o Gabriel pediu e ainda não foi feito
+## 4. O que o Gabriel pediu e ainda não foi feito
 
 Em ordem de prioridade, tudo dito por ele nesta sessão:
 
@@ -101,11 +122,52 @@ Em ordem de prioridade, tudo dito por ele nesta sessão:
    mesma (calculada na abertura, nunca guardada); ela só ganhou o que a
    tela precisa: faixa, quando, ícone e ação.
 
-4. **As outras 24 telas**, pelo método da seção 1.
+4. **O horizonte numa tela só.** Ele perguntou como chega nas telas de
+   diário/mensal/anual, e tinha razão em estranhar. **Elas existem e estão
+   ligadas, mas por caminhos que ninguém adivinha:**
+
+   | tela | como se chega hoje |
+   |---|---|
+   | Horizonte (12 meses) | Início, link "ver 12 meses" no cartão do mês |
+   | Mês dia a dia | Início, tocando **no cartão barro da casa** |
+   | Pra onde vai | dentro da aba Lançamentos |
+
+   O mensal abrir ao tocar na **casa** é o pior: nada no cartão avisa.
+
+   **No design é uma tela só**: "horizonte de saldos" (#10) com o
+   segmentado `dias | meses | ano` no topo. As três abas são três corpos
+   da mesma tela: #09 (dias, cabeçalho verde, colunas DIA/PODE
+   GASTAR/GASTOU/SALDO), #10 (meses lado a lado em 3 colunas) e #11 (ano,
+   barras por mês + cartão barro "SUA ÚLTIMA PARCELA CAI EM").
+
+   **Decisão dele em 07/09: fazer a tela única com as 3 abas**, e o "ano"
+   soma os 12 meses num resumo. O dado já existe:
+   `HorizonteService.mes()` e `.doze()`. As duas telas atuais
+   (`horizonte_page.dart` e `mes_page.dart`, ambas inventadas) somem.
+
+5. **Lançamentos (#14) e Pra onde vai (#22)**, do HTML. Decisão dele:
+   fazer junto com o horizonte. O #22 tem o cartão grande de "parcelas de
+   dívida" com % do que entra, quatro cartões de categoria em grade 2x2 e
+   a fala do joão no rodapé.
+
+6. **Tela de resultado (#17 "O número").** Hoje, respondida a última
+   pergunta, o app cai seco no Início. Palavras dele: *"dps q eu respondo
+   todas as perguntas tem q ter uma tela de RESULTADO pra n ser muito
+   seco"*. Ele suspeitou que já existia no design, e **existe**: fundo
+   teal, "PRA QUITAR ATÉ JANEIRO", o número em Outfit 76, o resumo "você
+   deve R$ X em N dívidas, e entra R$ Y por mês", o aviso de que tudo foi
+   chute, e dois botões: "ver meu mês" e "revisar minhas respostas".
+
+7. **Onboarding de verdade (#32 "Primeira vez").** O que ensina a usar,
+   depois do resultado: o Início já preenchido, véu escuro por cima e
+   balões "1 DE 3 · ESSE NÚMERO" explicando de onde vem o número. Três
+   passos.
+
+8. **As outras telas**, pelo método da seção 1.
 
 ---
 
-## 4. O que presta e não se toca
+## 5. O que presta e não se toca
 
 A lógica está testada e correta. `lib/services/` e `lib/repositories/`
 ficam como estão:
@@ -131,7 +193,7 @@ Regras que os testes guardam (não quebre):
 
 ---
 
-## 5. Como ver a tela (o emulador já está pronto)
+## 6. Como ver a tela (o emulador já está pronto)
 
 ```bash
 export ANDROID_HOME=$HOME/.local/opt/android-sdk
@@ -174,7 +236,7 @@ de verdade (texto vira caixinha). Serve pra estrutura, não pra tipografia.
 
 ---
 
-## 6. Três bugs que só apareceram rodando no aparelho
+## 7. Bugs que só apareceram rodando no aparelho
 
 Teste verde não pega nada disso. **Rode no emulador antes de dizer que
 terminou.**
@@ -194,12 +256,19 @@ terminou.**
 5. **Dinheiro formatado na mão sai errado.** O aviso mostrava
    "R$ 1534,06" sem o ponto de milhar. Use sempre `dinheiro()` de
    `widgets/moeda.dart`, nunca `toStringAsFixed`.
+6. **Campo público em ChangeNotifier não redesenha a tela.** Tocar no dia
+   do vencimento não pintava nada: `diaRenda` era campo solto, gravava o
+   valor e não avisava ninguém. Pra quem usa, "o botão não funciona" —
+   e nenhum teste de lógica pega, porque o valor chega no controller.
+   Corrigido em 07/09 com setter + `notifyListeners`, e preso por teste
+   em `test/onboarding_test.dart`. **Todo campo do controller que a tela
+   desenha precisa de setter.** Confira os outros antes de confiar.
 
 Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 7. Decisões fechadas (não reabrir sozinho)
+## 8. Decisões fechadas (não reabrir sozinho)
 
 - **O design é a fonte da verdade**, incluindo a paleta escurecida
   (`barro #A34A24`, `teal #0C7468`, `verde #3F7A3D`) — mais escura de
@@ -223,7 +292,7 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 8. Como o Gabriel trabalha
+## 9. Como o Gabriel trabalha
 
 - Quer **ver tela**, não relatório. Instala no celular e olha
 - **Não crie pasta nova.** APKs vão em `kitamo-app/apks/`, e ele pega em
@@ -237,7 +306,7 @@ Botão é `FilledButton`, não `Material`+`InkWell` na mão.
 
 ---
 
-## 9. Onde está cada coisa
+## 10. Onde está cada coisa
 
 ```
 /home/gabfelix/dev/kitamo-app/           o app

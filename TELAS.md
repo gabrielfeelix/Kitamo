@@ -30,15 +30,15 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 06 | Contas fixas | sim | idem |
 | 07 | Oferta extrato | sim | idem |
 | 08 | Início | sim | `inicio/` |
-| 09 | Mês dia a dia | **não** | `horizonte/mes_page.dart` existe, inventada |
-| 10 | Horizonte de saldos | **não** | — |
-| 11 | Horizonte | **não** | `horizonte/horizonte_page.dart` inventada |
+| 09 | Mês dia a dia | **não** | aba "dias" do horizonte · `mes_page.dart` inventada |
+| 10 | Horizonte de saldos | **não** | aba "meses" · **a tela que segura as 3 abas** |
+| 11 | Horizonte | **não** | aba "ano" · `horizonte_page.dart` inventada |
 | 12 | Última parcela | **não** | `quitar/` |
 | 13 | Conta não fecha | **não** | `aperto/` inventada |
 | 14 | Lançamentos | **não** | `lancamentos/` |
 | 15 | Chat | **não** | `chat/` |
 | 16 | Perfil | sim | `perfil/perfil_page.dart` |
-| 17 | O número | **não** | — |
+| 17 | O número | **não** | — · **é a tela de RESULTADO das perguntas** |
 | 18 | Lançar | **não** | `lancamentos/lancar_sheet.dart` |
 | 19 | Gastei | **não** | idem |
 | 20 | Notificações | sim | `avisos/avisos_page.dart` |
@@ -53,10 +53,35 @@ nome, o widget existe — e se não existir, crie lá, não na tela.
 | 29 | Sobre a Kitamo | **não** | — |
 | 30 | Extrato aplicado | **não** | — |
 | 31 | Barro escuro | **não** | — |
-| 32 | Primeira vez | **não** | — |
+| 32 | Primeira vez | **não** | — · **é o onboarding de verdade, 1 de 3** |
 | 33 | Nova dívida | **não** | — |
 | 34 | Gasto salvo | **não** | — |
 | 35 | Como a conta é feita | **não** | — |
+
+## As três que são uma só
+
+**#09, #10 e #11 não são três telas: são três abas da mesma.** O design
+repete o segmentado `dias | meses | ano` no topo das três. Hoje o app tem
+duas telas soltas (`mes_page.dart` e `horizonte_page.dart`, inventadas),
+alcançadas por toques que ninguém adivinha — o mensal abre tocando no
+cartão da casa. Decisão do Gabriel em 07/09: **juntar numa tela só com as
+3 abas**, o "ano" somando os 12 meses.
+
+## A ordem das telas de entrada
+
+O caminho completo, do jeito que o design desenhou:
+
+```
+Abertura (#00)
+  └─ Boas-vindas (#01) ──"já tenho conta"── entrar (não existe no design)
+       └─ as 6 perguntas iniciais (#02 a #07)
+            └─ RESULTADO · "O número" (#17)      ← FALTA
+                 └─ Início (#08)
+                      └─ ONBOARDING · "Primeira vez" (#32)  ← FALTA
+```
+
+Hoje o app pula do fim das perguntas direto pro Início: seco, sem o
+número e sem ensinar nada. As duas telas que faltam são as marcadas.
 
 ## Telas que o design não tem
 

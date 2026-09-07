@@ -26,6 +26,33 @@ void main() {
 
   tearDown(() => banco.close());
 
+  group('o dia em que o dinheiro entra', () {
+    // O toque no dia não pintava nada: `diaRenda` era campo solto, então
+    // gravava o valor sem avisar a tela, e ela nunca se redesenhava. Na
+    // mão do Gabriel isso é "o botão não funciona", e nenhum teste de
+    // lógica pegava, porque o valor até chegava no controller.
+    test('escolher o dia avisa a tela', () {
+      var avisos = 0;
+      c.addListener(() => avisos++);
+
+      c.diaRenda = 6;
+
+      expect(c.diaRenda, 6);
+      expect(avisos, 1, reason: 'sem aviso a tela não redesenha, e o dia '
+          'escolhido não fica marcado');
+    });
+
+    test('escolher o mesmo dia de novo não redesenha à toa', () {
+      c.diaRenda = 6;
+
+      var avisos = 0;
+      c.addListener(() => avisos++);
+      c.diaRenda = 6;
+
+      expect(avisos, 0);
+    });
+  });
+
   group('navegação', () {
     test('começa no primeiro passo e anda até o último', () {
       expect(c.indice, 0);

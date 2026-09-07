@@ -124,7 +124,21 @@ class OnboardingController extends ChangeNotifier {
   bool naoSeiQuantoDevo = false;
 
   double? rendaMensal;
-  int? diaRenda;
+
+  /// O dia em que o dinheiro entra.
+  ///
+  /// Tem setter de verdade porque a tela precisa se redesenhar na hora do
+  /// toque: como campo solto, tocar no dia gravava o valor e não pintava
+  /// nada, e a pessoa achava que o botão não funcionava. Foi o Gabriel que
+  /// pegou, em 07/09/2026.
+  int? get diaRenda => _diaRenda;
+  set diaRenda(int? v) {
+    if (_diaRenda == v) return;
+    _diaRenda = v;
+    notifyListeners();
+  }
+
+  int? _diaRenda;
 
   /// Quanto a pessoa deve no total. É a pergunta 02 do design: um número
   /// grande, "pode ser chute". O cadastro detalhado de cada dívida vem
