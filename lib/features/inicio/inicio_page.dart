@@ -6,7 +6,10 @@ import '../../design/tipografia.dart';
 import '../../models/divida.dart';
 import '../../models/perfil_financeiro.dart';
 import '../../services/diario_service.dart';
+import '../../services/horizonte_service.dart';
 import '../../widgets/moeda.dart';
+import '../horizonte/horizonte_page.dart';
+import '../horizonte/mes_page.dart';
 
 /// A tela que a pessoa abre todo dia.
 ///
@@ -17,10 +20,15 @@ class InicioPage extends StatelessWidget {
     super.key,
     required this.perfil,
     required this.dividas,
+    this.aoQuitar,
   });
 
   final PerfilFinanceiro? perfil;
   final List<Divida> dividas;
+
+  /// Chamado ao tocar em "quitei essa". Null deixa o botão inerte, o que
+  /// serve para teste de tela.
+  final void Function(Divida divida)? aoQuitar;
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +46,18 @@ class InicioPage extends StatelessWidget {
               offset: const Offset(0, -28),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
-                child: _CartaoProximaParcela(divida: proxima, perfil: perfil),
+                child: _CartaoProximaParcela(
+                  divida: proxima,
+                  perfil: perfil,
+                  aoQuitar: aoQuitar == null ? null : () => aoQuitar!(proxima),
+                ),
               ),
             ),
-          const SizedBox(height: Medidas.espaco),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
+            child: _Atalhos(perfil: perfil, dividas: dividas),
+          ),
+          const SizedBox(height: Medidas.espacoGrande),
         ],
       ),
     );
@@ -120,10 +136,15 @@ class _Topo extends StatelessWidget {
 }
 
 class _CartaoProximaParcela extends StatelessWidget {
-  const _CartaoProximaParcela({required this.divida, required this.perfil});
+  const _CartaoProximaParcela({
+    required this.divida,
+    required this.perfil,
+    this.aoQuitar,
+  });
 
   final Divida divida;
   final PerfilFinanceiro? perfil;
+  final VoidCallback? aoQuitar;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +199,7 @@ class _CartaoProximaParcela extends StatelessWidget {
               ),
               const Spacer(),
               FilledButton(
-                onPressed: () {},
+                onPressed: aoQuitar,
                 style: FilledButton.styleFrom(
                   backgroundColor: Cores.tinta,
                   foregroundColor: Cores.branco,
@@ -195,4 +216,88 @@ class _CartaoProximaParcela extends StatelessWidget {
       ),
     );
   }
+}
+
+
+/// Atalhos para as duas visões do horizonte.
+class _Atalhos extends StatelessWidget {
+  const _Atalhos({required this.perfil, required this.dividas});
+
+  final PerfilFinanceiro? perfil;
+  final List<Divida> dividas;
+
+  @override
+  Widget build(BuildContext context) {
+    const horizonte = HorizonteService();
+
+    return Row(
+      children: [
+        Expanded(
+          child: _Atalho(
+            titulo: 'Seu mês',
+            apoio: 'dia a dia',
+            aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => MesPage(
+                titulo: 'Seu mês',
+                mes: horizonte.mes(
+                  perfil: perfil,
+                  dividas: dividas,
+                  saldoInicial: 0,
+                ),
+              ),
+            )),
+          ),
+        ),
+        const SizedBox(width: Medidas.espaco),
+        Expanded(
+          child: _Atalho(
+            titulo: 'O ano inteiro',
+            apoio: '12 meses',
+            aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => HorizontePage(
+                meses: horizonte.doze(
+                  perfil: perfil,
+                  dividas: dividas,
+                  saldoInicial: 0,
+                ),
+              ),
+            )),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Atalho extends StatelessWidget {
+  const _Atalho({
+    required this.titulo,
+    required this.apoio,
+    required this.aoTocar,
+  });
+
+  final String titulo;
+  final String apoio;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: aoTocar,
+        borderRadius: BorderRadius.circular(Medidas.raioCartao),
+        child: Container(
+          padding: const EdgeInsets.all(Medidas.margem),
+          decoration: BoxDecoration(
+            color: Cores.branco,
+            borderRadius: BorderRadius.circular(Medidas.raioCartao),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(titulo, style: Tipo.corpoForte),
+              const SizedBox(height: 2),
+              Text(apoio, style: Tipo.apoio),
+            ],
+          ),
+        ),
+      );
 }

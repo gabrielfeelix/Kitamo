@@ -5,6 +5,8 @@ import 'design/tipografia.dart';
 import 'features/inicio/inicio_page.dart';
 import 'features/onboarding/onboarding_controller.dart';
 import 'features/onboarding/onboarding_page.dart';
+import 'features/quitar/quitar_service.dart';
+import 'features/quitar/quitei_essa_page.dart';
 import 'models/divida.dart';
 import 'models/perfil_financeiro.dart';
 import 'repositories/divida_repository.dart';
@@ -98,6 +100,23 @@ class _CarregarInicio extends StatelessWidget {
   final PerfilRepository perfis;
   final DividaRepository dividas;
 
+  /// Marca a parcela como paga e leva para a tela de conquista.
+  Future<void> _quitar(
+    BuildContext context,
+    Divida divida,
+    PerfilFinanceiro? perfil,
+  ) async {
+    final navegador = Navigator.of(context);
+    final resultado =
+        await QuitarService(dividas).quitarParcela(divida.id, perfil: perfil);
+
+    if (resultado == null) return;
+
+    await navegador.push(MaterialPageRoute(
+      builder: (_) => QuiteiEssaPage(resultado: resultado),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) =>
       StreamBuilder<List<Divida>>(
@@ -113,6 +132,7 @@ class _CarregarInicio extends StatelessWidget {
             return InicioPage(
               perfil: snapPerfil.data,
               dividas: snapDividas.data ?? const [],
+              aoQuitar: (d) => _quitar(context, d, snapPerfil.data),
             );
           },
         ),

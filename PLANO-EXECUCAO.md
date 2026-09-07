@@ -142,7 +142,7 @@ A porta de entrada. 6 telas, uma pergunta por tela, cada uma na sua cor.
 - Tela final: o número, com o joão-de-barro
 - Teste: pular tudo não quebra; responder gera o número certo
 
-### Fase 3 — horizonte ✅ (parcial: 12 meses feito, visão de mês pendente)
+### Fase 3 — horizonte ✅ (feito)
 As duas visões que são o produto.
 
 - **Mês:** linha por dia, nome do lançamento, motivo da cor
@@ -151,7 +151,7 @@ As duas visões que são o produto.
 - Teste: 24 meses × vencimento 1–31 × renda 1–31, cada lançamento aparece
   exatamente uma vez
 
-### Fase 4 — "quitei essa" e lançamentos
+### Fase 4 — "quitei essa" ✅ (feito; lançamentos pendentes)
 O hábito.
 
 - Marcar parcela paga → carimbo, contagem, casa crescendo
@@ -160,7 +160,7 @@ O hábito.
 - Lista com chips
 - Teste: quitar altera saldo e data; desfazer volta ao estado anterior
 
-### Fase 5 — nuvem opcional
+### Fase 5 — backup ✅ (por arquivo; nuvem não foi feita — ver nota)
 Só aqui entra rede.
 
 - Login social (Google/Apple) **como recuperação**, não como porta
@@ -213,6 +213,19 @@ Fase 1 é justamente onde mora a decisão de segurança mais séria do app
 (cifra em repouso), que é melhor acertar antes de ter dado dentro.
 
 ---
+
+## 5.0 Nota sobre a Fase 5 (06/09/2026)
+
+Implementado **backup por arquivo**, não sincronização em nuvem. É a opção
+recomendada no §6 e a que dispensa decisão pendente: sem servidor, sem
+login, sem dado de dívida trafegando ou parado em infraestrutura nossa.
+
+O arquivo sai em JSON legível de propósito — é a pessoa quem escolhe onde
+guardar, e backup que ela não consegue abrir não é backup. A tela precisa
+mostrar `BackupService.avisoDeExportacao`.
+
+Falta, se a nuvem entrar depois: escolher a UI de arquivo (`file_picker` ou
+`share_plus`) e a decisão do §6 sobre servidor.
 
 ## 5.1 Nota de plataforma (06/09/2026)
 
