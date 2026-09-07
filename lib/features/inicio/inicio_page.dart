@@ -15,7 +15,6 @@ import '../aperto/aperto_page.dart';
 import '../avisos/avisos.dart';
 import '../avisos/avisos_page.dart';
 import '../horizonte/horizonte_page.dart';
-import '../horizonte/mes_page.dart';
 import 'cabecalho_do_inicio.dart';
 import 'cartoes_do_inicio.dart';
 
@@ -137,16 +136,25 @@ class InicioPage extends StatelessWidget {
       titulo: '${_mesPorExtenso(DateTime.now().month)}, dia a dia',
       saldos: saldos,
       leitura: fundo == null ? null : 'dia ${fundo.day} é o fundo do mês',
-      aoVerDoze: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => HorizontePage(
-          meses: horizonte.doze(
-            perfil: perfil,
-            dividas: dividas,
-            saldoInicial: 0,
-          ),
-        ),
-      )),
+      // O cartão fala do mês, então abre no mês. As outras duas abas ficam
+      // a um toque, no segmentado do topo.
+      aoVerDoze: () => _abrirHorizonte(context, AbaDoHorizonte.dias),
     );
+  }
+
+  /// O horizonte é **uma tela só**, com o segmentado dias | meses | ano.
+  ///
+  /// Antes eram duas telas soltas, e o mensal abria tocando no cartão da
+  /// casa — nada no cartão avisava, e ninguém adivinhava o caminho.
+  void _abrirHorizonte(BuildContext context, AbaDoHorizonte aba) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => HorizontePage(
+        perfil: perfil,
+        dividas: dividas,
+        lancamentos: lancamentosDeHoje,
+        abaInicial: aba,
+      ),
+    ));
   }
 
   /// O cartão de acento: a casa que sobe conforme as parcelas caem.
@@ -165,16 +173,9 @@ class InicioPage extends StatelessWidget {
           ? 'a casa sobe a cada parcela'
           : 'a última cai em ${quitacao.day} de ${_mesPorExtenso(quitacao.month)}',
       ilustracao: 'casa-${_faseDaCasa(pagas, total)}.png',
-      aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => MesPage(
-          titulo: 'Seu mês',
-          mes: const HorizonteService().mes(
-            perfil: perfil,
-            dividas: dividas,
-            saldoInicial: 0,
-          ),
-        ),
-      )),
+      // A casa é a dívida acabando, então abre no ano — onde o cartão
+      // barro diz quando a última parcela cai.
+      aoTocar: () => _abrirHorizonte(context, AbaDoHorizonte.ano),
     );
   }
 

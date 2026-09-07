@@ -192,7 +192,9 @@ class CartaoDoMes extends StatelessWidget {
                 GestureDetector(
                   onTap: aoVerDoze,
                   child: Text(
-                    'ver 12 meses',
+                    // O link abre o horizonte na aba "dias": prometer "12
+                    // meses" e entregar o mês seria mentir o destino.
+                    'ver o mês',
                     style: Tipo.corpoMiudo.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Cores.teal,
