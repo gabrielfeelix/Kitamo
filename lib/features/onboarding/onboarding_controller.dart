@@ -6,6 +6,23 @@ import '../../models/perfil_financeiro.dart';
 import '../../repositories/divida_repository.dart';
 import '../../repositories/perfil_repository.dart';
 
+/// As faixas da pergunta "quanto você deve hoje?", do design.
+/// Existem porque muita gente endividada não sabe o número exato — e
+/// travar a primeira tela num campo obrigatório é perder a pessoa ali.
+enum FaixaDeDivida {
+  ate5mil('até R\$ 5 mil', 2500),
+  entre10e15('entre R\$ 10 e R\$ 15 mil', 12500),
+  maisDe20('mais de R\$ 20 mil', 25000),
+  naoSei('não sei, quero descobrir', null);
+
+  const FaixaDeDivida(this.rotulo, this.meio);
+
+  final String rotulo;
+
+  /// O meio da faixa, que vira o chute inicial. null em "não sei".
+  final double? meio;
+}
+
 /// Uma dívida sendo digitada. Só vira registro se tiver nome.
 class RascunhoDivida {
   RascunhoDivida();
@@ -18,21 +35,68 @@ class RascunhoDivida {
   bool get preenchida => nome.trim().isNotEmpty;
 }
 
+/// "UMA PERGUNTA POR TELA · CADA UMA NA SUA COR".
+///
+/// As cores, as ilustrações e os textos são os do Kitamo App.dc.html,
+/// telas 02 a 07. Não invente pergunta nova nem troque a cor: a sequência
+/// de cores é o que dá ritmo ao onboarding.
 enum PassoOnboarding {
-  divida(Cores.vermelho),
-  renda(Cores.verde),
-  diaRenda(Cores.tealEscuro),
-  gasto(Cores.ambar),
-  fixas(Cores.barro),
-  extrato(Cores.verde);
+  divida(
+    cor: Color(0xFF0B5F59),
+    ilustracao: 'ob-divida.png',
+    pergunta: 'quanto você deve hoje?',
+    apoio: 'pode ser chute. a gente ajusta depois com o extrato.',
+  ),
+  renda(
+    cor: Color(0xFF3F7A3D),
+    ilustracao: 'ob-entrada.png',
+    pergunta: 'quanto entra por mês?',
+    apoio: 'salário, bico, pensão, aluguel que você recebe. tudo que entra.',
+  ),
+  diaRenda(
+    cor: Color(0xFF6B58B0),
+    ilustracao: 'ob-calendario.png',
+    pergunta: 'que dia cai?',
+    apoio: 'o dia do mês em que o dinheiro entra na conta.',
+  ),
+  gasto(
+    cor: Color(0xFFE8A33D),
+    ilustracao: 'ob-mercado.png',
+    pergunta: 'quanto sai com o dia a dia?',
+    apoio: 'vai no feeling: mercado, padaria, iFood, transporte.',
+  ),
+  fixas(
+    cor: Color(0xFFA34A24),
+    ilustracao: 'ob-fixas.png',
+    pergunta: 'tem conta fixa?',
+    apoio: 'marque o que sai todo mês no mesmo dia.',
+  ),
+  extrato(
+    cor: Color(0xFF9E4522),
+    ilustracao: 'ob-extrato.png',
+    pergunta: 'quer que a gente confira no seu extrato?',
+    apoio: 'o arquivo do seu banco, lido aqui no celular. nada sai daqui.',
+  );
 
-  const PassoOnboarding(this.cor);
+  const PassoOnboarding({
+    required this.cor,
+    required this.ilustracao,
+    required this.pergunta,
+    required this.apoio,
+  });
 
   /// Cada passo tem sua cor — a tela inteira, como no design.
   final Color cor;
+  final String ilustracao;
+  final String pergunta;
+  final String apoio;
 
   /// O âmbar é claro demais para texto branco.
   Color get sobre => this == PassoOnboarding.gasto ? Cores.tinta : Cores.branco;
+
+  /// Texto de apoio sobre o acento: quase branco, mas não branco puro.
+  Color get sobreFraco =>
+      this == PassoOnboarding.gasto ? const Color(0xFF3F2E0F) : const Color(0xFFE6F7F4);
 }
 
 /// Estado do onboarding.
@@ -57,6 +121,15 @@ class OnboardingController extends ChangeNotifier {
 
   double? rendaMensal;
   int? diaRenda;
+
+  /// Quanto a pessoa deve no total. É a pergunta 02 do design: um número
+  /// grande, "pode ser chute". O cadastro detalhado de cada dívida vem
+  /// depois, no Perfil — pedir isso na primeira tela é o que fazia a
+  /// pessoa desistir.
+  double? totalDevido;
+
+  /// A faixa escolhida, quando ela prefere não digitar um número.
+  FaixaDeDivida? faixa;
   double? gastoDiario;
   double? contasFixas;
 
@@ -76,6 +149,21 @@ class OnboardingController extends ChangeNotifier {
   void removerDivida(int i) {
     if (rascunhos.length <= 1) return;
     rascunhos.removeAt(i);
+    notifyListeners();
+  }
+
+  /// Escolher uma faixa preenche o total pelo meio dela. "não sei" deixa
+  /// o total em aberto: é resposta válida, não campo vazio.
+  void escolherFaixa(FaixaDeDivida f) {
+    faixa = f;
+    totalDevido = f.meio;
+    notifyListeners();
+  }
+
+  void digitarTotal(double? v) {
+    totalDevido = v;
+    // Digitar um número desmarca a faixa: quem digitou sabe o valor.
+    faixa = null;
     notifyListeners();
   }
 
@@ -111,6 +199,23 @@ class OnboardingController extends ChangeNotifier {
         gastoDiarioEstimado: gastoDiario,
         contasFixasEstimadas: contasFixas,
       ));
+
+      // Quem respondeu só o total ganha uma dívida única, sem nome de
+      // banco: o número dela é o que faz a conta fechar na tela de Início.
+      final semDetalhe = !rascunhos.any((r) => r.preenchida);
+      if (!naoSeiQuantoDevo && semDetalhe && (totalDevido ?? 0) > 0) {
+        await _dividas.salvar(Divida(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          nome: 'o que eu devo',
+          saldoAtual: totalDevido!,
+          // Sem parcela informada, espalha em 12 meses: é chute honesto e
+          // a pessoa corrige no Perfil.
+          valorParcela: totalDevido! / 12,
+          diaVencimento: 1,
+          parcelasRestantes: 12,
+          parcelasTotal: 12,
+        ));
+      }
 
       if (!naoSeiQuantoDevo) {
         for (final r in rascunhos.where((r) => r.preenchida)) {

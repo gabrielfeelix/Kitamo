@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../design/cores.dart';
-import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
+import '../../widgets/campos.dart' as kt;
+import '../../widgets/moeda.dart';
 import 'onboarding_controller.dart';
 
-/// O onboarding: uma pergunta por tela, tela cheia na cor do passo.
+/// "ONBOARDING · UMA PERGUNTA POR TELA · CADA UMA NA SUA COR".
 ///
-/// "Pular" nunca some. Menos de 90 segundos até o número.
+/// A anatomia é a das telas 02 a 07 do Kitamo App.dc.html, e é sempre a
+/// mesma: progresso e "pular" no topo, ilustração centralizada, a pergunta
+/// em Outfit 27, o apoio em 14.5, o campo, e "continuar" colado embaixo.
+///
+/// Nada de título fora da pergunta: "a pergunta é o conteúdo", diz o
+/// design system.
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({
     super.key,
@@ -25,6 +31,8 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
   OnboardingController get c => widget.controller;
 
+  final _valor = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +42,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   void dispose() {
     c.removeListener(_atualizar);
+    _valor.dispose();
     super.dispose();
   }
 
@@ -41,6 +50,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   Future<void> _avancar() async {
     if (!c.ehUltimo) {
+      _valor.clear();
+      c.avancar();
+      return;
+    }
+    await c.concluir();
+    if (mounted) widget.aoConcluir();
+  }
+
+  Future<void> _pular() async {
+    if (!c.ehUltimo) {
+      _valor.clear();
       c.avancar();
       return;
     }
@@ -57,20 +77,56 @@ class _OnboardingPageState extends State<OnboardingPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _Progresso(valor: c.progresso, cor: passo.sobre),
+            _TopoDoPasso(
+              passo: c.indice + 1,
+              total: PassoOnboarding.values.length,
+              cor: passo.sobre,
+              aoPular: _pular,
+            ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(Medidas.margem),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: _conteudo(passo),
+                padding: const EdgeInsets.fromLTRB(28, 14, 28, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Image.asset(
+                        'assets/images/${passo.ilustracao}',
+                        height: 112,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      passo.pergunta,
+                      style: Tipo.numero.copyWith(
+                        fontSize: 27,
+                        height: 1.22,
+                        letterSpacing: -27 * 0.02,
+                        color: passo.sobre,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      passo.apoio,
+                      style: Tipo.corpo.copyWith(
+                        height: 1.6,
+                        color: passo.sobreFraco,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _campo(passo),
+                  ],
                 ),
               ),
             ),
-            _Acoes(
-              controller: c,
-              cor: passo.sobre,
-              aoAvancar: _avancar,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 0, 28, 36),
+              child: kt.BotaoSobreAcento(
+                rotulo: c.ehUltimo ? 'ver meu plano' : 'continuar',
+                tinta: passo.cor,
+                aoTocar: c.salvando ? null : _avancar,
+              ),
             ),
           ],
         ),
@@ -78,187 +134,189 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
-  Widget _conteudo(PassoOnboarding passo) => switch (passo) {
-        PassoOnboarding.divida => _PerguntaDivida(controller: c),
-        PassoOnboarding.renda => _PerguntaValor(
-            key: const ValueKey('renda'),
-            titulo: 'Quanto entra por mês?',
-            apoio: 'Salário, pró-labore, o que for fixo.',
+  Widget _campo(PassoOnboarding passo) => switch (passo) {
+        PassoOnboarding.divida => _QuantoDeve(controller: c, campo: _valor),
+        PassoOnboarding.renda => _ValorSobreAcento(
+            campo: _valor,
+            passo: passo,
             valor: c.rendaMensal,
-            cor: passo.sobre,
-            aoMudar: (v) => c.rendaMensal = v,
+            aoMudar: (v) => setState(() => c.rendaMensal = v),
+            leitura: _leituraDaRenda(),
           ),
-        PassoOnboarding.diaRenda => _PerguntaValor(
-            key: const ValueKey('dia'),
-            titulo: 'Que dia cai?',
-            apoio: 'Serve pra saber se alguma parcela vence antes.',
-            valor: c.diaRenda?.toDouble(),
-            cor: passo.sobre,
-            dica: 'dia 5',
-            inteiro: true,
-            aoMudar: (v) => c.diaRenda = v?.round(),
-          ),
-        PassoOnboarding.gasto => _PerguntaValor(
-            key: const ValueKey('gasto'),
-            titulo: 'Quanto sai com o dia a dia?',
-            apoio: 'Vai no feeling: mercado, padaria, iFood… por dia.',
+        PassoOnboarding.diaRenda => _DiaDoMes(controller: c, passo: passo),
+        PassoOnboarding.gasto => _ValorSobreAcento(
+            campo: _valor,
+            passo: passo,
             valor: c.gastoDiario,
-            cor: passo.sobre,
-            aoMudar: (v) => c.gastoDiario = v,
+            sufixo: '/mês',
+            aoMudar: (v) => setState(() => c.gastoDiario = v),
+            leitura: _leituraDoGasto(),
           ),
-        PassoOnboarding.fixas => _PerguntaValor(
-            key: const ValueKey('fixas'),
-            titulo: 'Tem alguma conta fixa?',
-            apoio: 'Aluguel, luz, internet, assinatura. Some tudo.',
+        PassoOnboarding.fixas => _ValorSobreAcento(
+            campo: _valor,
+            passo: passo,
             valor: c.contasFixas,
-            cor: passo.sobre,
-            aoMudar: (v) => c.contasFixas = v,
+            sufixo: '/mês',
+            aoMudar: (v) => setState(() => c.contasFixas = v),
           ),
-        PassoOnboarding.extrato => _Oferta(cor: passo.sobre),
+        PassoOnboarding.extrato => _Oferta(passo: passo),
       };
+
+  /// "com o que você deve, dá pra quitar em 10 meses" — o design mostra a
+  /// conta acontecendo enquanto a pessoa digita.
+  String? _leituraDaRenda() {
+    final devo = c.totalDevido;
+    final renda = c.rendaMensal;
+    if (devo == null || renda == null || renda <= 0 || devo <= 0) return null;
+    // Um quinto da renda é o que costuma sobrar pra dívida sem sufocar.
+    final meses = (devo / (renda * 0.2)).ceil();
+    return 'com o que você deve, dá pra quitar em $meses meses';
+  }
+
+  String? _leituraDoGasto() {
+    final mes = c.gastoDiario;
+    if (mes == null || mes <= 0) return null;
+    return 'isso dá ${dinheiroRedondo(mes / 30)} por dia. '
+        'a gente confere no seu extrato depois.';
+  }
 }
 
-class _Progresso extends StatelessWidget {
-  const _Progresso({required this.valor, required this.cor});
-
-  final double valor;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-        label: 'progresso do cadastro',
-        value: '${(valor * 100).round()}%',
-        child: LinearProgressIndicator(
-          value: valor,
-          minHeight: 4,
-          backgroundColor: cor.withValues(alpha: 0.25),
-          valueColor: AlwaysStoppedAnimation(cor),
-        ),
-      );
-}
-
-class _Titulo extends StatelessWidget {
-  const _Titulo({required this.titulo, required this.apoio, required this.cor});
-
-  final String titulo;
-  final String apoio;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: Medidas.espacoGrande),
-          Text(titulo, style: Tipo.titulo.copyWith(color: cor)),
-          const SizedBox(height: 8),
-          Text(apoio,
-              style: Tipo.corpo.copyWith(color: cor.withValues(alpha: 0.85))),
-          const SizedBox(height: Medidas.espacoGrande),
-        ],
-      );
-}
-
-class _PerguntaValor extends StatelessWidget {
-  const _PerguntaValor({
-    super.key,
-    required this.titulo,
-    required this.apoio,
-    required this.valor,
+/// Progresso e "pular". Nada mais: a pergunta é o conteúdo.
+class _TopoDoPasso extends StatelessWidget {
+  const _TopoDoPasso({
+    required this.passo,
+    required this.total,
     required this.cor,
-    required this.aoMudar,
-    this.dica = r'R$ 0,00',
-    this.inteiro = false,
+    required this.aoPular,
   });
 
-  final String titulo;
-  final String apoio;
-  final double? valor;
+  final int passo;
+  final int total;
   final Color cor;
-  final ValueChanged<double?> aoMudar;
-  final String dica;
-  final bool inteiro;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Titulo(titulo: titulo, apoio: apoio, cor: cor),
-          TextFormField(
-            initialValue: valor == null
-                ? ''
-                : (inteiro ? valor!.round().toString() : valor.toString()),
-            keyboardType: TextInputType.numberWithOptions(decimal: !inteiro),
-            style: Tipo.numeroMedio.copyWith(color: Cores.tinta),
-            decoration: _decoracao(dica),
-            onChanged: (t) => aoMudar(double.tryParse(t.replaceAll(',', '.'))),
-          ),
-        ],
-      );
-}
-
-InputDecoration _decoracao(String dica) => InputDecoration(
-      hintText: dica,
-      hintStyle: Tipo.corpo.copyWith(color: Cores.apoio),
-      filled: true,
-      fillColor: Cores.branco,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Medidas.raioInterno),
-        borderSide: BorderSide.none,
-      ),
-    );
-
-class _PerguntaDivida extends StatelessWidget {
-  const _PerguntaDivida({required this.controller});
-
-  final OnboardingController controller;
+  final VoidCallback aoPular;
 
   @override
   Widget build(BuildContext context) {
-    final cor = controller.passo.sobre;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 8, 28, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: kt.ProgressoDoOnboarding(passo: passo, total: total),
+          ),
+          const SizedBox(width: 16),
+          GestureDetector(
+            onTap: aoPular,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'pular',
+                style: Tipo.corpo.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cor,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// O campo de valor grande sobre fundo colorido, com a linha de 3px.
+class _ValorSobreAcento extends StatelessWidget {
+  const _ValorSobreAcento({
+    required this.campo,
+    required this.passo,
+    required this.valor,
+    required this.aoMudar,
+    this.sufixo,
+    this.leitura,
+  });
+
+  final TextEditingController campo;
+  final PassoOnboarding passo;
+  final double? valor;
+  final ValueChanged<double?> aoMudar;
+  final String? sufixo;
+  final String? leitura;
+
+  @override
+  Widget build(BuildContext context) {
+    final tinta = passo.sobre;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Titulo(
-          titulo: 'Quanto você deve hoje?',
-          apoio: 'Cartão, empréstimo, crediário — o que estiver pesando.',
-          cor: cor,
-        ),
-        InkWell(
-          onTap: controller.alternarNaoSei,
-          child: Row(
-            children: [
-              Checkbox(
-                value: controller.naoSeiQuantoDevo,
-                onChanged: (_) => controller.alternarNaoSei(),
-                fillColor: WidgetStateProperty.resolveWith(
-                  (s) => s.contains(WidgetState.selected)
-                      ? Cores.branco
-                      : Colors.transparent,
-                ),
-                checkColor: Cores.vermelho,
-                side: BorderSide(color: cor, width: 2),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: tinta.withValues(alpha: 0.55),
+                width: 3,
               ),
-              Text('não sei ainda', style: Tipo.corpo.copyWith(color: cor)),
+            ),
+          ),
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4, right: 6),
+                child: Text(
+                  r'R$',
+                  style: Tipo.titulo.copyWith(
+                    fontSize: 21,
+                    color: tinta.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: campo,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (t) => aoMudar(_lerNumero(t)),
+                  cursorColor: tinta,
+                  cursorWidth: 2,
+                  style: Tipo.numero.copyWith(
+                    fontSize: 38,
+                    height: 1,
+                    letterSpacing: -38 * 0.028,
+                    color: tinta,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    hintText: '0',
+                    hintStyle: Tipo.numero.copyWith(
+                      fontSize: 38,
+                      height: 1,
+                      color: tinta.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ),
+              if (sufixo != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    sufixo!,
+                    style: Tipo.corpo.copyWith(
+                      color: tinta.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
-        if (!controller.naoSeiQuantoDevo) ...[
-          const SizedBox(height: Medidas.espaco),
-          for (var i = 0; i < controller.rascunhos.length; i++)
-            _CampoDivida(
-              key: ValueKey(i),
-              rascunho: controller.rascunhos[i],
-              cor: cor,
-              aoRemover: controller.rascunhos.length > 1
-                  ? () => controller.removerDivida(i)
-                  : null,
-            ),
-          TextButton(
-            onPressed: controller.adicionarDivida,
-            child: Text('+ tenho outra',
-                style: Tipo.corpoForte.copyWith(color: cor)),
+        if (leitura != null) ...[
+          const SizedBox(height: 14),
+          Text(
+            leitura!,
+            style: Tipo.corpo.copyWith(color: passo.sobreFraco),
           ),
         ],
       ],
@@ -266,139 +324,223 @@ class _PerguntaDivida extends StatelessWidget {
   }
 }
 
-class _CampoDivida extends StatelessWidget {
-  const _CampoDivida({
-    super.key,
-    required this.rascunho,
-    required this.cor,
-    this.aoRemover,
-  });
-
-  final RascunhoDivida rascunho;
-  final Color cor;
-  final VoidCallback? aoRemover;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: Medidas.espacoGrande),
-        child: Column(
-          children: [
-            TextFormField(
-              initialValue: rascunho.nome,
-              style: Tipo.corpo.copyWith(color: Cores.tinta),
-              decoration: _decoracao('de quem? (Nubank, Itaú…)'),
-              onChanged: (t) => rascunho.nome = t,
-            ),
-            const SizedBox(height: Medidas.espaco),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    style: Tipo.corpo.copyWith(color: Cores.tinta),
-                    decoration: _decoracao('parcela R\$'),
-                    onChanged: (t) =>
-                        rascunho.parcela = double.tryParse(t.replaceAll(',', '.')),
-                  ),
-                ),
-                const SizedBox(width: Medidas.espaco),
-                Expanded(
-                  child: TextFormField(
-                    keyboardType: TextInputType.number,
-                    style: Tipo.corpo.copyWith(color: Cores.tinta),
-                    decoration: _decoracao('faltam'),
-                    onChanged: (t) => rascunho.restantes = int.tryParse(t),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Medidas.espaco),
-            TextFormField(
-              keyboardType: TextInputType.number,
-              style: Tipo.corpo.copyWith(color: Cores.tinta),
-              decoration: _decoracao('vence dia'),
-              onChanged: (t) => rascunho.diaVencimento = int.tryParse(t),
-            ),
-            if (aoRemover != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: aoRemover,
-                  child: Text('remover',
-                      style: Tipo.apoio.copyWith(color: cor)),
-                ),
-              ),
-          ],
-        ),
-      );
-}
-
-class _Oferta extends StatelessWidget {
-  const _Oferta({required this.cor});
-
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Titulo(
-            titulo: 'Quer que a gente leia seu extrato?',
-            apoio: 'Em vez de chutar, a gente lê o arquivo que o seu banco '
-                'exporta e preenche com número real. Dá pra fazer depois.',
-            cor: cor,
-          ),
-          Image.asset('assets/images/joao-avatar.png', height: 140),
-        ],
-      );
-}
-
-class _Acoes extends StatelessWidget {
-  const _Acoes({
-    required this.controller,
-    required this.cor,
-    required this.aoAvancar,
-  });
+/// "quanto você deve hoje?" — o valor grande e, embaixo, as faixas.
+class _QuantoDeve extends StatelessWidget {
+  const _QuantoDeve({required this.controller, required this.campo});
 
   final OnboardingController controller;
-  final Color cor;
-  final Future<void> Function() aoAvancar;
+  final TextEditingController campo;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.all(Medidas.margem),
-        child: Row(
-          children: [
-            if (controller.indice > 0)
-              TextButton(
-                onPressed: controller.voltar,
-                child: Text('voltar', style: Tipo.corpo.copyWith(color: cor)),
-              ),
-            // "Pular" nunca some: dado obrigatório antes de mostrar valor é
-            // a maior fonte de abandono.
-            TextButton(
-              onPressed: controller.salvando ? null : aoAvancar,
-              child: Text('pular', style: Tipo.corpo.copyWith(color: cor)),
+  Widget build(BuildContext context) {
+    const passo = PassoOnboarding.divida;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ValorSobreAcento(
+          campo: campo,
+          passo: passo,
+          valor: controller.totalDevido,
+          aoMudar: controller.digitarTotal,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'OU ESCOLHA UMA FAIXA',
+          style: Tipo.rotulo.copyWith(fontSize: 10.5, color: Cores.branco),
+        ),
+        const SizedBox(height: 8),
+        for (final f in FaixaDeDivida.values) ...[
+          _FaixaEscolhivel(
+            faixa: f,
+            marcada: controller.faixa == f,
+            cor: passo.cor,
+            aoTocar: () {
+              campo.clear();
+              controller.escolherFaixa(f);
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ],
+    );
+  }
+}
+
+/// A faixa marcada fica branca com texto na cor da tela, e traz o rótulo
+/// "É O MEU CASO" — como no design.
+class _FaixaEscolhivel extends StatelessWidget {
+  const _FaixaEscolhivel({
+    required this.faixa,
+    required this.marcada,
+    required this.cor,
+    required this.aoTocar,
+  });
+
+  final FaixaDeDivida faixa;
+  final bool marcada;
+  final Color cor;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      selected: marcada,
+      button: true,
+      child: GestureDetector(
+        onTap: aoTocar,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+          decoration: BoxDecoration(
+            color: marcada ? Cores.branco : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: marcada
+                  ? Cores.branco
+                  : Cores.branco.withValues(alpha: 0.4),
+              width: 1.5,
             ),
-            const Spacer(),
-            FilledButton(
-              onPressed: controller.salvando ? null : aoAvancar,
-              style: FilledButton.styleFrom(
-                backgroundColor: Cores.tinta,
-                foregroundColor: Cores.branco,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Medidas.raioPilula),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: marcada ? cor : Cores.branco,
+                    width: 2,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: marcada
+                    ? Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: cor,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  faixa.rotulo,
+                  style: Tipo.corpoForte.copyWith(
+                    fontSize: 15,
+                    fontWeight:
+                        marcada ? FontWeight.w600 : FontWeight.w500,
+                    color: marcada ? cor : Cores.branco,
+                  ),
                 ),
               ),
-              child: Text(
-                controller.ehUltimo ? 'ver meu número' : 'continuar',
-                style: Tipo.corpoForte,
-              ),
-            ),
-          ],
+              if (marcada)
+                Text(
+                  'É O MEU CASO',
+                  style: Tipo.rotulo.copyWith(fontSize: 11, color: cor),
+                ),
+            ],
+          ),
         ),
-      );
+      ),
+    );
+  }
+}
+
+/// "que dia cai?" — a grade de 31 dias do design.
+class _DiaDoMes extends StatelessWidget {
+  const _DiaDoMes({required this.controller, required this.passo});
+
+  final OnboardingController controller;
+  final PassoOnboarding passo;
+
+  @override
+  Widget build(BuildContext context) {
+    final escolhido = controller.diaRenda;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: List.generate(31, (i) {
+            final dia = i + 1;
+            final marcado = escolhido == dia;
+            return Semantics(
+              selected: marcado,
+              button: true,
+              label: 'dia $dia',
+              child: GestureDetector(
+                onTap: () => controller.diaRenda = dia,
+                child: Container(
+                  width: 44,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: marcado
+                        ? Cores.creme
+                        : Cores.branco.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$dia',
+                    style: Tipo.corpoForte.copyWith(
+                      color: marcado ? passo.cor : Cores.creme,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        if (escolhido != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            'o dia $escolhido é o divisor do seu mês: '
+            'tudo que cai antes disso é aperto.',
+            style: Tipo.corpo.copyWith(
+              height: 1.5,
+              color: passo.sobreFraco,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// A última tela: a oferta de ler o extrato.
+class _Oferta extends StatelessWidget {
+  const _Oferta({required this.passo});
+
+  final PassoOnboarding passo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Cores.branco.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        'o arquivo fica no seu celular. a Kitamo não pede senha de banco, '
+        'não pede cartão e não manda nada pra nuvem.',
+        style: Tipo.corpo.copyWith(height: 1.55, color: passo.sobre),
+      ),
+    );
+  }
+}
+
+/// "1.234,56" ou "1234.56" viram 1234.56. Vírgula é decimal aqui.
+double? _lerNumero(String t) {
+  final limpo = t.replaceAll('.', '').replaceAll(',', '.').trim();
+  if (limpo.isEmpty) return null;
+  return double.tryParse(limpo);
 }

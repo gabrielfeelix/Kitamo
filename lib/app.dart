@@ -5,6 +5,8 @@ import 'design/tipografia.dart';
 import 'features/backup/backup_service.dart';
 import 'features/casca/casca.dart';
 import 'features/onboarding/onboarding_controller.dart';
+import 'features/onboarding/abertura_page.dart';
+import 'features/onboarding/boas_vindas_page.dart';
 import 'features/onboarding/onboarding_page.dart';
 import 'features/quitar/quitar_service.dart';
 import 'features/quitar/quitei_essa_page.dart';
@@ -71,10 +73,23 @@ class Raiz extends StatefulWidget {
   State<Raiz> createState() => _RaizState();
 }
 
+/// Onde a pessoa está no caminho de entrada.
+enum _Entrada { abertura, boasVindas, perguntas, dentro }
+
 class _RaizState extends State<Raiz> {
   bool? _precisaOnboarding;
   bool _destrancado = false;
   final _bloqueio = BloqueioService();
+
+  /// A abertura aparece sempre; as boas-vindas, só pra quem nunca entrou.
+  _Entrada _entrada = _Entrada.abertura;
+
+  /// O controller vive aqui pra não reiniciar a cada rebuild — senão o que
+  /// a pessoa digitou some quando ela troca de passo.
+  late final _onboarding = OnboardingController(
+    perfis: widget.perfis,
+    dividas: widget.dividas,
+  );
 
   @override
   void initState() {
@@ -101,16 +116,33 @@ class _RaizState extends State<Raiz> {
   Widget build(BuildContext context) {
     final precisa = _precisaOnboarding;
 
+    // A abertura roda enquanto o banco abre: em vez de tela vazia, a casa
+    // sobe. Ela sai sozinha, ou quando o dado chega — o que demorar mais.
+    if (_entrada == _Entrada.abertura) {
+      return AberturaPage(
+        aoTerminar: () => setState(() => _entrada = _Entrada.boasVindas),
+      );
+    }
+
     if (precisa == null) return const _Carregando();
     if (!_destrancado) return _Trancado(aoTentar: _verificar);
 
     if (precisa) {
+      // Quem nunca entrou vê a promessa antes da primeira pergunta. Pedir
+      // dado antes de dizer o que o app faz é o que espantava a pessoa.
+      if (_entrada == _Entrada.boasVindas) {
+        return BoasVindasPage(
+          aoComecar: () => setState(() => _entrada = _Entrada.perguntas),
+          aoEntrar: () => setState(() => _entrada = _Entrada.perguntas),
+        );
+      }
+
       return OnboardingPage(
-        controller: OnboardingController(
-          perfis: widget.perfis,
-          dividas: widget.dividas,
-        ),
-        aoConcluir: () => setState(() => _precisaOnboarding = false),
+        controller: _onboarding,
+        aoConcluir: () => setState(() {
+          _precisaOnboarding = false;
+          _entrada = _Entrada.dentro;
+        }),
       );
     }
 

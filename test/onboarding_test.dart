@@ -188,4 +188,66 @@ void main() {
       expect((await perfis.carregar())!.rendaMensal, 3000);
     });
   });
+
+  group('as faixas de dívida', () {
+    test('escolher uma faixa preenche o total pelo meio dela', () {
+      c.escolherFaixa(FaixaDeDivida.entre10e15);
+
+      expect(c.faixa, FaixaDeDivida.entre10e15);
+      expect(c.totalDevido, 12500);
+    });
+
+    test('"não sei" é resposta, e deixa o total em aberto', () {
+      c.escolherFaixa(FaixaDeDivida.naoSei);
+
+      expect(c.faixa, FaixaDeDivida.naoSei);
+      expect(c.totalDevido, isNull);
+    });
+
+    test('digitar um número desmarca a faixa', () {
+      c.escolherFaixa(FaixaDeDivida.ate5mil);
+      c.digitarTotal(8300);
+
+      expect(c.faixa, isNull);
+      expect(c.totalDevido, 8300);
+    });
+
+    test('só o total vira uma dívida espalhada em 12 meses', () async {
+      c.digitarTotal(12000);
+      await c.concluir();
+
+      final salvas = await dividas.todas();
+      expect(salvas, hasLength(1));
+      expect(salvas.first.saldoAtual, 12000);
+      expect(salvas.first.parcelasTotal, 12);
+      expect(salvas.first.valorParcela, 1000);
+    });
+
+    test('"não sei quanto devo" não grava dívida nem com total digitado',
+        () async {
+      c.digitarTotal(9000);
+      c.alternarNaoSei();
+      await c.concluir();
+
+      expect(await dividas.todas(), isEmpty);
+    });
+  });
+
+  group('cada pergunta na sua cor', () {
+    test('as seis perguntas têm cor, ilustração e texto do design', () {
+      for (final p in PassoOnboarding.values) {
+        expect(p.ilustracao, endsWith('.png'));
+        expect(p.pergunta, isNotEmpty);
+        expect(p.apoio, isNotEmpty);
+        // A voz da Kitamo é minúscula nos títulos.
+        expect(p.pergunta[0], p.pergunta[0].toLowerCase(),
+            reason: 'a pergunta "${p.pergunta}" começa em maiúscula');
+      }
+    });
+
+    test('as cores não se repetem: a sequência é o ritmo do onboarding', () {
+      final cores = PassoOnboarding.values.map((p) => p.cor).toSet();
+      expect(cores, hasLength(PassoOnboarding.values.length));
+    });
+  });
 }

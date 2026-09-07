@@ -220,19 +220,24 @@ class BotaoPrincipal extends StatelessWidget {
     return SizedBox(
       height: altura,
       width: double.infinity,
-      child: Material(
-        color: ligado ? Cores.tinta : Cores.bege,
-        borderRadius: BorderRadius.circular(Medidas.raioPilula),
-        child: InkWell(
-          onTap: aoTocar,
-          borderRadius: BorderRadius.circular(Medidas.raioPilula),
-          child: Center(
-            child: Text(
-              rotulo,
-              style: Tipo.corpoForte.copyWith(
-                color: ligado ? Cores.creme : Cores.apoio,
-              ),
-            ),
+      // FilledButton, não Material+InkWell na mão: o nativo trata
+      // hit-test e estado pressionado sozinho.
+      child: FilledButton(
+        onPressed: aoTocar,
+        style: FilledButton.styleFrom(
+          backgroundColor: Cores.tinta,
+          foregroundColor: Cores.creme,
+          disabledBackgroundColor: Cores.bege,
+          disabledForegroundColor: Cores.apoio,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Medidas.raioPilula),
+          ),
+        ),
+        child: Text(
+          rotulo,
+          style: Tipo.corpoForte.copyWith(
+            color: ligado ? Cores.creme : Cores.apoio,
           ),
         ),
       ),
