@@ -44,3 +44,21 @@ class Perfis extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Gastos e entradas registrados pela pessoa.
+class Lancamentos extends Table {
+  TextColumn get id => text()();
+  TextColumn get descricao => text().withLength(min: 1, max: 200)();
+
+  /// Em centavos, como todo dinheiro no app. Ver Dividas.
+  IntColumn get valorCentavos => integer()();
+
+  /// 'gasto' ou 'entrada'.
+  TextColumn get tipo => text()();
+
+  DateTimeColumn get data => dateTime()();
+  TextColumn get categoria => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

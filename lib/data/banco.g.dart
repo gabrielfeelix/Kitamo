@@ -1065,16 +1065,441 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   }
 }
 
+class $LancamentosTable extends Lancamentos
+    with TableInfo<$LancamentosTable, Lancamento> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LancamentosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descricaoMeta = const VerificationMeta(
+    'descricao',
+  );
+  @override
+  late final GeneratedColumn<String> descricao = GeneratedColumn<String>(
+    'descricao',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
+    'valorCentavos',
+  );
+  @override
+  late final GeneratedColumn<int> valorCentavos = GeneratedColumn<int>(
+    'valor_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dataMeta = const VerificationMeta('data');
+  @override
+  late final GeneratedColumn<DateTime> data = GeneratedColumn<DateTime>(
+    'data',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoriaMeta = const VerificationMeta(
+    'categoria',
+  );
+  @override
+  late final GeneratedColumn<String> categoria = GeneratedColumn<String>(
+    'categoria',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    descricao,
+    valorCentavos,
+    tipo,
+    data,
+    categoria,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'lancamentos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Lancamento> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('descricao')) {
+      context.handle(
+        _descricaoMeta,
+        descricao.isAcceptableOrUnknown(data['descricao']!, _descricaoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_descricaoMeta);
+    }
+    if (data.containsKey('valor_centavos')) {
+      context.handle(
+        _valorCentavosMeta,
+        valorCentavos.isAcceptableOrUnknown(
+          data['valor_centavos']!,
+          _valorCentavosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_valorCentavosMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+        _dataMeta,
+        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dataMeta);
+    }
+    if (data.containsKey('categoria')) {
+      context.handle(
+        _categoriaMeta,
+        categoria.isAcceptableOrUnknown(data['categoria']!, _categoriaMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Lancamento map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Lancamento(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      descricao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}descricao'],
+      )!,
+      valorCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}valor_centavos'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      data: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}data'],
+      )!,
+      categoria: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}categoria'],
+      ),
+    );
+  }
+
+  @override
+  $LancamentosTable createAlias(String alias) {
+    return $LancamentosTable(attachedDatabase, alias);
+  }
+}
+
+class Lancamento extends DataClass implements Insertable<Lancamento> {
+  final String id;
+  final String descricao;
+
+  /// Em centavos, como todo dinheiro no app. Ver Dividas.
+  final int valorCentavos;
+
+  /// 'gasto' ou 'entrada'.
+  final String tipo;
+  final DateTime data;
+  final String? categoria;
+  const Lancamento({
+    required this.id,
+    required this.descricao,
+    required this.valorCentavos,
+    required this.tipo,
+    required this.data,
+    this.categoria,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['descricao'] = Variable<String>(descricao);
+    map['valor_centavos'] = Variable<int>(valorCentavos);
+    map['tipo'] = Variable<String>(tipo);
+    map['data'] = Variable<DateTime>(data);
+    if (!nullToAbsent || categoria != null) {
+      map['categoria'] = Variable<String>(categoria);
+    }
+    return map;
+  }
+
+  LancamentosCompanion toCompanion(bool nullToAbsent) {
+    return LancamentosCompanion(
+      id: Value(id),
+      descricao: Value(descricao),
+      valorCentavos: Value(valorCentavos),
+      tipo: Value(tipo),
+      data: Value(data),
+      categoria: categoria == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoria),
+    );
+  }
+
+  factory Lancamento.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Lancamento(
+      id: serializer.fromJson<String>(json['id']),
+      descricao: serializer.fromJson<String>(json['descricao']),
+      valorCentavos: serializer.fromJson<int>(json['valorCentavos']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      data: serializer.fromJson<DateTime>(json['data']),
+      categoria: serializer.fromJson<String?>(json['categoria']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'descricao': serializer.toJson<String>(descricao),
+      'valorCentavos': serializer.toJson<int>(valorCentavos),
+      'tipo': serializer.toJson<String>(tipo),
+      'data': serializer.toJson<DateTime>(data),
+      'categoria': serializer.toJson<String?>(categoria),
+    };
+  }
+
+  Lancamento copyWith({
+    String? id,
+    String? descricao,
+    int? valorCentavos,
+    String? tipo,
+    DateTime? data,
+    Value<String?> categoria = const Value.absent(),
+  }) => Lancamento(
+    id: id ?? this.id,
+    descricao: descricao ?? this.descricao,
+    valorCentavos: valorCentavos ?? this.valorCentavos,
+    tipo: tipo ?? this.tipo,
+    data: data ?? this.data,
+    categoria: categoria.present ? categoria.value : this.categoria,
+  );
+  Lancamento copyWithCompanion(LancamentosCompanion data) {
+    return Lancamento(
+      id: data.id.present ? data.id.value : this.id,
+      descricao: data.descricao.present ? data.descricao.value : this.descricao,
+      valorCentavos: data.valorCentavos.present
+          ? data.valorCentavos.value
+          : this.valorCentavos,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      data: data.data.present ? data.data.value : this.data,
+      categoria: data.categoria.present ? data.categoria.value : this.categoria,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Lancamento(')
+          ..write('id: $id, ')
+          ..write('descricao: $descricao, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('tipo: $tipo, ')
+          ..write('data: $data, ')
+          ..write('categoria: $categoria')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, descricao, valorCentavos, tipo, data, categoria);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Lancamento &&
+          other.id == this.id &&
+          other.descricao == this.descricao &&
+          other.valorCentavos == this.valorCentavos &&
+          other.tipo == this.tipo &&
+          other.data == this.data &&
+          other.categoria == this.categoria);
+}
+
+class LancamentosCompanion extends UpdateCompanion<Lancamento> {
+  final Value<String> id;
+  final Value<String> descricao;
+  final Value<int> valorCentavos;
+  final Value<String> tipo;
+  final Value<DateTime> data;
+  final Value<String?> categoria;
+  final Value<int> rowid;
+  const LancamentosCompanion({
+    this.id = const Value.absent(),
+    this.descricao = const Value.absent(),
+    this.valorCentavos = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.data = const Value.absent(),
+    this.categoria = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LancamentosCompanion.insert({
+    required String id,
+    required String descricao,
+    required int valorCentavos,
+    required String tipo,
+    required DateTime data,
+    this.categoria = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       descricao = Value(descricao),
+       valorCentavos = Value(valorCentavos),
+       tipo = Value(tipo),
+       data = Value(data);
+  static Insertable<Lancamento> custom({
+    Expression<String>? id,
+    Expression<String>? descricao,
+    Expression<int>? valorCentavos,
+    Expression<String>? tipo,
+    Expression<DateTime>? data,
+    Expression<String>? categoria,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (descricao != null) 'descricao': descricao,
+      if (valorCentavos != null) 'valor_centavos': valorCentavos,
+      if (tipo != null) 'tipo': tipo,
+      if (data != null) 'data': data,
+      if (categoria != null) 'categoria': categoria,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LancamentosCompanion copyWith({
+    Value<String>? id,
+    Value<String>? descricao,
+    Value<int>? valorCentavos,
+    Value<String>? tipo,
+    Value<DateTime>? data,
+    Value<String?>? categoria,
+    Value<int>? rowid,
+  }) {
+    return LancamentosCompanion(
+      id: id ?? this.id,
+      descricao: descricao ?? this.descricao,
+      valorCentavos: valorCentavos ?? this.valorCentavos,
+      tipo: tipo ?? this.tipo,
+      data: data ?? this.data,
+      categoria: categoria ?? this.categoria,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (descricao.present) {
+      map['descricao'] = Variable<String>(descricao.value);
+    }
+    if (valorCentavos.present) {
+      map['valor_centavos'] = Variable<int>(valorCentavos.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (data.present) {
+      map['data'] = Variable<DateTime>(data.value);
+    }
+    if (categoria.present) {
+      map['categoria'] = Variable<String>(categoria.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LancamentosCompanion(')
+          ..write('id: $id, ')
+          ..write('descricao: $descricao, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('tipo: $tipo, ')
+          ..write('data: $data, ')
+          ..write('categoria: $categoria, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$Banco extends GeneratedDatabase {
   _$Banco(QueryExecutor e) : super(e);
   $BancoManager get managers => $BancoManager(this);
   late final $DividasTable dividas = $DividasTable(this);
   late final $PerfisTable perfis = $PerfisTable(this);
+  late final $LancamentosTable lancamentos = $LancamentosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [dividas, perfis];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    dividas,
+    perfis,
+    lancamentos,
+  ];
 }
 
 typedef $$DividasTableCreateCompanionBuilder = DividasCompanion Function({
@@ -1592,6 +2017,230 @@ typedef $$PerfisTableProcessedTableManager =
       Perfi,
       PrefetchHooks Function()
     >;
+typedef $$LancamentosTableCreateCompanionBuilder =
+    LancamentosCompanion Function({
+      required String id,
+      required String descricao,
+      required int valorCentavos,
+      required String tipo,
+      required DateTime data,
+      Value<String?> categoria,
+      Value<int> rowid,
+    });
+typedef $$LancamentosTableUpdateCompanionBuilder =
+    LancamentosCompanion Function({
+      Value<String> id,
+      Value<String> descricao,
+      Value<int> valorCentavos,
+      Value<String> tipo,
+      Value<DateTime> data,
+      Value<String?> categoria,
+      Value<int> rowid,
+    });
+
+class $$LancamentosTableFilterComposer
+    extends Composer<_$Banco, $LancamentosTable> {
+  $$LancamentosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get descricao => $composableBuilder(
+    column: $table.descricao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoria => $composableBuilder(
+    column: $table.categoria,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LancamentosTableOrderingComposer
+    extends Composer<_$Banco, $LancamentosTable> {
+  $$LancamentosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get descricao => $composableBuilder(
+    column: $table.descricao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoria => $composableBuilder(
+    column: $table.categoria,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LancamentosTableAnnotationComposer
+    extends Composer<_$Banco, $LancamentosTable> {
+  $$LancamentosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get descricao =>
+      $composableBuilder(column: $table.descricao, builder: (column) => column);
+
+  GeneratedColumn<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<String> get categoria =>
+      $composableBuilder(column: $table.categoria, builder: (column) => column);
+}
+
+class $$LancamentosTableTableManager
+    extends
+        RootTableManager<
+          _$Banco,
+          $LancamentosTable,
+          Lancamento,
+          $$LancamentosTableFilterComposer,
+          $$LancamentosTableOrderingComposer,
+          $$LancamentosTableAnnotationComposer,
+          $$LancamentosTableCreateCompanionBuilder,
+          $$LancamentosTableUpdateCompanionBuilder,
+          (Lancamento, BaseReferences<_$Banco, $LancamentosTable, Lancamento>),
+          Lancamento,
+          PrefetchHooks Function()
+        > {
+  $$LancamentosTableTableManager(_$Banco db, $LancamentosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LancamentosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LancamentosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LancamentosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> descricao = const Value.absent(),
+                Value<int> valorCentavos = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<DateTime> data = const Value.absent(),
+                Value<String?> categoria = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LancamentosCompanion(
+                id: id,
+                descricao: descricao,
+                valorCentavos: valorCentavos,
+                tipo: tipo,
+                data: data,
+                categoria: categoria,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String descricao,
+                required int valorCentavos,
+                required String tipo,
+                required DateTime data,
+                Value<String?> categoria = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LancamentosCompanion.insert(
+                id: id,
+                descricao: descricao,
+                valorCentavos: valorCentavos,
+                tipo: tipo,
+                data: data,
+                categoria: categoria,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LancamentosTable, Lancamento>(table),
+                  BaseReferences<_$Banco, $LancamentosTable, Lancamento>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LancamentosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Banco,
+      $LancamentosTable,
+      Lancamento,
+      $$LancamentosTableFilterComposer,
+      $$LancamentosTableOrderingComposer,
+      $$LancamentosTableAnnotationComposer,
+      $$LancamentosTableCreateCompanionBuilder,
+      $$LancamentosTableUpdateCompanionBuilder,
+      (Lancamento, BaseReferences<_$Banco, $LancamentosTable, Lancamento>),
+      Lancamento,
+      PrefetchHooks Function()
+    >;
 
 class $BancoManager {
   final _$Banco _db;
@@ -1600,4 +2249,6 @@ class $BancoManager {
       $$DividasTableTableManager(_db, _db.dividas);
   $$PerfisTableTableManager get perfis =>
       $$PerfisTableTableManager(_db, _db.perfis);
+  $$LancamentosTableTableManager get lancamentos =>
+      $$LancamentosTableTableManager(_db, _db.lancamentos);
 }

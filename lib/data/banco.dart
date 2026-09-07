@@ -16,7 +16,7 @@ part 'banco.g.dart';
 /// saber que alguém deve R$ 6.136 e está apertado é dado íntimo. Não gera
 /// fraude, mas vaza reputação — e num aparelho com root qualquer app lê um
 /// SQLite comum.
-@DriftDatabase(tables: [Dividas, Perfis])
+@DriftDatabase(tables: [Dividas, Perfis, Lancamentos])
 class Banco extends _$Banco {
   Banco(super.e);
 
@@ -24,7 +24,7 @@ class Banco extends _$Banco {
   Banco.memoria() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -33,6 +33,9 @@ class Banco extends _$Banco {
           // Versionado desde a v1 de propósito: banco sem migration é
           // dívida que só aparece quando já existe usuário com dado dentro,
           // e aí não dá mais para recriar do zero.
+          if (from < 2) {
+            await m.createTable(lancamentos);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');

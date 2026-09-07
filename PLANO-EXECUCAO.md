@@ -151,7 +151,7 @@ As duas visões que são o produto.
 - Teste: 24 meses × vencimento 1–31 × renda 1–31, cada lançamento aparece
   exatamente uma vez
 
-### Fase 4 — "quitei essa" ✅ (feito; lançamentos pendentes)
+### Fase 4 — "quitei essa" e lançamentos ✅ (feito)
 O hábito.
 
 - Marcar parcela paga → carimbo, contagem, casa crescendo
@@ -169,7 +169,7 @@ Só aqui entra rede.
 - Exportar e apagar tudo (LGPD: é direito, não favor)
 - Teste: funciona offline; sync não duplica; apagar apaga mesmo
 
-### Fase 6 — endurecimento
+### Fase 6 — endurecimento ✅ (feito; ver SEGURANCA.md)
 - Bloqueio por biometria
 - Auditoria de dependências
 - Ofuscação no release

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 import 'data/banco.dart';
 import 'repositories/divida_repository.dart';
+import 'repositories/lancamento_repository.dart';
 import 'repositories/perfil_repository.dart';
 
 Future<void> main() async {
@@ -13,5 +14,6 @@ Future<void> main() async {
   runApp(KitamoApp(
     perfis: PerfilRepositoryDrift(banco),
     dividas: DividaRepositoryDrift(banco),
+    lancamentos: LancamentoRepositoryDrift(banco),
   ));
 }
