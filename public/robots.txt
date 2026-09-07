@@ -1,2 +1,8 @@
 User-agent: *
 Disallow:
+
+# A página do app em teste e o APK ficam fora de busca. O noindex da
+# própria página é injetado pelo Inertia via JavaScript, e crawler que não
+# roda JS não o veria — este arquivo é lido sem JS.
+Disallow: /baixar
+Disallow: /downloads/
