@@ -387,7 +387,13 @@ class _QuantoDeve extends StatelessWidget {
             style: Tipo.rotulo.copyWith(fontSize: 10.5, color: Cores.branco),
           ),
           const SizedBox(height: 8),
-          _EmQuantasVezes(controller: controller, cor: passo.cor),
+          // Alinhado à esquerda: dentro de uma coluna esticada o Wrap
+          // recebe a largura toda e empilha uma pílula por linha, em vez
+          // de encaixá-las lado a lado.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _EmQuantasVezes(controller: controller, cor: passo.cor),
+          ),
         ],
         const SizedBox(height: 16),
         Text(
@@ -501,9 +507,11 @@ class _Pilula extends StatelessWidget {
       child: GestureDetector(
         onTap: aoTocar,
         child: Container(
+          // Sem o IntrinsicWidth o Container ganha a largura toda do Wrap
+          // (que dá restrição solta aos filhos) e cada pílula ocupa uma
+          // linha inteira — as últimas acabavam debaixo do botão.
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: marcada ? Cores.branco : Colors.transparent,
             borderRadius: BorderRadius.circular(Medidas.raioPilula),
@@ -514,6 +522,7 @@ class _Pilula extends StatelessWidget {
           ),
           child: Text(
             texto,
+            textAlign: TextAlign.center,
             style: Tipo.corpoForte.copyWith(
               color: marcada ? cor : Cores.branco,
             ),

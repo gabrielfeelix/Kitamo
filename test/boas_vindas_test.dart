@@ -142,6 +142,37 @@ void main() {
       expect(find.text('É O MEU CASO'), findsOneWidget);
     });
 
+    testWidgets('em quantas vezes aparece ao digitar, e cabe lado a lado',
+        (tester) async {
+      await em(tester, const Size(390, 844),
+          OnboardingPage(controller: c, aoConcluir: () {}));
+
+      await tester.tap(find.text('continuar'));
+      await tester.pumpAndSettle();
+
+      // Sem valor a pergunta não faz sentido: não tem o que parcelar.
+      expect(find.text('EM QUANTAS VEZES?'), findsNothing);
+
+      c.digitarTotal(6000);
+      await tester.pumpAndSettle();
+
+      expect(find.text('EM QUANTAS VEZES?'), findsOneWidget);
+      expect(find.text('não sei'), findsOneWidget);
+
+      // As pílulas ficam lado a lado. Dentro de uma coluna esticada o
+      // Wrap recebia a largura toda e empilhava uma por linha, jogando
+      // as últimas para debaixo do botão.
+      final tresX = tester.getRect(find.text('3x'));
+      final seisX = tester.getRect(find.text('6x'));
+      expect(seisX.left, greaterThan(tresX.right),
+          reason: '6x tem que estar à direita de 3x, não embaixo');
+      expect(seisX.top, closeTo(tresX.top, 1));
+
+      await tester.tap(find.text('6x'));
+      await tester.pump();
+      expect(c.parcelasDoTotal, 6);
+    });
+
     testWidgets('continuar anda por todas as perguntas sem estourar',
         (tester) async {
       await em(tester, const Size(360, 640),
