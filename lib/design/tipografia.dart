@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'cores.dart';
 
@@ -13,12 +12,26 @@ import 'cores.dart';
 /// **DM Mono** em rótulo de caixa alta.
 ///
 /// Regra da marca: número na frente, frase curta explica o número.
+///
+/// As fontes vêm do APK, não do google_fonts: sem rede, o download falha e
+/// a tela inteira cai no Roboto. Ver a nota no pubspec.
 abstract final class Tipo {
+  /// Número e título.
+  static const outfit = 'Outfit';
+
+  /// Interface e texto corrido.
+  static const figtree = 'Figtree';
+
+  /// Rótulo em caixa alta.
+  static const dmMono = 'DM Mono';
+
   /// A interface é Figtree. Outfit entra só onde o design pede.
-  static TextTheme tema(TextTheme base) => GoogleFonts.figtreeTextTheme(base);
+  static TextTheme tema(TextTheme base) =>
+      base.apply(fontFamily: figtree);
 
   /// DISPLAY 54/600/-3.5% — o número do cabeçalho. Um por tela.
-  static TextStyle get display => GoogleFonts.outfit(
+  static const TextStyle display = TextStyle(
+        fontFamily: outfit,
         fontSize: 54,
         fontWeight: FontWeight.w600,
         height: 1.02,
@@ -26,7 +39,8 @@ abstract final class Tipo {
       );
 
   /// NÚMERO 32/600 — valor grande fora do cabeçalho.
-  static TextStyle get numero => GoogleFonts.outfit(
+  static const TextStyle numero = TextStyle(
+        fontFamily: outfit,
         fontSize: 32,
         fontWeight: FontWeight.w600,
         height: 1.1,
@@ -34,7 +48,8 @@ abstract final class Tipo {
       );
 
   /// TÍTULO 19/600 — título de tela e de cartão de acento.
-  static TextStyle get titulo => GoogleFonts.outfit(
+  static const TextStyle titulo = TextStyle(
+        fontFamily: outfit,
         fontSize: 19,
         fontWeight: FontWeight.w600,
         height: 1.2,
@@ -42,40 +57,46 @@ abstract final class Tipo {
       );
 
   /// Valor em linha de lista e de cartão. Valor é sempre Outfit.
-  static TextStyle get valor => GoogleFonts.outfit(
+  static const TextStyle valor = TextStyle(
+        fontFamily: outfit,
         fontSize: 17,
         fontWeight: FontWeight.w600,
       );
 
   /// CORPO FORTE 15/600 — rótulo de item.
-  static TextStyle get corpoForte => GoogleFonts.figtree(
+  static const TextStyle corpoForte = TextStyle(
+        fontFamily: figtree,
         fontSize: 15.5,
         fontWeight: FontWeight.w600,
       );
 
   /// CORPO 14.5/400 — texto corrido de explicação.
-  static TextStyle get corpo => GoogleFonts.figtree(
+  static const TextStyle corpo = TextStyle(
+        fontFamily: figtree,
         fontSize: 14.5,
         fontWeight: FontWeight.w400,
         height: 1.5,
       );
 
   /// APOIO 12.5/400 — metadado. O mínimo que o design permite.
-  static TextStyle get apoio => GoogleFonts.figtree(
+  static const TextStyle apoio = TextStyle(
+        fontFamily: figtree,
         fontSize: 12.5,
         fontWeight: FontWeight.w400,
         color: Cores.apoio,
       );
 
   /// Texto dentro de cartão, entre o corpo e o apoio.
-  static TextStyle get corpoMiudo => GoogleFonts.figtree(
+  static const TextStyle corpoMiudo = TextStyle(
+        fontFamily: figtree,
         fontSize: 13.5,
         fontWeight: FontWeight.w400,
         height: 1.45,
       );
 
   /// RÓTULO EM CAIXA ALTA · MONO 10.5/+10%. Só etiqueta, nunca frase.
-  static TextStyle get rotulo => GoogleFonts.dmMono(
+  static const TextStyle rotulo = TextStyle(
+        fontFamily: dmMono,
         fontSize: 11,
         fontWeight: FontWeight.w500,
         letterSpacing: 11 * 0.1,
@@ -96,7 +117,8 @@ abstract final class Tipo {
   static TextStyle get subtitulo => titulo;
 
   /// Chip do cabeçalho e da barra.
-  static TextStyle get chip => GoogleFonts.figtree(
+  static const TextStyle chip = TextStyle(
+        fontFamily: figtree,
         fontSize: 12.5,
         fontWeight: FontWeight.w600,
       );

@@ -30,7 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.2.1
   intl: ^0.19.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -70,6 +69,28 @@ flutter:
 
   assets:
     - assets/images/
+
+  # As fontes vão dentro do APK, não baixadas.
+  #
+  # O google_fonts busca o .ttf em fonts.gstatic.com na primeira execução.
+  # A Kitamo é um app sem servidor e sem nuvem, feito pra quem talvez esteja
+  # sem dado no celular — e sem rede o app caía no Roboto, jogando fora a
+  # tipografia inteira do design. Confirmado no emulador em 07/09/2026:
+  # "Failed host lookup: fonts.gstatic.com".
+  #
+  # As três são variáveis, então um arquivo cobre todos os pesos que o
+  # design pede (Outfit 600, Figtree 400/500/600/700). 224 KB no total.
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-var.ttf
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-var.ttf
+    - family: DM Mono
+      fonts:
+        - asset: assets/fonts/DMMono-Medium.ttf
+          weight: 500
 
   # To add assets to your application, add an assets section, like this:
   # assets:
