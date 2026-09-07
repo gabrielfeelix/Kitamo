@@ -124,7 +124,7 @@ uma futura para funcionar.
 Design system em Dart, modelos, `DiarioService`, tela de Início nas duas
 faces. 17 testes.
 
-### Fase 1 — persistência local cifrada
+### Fase 1 — persistência local cifrada ✅ (feito)
 O app lembra do que você respondeu.
 
 - Drift + SQLCipher, chave no secure storage
@@ -134,7 +134,7 @@ O app lembra do que você respondeu.
 - Testes: CRUD, migration, e **o teste que importa** — o arquivo do banco
   não é legível sem a chave
 
-### Fase 2 — onboarding
+### Fase 2 — onboarding ✅ (feito)
 A porta de entrada. 6 telas, uma pergunta por tela, cada uma na sua cor.
 
 - Fluxo com progresso, "pular" sempre visível
@@ -142,7 +142,7 @@ A porta de entrada. 6 telas, uma pergunta por tela, cada uma na sua cor.
 - Tela final: o número, com o joão-de-barro
 - Teste: pular tudo não quebra; responder gera o número certo
 
-### Fase 3 — horizonte
+### Fase 3 — horizonte ✅ (parcial: 12 meses feito, visão de mês pendente)
 As duas visões que são o produto.
 
 - **Mês:** linha por dia, nome do lançamento, motivo da cor
@@ -213,6 +213,16 @@ Fase 1 é justamente onde mora a decisão de segurança mais séria do app
 (cifra em repouso), que é melhor acertar antes de ter dado dentro.
 
 ---
+
+## 5.1 Nota de plataforma (06/09/2026)
+
+**A web saiu do projeto.** O SQLite nativo usa `dart:ffi`, que não existe no
+navegador — o build quebra. Rodar na web exigiria a variante WASM do
+sqlite3, uma segunda configuração de banco só para um alvo que não é o do
+produto. O app é de celular.
+
+`compileSdk` fixado em **37**: exigência do `flutter_secure_storage`, que é
+onde mora a chave do banco.
 
 ## 6. O que eu preciso de você
 

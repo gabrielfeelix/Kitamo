@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "br.com.kitamo.kitamo"
-    compileSdk = flutter.compileSdkVersion
+    // 37 exigido pelo flutter_secure_storage, onde mora a chave do banco.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
