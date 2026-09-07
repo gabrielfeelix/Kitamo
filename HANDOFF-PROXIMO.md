@@ -7,9 +7,9 @@ anterior, mantido porque o método descrito nele continua valendo.
 
 ## 0. Onde parou (07/09, fim do dia)
 
-**Regra do Gabriel: nada de pasta fora de `/dev`.** Os APKs vão em
-`/home/gabfelix/dev/kitamo-apks/`, uma pasta só, e as versões novas se
-acumulam lá. A antiga `~/KITAMO-APP` foi apagada. Não crie pasta nova.
+**Regra do Gabriel: não crie pasta nova.** Os APKs vão em
+`kitamo-app/apks/` — dentro do projeto, que é a pasta que já existe. Nada
+de diretório novo em `/dev`, e nada fora de `/dev`.
 
 
 **A tela de Início foi refeita a partir do HTML.** O método da seção 1
@@ -208,7 +208,7 @@ Regras que os testes guardam (não quebre):
 ```
 /home/gabfelix/dev/kitamo-app/          o app Flutter
 /home/gabfelix/dev/finance/design-joao/ O DESIGN (36 telas + design system)
-/home/gabfelix/dev/kitamo-apks/         APKs prontos para instalar
+/home/gabfelix/dev/kitamo-app/apks/     APKs prontos para instalar
 /home/gabfelix/dev/finance/HANDOFF-DESIGN.md   a proposta, tela a tela
 ```
 

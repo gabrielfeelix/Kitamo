@@ -50,3 +50,6 @@ app.*.map.json
 # Chave de assinatura — nunca versionar
 android/key.properties
 android/*.jks
+
+# APKs gerados pra instalar no celular. Ficam no projeto, mas fora do git.
+apks/
