@@ -11,11 +11,11 @@ import 'package:kitamo/repositories/divida_repository.dart';
 /// apaga isso na atualização, e a pessoa perde o registro do que deve —
 /// exatamente o dado que ela confiou ao app.
 void main() {
-  test('o schema declarado é a v2', () {
+  test('o schema declarado é a v3', () {
     final banco = Banco.memoria();
     addTearDown(banco.close);
 
-    expect(banco.schemaVersion, 2);
+    expect(banco.schemaVersion, 3);
   });
 
   test('a tabela de lançamentos existe em banco novo', () async {

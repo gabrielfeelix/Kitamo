@@ -4,22 +4,26 @@ import '../../design/cores.dart';
 import '../../design/medidas.dart';
 import '../../design/tipografia.dart';
 import '../../models/divida.dart';
-import '../../models/perfil_financeiro.dart';
 import '../../models/lancamento_registro.dart';
+import '../../models/perfil_financeiro.dart';
 import '../../services/dia_de_hoje.dart';
 import '../../services/diario_service.dart';
 import '../../services/horizonte_service.dart';
 import '../../widgets/moeda.dart';
+import '../../widgets/pecas.dart';
 import '../aperto/aperto_page.dart';
 import '../avisos/avisos.dart';
 import '../avisos/avisos_page.dart';
 import '../horizonte/horizonte_page.dart';
 import '../horizonte/mes_page.dart';
+import 'cabecalho_do_inicio.dart';
+import 'cartoes_do_inicio.dart';
 
 /// A tela que a pessoa abre todo dia.
 ///
-/// Estrutura do design system: topo colorido com o número, cartão branco da
-/// próxima parcela sobreposto, e o mês embaixo em fundo creme.
+/// Montada a partir da tela "INÍCIO · DIA TRANQUILO" do Kitamo App.dc.html,
+/// na ordem do design: cabeçalho colorido com o número e o joão encostado no
+/// canto, e abaixo, em creme, os cartões brancos a 9px um do outro.
 class InicioPage extends StatelessWidget {
   const InicioPage({
     super.key,
@@ -47,56 +51,160 @@ class InicioPage extends StatelessWidget {
       diario: r.diario,
       lancamentos: lancamentosDeHoje,
     );
-    final avisos =
-        const Avisos().montar(perfil: perfil, dividas: dividas);
+    final avisos = const Avisos().montar(perfil: perfil, dividas: dividas);
+    final estado = _estadoDoDia(r, hoje);
 
     return Scaffold(
       backgroundColor: Cores.creme,
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          _Topo(resultado: r, avisos: avisos),
-          if (r.fecha && r.diario > 0)
-            Transform.translate(
-              offset: const Offset(0, -28),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
-                child: _CartaoHoje(hoje: hoje),
-              ),
+          CabecalhoDoInicio(
+            estado: estado,
+            rotulo: r.fecha
+                ? 'você pode gastar hoje'
+                : 'falta por mês pra conta fechar',
+            numero: dinheiroRedondo(r.fecha ? r.diario : -r.faltaPorMes),
+            frase: _frase(r, hoje),
+            chipSecundario: r.fecha
+                ? 'sobra no mês: ${dinheiroRedondo(r.sobraMensal)}'
+                : '3 caminhos pra resolver',
+            nome: perfil?.nome ?? '',
+            temAviso: avisos.isNotEmpty,
+            aoTocarAvisos: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => AvisosPage(avisos: avisos)),
             ),
-          if (!r.fecha)
-            Transform.translate(
-              offset: const Offset(0, -28),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
-                child: _CartaoCaminhos(
-                  perfil: perfil,
-                  dividas: dividas,
-                  falta: r.faltaPorMes,
-                ),
-              ),
-            ),
-          if (proxima != null)
-            Padding(
-              padding: const EdgeInsets.only(
-                left: Medidas.margem,
-                right: Medidas.margem,
-                bottom: Medidas.espaco,
-              ),
-              child: _CartaoProximaParcela(
-                  divida: proxima,
-                  perfil: perfil,
-                aoQuitar: aoQuitar == null ? null : () => aoQuitar!(proxima),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Medidas.margem),
-            child: _Atalhos(perfil: perfil, dividas: dividas),
           ),
-          const SizedBox(height: Medidas.espacoGrande),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Medidas.margem,
+              Medidas.espaco,
+              Medidas.margem,
+              Medidas.rodapeComBarra,
+            ),
+            child: Column(
+              children: [
+                if (!r.fecha) ...[
+                  _CartaoCaminhos(
+                    perfil: perfil,
+                    dividas: dividas,
+                    falta: r.faltaPorMes,
+                  ),
+                  const SizedBox(height: Medidas.entreCartoes),
+                ],
+                if (proxima != null) ...[
+                  CartaoProximaParcela(
+                    divida: proxima,
+                    diaRenda: perfil?.diaRenda,
+                    aoQuitar:
+                        aoQuitar == null ? null : () => aoQuitar!(proxima),
+                  ),
+                  const SizedBox(height: Medidas.entreCartoes),
+                ],
+                if (r.fecha && r.diario > 0) ...[
+                  _CartaoHoje(hoje: hoje),
+                  const SizedBox(height: Medidas.entreCartoes),
+                ],
+                _cartaoDoMes(context),
+                const SizedBox(height: Medidas.entreCartoes),
+                if (proxima != null) _cartaoDaCasa(context, proxima),
+              ],
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  /// O gráfico do Início: o saldo projetado dia a dia deste mês.
+  Widget _cartaoDoMes(BuildContext context) {
+    const horizonte = HorizonteService();
+    final mes = horizonte.mes(
+      perfil: perfil,
+      dividas: dividas,
+      saldoInicial: 0,
+    );
+    final saldos = mes.dias.map((d) => d.saldo).toList();
+    final fundo = mes.primeiroDiaApertado;
+
+    return CartaoDoMes(
+      titulo: '${_mesPorExtenso(DateTime.now().month)}, dia a dia',
+      saldos: saldos,
+      leitura: fundo == null ? null : 'dia ${fundo.day} é o fundo do mês',
+      aoVerDoze: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => HorizontePage(
+          meses: horizonte.doze(
+            perfil: perfil,
+            dividas: dividas,
+            saldoInicial: 0,
+          ),
+        ),
+      )),
+    );
+  }
+
+  /// O cartão de acento: a casa que sobe conforme as parcelas caem.
+  /// Um por tela — por isso ele é o último e não divide espaço com outro.
+  Widget _cartaoDaCasa(BuildContext context, Divida d) {
+    final pagas = d.parcelasPagas;
+    final total = d.parcelasTotal;
+    if (total <= 0) return const SizedBox.shrink();
+
+    final faltam = total - pagas;
+    final quitacao = d.previsaoQuitacao();
+
+    return CartaoDeAcento(
+      titulo: '$pagas de $total.\nfaltam $faltam.',
+      apoio: quitacao == null
+          ? 'a casa sobe a cada parcela'
+          : 'a última cai em ${quitacao.day} de ${_mesPorExtenso(quitacao.month)}',
+      ilustracao: 'casa-${_faseDaCasa(pagas, total)}.png',
+      aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => MesPage(
+          titulo: 'Seu mês',
+          mes: const HorizonteService().mes(
+            perfil: perfil,
+            dividas: dividas,
+            saldoInicial: 0,
+          ),
+        ),
+      )),
+    );
+  }
+
+  /// A fase 5 é exclusiva de quem terminou — a regra que os testes guardam.
+  static int _faseDaCasa(int pagas, int total) {
+    if (total <= 0) return 1;
+    if (pagas >= total) return 5;
+    final p = pagas / total;
+    if (p < 0.2) return 1;
+    if (p < 0.45) return 2;
+    if (p < 0.7) return 3;
+    return 4;
+  }
+
+  /// A cor do cabeçalho conta o estado antes de a pessoa ler o número.
+  static CabecalhoDoDia _estadoDoDia(ResultadoDiario r, DiaDeHoje hoje) {
+    if (!r.fecha) return CabecalhoDoDia.aperto;
+    if (hoje.passou) return CabecalhoDoDia.atencao;
+    return CabecalhoDoDia.tranquilo;
+  }
+
+  /// A voz da Kitamo: número primeiro, frase curta depois, sem culpa.
+  String _frase(ResultadoDiario r, DiaDeHoje hoje) {
+    if (!r.fecha) {
+      final ate = r.quitacaoLabel;
+      return ate == null
+          ? 'sem mexer em nada, a conta não fecha'
+          : 'sem mexer em nada, a conta não fecha até $ate';
+    }
+    if (hoje.passou) {
+      return 'hoje você já passou ${dinheiro(hoje.quantoPassou)} do combinado';
+    }
+    final ate = r.quitacaoLabel;
+    return ate == null
+        ? 'gastando até isso hoje, o mês fecha'
+        : 'gastando até isso hoje, a última parcela ainda cai em $ate';
   }
 
   /// A que vence primeiro a partir de hoje.
@@ -105,262 +213,27 @@ class InicioPage extends StatelessWidget {
         dividas.where((d) => !d.estaQuitada && d.parcelasRestantes > 0).toList();
     if (abertas.isEmpty) return null;
 
-    abertas.sort((a, b) {
-      final va = a.previsaoQuitacao();
-      final vb = b.previsaoQuitacao();
-      if (va == null || vb == null) return 0;
-      return a.diaVencimento.compareTo(b.diaVencimento);
-    });
+    abertas.sort((a, b) => a.diaVencimento.compareTo(b.diaVencimento));
     return abertas.first;
   }
 }
 
-class _Topo extends StatelessWidget {
-  const _Topo({required this.resultado, required this.avisos});
+String _mesPorExtenso(int m) => const [
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro',
+    ][m - 1];
 
-  final ResultadoDiario resultado;
-  final List<Aviso> avisos;
-
-  @override
-  Widget build(BuildContext context) {
-    final fecha = resultado.fecha;
-    final cor = fecha ? Cores.verde : Cores.vermelho;
-
-    final rotulo = fecha
-        ? (resultado.quitacaoLabel != null
-            ? 'pra quitar até ${resultado.quitacaoLabel}'
-            : 'pra hoje')
-        : 'hoje a conta não fecha';
-
-    final valor = fecha ? resultado.diario : resultado.faltaPorMes;
-    final apoio = fecha ? 'é o seu diário' : 'é o que falta por mês pra fechar';
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        Medidas.margem,
-        MediaQuery.of(context).padding.top + 28,
-        Medidas.margem,
-        56,
-      ),
-      decoration: BoxDecoration(
-        color: cor,
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(Medidas.raioCartao),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Semantics(
-              label: avisos.isEmpty
-                  ? 'avisos'
-                  : '${avisos.length} avisos',
-              button: true,
-              child: IconButton(
-                icon: Badge(
-                  isLabelVisible: avisos.isNotEmpty,
-                  label: Text('${avisos.length}'),
-                  child: const Icon(Icons.notifications_none),
-                ),
-                color: Cores.branco,
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => AvisosPage(avisos: avisos)),
-                ),
-              ),
-            ),
-          ),
-          Text(
-            rotulo,
-            style: Tipo.corpo.copyWith(color: Cores.branco.withValues(alpha: 0.9)),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            dinheiroRedondo(valor),
-            style: Tipo.numeroGigante.copyWith(color: Cores.branco),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            apoio,
-            style: Tipo.corpo.copyWith(color: Cores.branco.withValues(alpha: 0.9)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CartaoProximaParcela extends StatelessWidget {
-  const _CartaoProximaParcela({
-    required this.divida,
-    required this.perfil,
-    this.aoQuitar,
-  });
-
-  final Divida divida;
-  final PerfilFinanceiro? perfil;
-  final VoidCallback? aoQuitar;
-
-  @override
-  Widget build(BuildContext context) {
-    // O descasamento que gera juros: a parcela vence antes de a renda cair.
-    final diaRenda = perfil?.diaRenda;
-    final caiAntes = diaRenda != null && divida.diaVencimento < diaRenda;
-
-    return Container(
-      padding: const EdgeInsets.all(Medidas.margem),
-      decoration: BoxDecoration(
-        color: Cores.branco,
-        borderRadius: BorderRadius.circular(Medidas.raioCartao),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x145C2E1A),
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('PRÓXIMA', style: Tipo.rotulo.copyWith(color: Cores.apoio)),
-          const SizedBox(height: 8),
-          Text('parcela do ${divida.nome}', style: Tipo.subtitulo),
-          const SizedBox(height: 4),
-          Text(
-            '${dinheiro(divida.valorParcela)} · vence dia ${divida.diaVencimento}',
-            style: Tipo.apoio,
-          ),
-          if (caiAntes) ...[
-            const SizedBox(height: Medidas.espaco),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: EstadoFinanceiro.atencao.fundo,
-                borderRadius: BorderRadius.circular(Medidas.raioInterno),
-              ),
-              child: Text(
-                'cai antes do salário do dia $diaRenda',
-                style: Tipo.apoio.copyWith(color: Cores.tinta),
-              ),
-            ),
-          ],
-          const SizedBox(height: Medidas.espacoGrande),
-          Row(
-            children: [
-              Text(
-                '${divida.parcelasPagas} de ${divida.parcelasTotal}',
-                style: Tipo.corpoForte.copyWith(color: Cores.apoio),
-              ),
-              const Spacer(),
-              FilledButton(
-                onPressed: aoQuitar,
-                style: FilledButton.styleFrom(
-                  backgroundColor: Cores.tinta,
-                  foregroundColor: Cores.branco,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Medidas.raioPilula),
-                  ),
-                ),
-                child: Text('quitei essa', style: Tipo.corpoForte),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-/// Atalhos para as duas visões do horizonte.
-class _Atalhos extends StatelessWidget {
-  const _Atalhos({required this.perfil, required this.dividas});
-
-  final PerfilFinanceiro? perfil;
-  final List<Divida> dividas;
-
-  @override
-  Widget build(BuildContext context) {
-    const horizonte = HorizonteService();
-
-    return Row(
-      children: [
-        Expanded(
-          child: _Atalho(
-            titulo: 'Seu mês',
-            apoio: 'dia a dia',
-            aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => MesPage(
-                titulo: 'Seu mês',
-                mes: horizonte.mes(
-                  perfil: perfil,
-                  dividas: dividas,
-                  saldoInicial: 0,
-                ),
-              ),
-            )),
-          ),
-        ),
-        const SizedBox(width: Medidas.espaco),
-        Expanded(
-          child: _Atalho(
-            titulo: 'O ano inteiro',
-            apoio: '12 meses',
-            aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => HorizontePage(
-                meses: horizonte.doze(
-                  perfil: perfil,
-                  dividas: dividas,
-                  saldoInicial: 0,
-                ),
-              ),
-            )),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Atalho extends StatelessWidget {
-  const _Atalho({
-    required this.titulo,
-    required this.apoio,
-    required this.aoTocar,
-  });
-
-  final String titulo;
-  final String apoio;
-  final VoidCallback aoTocar;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: aoTocar,
-        borderRadius: BorderRadius.circular(Medidas.raioCartao),
-        child: Container(
-          padding: const EdgeInsets.all(Medidas.margem),
-          decoration: BoxDecoration(
-            color: Cores.branco,
-            borderRadius: BorderRadius.circular(Medidas.raioCartao),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(titulo, style: Tipo.corpoForte),
-              const SizedBox(height: 2),
-              Text(apoio, style: Tipo.apoio),
-            ],
-          ),
-        ),
-      );
-}
-
-
-/// "Hoje · você passou R$ 14,56 do dia" — o real contra o planejado.
+/// "você passou R$ 14,56 do dia" — o real contra o planejado.
 class _CartaoHoje extends StatelessWidget {
   const _CartaoHoje({required this.hoje});
 
@@ -370,23 +243,12 @@ class _CartaoHoje extends StatelessWidget {
   Widget build(BuildContext context) {
     final passou = hoje.passou;
 
-    return Container(
-      padding: const EdgeInsets.all(Medidas.margem),
-      decoration: BoxDecoration(
-        color: Cores.branco,
-        borderRadius: BorderRadius.circular(Medidas.raioCartao),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x145C2E1A),
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
+    return Cartao(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text('HOJE', style: Tipo.rotulo.copyWith(color: Cores.apoio)),
+          const Rotulo('hoje'),
           const SizedBox(height: 8),
           Text(
             passou
@@ -398,7 +260,7 @@ class _CartaoHoje extends StatelessWidget {
           ),
           const SizedBox(height: Medidas.espaco),
           ClipRRect(
-            borderRadius: BorderRadius.circular(Medidas.raioBarra),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               // Estourou passa de 1: a barra mostra o excesso cheia, não
               // some com ele.
@@ -434,36 +296,29 @@ class _CartaoCaminhos extends StatelessWidget {
   final double falta;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        borderRadius: BorderRadius.circular(Medidas.raioCartao),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+  Widget build(BuildContext context) => Cartao(
+        aoTocar: () => Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => ApertoPage(
             perfil: perfil,
             dividas: dividas,
             faltaPorMes: falta,
           ),
         )),
-        child: Container(
-          padding: const EdgeInsets.all(Medidas.margem),
-          decoration: BoxDecoration(
-            color: Cores.branco,
-            borderRadius: BorderRadius.circular(Medidas.raioCartao),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Escolher um caminho', style: Tipo.corpoForte),
-                    const SizedBox(height: 4),
-                    Text('o que dá pra fazer sobre isso', style: Tipo.apoio),
-                  ],
-                ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('escolher um caminho', style: Tipo.corpoForte),
+                  const SizedBox(height: 4),
+                  Text('o que dá pra fazer sobre isso', style: Tipo.apoio),
+                ],
               ),
-              const Icon(Icons.chevron_right, color: Cores.apoio),
-            ],
-          ),
+            ),
+            const Icon(Icons.chevron_right, color: Cores.apoio),
+          ],
         ),
       );
 }

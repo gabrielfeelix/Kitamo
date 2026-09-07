@@ -74,3 +74,53 @@ enum EstadoFinanceiro {
   Color get sobre =>
       this == EstadoFinanceiro.atencao ? Cores.tinta : Cores.branco;
 }
+
+/// O cabeçalho do Início inteiro, por estado do dia.
+///
+/// Vem do bloco `hd` do "Kitamo App.dc.html": cada estado traz fundo, tinta,
+/// tinta apagada e as cores do chip. O âmbar inverte — texto escuro sobre
+/// fundo claro — porque não passa contraste com branco.
+enum CabecalhoDoDia {
+  tranquilo(
+    fundo: Color(0xFF3F7A3D),
+    tinta: Color(0xFFFFFFFF),
+    tintaFraca: Color(0xFFF1FAF0),
+    chipFundo: Color(0xFFFAF7F2),
+    chipTinta: Color(0xFF2F5C2E),
+  ),
+  atencao(
+    fundo: Color(0xFFE8A33D),
+    tinta: Color(0xFF2B1F0C),
+    tintaFraca: Color(0xFF3F2E0F),
+    chipFundo: Color(0xFF2B1F0C),
+    chipTinta: Color(0xFFFAF7F2),
+  ),
+  aperto(
+    fundo: Color(0xFFB23D1B),
+    tinta: Color(0xFFFFFFFF),
+    tintaFraca: Color(0xFFFFFFFF),
+    chipFundo: Color(0xFFFAF7F2),
+    chipTinta: Color(0xFF8E3F20),
+  );
+
+  const CabecalhoDoDia({
+    required this.fundo,
+    required this.tinta,
+    required this.tintaFraca,
+    required this.chipFundo,
+    required this.chipTinta,
+  });
+
+  final Color fundo;
+  final Color tinta;
+  final Color tintaFraca;
+  final Color chipFundo;
+  final Color chipTinta;
+
+  /// Véu escuro sobre o cabeçalho: sino, chip secundário, botões de mês.
+  Color get veu => const Color(0x29000000);
+
+  /// O joão some quando a conta não fecha. Bicho fofo sobre má notícia é
+  /// deboche — é regra do design, não preferência.
+  bool get mostraPersonagem => this != CabecalhoDoDia.aperto;
+}

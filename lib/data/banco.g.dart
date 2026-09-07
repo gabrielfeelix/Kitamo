@@ -599,6 +599,16 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 60),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _rendaCentavosMeta = const VerificationMeta(
     'rendaCentavos',
   );
@@ -666,6 +676,7 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    nome,
     rendaCentavos,
     diaRenda,
     gastoDiarioCentavos,
@@ -687,6 +698,12 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
     }
     if (data.containsKey('renda_centavos')) {
       context.handle(
@@ -749,6 +766,10 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      ),
       rendaCentavos: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}renda_centavos'],
@@ -784,6 +805,9 @@ class $PerfisTable extends Perfis with TableInfo<$PerfisTable, Perfi> {
 
 class Perfi extends DataClass implements Insertable<Perfi> {
   final int id;
+
+  /// Como a pessoa quer ser chamada. Nulo até ela dizer.
+  final String? nome;
   final int? rendaCentavos;
   final int? diaRenda;
   final int? gastoDiarioCentavos;
@@ -794,6 +818,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   final DateTime atualizadoEm;
   const Perfi({
     required this.id,
+    this.nome,
     this.rendaCentavos,
     this.diaRenda,
     this.gastoDiarioCentavos,
@@ -805,6 +830,9 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || nome != null) {
+      map['nome'] = Variable<String>(nome);
+    }
     if (!nullToAbsent || rendaCentavos != null) {
       map['renda_centavos'] = Variable<int>(rendaCentavos);
     }
@@ -825,6 +853,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   PerfisCompanion toCompanion(bool nullToAbsent) {
     return PerfisCompanion(
       id: Value(id),
+      nome: nome == null && nullToAbsent ? const Value.absent() : Value(nome),
       rendaCentavos: rendaCentavos == null && nullToAbsent
           ? const Value.absent()
           : Value(rendaCentavos),
@@ -849,6 +878,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Perfi(
       id: serializer.fromJson<int>(json['id']),
+      nome: serializer.fromJson<String?>(json['nome']),
       rendaCentavos: serializer.fromJson<int?>(json['rendaCentavos']),
       diaRenda: serializer.fromJson<int?>(json['diaRenda']),
       gastoDiarioCentavos: serializer.fromJson<int?>(
@@ -866,6 +896,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'nome': serializer.toJson<String?>(nome),
       'rendaCentavos': serializer.toJson<int?>(rendaCentavos),
       'diaRenda': serializer.toJson<int?>(diaRenda),
       'gastoDiarioCentavos': serializer.toJson<int?>(gastoDiarioCentavos),
@@ -877,6 +908,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
 
   Perfi copyWith({
     int? id,
+    Value<String?> nome = const Value.absent(),
     Value<int?> rendaCentavos = const Value.absent(),
     Value<int?> diaRenda = const Value.absent(),
     Value<int?> gastoDiarioCentavos = const Value.absent(),
@@ -885,6 +917,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
     DateTime? atualizadoEm,
   }) => Perfi(
     id: id ?? this.id,
+    nome: nome.present ? nome.value : this.nome,
     rendaCentavos: rendaCentavos.present
         ? rendaCentavos.value
         : this.rendaCentavos,
@@ -901,6 +934,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   Perfi copyWithCompanion(PerfisCompanion data) {
     return Perfi(
       id: data.id.present ? data.id.value : this.id,
+      nome: data.nome.present ? data.nome.value : this.nome,
       rendaCentavos: data.rendaCentavos.present
           ? data.rendaCentavos.value
           : this.rendaCentavos,
@@ -922,6 +956,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   String toString() {
     return (StringBuffer('Perfi(')
           ..write('id: $id, ')
+          ..write('nome: $nome, ')
           ..write('rendaCentavos: $rendaCentavos, ')
           ..write('diaRenda: $diaRenda, ')
           ..write('gastoDiarioCentavos: $gastoDiarioCentavos, ')
@@ -935,6 +970,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
   @override
   int get hashCode => Object.hash(
     id,
+    nome,
     rendaCentavos,
     diaRenda,
     gastoDiarioCentavos,
@@ -947,6 +983,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
       identical(this, other) ||
       (other is Perfi &&
           other.id == this.id &&
+          other.nome == this.nome &&
           other.rendaCentavos == this.rendaCentavos &&
           other.diaRenda == this.diaRenda &&
           other.gastoDiarioCentavos == this.gastoDiarioCentavos &&
@@ -957,6 +994,7 @@ class Perfi extends DataClass implements Insertable<Perfi> {
 
 class PerfisCompanion extends UpdateCompanion<Perfi> {
   final Value<int> id;
+  final Value<String?> nome;
   final Value<int?> rendaCentavos;
   final Value<int?> diaRenda;
   final Value<int?> gastoDiarioCentavos;
@@ -965,6 +1003,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   final Value<DateTime> atualizadoEm;
   const PerfisCompanion({
     this.id = const Value.absent(),
+    this.nome = const Value.absent(),
     this.rendaCentavos = const Value.absent(),
     this.diaRenda = const Value.absent(),
     this.gastoDiarioCentavos = const Value.absent(),
@@ -974,6 +1013,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   });
   PerfisCompanion.insert({
     this.id = const Value.absent(),
+    this.nome = const Value.absent(),
     this.rendaCentavos = const Value.absent(),
     this.diaRenda = const Value.absent(),
     this.gastoDiarioCentavos = const Value.absent(),
@@ -983,6 +1023,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   });
   static Insertable<Perfi> custom({
     Expression<int>? id,
+    Expression<String>? nome,
     Expression<int>? rendaCentavos,
     Expression<int>? diaRenda,
     Expression<int>? gastoDiarioCentavos,
@@ -992,6 +1033,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (nome != null) 'nome': nome,
       if (rendaCentavos != null) 'renda_centavos': rendaCentavos,
       if (diaRenda != null) 'dia_renda': diaRenda,
       if (gastoDiarioCentavos != null)
@@ -1005,6 +1047,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
 
   PerfisCompanion copyWith({
     Value<int>? id,
+    Value<String?>? nome,
     Value<int?>? rendaCentavos,
     Value<int?>? diaRenda,
     Value<int?>? gastoDiarioCentavos,
@@ -1014,6 +1057,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   }) {
     return PerfisCompanion(
       id: id ?? this.id,
+      nome: nome ?? this.nome,
       rendaCentavos: rendaCentavos ?? this.rendaCentavos,
       diaRenda: diaRenda ?? this.diaRenda,
       gastoDiarioCentavos: gastoDiarioCentavos ?? this.gastoDiarioCentavos,
@@ -1028,6 +1072,9 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
     }
     if (rendaCentavos.present) {
       map['renda_centavos'] = Variable<int>(rendaCentavos.value);
@@ -1054,6 +1101,7 @@ class PerfisCompanion extends UpdateCompanion<Perfi> {
   String toString() {
     return (StringBuffer('PerfisCompanion(')
           ..write('id: $id, ')
+          ..write('nome: $nome, ')
           ..write('rendaCentavos: $rendaCentavos, ')
           ..write('diaRenda: $diaRenda, ')
           ..write('gastoDiarioCentavos: $gastoDiarioCentavos, ')
@@ -1785,6 +1833,7 @@ typedef $$DividasTableProcessedTableManager =
     >;
 typedef $$PerfisTableCreateCompanionBuilder = PerfisCompanion Function({
   Value<int> id,
+  Value<String?> nome,
   Value<int?> rendaCentavos,
   Value<int?> diaRenda,
   Value<int?> gastoDiarioCentavos,
@@ -1794,6 +1843,7 @@ typedef $$PerfisTableCreateCompanionBuilder = PerfisCompanion Function({
 });
 typedef $$PerfisTableUpdateCompanionBuilder = PerfisCompanion Function({
   Value<int> id,
+  Value<String?> nome,
   Value<int?> rendaCentavos,
   Value<int?> diaRenda,
   Value<int?> gastoDiarioCentavos,
@@ -1812,6 +1862,11 @@ class $$PerfisTableFilterComposer extends Composer<_$Banco, $PerfisTable> {
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1859,6 +1914,11 @@ class $$PerfisTableOrderingComposer extends Composer<_$Banco, $PerfisTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get rendaCentavos => $composableBuilder(
     column: $table.rendaCentavos,
     builder: (column) => ColumnOrderings(column),
@@ -1900,6 +1960,9 @@ class $$PerfisTableAnnotationComposer extends Composer<_$Banco, $PerfisTable> {
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
 
   GeneratedColumn<int> get rendaCentavos => $composableBuilder(
     column: $table.rendaCentavos,
@@ -1957,6 +2020,7 @@ class $$PerfisTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String?> nome = const Value.absent(),
                 Value<int?> rendaCentavos = const Value.absent(),
                 Value<int?> diaRenda = const Value.absent(),
                 Value<int?> gastoDiarioCentavos = const Value.absent(),
@@ -1965,6 +2029,7 @@ class $$PerfisTableTableManager
                 Value<DateTime> atualizadoEm = const Value.absent(),
               }) => PerfisCompanion(
                 id: id,
+                nome: nome,
                 rendaCentavos: rendaCentavos,
                 diaRenda: diaRenda,
                 gastoDiarioCentavos: gastoDiarioCentavos,
@@ -1975,6 +2040,7 @@ class $$PerfisTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String?> nome = const Value.absent(),
                 Value<int?> rendaCentavos = const Value.absent(),
                 Value<int?> diaRenda = const Value.absent(),
                 Value<int?> gastoDiarioCentavos = const Value.absent(),
@@ -1983,6 +2049,7 @@ class $$PerfisTableTableManager
                 Value<DateTime> atualizadoEm = const Value.absent(),
               }) => PerfisCompanion.insert(
                 id: id,
+                nome: nome,
                 rendaCentavos: rendaCentavos,
                 diaRenda: diaRenda,
                 gastoDiarioCentavos: gastoDiarioCentavos,

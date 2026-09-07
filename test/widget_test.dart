@@ -32,10 +32,13 @@ void main() {
       dividas: [nubank],
     ));
 
-    expect(find.textContaining('é o seu diário'), findsOneWidget);
-    expect(find.text('parcela do Nubank'), findsOneWidget);
+    // O rótulo do cabeçalho é o do design, e vai em caixa alta na tela.
+    expect(find.textContaining(RegExp('você pode gastar hoje',
+        caseSensitive: false)), findsOneWidget);
+    expect(find.text('dia 4 · Nubank'), findsOneWidget);
     expect(find.text('quitei essa'), findsOneWidget);
-    expect(find.text('6 de 10'), findsOneWidget);
+    // O cartão de acento conta as parcelas pagas.
+    expect(find.textContaining('6 de 10'), findsOneWidget);
   });
 
   testWidgets('avisa quando a parcela cai antes do salário', (tester) async {
@@ -48,7 +51,14 @@ void main() {
       dividas: [nubank],
     ));
 
-    expect(find.text('cai antes do salário do dia 6'), findsOneWidget);
+    // A faixa âmbar do design: "ela cai antes do salário do dia 6", com o
+    // "antes" em negrito — por isso a busca é pelo RichText inteiro.
+    expect(
+      find.byWidgetPredicate((w) =>
+          w is RichText &&
+          w.text.toPlainText().contains('antes do salário do dia 6')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('quando a conta não fecha, diz quanto falta em vez de zero',
@@ -62,12 +72,18 @@ void main() {
       dividas: [nubank],
     ));
 
-    expect(find.text('hoje a conta não fecha'), findsOneWidget);
-    expect(find.textContaining('falta por mês'), findsOneWidget);
+    expect(
+      find.textContaining(
+          RegExp('falta por mês pra conta fechar', caseSensitive: false)),
+      findsOneWidget,
+    );
+    expect(find.textContaining('a conta não fecha'), findsOneWidget);
     // O intl pt-BR usa espaço não-quebrável (U+00A0) entre símbolo e
     // número — não o espaço comum.
     expect(find.textContaining('R\u00A0434'.replaceFirst('R', r'R$')),
         findsOneWidget);
-    expect(find.textContaining('é o seu diário'), findsNothing);
+    // A regra que não se quebra: nada de "R$ 0 por dia".
+    expect(find.textContaining(RegExp('você pode gastar hoje',
+        caseSensitive: false)), findsNothing);
   });
 }

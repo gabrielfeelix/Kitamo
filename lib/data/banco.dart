@@ -24,7 +24,7 @@ class Banco extends _$Banco {
   Banco.memoria() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -35,6 +35,12 @@ class Banco extends _$Banco {
           // e aí não dá mais para recriar do zero.
           if (from < 2) {
             await m.createTable(lancamentos);
+          }
+          // v3: o cabeçalho do Início chama a pessoa pelo nome, como no
+          // design. Coluna nova e anulável — quem já usava o app não perde
+          // nada, só continua sem nome até dizer qual é.
+          if (from < 3) {
+            await m.addColumn(perfis, perfis.nome);
           }
         },
         beforeOpen: (details) async {

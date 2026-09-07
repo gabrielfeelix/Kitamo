@@ -31,6 +31,9 @@ class Dividas extends Table {
 class Perfis extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
 
+  /// Como a pessoa quer ser chamada. Nulo até ela dizer.
+  TextColumn get nome => text().nullable().withLength(max: 60)();
+
   IntColumn get rendaCentavos => integer().nullable()();
   IntColumn get diaRenda => integer().nullable()();
   IntColumn get gastoDiarioCentavos => integer().nullable()();

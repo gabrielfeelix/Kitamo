@@ -41,6 +41,7 @@ class PerfilRepositoryDrift implements PerfilRepository {
       _banco.into(_banco.perfis).insertOnConflictUpdate(
             PerfisCompanion.insert(
               id: const Value(_id),
+              nome: Value(p.nome),
               rendaCentavos: Value(Dinheiro.paraCentavosNulo(p.rendaMensal)),
               diaRenda: Value(p.diaRenda),
               gastoDiarioCentavos:
@@ -56,6 +57,7 @@ class PerfilRepositoryDrift implements PerfilRepository {
   Future<bool> precisaOnboarding() async => (await carregar()) == null;
 
   PerfilFinanceiro _paraModelo(Perfi linha) => PerfilFinanceiro(
+        nome: linha.nome,
         rendaMensal: Dinheiro.paraReaisNulo(linha.rendaCentavos),
         diaRenda: linha.diaRenda,
         gastoDiarioEstimado: Dinheiro.paraReaisNulo(linha.gastoDiarioCentavos),
