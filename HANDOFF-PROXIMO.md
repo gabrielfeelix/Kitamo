@@ -1,7 +1,78 @@
 # Handoff — Kitamo (Flutter)
 
-Escrito em 07/09/2026, ao fim de uma sessão que **errou o principal**.
-Leia a seção 1 antes de qualquer outra coisa.
+Escrito em 07/09/2026. A seção 0 é o estado atual; o resto é o handoff
+anterior, mantido porque o método descrito nele continua valendo.
+
+---
+
+## 0. Onde parou (07/09, fim do dia)
+
+**A tela de Início foi refeita a partir do HTML.** O método da seção 1
+funciona: ler o markup da tela antes de escrever Dart. Foi feito para o
+Início e o resultado bate com o design.
+
+O que entrou:
+
+- `lib/features/inicio/cabecalho_do_inicio.dart` — saudação, data por
+  extenso, sino com ponto, avatar, número de 54, chips, e o joão encostado
+  no canto **dentro** do cabeçalho
+- `lib/features/inicio/cartoes_do_inicio.dart` — próxima parcela, faixa
+  âmbar, gráfico de linha do mês
+- `lib/widgets/pecas.dart` — Cartao, CartaoDeAcento, FalaDaKitamo, Rotulo,
+  Tile, BotaoPrincipal. **Use estas peças nas próximas telas**, não
+  desenhe cartão na mão
+- `lib/design/` — tipografia nos tamanhos do design (54/32/19/14.5,
+  Outfit + Figtree + DM Mono) e medidas com raio, sombra e duração
+
+Três coisas que só apareceram **rodando no Android**, e que teste verde
+não pegava:
+
+1. `google_fonts` baixava as fontes de `fonts.gstatic.com`. Sem rede o app
+   caía no Roboto e perdia o design inteiro. Agora as fontes vão dentro do
+   APK (224 KB) e o `google_fonts` saiu das dependências
+2. `DateFormat('EEEE','pt_BR')` lança se ninguém chamar
+   `initializeDateFormatting`. A data agora é escrita à mão em português
+3. `abiFilters` no Gradle impedia `--split-per-abi`. Corrigido: o APK
+   arm64 saiu de 63 MB para **24,8 MB**
+
+**Emulador já configurado**, é só ligar:
+
+```bash
+export ANDROID_HOME=$HOME/.local/opt/android-sdk
+export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+emulator -avd kitamo -no-window -no-audio -gpu swiftshader_indirect &
+adb install -r build/app/outputs/flutter-apk/app-x86_64-release.apk
+adb exec-out screencap -p > /tmp/tela.png
+```
+
+Para olhar uma tela sem passar pelo onboarding, crie um `lib/seed_main.dart`
+com dados fixos e `flutter build apk --debug --target=lib/seed_main.dart`.
+**Apague depois** — não vai para produção.
+
+`flutter test --tags retrato` gera PNG das telas sem emulador, mas sem
+fonte de verdade (o texto sai como caixinha). Serve para conferir
+estrutura, não tipografia.
+
+**131 testes passando, 1 pulado** (o retrato).
+
+### O que fazer agora
+
+**As outras 35 telas, uma a uma, pelo método da seção 1.** Elas já
+melhoraram de tipografia porque os nomes antigos viraram alias, mas o
+layout ainda é o inventado. Sugestão de ordem, por uso: Lançar, Mês,
+Horizonte, Dívidas, Perfil.
+
+Quando a última for refeita, apague os alias `@Deprecated` de
+`lib/design/tipografia.dart` e `medidas.dart` — eles marcam exatamente o
+que ainda falta. `grep -rn "Deprecated" lib/` lista a dívida.
+
+Pendências antigas ainda de pé:
+
+- **o app nunca rodou no celular do Gabriel** — rodou em emulador, que é
+  outra coisa. O APK de 24,8 MB é a tentativa de resolver o "app não foi
+  instalado"
+- telas do design ainda sem equivalente: "primeira vez no Início",
+  "como a conta é feita", "depois de salvar", "extrato aplicado"
 
 ---
 
