@@ -113,6 +113,17 @@ class $DividasTable extends Dividas with TableInfo<$DividasTable, Divida> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _cartaoIdMeta = const VerificationMeta(
+    'cartaoId',
+  );
+  @override
+  late final GeneratedColumn<String> cartaoId = GeneratedColumn<String>(
+    'cartao_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -124,6 +135,7 @@ class $DividasTable extends Dividas with TableInfo<$DividasTable, Divida> {
     parcelasTotal,
     quitadaEm,
     criadaEm,
+    cartaoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -207,6 +219,12 @@ class $DividasTable extends Dividas with TableInfo<$DividasTable, Divida> {
         criadaEm.isAcceptableOrUnknown(data['criada_em']!, _criadaEmMeta),
       );
     }
+    if (data.containsKey('cartao_id')) {
+      context.handle(
+        _cartaoIdMeta,
+        cartaoId.isAcceptableOrUnknown(data['cartao_id']!, _cartaoIdMeta),
+      );
+    }
     return context;
   }
 
@@ -252,6 +270,10 @@ class $DividasTable extends Dividas with TableInfo<$DividasTable, Divida> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}criada_em'],
       )!,
+      cartaoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cartao_id'],
+      ),
     );
   }
 
@@ -277,6 +299,13 @@ class Divida extends DataClass implements Insertable<Divida> {
   final int parcelasTotal;
   final DateTime? quitadaEm;
   final DateTime criadaEm;
+
+  /// O cartão em que esta compra está, ou nulo quando a dívida é solta
+  /// (empréstimo, crediário, financiamento).
+  ///
+  /// Nulo é o normal: nem toda dívida mora num cartão, e quem já usava o
+  /// app tem tudo solto. Ver [Cartoes].
+  final String? cartaoId;
   const Divida({
     required this.id,
     required this.nome,
@@ -287,6 +316,7 @@ class Divida extends DataClass implements Insertable<Divida> {
     required this.parcelasTotal,
     this.quitadaEm,
     required this.criadaEm,
+    this.cartaoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -302,6 +332,9 @@ class Divida extends DataClass implements Insertable<Divida> {
       map['quitada_em'] = Variable<DateTime>(quitadaEm);
     }
     map['criada_em'] = Variable<DateTime>(criadaEm);
+    if (!nullToAbsent || cartaoId != null) {
+      map['cartao_id'] = Variable<String>(cartaoId);
+    }
     return map;
   }
 
@@ -318,6 +351,9 @@ class Divida extends DataClass implements Insertable<Divida> {
           ? const Value.absent()
           : Value(quitadaEm),
       criadaEm: Value(criadaEm),
+      cartaoId: cartaoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cartaoId),
     );
   }
 
@@ -336,6 +372,7 @@ class Divida extends DataClass implements Insertable<Divida> {
       parcelasTotal: serializer.fromJson<int>(json['parcelasTotal']),
       quitadaEm: serializer.fromJson<DateTime?>(json['quitadaEm']),
       criadaEm: serializer.fromJson<DateTime>(json['criadaEm']),
+      cartaoId: serializer.fromJson<String?>(json['cartaoId']),
     );
   }
   @override
@@ -351,6 +388,7 @@ class Divida extends DataClass implements Insertable<Divida> {
       'parcelasTotal': serializer.toJson<int>(parcelasTotal),
       'quitadaEm': serializer.toJson<DateTime?>(quitadaEm),
       'criadaEm': serializer.toJson<DateTime>(criadaEm),
+      'cartaoId': serializer.toJson<String?>(cartaoId),
     };
   }
 
@@ -364,6 +402,7 @@ class Divida extends DataClass implements Insertable<Divida> {
     int? parcelasTotal,
     Value<DateTime?> quitadaEm = const Value.absent(),
     DateTime? criadaEm,
+    Value<String?> cartaoId = const Value.absent(),
   }) => Divida(
     id: id ?? this.id,
     nome: nome ?? this.nome,
@@ -374,6 +413,7 @@ class Divida extends DataClass implements Insertable<Divida> {
     parcelasTotal: parcelasTotal ?? this.parcelasTotal,
     quitadaEm: quitadaEm.present ? quitadaEm.value : this.quitadaEm,
     criadaEm: criadaEm ?? this.criadaEm,
+    cartaoId: cartaoId.present ? cartaoId.value : this.cartaoId,
   );
   Divida copyWithCompanion(DividasCompanion data) {
     return Divida(
@@ -396,6 +436,7 @@ class Divida extends DataClass implements Insertable<Divida> {
           : this.parcelasTotal,
       quitadaEm: data.quitadaEm.present ? data.quitadaEm.value : this.quitadaEm,
       criadaEm: data.criadaEm.present ? data.criadaEm.value : this.criadaEm,
+      cartaoId: data.cartaoId.present ? data.cartaoId.value : this.cartaoId,
     );
   }
 
@@ -410,7 +451,8 @@ class Divida extends DataClass implements Insertable<Divida> {
           ..write('parcelasRestantes: $parcelasRestantes, ')
           ..write('parcelasTotal: $parcelasTotal, ')
           ..write('quitadaEm: $quitadaEm, ')
-          ..write('criadaEm: $criadaEm')
+          ..write('criadaEm: $criadaEm, ')
+          ..write('cartaoId: $cartaoId')
           ..write(')'))
         .toString();
   }
@@ -426,6 +468,7 @@ class Divida extends DataClass implements Insertable<Divida> {
     parcelasTotal,
     quitadaEm,
     criadaEm,
+    cartaoId,
   );
   @override
   bool operator ==(Object other) =>
@@ -439,7 +482,8 @@ class Divida extends DataClass implements Insertable<Divida> {
           other.parcelasRestantes == this.parcelasRestantes &&
           other.parcelasTotal == this.parcelasTotal &&
           other.quitadaEm == this.quitadaEm &&
-          other.criadaEm == this.criadaEm);
+          other.criadaEm == this.criadaEm &&
+          other.cartaoId == this.cartaoId);
 }
 
 class DividasCompanion extends UpdateCompanion<Divida> {
@@ -452,6 +496,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
   final Value<int> parcelasTotal;
   final Value<DateTime?> quitadaEm;
   final Value<DateTime> criadaEm;
+  final Value<String?> cartaoId;
   final Value<int> rowid;
   const DividasCompanion({
     this.id = const Value.absent(),
@@ -463,6 +508,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
     this.parcelasTotal = const Value.absent(),
     this.quitadaEm = const Value.absent(),
     this.criadaEm = const Value.absent(),
+    this.cartaoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DividasCompanion.insert({
@@ -475,6 +521,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
     this.parcelasTotal = const Value.absent(),
     this.quitadaEm = const Value.absent(),
     this.criadaEm = const Value.absent(),
+    this.cartaoId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        nome = Value(nome);
@@ -488,6 +535,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
     Expression<int>? parcelasTotal,
     Expression<DateTime>? quitadaEm,
     Expression<DateTime>? criadaEm,
+    Expression<String>? cartaoId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -500,6 +548,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
       if (parcelasTotal != null) 'parcelas_total': parcelasTotal,
       if (quitadaEm != null) 'quitada_em': quitadaEm,
       if (criadaEm != null) 'criada_em': criadaEm,
+      if (cartaoId != null) 'cartao_id': cartaoId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -514,6 +563,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
     Value<int>? parcelasTotal,
     Value<DateTime?>? quitadaEm,
     Value<DateTime>? criadaEm,
+    Value<String?>? cartaoId,
     Value<int>? rowid,
   }) {
     return DividasCompanion(
@@ -526,6 +576,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
       parcelasTotal: parcelasTotal ?? this.parcelasTotal,
       quitadaEm: quitadaEm ?? this.quitadaEm,
       criadaEm: criadaEm ?? this.criadaEm,
+      cartaoId: cartaoId ?? this.cartaoId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -560,6 +611,9 @@ class DividasCompanion extends UpdateCompanion<Divida> {
     if (criadaEm.present) {
       map['criada_em'] = Variable<DateTime>(criadaEm.value);
     }
+    if (cartaoId.present) {
+      map['cartao_id'] = Variable<String>(cartaoId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -578,6 +632,7 @@ class DividasCompanion extends UpdateCompanion<Divida> {
           ..write('parcelasTotal: $parcelasTotal, ')
           ..write('quitadaEm: $quitadaEm, ')
           ..write('criadaEm: $criadaEm, ')
+          ..write('cartaoId: $cartaoId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1690,12 +1745,1116 @@ class LancamentosCompanion extends UpdateCompanion<Lancamento> {
   }
 }
 
+class $CartoesTable extends Cartoes with TableInfo<$CartoesTable, Cartoe> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CartoesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diaVencimentoMeta = const VerificationMeta(
+    'diaVencimento',
+  );
+  @override
+  late final GeneratedColumn<int> diaVencimento = GeneratedColumn<int>(
+    'dia_vencimento',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, nome, diaVencimento, criadoEm];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cartoes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Cartoe> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('dia_vencimento')) {
+      context.handle(
+        _diaVencimentoMeta,
+        diaVencimento.isAcceptableOrUnknown(
+          data['dia_vencimento']!,
+          _diaVencimentoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Cartoe map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Cartoe(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      diaVencimento: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dia_vencimento'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $CartoesTable createAlias(String alias) {
+    return $CartoesTable(attachedDatabase, alias);
+  }
+}
+
+class Cartoe extends DataClass implements Insertable<Cartoe> {
+  final String id;
+  final String nome;
+
+  /// O dia em que a fatura vence. As compras dentro herdam este dia.
+  final int diaVencimento;
+  final DateTime criadoEm;
+  const Cartoe({
+    required this.id,
+    required this.nome,
+    required this.diaVencimento,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['nome'] = Variable<String>(nome);
+    map['dia_vencimento'] = Variable<int>(diaVencimento);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  CartoesCompanion toCompanion(bool nullToAbsent) {
+    return CartoesCompanion(
+      id: Value(id),
+      nome: Value(nome),
+      diaVencimento: Value(diaVencimento),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory Cartoe.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Cartoe(
+      id: serializer.fromJson<String>(json['id']),
+      nome: serializer.fromJson<String>(json['nome']),
+      diaVencimento: serializer.fromJson<int>(json['diaVencimento']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'nome': serializer.toJson<String>(nome),
+      'diaVencimento': serializer.toJson<int>(diaVencimento),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  Cartoe copyWith({
+    String? id,
+    String? nome,
+    int? diaVencimento,
+    DateTime? criadoEm,
+  }) => Cartoe(
+    id: id ?? this.id,
+    nome: nome ?? this.nome,
+    diaVencimento: diaVencimento ?? this.diaVencimento,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  Cartoe copyWithCompanion(CartoesCompanion data) {
+    return Cartoe(
+      id: data.id.present ? data.id.value : this.id,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      diaVencimento: data.diaVencimento.present
+          ? data.diaVencimento.value
+          : this.diaVencimento,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Cartoe(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('diaVencimento: $diaVencimento, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, nome, diaVencimento, criadoEm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Cartoe &&
+          other.id == this.id &&
+          other.nome == this.nome &&
+          other.diaVencimento == this.diaVencimento &&
+          other.criadoEm == this.criadoEm);
+}
+
+class CartoesCompanion extends UpdateCompanion<Cartoe> {
+  final Value<String> id;
+  final Value<String> nome;
+  final Value<int> diaVencimento;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const CartoesCompanion({
+    this.id = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.diaVencimento = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CartoesCompanion.insert({
+    required String id,
+    required String nome,
+    this.diaVencimento = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       nome = Value(nome);
+  static Insertable<Cartoe> custom({
+    Expression<String>? id,
+    Expression<String>? nome,
+    Expression<int>? diaVencimento,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nome != null) 'nome': nome,
+      if (diaVencimento != null) 'dia_vencimento': diaVencimento,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CartoesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? nome,
+    Value<int>? diaVencimento,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return CartoesCompanion(
+      id: id ?? this.id,
+      nome: nome ?? this.nome,
+      diaVencimento: diaVencimento ?? this.diaVencimento,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (diaVencimento.present) {
+      map['dia_vencimento'] = Variable<int>(diaVencimento.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CartoesCompanion(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('diaVencimento: $diaVencimento, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EntradasTable extends Entradas with TableInfo<$EntradasTable, Entrada> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntradasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
+    'valorCentavos',
+  );
+  @override
+  late final GeneratedColumn<int> valorCentavos = GeneratedColumn<int>(
+    'valor_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<int> dia = GeneratedColumn<int>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _criadaEmMeta = const VerificationMeta(
+    'criadaEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadaEm = GeneratedColumn<DateTime>(
+    'criada_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    nome,
+    valorCentavos,
+    dia,
+    criadaEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entradas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Entrada> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('valor_centavos')) {
+      context.handle(
+        _valorCentavosMeta,
+        valorCentavos.isAcceptableOrUnknown(
+          data['valor_centavos']!,
+          _valorCentavosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_valorCentavosMeta);
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaMeta);
+    }
+    if (data.containsKey('criada_em')) {
+      context.handle(
+        _criadaEmMeta,
+        criadaEm.isAcceptableOrUnknown(data['criada_em']!, _criadaEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Entrada map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Entrada(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      valorCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}valor_centavos'],
+      )!,
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dia'],
+      )!,
+      criadaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criada_em'],
+      )!,
+    );
+  }
+
+  @override
+  $EntradasTable createAlias(String alias) {
+    return $EntradasTable(attachedDatabase, alias);
+  }
+}
+
+class Entrada extends DataClass implements Insertable<Entrada> {
+  final String id;
+
+  /// "salário", "bico", "pensão" — o nome que a pessoa deu.
+  final String nome;
+
+  /// Em centavos, como todo dinheiro no app. Ver [Dividas].
+  final int valorCentavos;
+
+  /// O dia do mês em que este dinheiro entra.
+  final int dia;
+  final DateTime criadaEm;
+  const Entrada({
+    required this.id,
+    required this.nome,
+    required this.valorCentavos,
+    required this.dia,
+    required this.criadaEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['nome'] = Variable<String>(nome);
+    map['valor_centavos'] = Variable<int>(valorCentavos);
+    map['dia'] = Variable<int>(dia);
+    map['criada_em'] = Variable<DateTime>(criadaEm);
+    return map;
+  }
+
+  EntradasCompanion toCompanion(bool nullToAbsent) {
+    return EntradasCompanion(
+      id: Value(id),
+      nome: Value(nome),
+      valorCentavos: Value(valorCentavos),
+      dia: Value(dia),
+      criadaEm: Value(criadaEm),
+    );
+  }
+
+  factory Entrada.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Entrada(
+      id: serializer.fromJson<String>(json['id']),
+      nome: serializer.fromJson<String>(json['nome']),
+      valorCentavos: serializer.fromJson<int>(json['valorCentavos']),
+      dia: serializer.fromJson<int>(json['dia']),
+      criadaEm: serializer.fromJson<DateTime>(json['criadaEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'nome': serializer.toJson<String>(nome),
+      'valorCentavos': serializer.toJson<int>(valorCentavos),
+      'dia': serializer.toJson<int>(dia),
+      'criadaEm': serializer.toJson<DateTime>(criadaEm),
+    };
+  }
+
+  Entrada copyWith({
+    String? id,
+    String? nome,
+    int? valorCentavos,
+    int? dia,
+    DateTime? criadaEm,
+  }) => Entrada(
+    id: id ?? this.id,
+    nome: nome ?? this.nome,
+    valorCentavos: valorCentavos ?? this.valorCentavos,
+    dia: dia ?? this.dia,
+    criadaEm: criadaEm ?? this.criadaEm,
+  );
+  Entrada copyWithCompanion(EntradasCompanion data) {
+    return Entrada(
+      id: data.id.present ? data.id.value : this.id,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      valorCentavos: data.valorCentavos.present
+          ? data.valorCentavos.value
+          : this.valorCentavos,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      criadaEm: data.criadaEm.present ? data.criadaEm.value : this.criadaEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Entrada(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('dia: $dia, ')
+          ..write('criadaEm: $criadaEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, nome, valorCentavos, dia, criadaEm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Entrada &&
+          other.id == this.id &&
+          other.nome == this.nome &&
+          other.valorCentavos == this.valorCentavos &&
+          other.dia == this.dia &&
+          other.criadaEm == this.criadaEm);
+}
+
+class EntradasCompanion extends UpdateCompanion<Entrada> {
+  final Value<String> id;
+  final Value<String> nome;
+  final Value<int> valorCentavos;
+  final Value<int> dia;
+  final Value<DateTime> criadaEm;
+  final Value<int> rowid;
+  const EntradasCompanion({
+    this.id = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.valorCentavos = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.criadaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EntradasCompanion.insert({
+    required String id,
+    required String nome,
+    required int valorCentavos,
+    required int dia,
+    this.criadaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       nome = Value(nome),
+       valorCentavos = Value(valorCentavos),
+       dia = Value(dia);
+  static Insertable<Entrada> custom({
+    Expression<String>? id,
+    Expression<String>? nome,
+    Expression<int>? valorCentavos,
+    Expression<int>? dia,
+    Expression<DateTime>? criadaEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nome != null) 'nome': nome,
+      if (valorCentavos != null) 'valor_centavos': valorCentavos,
+      if (dia != null) 'dia': dia,
+      if (criadaEm != null) 'criada_em': criadaEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EntradasCompanion copyWith({
+    Value<String>? id,
+    Value<String>? nome,
+    Value<int>? valorCentavos,
+    Value<int>? dia,
+    Value<DateTime>? criadaEm,
+    Value<int>? rowid,
+  }) {
+    return EntradasCompanion(
+      id: id ?? this.id,
+      nome: nome ?? this.nome,
+      valorCentavos: valorCentavos ?? this.valorCentavos,
+      dia: dia ?? this.dia,
+      criadaEm: criadaEm ?? this.criadaEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (valorCentavos.present) {
+      map['valor_centavos'] = Variable<int>(valorCentavos.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<int>(dia.value);
+    }
+    if (criadaEm.present) {
+      map['criada_em'] = Variable<DateTime>(criadaEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntradasCompanion(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('dia: $dia, ')
+          ..write('criadaEm: $criadaEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContasFixasTable extends ContasFixas
+    with TableInfo<$ContasFixasTable, ContasFixa> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContasFixasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
+    'valorCentavos',
+  );
+  @override
+  late final GeneratedColumn<int> valorCentavos = GeneratedColumn<int>(
+    'valor_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<int> dia = GeneratedColumn<int>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _ativaMeta = const VerificationMeta('ativa');
+  @override
+  late final GeneratedColumn<bool> ativa = GeneratedColumn<bool>(
+    'ativa',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ativa" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _criadaEmMeta = const VerificationMeta(
+    'criadaEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadaEm = GeneratedColumn<DateTime>(
+    'criada_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    nome,
+    valorCentavos,
+    dia,
+    ativa,
+    criadaEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contas_fixas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContasFixa> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('valor_centavos')) {
+      context.handle(
+        _valorCentavosMeta,
+        valorCentavos.isAcceptableOrUnknown(
+          data['valor_centavos']!,
+          _valorCentavosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_valorCentavosMeta);
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    }
+    if (data.containsKey('ativa')) {
+      context.handle(
+        _ativaMeta,
+        ativa.isAcceptableOrUnknown(data['ativa']!, _ativaMeta),
+      );
+    }
+    if (data.containsKey('criada_em')) {
+      context.handle(
+        _criadaEmMeta,
+        criadaEm.isAcceptableOrUnknown(data['criada_em']!, _criadaEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContasFixa map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContasFixa(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      valorCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}valor_centavos'],
+      )!,
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dia'],
+      )!,
+      ativa: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ativa'],
+      )!,
+      criadaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criada_em'],
+      )!,
+    );
+  }
+
+  @override
+  $ContasFixasTable createAlias(String alias) {
+    return $ContasFixasTable(attachedDatabase, alias);
+  }
+}
+
+class ContasFixa extends DataClass implements Insertable<ContasFixa> {
+  final String id;
+  final String nome;
+
+  /// Em centavos. Ver [Dividas].
+  final int valorCentavos;
+
+  /// O dia do mês em que sai.
+  final int dia;
+
+  /// Desligada continua cadastrada, mas não entra na soma. É o botão da
+  /// tela #06 — apagar exigiria digitar tudo de novo no mês que voltar.
+  final bool ativa;
+  final DateTime criadaEm;
+  const ContasFixa({
+    required this.id,
+    required this.nome,
+    required this.valorCentavos,
+    required this.dia,
+    required this.ativa,
+    required this.criadaEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['nome'] = Variable<String>(nome);
+    map['valor_centavos'] = Variable<int>(valorCentavos);
+    map['dia'] = Variable<int>(dia);
+    map['ativa'] = Variable<bool>(ativa);
+    map['criada_em'] = Variable<DateTime>(criadaEm);
+    return map;
+  }
+
+  ContasFixasCompanion toCompanion(bool nullToAbsent) {
+    return ContasFixasCompanion(
+      id: Value(id),
+      nome: Value(nome),
+      valorCentavos: Value(valorCentavos),
+      dia: Value(dia),
+      ativa: Value(ativa),
+      criadaEm: Value(criadaEm),
+    );
+  }
+
+  factory ContasFixa.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContasFixa(
+      id: serializer.fromJson<String>(json['id']),
+      nome: serializer.fromJson<String>(json['nome']),
+      valorCentavos: serializer.fromJson<int>(json['valorCentavos']),
+      dia: serializer.fromJson<int>(json['dia']),
+      ativa: serializer.fromJson<bool>(json['ativa']),
+      criadaEm: serializer.fromJson<DateTime>(json['criadaEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'nome': serializer.toJson<String>(nome),
+      'valorCentavos': serializer.toJson<int>(valorCentavos),
+      'dia': serializer.toJson<int>(dia),
+      'ativa': serializer.toJson<bool>(ativa),
+      'criadaEm': serializer.toJson<DateTime>(criadaEm),
+    };
+  }
+
+  ContasFixa copyWith({
+    String? id,
+    String? nome,
+    int? valorCentavos,
+    int? dia,
+    bool? ativa,
+    DateTime? criadaEm,
+  }) => ContasFixa(
+    id: id ?? this.id,
+    nome: nome ?? this.nome,
+    valorCentavos: valorCentavos ?? this.valorCentavos,
+    dia: dia ?? this.dia,
+    ativa: ativa ?? this.ativa,
+    criadaEm: criadaEm ?? this.criadaEm,
+  );
+  ContasFixa copyWithCompanion(ContasFixasCompanion data) {
+    return ContasFixa(
+      id: data.id.present ? data.id.value : this.id,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      valorCentavos: data.valorCentavos.present
+          ? data.valorCentavos.value
+          : this.valorCentavos,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      ativa: data.ativa.present ? data.ativa.value : this.ativa,
+      criadaEm: data.criadaEm.present ? data.criadaEm.value : this.criadaEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContasFixa(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('dia: $dia, ')
+          ..write('ativa: $ativa, ')
+          ..write('criadaEm: $criadaEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, nome, valorCentavos, dia, ativa, criadaEm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContasFixa &&
+          other.id == this.id &&
+          other.nome == this.nome &&
+          other.valorCentavos == this.valorCentavos &&
+          other.dia == this.dia &&
+          other.ativa == this.ativa &&
+          other.criadaEm == this.criadaEm);
+}
+
+class ContasFixasCompanion extends UpdateCompanion<ContasFixa> {
+  final Value<String> id;
+  final Value<String> nome;
+  final Value<int> valorCentavos;
+  final Value<int> dia;
+  final Value<bool> ativa;
+  final Value<DateTime> criadaEm;
+  final Value<int> rowid;
+  const ContasFixasCompanion({
+    this.id = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.valorCentavos = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.ativa = const Value.absent(),
+    this.criadaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContasFixasCompanion.insert({
+    required String id,
+    required String nome,
+    required int valorCentavos,
+    this.dia = const Value.absent(),
+    this.ativa = const Value.absent(),
+    this.criadaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       nome = Value(nome),
+       valorCentavos = Value(valorCentavos);
+  static Insertable<ContasFixa> custom({
+    Expression<String>? id,
+    Expression<String>? nome,
+    Expression<int>? valorCentavos,
+    Expression<int>? dia,
+    Expression<bool>? ativa,
+    Expression<DateTime>? criadaEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nome != null) 'nome': nome,
+      if (valorCentavos != null) 'valor_centavos': valorCentavos,
+      if (dia != null) 'dia': dia,
+      if (ativa != null) 'ativa': ativa,
+      if (criadaEm != null) 'criada_em': criadaEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContasFixasCompanion copyWith({
+    Value<String>? id,
+    Value<String>? nome,
+    Value<int>? valorCentavos,
+    Value<int>? dia,
+    Value<bool>? ativa,
+    Value<DateTime>? criadaEm,
+    Value<int>? rowid,
+  }) {
+    return ContasFixasCompanion(
+      id: id ?? this.id,
+      nome: nome ?? this.nome,
+      valorCentavos: valorCentavos ?? this.valorCentavos,
+      dia: dia ?? this.dia,
+      ativa: ativa ?? this.ativa,
+      criadaEm: criadaEm ?? this.criadaEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (valorCentavos.present) {
+      map['valor_centavos'] = Variable<int>(valorCentavos.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<int>(dia.value);
+    }
+    if (ativa.present) {
+      map['ativa'] = Variable<bool>(ativa.value);
+    }
+    if (criadaEm.present) {
+      map['criada_em'] = Variable<DateTime>(criadaEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContasFixasCompanion(')
+          ..write('id: $id, ')
+          ..write('nome: $nome, ')
+          ..write('valorCentavos: $valorCentavos, ')
+          ..write('dia: $dia, ')
+          ..write('ativa: $ativa, ')
+          ..write('criadaEm: $criadaEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$Banco extends GeneratedDatabase {
   _$Banco(QueryExecutor e) : super(e);
   $BancoManager get managers => $BancoManager(this);
   late final $DividasTable dividas = $DividasTable(this);
   late final $PerfisTable perfis = $PerfisTable(this);
   late final $LancamentosTable lancamentos = $LancamentosTable(this);
+  late final $CartoesTable cartoes = $CartoesTable(this);
+  late final $EntradasTable entradas = $EntradasTable(this);
+  late final $ContasFixasTable contasFixas = $ContasFixasTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1704,6 +2863,9 @@ abstract class _$Banco extends GeneratedDatabase {
     dividas,
     perfis,
     lancamentos,
+    cartoes,
+    entradas,
+    contasFixas,
   ];
 }
 
@@ -1717,6 +2879,7 @@ typedef $$DividasTableCreateCompanionBuilder = DividasCompanion Function({
   Value<int> parcelasTotal,
   Value<DateTime?> quitadaEm,
   Value<DateTime> criadaEm,
+  Value<String?> cartaoId,
   Value<int> rowid,
 });
 typedef $$DividasTableUpdateCompanionBuilder = DividasCompanion Function({
@@ -1729,6 +2892,7 @@ typedef $$DividasTableUpdateCompanionBuilder = DividasCompanion Function({
   Value<int> parcelasTotal,
   Value<DateTime?> quitadaEm,
   Value<DateTime> criadaEm,
+  Value<String?> cartaoId,
   Value<int> rowid,
 });
 
@@ -1782,6 +2946,11 @@ class $$DividasTableFilterComposer extends Composer<_$Banco, $DividasTable> {
 
   ColumnFilters<DateTime> get criadaEm => $composableBuilder(
     column: $table.criadaEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cartaoId => $composableBuilder(
+    column: $table.cartaoId,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1838,6 +3007,11 @@ class $$DividasTableOrderingComposer extends Composer<_$Banco, $DividasTable> {
     column: $table.criadaEm,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get cartaoId => $composableBuilder(
+    column: $table.cartaoId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DividasTableAnnotationComposer
@@ -1885,6 +3059,9 @@ class $$DividasTableAnnotationComposer
 
   GeneratedColumn<DateTime> get criadaEm =>
       $composableBuilder(column: $table.criadaEm, builder: (column) => column);
+
+  GeneratedColumn<String> get cartaoId =>
+      $composableBuilder(column: $table.cartaoId, builder: (column) => column);
 }
 
 class $$DividasTableTableManager
@@ -1924,6 +3101,7 @@ class $$DividasTableTableManager
                 Value<int> parcelasTotal = const Value.absent(),
                 Value<DateTime?> quitadaEm = const Value.absent(),
                 Value<DateTime> criadaEm = const Value.absent(),
+                Value<String?> cartaoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DividasCompanion(
                 id: id,
@@ -1935,6 +3113,7 @@ class $$DividasTableTableManager
                 parcelasTotal: parcelasTotal,
                 quitadaEm: quitadaEm,
                 criadaEm: criadaEm,
+                cartaoId: cartaoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1948,6 +3127,7 @@ class $$DividasTableTableManager
                 Value<int> parcelasTotal = const Value.absent(),
                 Value<DateTime?> quitadaEm = const Value.absent(),
                 Value<DateTime> criadaEm = const Value.absent(),
+                Value<String?> cartaoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DividasCompanion.insert(
                 id: id,
@@ -1959,6 +3139,7 @@ class $$DividasTableTableManager
                 parcelasTotal: parcelasTotal,
                 quitadaEm: quitadaEm,
                 criadaEm: criadaEm,
+                cartaoId: cartaoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2522,6 +3703,610 @@ typedef $$LancamentosTableProcessedTableManager =
       Lancamento,
       PrefetchHooks Function()
     >;
+typedef $$CartoesTableCreateCompanionBuilder = CartoesCompanion Function({
+  required String id,
+  required String nome,
+  Value<int> diaVencimento,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+typedef $$CartoesTableUpdateCompanionBuilder = CartoesCompanion Function({
+  Value<String> id,
+  Value<String> nome,
+  Value<int> diaVencimento,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+
+class $$CartoesTableFilterComposer extends Composer<_$Banco, $CartoesTable> {
+  $$CartoesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get diaVencimento => $composableBuilder(
+    column: $table.diaVencimento,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CartoesTableOrderingComposer extends Composer<_$Banco, $CartoesTable> {
+  $$CartoesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get diaVencimento => $composableBuilder(
+    column: $table.diaVencimento,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CartoesTableAnnotationComposer
+    extends Composer<_$Banco, $CartoesTable> {
+  $$CartoesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<int> get diaVencimento => $composableBuilder(
+    column: $table.diaVencimento,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+}
+
+class $$CartoesTableTableManager
+    extends
+        RootTableManager<
+          _$Banco,
+          $CartoesTable,
+          Cartoe,
+          $$CartoesTableFilterComposer,
+          $$CartoesTableOrderingComposer,
+          $$CartoesTableAnnotationComposer,
+          $$CartoesTableCreateCompanionBuilder,
+          $$CartoesTableUpdateCompanionBuilder,
+          (Cartoe, BaseReferences<_$Banco, $CartoesTable, Cartoe>),
+          Cartoe,
+          PrefetchHooks Function()
+        > {
+  $$CartoesTableTableManager(_$Banco db, $CartoesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CartoesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CartoesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CartoesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<int> diaVencimento = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CartoesCompanion(
+                id: id,
+                nome: nome,
+                diaVencimento: diaVencimento,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String nome,
+                Value<int> diaVencimento = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CartoesCompanion.insert(
+                id: id,
+                nome: nome,
+                diaVencimento: diaVencimento,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CartoesTable, Cartoe>(table),
+                  BaseReferences<_$Banco, $CartoesTable, Cartoe>(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CartoesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Banco,
+      $CartoesTable,
+      Cartoe,
+      $$CartoesTableFilterComposer,
+      $$CartoesTableOrderingComposer,
+      $$CartoesTableAnnotationComposer,
+      $$CartoesTableCreateCompanionBuilder,
+      $$CartoesTableUpdateCompanionBuilder,
+      (Cartoe, BaseReferences<_$Banco, $CartoesTable, Cartoe>),
+      Cartoe,
+      PrefetchHooks Function()
+    >;
+typedef $$EntradasTableCreateCompanionBuilder = EntradasCompanion Function({
+  required String id,
+  required String nome,
+  required int valorCentavos,
+  required int dia,
+  Value<DateTime> criadaEm,
+  Value<int> rowid,
+});
+typedef $$EntradasTableUpdateCompanionBuilder = EntradasCompanion Function({
+  Value<String> id,
+  Value<String> nome,
+  Value<int> valorCentavos,
+  Value<int> dia,
+  Value<DateTime> criadaEm,
+  Value<int> rowid,
+});
+
+class $$EntradasTableFilterComposer extends Composer<_$Banco, $EntradasTable> {
+  $$EntradasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadaEm => $composableBuilder(
+    column: $table.criadaEm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EntradasTableOrderingComposer
+    extends Composer<_$Banco, $EntradasTable> {
+  $$EntradasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadaEm => $composableBuilder(
+    column: $table.criadaEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EntradasTableAnnotationComposer
+    extends Composer<_$Banco, $EntradasTable> {
+  $$EntradasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadaEm =>
+      $composableBuilder(column: $table.criadaEm, builder: (column) => column);
+}
+
+class $$EntradasTableTableManager
+    extends
+        RootTableManager<
+          _$Banco,
+          $EntradasTable,
+          Entrada,
+          $$EntradasTableFilterComposer,
+          $$EntradasTableOrderingComposer,
+          $$EntradasTableAnnotationComposer,
+          $$EntradasTableCreateCompanionBuilder,
+          $$EntradasTableUpdateCompanionBuilder,
+          (Entrada, BaseReferences<_$Banco, $EntradasTable, Entrada>),
+          Entrada,
+          PrefetchHooks Function()
+        > {
+  $$EntradasTableTableManager(_$Banco db, $EntradasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntradasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EntradasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EntradasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<int> valorCentavos = const Value.absent(),
+                Value<int> dia = const Value.absent(),
+                Value<DateTime> criadaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntradasCompanion(
+                id: id,
+                nome: nome,
+                valorCentavos: valorCentavos,
+                dia: dia,
+                criadaEm: criadaEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String nome,
+                required int valorCentavos,
+                required int dia,
+                Value<DateTime> criadaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntradasCompanion.insert(
+                id: id,
+                nome: nome,
+                valorCentavos: valorCentavos,
+                dia: dia,
+                criadaEm: criadaEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EntradasTable, Entrada>(table),
+                  BaseReferences<_$Banco, $EntradasTable, Entrada>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EntradasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Banco,
+      $EntradasTable,
+      Entrada,
+      $$EntradasTableFilterComposer,
+      $$EntradasTableOrderingComposer,
+      $$EntradasTableAnnotationComposer,
+      $$EntradasTableCreateCompanionBuilder,
+      $$EntradasTableUpdateCompanionBuilder,
+      (Entrada, BaseReferences<_$Banco, $EntradasTable, Entrada>),
+      Entrada,
+      PrefetchHooks Function()
+    >;
+typedef $$ContasFixasTableCreateCompanionBuilder =
+    ContasFixasCompanion Function({
+      required String id,
+      required String nome,
+      required int valorCentavos,
+      Value<int> dia,
+      Value<bool> ativa,
+      Value<DateTime> criadaEm,
+      Value<int> rowid,
+    });
+typedef $$ContasFixasTableUpdateCompanionBuilder =
+    ContasFixasCompanion Function({
+      Value<String> id,
+      Value<String> nome,
+      Value<int> valorCentavos,
+      Value<int> dia,
+      Value<bool> ativa,
+      Value<DateTime> criadaEm,
+      Value<int> rowid,
+    });
+
+class $$ContasFixasTableFilterComposer
+    extends Composer<_$Banco, $ContasFixasTable> {
+  $$ContasFixasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ativa => $composableBuilder(
+    column: $table.ativa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadaEm => $composableBuilder(
+    column: $table.criadaEm,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContasFixasTableOrderingComposer
+    extends Composer<_$Banco, $ContasFixasTable> {
+  $$ContasFixasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get ativa => $composableBuilder(
+    column: $table.ativa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadaEm => $composableBuilder(
+    column: $table.criadaEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContasFixasTableAnnotationComposer
+    extends Composer<_$Banco, $ContasFixasTable> {
+  $$ContasFixasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<bool> get ativa =>
+      $composableBuilder(column: $table.ativa, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadaEm =>
+      $composableBuilder(column: $table.criadaEm, builder: (column) => column);
+}
+
+class $$ContasFixasTableTableManager
+    extends
+        RootTableManager<
+          _$Banco,
+          $ContasFixasTable,
+          ContasFixa,
+          $$ContasFixasTableFilterComposer,
+          $$ContasFixasTableOrderingComposer,
+          $$ContasFixasTableAnnotationComposer,
+          $$ContasFixasTableCreateCompanionBuilder,
+          $$ContasFixasTableUpdateCompanionBuilder,
+          (ContasFixa, BaseReferences<_$Banco, $ContasFixasTable, ContasFixa>),
+          ContasFixa,
+          PrefetchHooks Function()
+        > {
+  $$ContasFixasTableTableManager(_$Banco db, $ContasFixasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContasFixasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContasFixasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContasFixasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<int> valorCentavos = const Value.absent(),
+                Value<int> dia = const Value.absent(),
+                Value<bool> ativa = const Value.absent(),
+                Value<DateTime> criadaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContasFixasCompanion(
+                id: id,
+                nome: nome,
+                valorCentavos: valorCentavos,
+                dia: dia,
+                ativa: ativa,
+                criadaEm: criadaEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String nome,
+                required int valorCentavos,
+                Value<int> dia = const Value.absent(),
+                Value<bool> ativa = const Value.absent(),
+                Value<DateTime> criadaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContasFixasCompanion.insert(
+                id: id,
+                nome: nome,
+                valorCentavos: valorCentavos,
+                dia: dia,
+                ativa: ativa,
+                criadaEm: criadaEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ContasFixasTable, ContasFixa>(table),
+                  BaseReferences<_$Banco, $ContasFixasTable, ContasFixa>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContasFixasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Banco,
+      $ContasFixasTable,
+      ContasFixa,
+      $$ContasFixasTableFilterComposer,
+      $$ContasFixasTableOrderingComposer,
+      $$ContasFixasTableAnnotationComposer,
+      $$ContasFixasTableCreateCompanionBuilder,
+      $$ContasFixasTableUpdateCompanionBuilder,
+      (ContasFixa, BaseReferences<_$Banco, $ContasFixasTable, ContasFixa>),
+      ContasFixa,
+      PrefetchHooks Function()
+    >;
 
 class $BancoManager {
   final _$Banco _db;
@@ -2532,4 +4317,10 @@ class $BancoManager {
       $$PerfisTableTableManager(_db, _db.perfis);
   $$LancamentosTableTableManager get lancamentos =>
       $$LancamentosTableTableManager(_db, _db.lancamentos);
+  $$CartoesTableTableManager get cartoes =>
+      $$CartoesTableTableManager(_db, _db.cartoes);
+  $$EntradasTableTableManager get entradas =>
+      $$EntradasTableTableManager(_db, _db.entradas);
+  $$ContasFixasTableTableManager get contasFixas =>
+      $$ContasFixasTableTableManager(_db, _db.contasFixas);
 }

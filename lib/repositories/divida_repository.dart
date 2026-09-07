@@ -57,6 +57,7 @@ class DividaRepositoryDrift implements DividaRepository {
           parcelasRestantes: Value(d.parcelasRestantes),
           parcelasTotal: Value(d.parcelasTotal),
           quitadaEm: Value(d.quitadaEm),
+          cartaoId: Value(d.cartaoId),
         ),
       );
 
@@ -112,5 +113,6 @@ class DividaRepositoryDrift implements DividaRepository {
         parcelasRestantes: linha.parcelasRestantes,
         parcelasTotal: linha.parcelasTotal,
         quitadaEm: linha.quitadaEm,
+        cartaoId: linha.cartaoId,
       );
 }

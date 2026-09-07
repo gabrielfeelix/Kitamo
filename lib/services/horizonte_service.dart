@@ -1,4 +1,6 @@
+import '../models/conta_fixa.dart';
 import '../models/divida.dart';
+import '../models/entrada.dart';
 import '../models/perfil_financeiro.dart';
 import '../design/cores.dart';
 
@@ -86,6 +88,8 @@ class HorizonteService {
     required PerfilFinanceiro? perfil,
     required List<Divida> dividas,
     required double saldoInicial,
+    List<Entrada> entradas = const [],
+    List<ContaFixa> contasFixas = const [],
     DateTime? referencia,
   }) {
     final ref = referencia ?? DateTime.now();
@@ -100,7 +104,8 @@ class HorizonteService {
 
     for (var d = 1; d <= diasNoMes; d++) {
       final dia = DateTime(ref.year, ref.month, d);
-      final lancamentos = _lancamentosDoDia(dia, perfil, abertas);
+      final lancamentos =
+          _lancamentosDoDia(dia, perfil, abertas, entradas, contasFixas);
 
       for (final l in lancamentos) {
         saldo += l.entrada ? l.valor : -l.valor;
@@ -120,7 +125,7 @@ class HorizonteService {
         saldo: saldo,
         estado: estado,
         lancamentos: lancamentos,
-        motivo: _motivo(estado, lancamentos, dia, perfil),
+        motivo: _motivo(estado, lancamentos, dia, perfil, entradas),
       ));
     }
 
@@ -136,13 +141,25 @@ class HorizonteService {
     required PerfilFinanceiro? perfil,
     required List<Divida> dividas,
     required double saldoInicial,
+    List<Entrada> entradas = const [],
+    List<ContaFixa> contasFixas = const [],
     DateTime? referencia,
   }) {
     final ref = referencia ?? DateTime.now();
     final abertas = dividas.where((d) => !d.estaQuitada).toList();
 
-    final renda = perfil?.rendaMensal ?? 0;
-    final fixas = perfil?.contasFixasEstimadas ?? 0;
+    // No mês fechado o dia não muda o total, só a soma importa. Lista
+    // vazia cai no par antigo, como no diário.
+    final renda = entradas.isEmpty
+        ? (perfil?.rendaMensal ?? 0)
+        : entradas.fold<double>(0, (soma, e) => soma + e.valor);
+
+    final fixas = contasFixas.isEmpty
+        ? (perfil?.contasFixasEstimadas ?? 0)
+        : contasFixas
+            .where((c) => c.ativa)
+            .fold<double>(0, (soma, c) => soma + c.valor);
+
     final diario = perfil?.gastoDiarioEstimado ?? 0;
 
     // O mês da última parcela de todas.
@@ -181,16 +198,34 @@ class HorizonteService {
     DateTime dia,
     PerfilFinanceiro? perfil,
     List<Divida> dividas,
+    List<Entrada> entradas,
+    List<ContaFixa> contasFixas,
   ) {
     final itens = <Lancamento>[];
 
-    final diaRenda = perfil?.diaRenda;
-    if (diaRenda != null && _caiNesteDia(diaRenda, dia)) {
-      itens.add(Lancamento(
-        nome: 'salário',
-        valor: perfil?.rendaMensal ?? 0,
-        entrada: true,
-      ));
+    // Cada dinheiro entra **no seu dia**. Somar tudo num dia só prometia
+    // folga em data que ainda não tinha dinheiro na conta — o erro que
+    // fazia o diário mentir pra quem recebe partido.
+    if (entradas.isNotEmpty) {
+      for (final e in entradas.where((e) => _caiNesteDia(e.dia, dia))) {
+        itens.add(Lancamento(nome: e.nome, valor: e.valor, entrada: true));
+      }
+    } else {
+      final diaRenda = perfil?.diaRenda;
+      if (diaRenda != null && _caiNesteDia(diaRenda, dia)) {
+        itens.add(Lancamento(
+          nome: 'salário',
+          valor: perfil?.rendaMensal ?? 0,
+          entrada: true,
+        ));
+      }
+    }
+
+    // A conta fixa também sai no dia dela, pelo mesmo motivo.
+    for (final c in contasFixas) {
+      if (c.ativa && _caiNesteDia(c.dia, dia)) {
+        itens.add(Lancamento(nome: c.nome, valor: c.valor, entrada: false));
+      }
     }
 
     for (final d in dividas) {
@@ -229,6 +264,7 @@ class HorizonteService {
     List<Lancamento> lancamentos,
     DateTime dia,
     PerfilFinanceiro? perfil,
+    List<Entrada> entradas,
   ) {
     if (estado == EstadoFinanceiro.tranquilo) return null;
 
@@ -236,12 +272,16 @@ class HorizonteService {
 
     if (saidas.isNotEmpty) {
       final nome = saidas.first.nome;
-      final diaRenda = perfil?.diaRenda;
+
+      // Com várias entradas, o que importa é a **próxima** que ainda vai
+      // cair: dizer "antes do salário do dia 5" no dia 12 seria falso pra
+      // quem também recebe dia 20.
+      final proxima = _proximaEntrada(dia, perfil, entradas);
 
       // O caso que custou R$ 1.674 em 12 meses: a parcela vence antes de
-      // a renda cair.
-      if (diaRenda != null && dia.day < diaRenda) {
-        return 'a $nome cai antes do salário do dia $diaRenda';
+      // o dinheiro cair.
+      if (proxima != null) {
+        return 'a $nome cai antes ${proxima.nome == 'salário' ? 'do salário' : 'da entrada'} do dia ${proxima.dia}';
       }
       return 'aqui sai a $nome';
     }
@@ -249,6 +289,30 @@ class HorizonteService {
     return estado == EstadoFinanceiro.aperto
         ? 'o saldo fica negativo neste dia'
         : 'o saldo fica baixo neste dia';
+  }
+
+  /// A primeira entrada que ainda cai depois deste dia, no mesmo mês.
+  Entrada? _proximaEntrada(
+    DateTime dia,
+    PerfilFinanceiro? perfil,
+    List<Entrada> entradas,
+  ) {
+    final lista = entradas.isNotEmpty
+        ? entradas
+        : [
+            if (perfil?.diaRenda != null)
+              Entrada(
+                id: 'perfil',
+                nome: 'salário',
+                valor: perfil?.rendaMensal ?? 0,
+                dia: perfil!.diaRenda!,
+              ),
+          ];
+
+    final adiante = lista.where((e) => e.dia > dia.day).toList()
+      ..sort((a, b) => a.dia.compareTo(b.dia));
+
+    return adiante.isEmpty ? null : adiante.first;
   }
 
   static const _mesesCurtos = [

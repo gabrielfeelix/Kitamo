@@ -16,7 +16,7 @@ part 'banco.g.dart';
 /// saber que alguém deve R$ 6.136 e está apertado é dado íntimo. Não gera
 /// fraude, mas vaza reputação — e num aparelho com root qualquer app lê um
 /// SQLite comum.
-@DriftDatabase(tables: [Dividas, Perfis, Lancamentos])
+@DriftDatabase(tables: [Dividas, Perfis, Lancamentos, Cartoes, Entradas, ContasFixas])
 class Banco extends _$Banco {
   Banco(super.e);
 
@@ -24,7 +24,7 @@ class Banco extends _$Banco {
   Banco.memoria() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,11 +50,60 @@ class Banco extends _$Banco {
             await m.addColumn(perfis, perfis.provedor);
             await m.addColumn(perfis, perfis.email);
           }
+          // v5: a vida da pessoa não cabia no modelo. Renda virou lista de
+          // entradas (cada uma com seu dia), contas fixas viraram lista, e
+          // as compras passam a morar dentro de um cartão.
+          //
+          // **Migrar não é criar as tabelas: é não perder quem já usa.** O
+          // valor único que a pessoa digitou vira a primeira linha da lista
+          // — ela abre o app e vê o que já tinha, agora editável.
+          if (from < 5) {
+            await m.createTable(cartoes);
+            await m.createTable(entradas);
+            await m.createTable(contasFixas);
+            await m.addColumn(dividas, dividas.cartaoId);
+            await _converterPerfilEmListas();
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
       );
+
+  /// O `rendaMensal`/`diaRenda` e o `contasFixasEstimadas` de quem já usava
+  /// viram a primeira linha de cada lista.
+  ///
+  /// Sem isto a atualização apagaria as respostas do onboarding na cara da
+  /// pessoa: ela abriria o app zerado, com o diário errado, sem ter feito
+  /// nada. É o dado que ela confiou ao app.
+  Future<void> _converterPerfilEmListas() async {
+    final linha = await (select(perfis)..where((t) => t.id.equals(1)))
+        .getSingleOrNull();
+    if (linha == null) return;
+
+    final renda = linha.rendaCentavos;
+    if (renda != null && renda > 0) {
+      await into(entradas).insert(EntradasCompanion.insert(
+        id: 'entrada-migrada',
+        nome: 'salário',
+        valorCentavos: renda,
+        // Sem dia declarado, o dia 5 é o mais comum de salário no Brasil;
+        // ela troca na tela, e agora dá pra trocar.
+        dia: linha.diaRenda ?? 5,
+      ));
+    }
+
+    final fixas = linha.contasFixasCentavos;
+    if (fixas != null && fixas > 0) {
+      await into(contasFixas).insert(ContasFixasCompanion.insert(
+        id: 'fixa-migrada',
+        // Genérico de propósito: o app não sabe do que o número era feito,
+        // e inventar "aluguel" seria decidir pela pessoa.
+        nome: 'contas fixas',
+        valorCentavos: fixas,
+      ));
+    }
+  }
 }
 
 /// Abre o banco cifrado no diretório privado do app.

@@ -12,6 +12,7 @@ class Divida {
     required this.parcelasRestantes,
     required this.parcelasTotal,
     this.quitadaEm,
+    this.cartaoId,
   });
 
   final String id;
@@ -23,7 +24,14 @@ class Divida {
   final int parcelasTotal;
   final DateTime? quitadaEm;
 
+  /// O cartão em que esta compra está, ou nulo quando a dívida é solta
+  /// (empréstimo, crediário, financiamento).
+  final String? cartaoId;
+
   bool get estaQuitada => quitadaEm != null;
+
+  /// Compra dentro de um cartão baixa junto com a fatura, não sozinha.
+  bool get moraNumCartao => cartaoId != null;
 
   /// "7 de 10". Nunca negativo, mesmo com dado inconsistente.
   int get parcelasPagas {
@@ -62,6 +70,7 @@ class Divida {
     int? parcelasRestantes,
     double? saldoAtual,
     DateTime? quitadaEm,
+    String? cartaoId,
   }) =>
       Divida(
         id: id,
@@ -72,5 +81,6 @@ class Divida {
         parcelasRestantes: parcelasRestantes ?? this.parcelasRestantes,
         parcelasTotal: parcelasTotal,
         quitadaEm: quitadaEm ?? this.quitadaEm,
+        cartaoId: cartaoId ?? this.cartaoId,
       );
 }

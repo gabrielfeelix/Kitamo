@@ -1,4 +1,6 @@
+import '../models/conta_fixa.dart';
 import '../models/divida.dart';
+import '../models/entrada.dart';
 import '../models/perfil_financeiro.dart';
 
 /// O resultado do cálculo do diário.
@@ -45,16 +47,30 @@ class ResultadoDiario {
 class DiarioService {
   const DiarioService();
 
+  /// [entradas] e [contasFixas] são as listas que a pessoa cadastrou.
+  ///
+  /// Quando vêm vazias, o cálculo cai no par antigo do perfil — é o que
+  /// mantém de pé quem ainda não passou pela migration e os testes que
+  /// guardam a regra do diário.
   ResultadoDiario calcular({
     required PerfilFinanceiro? perfil,
     required List<Divida> dividas,
+    List<Entrada> entradas = const [],
+    List<ContaFixa> contasFixas = const [],
     DateTime? referencia,
   }) {
     final hoje = referencia ?? DateTime.now();
     final emAberto = dividas.where((d) => !d.estaQuitada).toList();
 
-    final renda = perfil?.rendaMensal ?? 0;
-    final fixas = perfil?.contasFixasEstimadas ?? 0;
+    // A soma do que ela cadastrou, nunca um número digitado solto.
+    final renda = entradas.isEmpty
+        ? (perfil?.rendaMensal ?? 0)
+        : entradas.fold<double>(0, (soma, e) => soma + e.valor);
+
+    final ativas = contasFixas.where((c) => c.ativa);
+    final fixas = contasFixas.isEmpty
+        ? (perfil?.contasFixasEstimadas ?? 0)
+        : ativas.fold<double>(0, (soma, c) => soma + c.valor);
 
     // Dívida sem parcela restante não pesa no diário.
     final parcelas = emAberto
