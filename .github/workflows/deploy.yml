@@ -35,6 +35,7 @@ jobs:
             echo "Deploy attempt $attempt/3..."
             if rsync -avz --timeout=60 -e "ssh $SSH_OPTS" \
               --exclude='.git' --exclude='node_modules' \
+              --exclude='apps' \
               ./ $REMOTE:$PROJECT_DIR; then
               echo "Deploy succeeded"
               exit 0
